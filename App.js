@@ -44,9 +44,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
-      <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}>
+      {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
       <AppNavigator />
-      </SafeAreaView>
+      {/* </SafeAreaView> */}
     </SafeAreaProvider>
   );
 }

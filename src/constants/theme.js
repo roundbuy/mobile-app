@@ -61,6 +61,8 @@ export const COLORS = {
   apple: '#000000',
   instagram: '#E4405F',
   twitter: '#1DA1F2',
+  slider:'#616161',
+  blue:"#285AB1"
 };
 
 // ============================================================================
@@ -110,6 +112,7 @@ export const SPACING = {
   
   // CTA Spacing
   ctaSpacing: 24,         // Space around call-to-action buttons (20-24px)
+  
 };
 
 // ============================================================================
@@ -371,6 +374,16 @@ export const LAYOUT = {
 };
 
 // ============================================================================
+// SLIDER CONFIGURATION
+// ============================================================================
+export const SLIDER_CONFIG = {
+  max: 10,                    // Maximum value for the slider (can be made dynamic in the future)
+  min: 0,                     // Minimum value for the slider
+  decimalPrecision: 1,        // Number of decimal places (1 = 0.1, 2 = 0.01, etc.)
+  defaultValue: 5.0,          // Default value (middle of range)
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -414,6 +427,7 @@ export default {
   SHADOWS,
   ANIMATION,
   LAYOUT,
+  SLIDER_CONFIG,
   getLineHeight,
   getSpacing,
   applyTextStyle,
