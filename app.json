@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "RoundBuy",
+    "slug": "roundbuy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo-crop.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/logo-crop.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1E6FD6"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.roundbuy.app",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
+        "NSLocationWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo-crop.png",
+        "backgroundColor": "#1E6FD6"
+      },
+      "package": "com.roundbuy.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/logo-crop.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "scheme": "roundbuy",
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
