@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import SafeScreenContainer from '../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS, SLIDER_CONFIG } from '../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { responseObject } from '../constants/appConstants';
 
 const SearchScreen = ({ navigation }) => {
   const [searchText, setSearchText] = useState('');
@@ -159,33 +158,6 @@ const SearchScreen = ({ navigation }) => {
     setSliderValue(roundedValue);
   };
 
-
-  const handleProductPress = (product) => {
-    navigation.navigate('ProductDetails', { product });
-  };
-
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.gridItem}
-      onPress={() => handleProductPress(item)}
-      activeOpacity={0.7}
-    >
-      {item.image ? (
-        <Image source={item.image} style={styles.image} />
-      ) : (
-        <View style={[styles.image, styles.placeholder]}>
-          <Text style={styles.placeholderText}>No Image</Text>
-        </View>
-      )}
-      <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center',marginTop:4}} >
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={[styles.title,{fontWeight:'700'}]}>{item.amount}</Text>
-
-      </View>
-      <Text style={styles.itemDetails}>Distance: {item.distance} / {item.duration}</Text>
-    </TouchableOpacity>
-  );
-
   const sliderPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -247,20 +219,7 @@ const SearchScreen = ({ navigation }) => {
     
 
       {/* Map View */}
-      <View style={{flex:1,
-        paddingBottom:50
-      }}>
-            {viewMode === 'list' && (
-        <FlatList
-          data={responseObject.data}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={[styles.listContainer]} // Added extra padding at the bottom
-        />
-      )}
-    { viewMode=== 'map'&& <View style={styles.mapContainer}>
+    <View style={styles.mapContainer}>
       <View style={styles.fixedButtons}>
     <View style={styles.topLocations}>
         <TouchableOpacity 
@@ -328,21 +287,12 @@ const SearchScreen = ({ navigation }) => {
               style={styles.map}
               initialRegion={region}
               onRegionChangeComplete={setRegion}
-              showsUserLocation={false}
+              showsUserLocation={true}
               showsMyLocationButton={false}
               showsCompass={true}
               toolbarEnabled={false}
               mapType="standard"
               loadingEnabled={true}
-              showsPointsOfInterest={false}
-              showsBuildings={false}
-              
-              customMapStyle={[
-                {
-                  featureType: "poi",
-                  stylers: [{ visibility: "off" }]
-                }
-              ]}
               onMapReady={() => {
                 console.log('✅ Map is ready!');
                 console.log('📍 Map region:', region);
@@ -357,86 +307,72 @@ const SearchScreen = ({ navigation }) => {
                 console.log('📐 MapView onLayout called');
               }}
             >
-              {/* Circle on initial location */}
+            {/* Circle on initial location - always visible */}
+            <Circle
+              center={initialLocation}
+              radius={sliderValue * 1000} // Convert km to meters
+              strokeWidth={2}
+              strokeColor={COLORS.primary}
+              fillColor="rgba(0, 28, 100, 0.1)" // Semi-transparent primary color
+            />
+
+            {/* Circle on current location - visible when GPS location is available */}
+            {location && (
               <Circle
-                center={initialLocation}
+                center={location}
                 radius={sliderValue * 1000} // Convert km to meters
-                strokeWidth={5}
-                strokeColor={COLORS.blue}
-                fillColor="rgba(0, 28, 100, 0)" // Semi-transparent primary color
+                strokeWidth={2}
+                strokeColor={COLORS.success}
+                fillColor="rgba(76, 175, 80, 0.1)" // Semi-transparent green color
               />
+            )}
 
-              {/* Circle on current location */}
-              {location && (
-                <Circle
-                  center={location}
-                  radius={sliderValue * 1000} // Convert km to meters
-                  strokeWidth={2}
-                  strokeColor={COLORS.success}
-                  fillColor="rgba(76, 175, 80, 0.1)" // Semi-transparent green color
-                />
-              )}
+            {/* Initial location marker */}
+            <Marker
+              coordinate={initialLocation}
+              title="Initial Location"
+              image={require('../../assets/roundby_icon.png')}
+          />
 
-              {/* Initial location marker */}
+            {/* User location marker */}
+            {location && (
               <Marker
-                coordinate={initialLocation}
-                title="Initial Location"
-                image={require('../../assets/roundby_icon.png')}
+                coordinate={location}
+                title="Your Location"
+                pinColor={COLORS.success}
               />
+            )}
 
-              {/* User location marker */}
-              {/* {location && (
-                <Marker
-                  coordinate={location}
-                  title="Your Location"
-                  pinColor={COLORS.success}
-                />
-              )} */}
-
-              {/* Search result markers */}
-              {responseObject.data.map((marker) => (
-                <Marker
-                  key={marker.id}
-                  coordinate={{
-                    latitude: marker.location?.latitude,
-                    longitude: marker.location?.longitude,
-                  }}
-                  title={marker.title}
-                  onPress={() => handleProductPress(marker)}
-                >
-                  <View style={styles.customMarker}>
-                    <Text style={styles.markerText}>{marker.id}</Text>
-                  </View>
-                </Marker>
-              ))}
+            {/* Search result markers */}
+            {markers.map((marker) => (
+              <Marker
+                key={marker.id}
+                coordinate={{
+                  latitude: marker.latitude,
+                  longitude: marker.longitude,
+                }}
+                title={marker.title}
+              >
+                <View style={styles.customMarker}>
+                  <Text style={styles.markerText}>{marker.id}</Text>
+                </View>
+              </Marker>
+            ))}
             </MapView>
           )}
 
         {/* Zoom Controls */}
        
         
-       
-        
-        {/* Center on user location button */}
-        {/* <TouchableOpacity 
-          style={styles.centerButton}
-          onPress={centerOnUserLocation}
-        >
-          <Ionicons name="locate" size={24} color={COLORS.primary} />
-        </TouchableOpacity> */} 
-
-        {/* Map View Toggle */}
-       
-      </View>}
-      <View style={styles.row}>
-        { viewMode === 'map' ? <TouchableOpacity 
+        <View style={styles.row}>
+        <TouchableOpacity 
           style={styles.mapViewToggle}
-          // onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+          onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
           <Text style={styles.mapViewText}>Distance</Text>
-        </TouchableOpacity>:<View/>}
+        </TouchableOpacity>
         <TouchableOpacity 
-          style={[styles.mapViewToggle,{alignSelf:'flex-end'}]}
+          style={styles.mapViewToggle}
           onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
           <Text style={styles.mapViewText}>Map</Text>
@@ -444,7 +380,7 @@ const SearchScreen = ({ navigation }) => {
         </View>
         
         {/* Slider Bar */}
-        { viewMode === 'map' && <View style={styles.sliderContainer}>
+        <View style={styles.sliderContainer}>
           
           <View 
             style={styles.sliderTrack}
@@ -469,8 +405,20 @@ const SearchScreen = ({ navigation }) => {
             />
           </View>
             <Text style={styles.sliderLabel}>{sliderValue.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
-        </View>}
         </View>
+        
+        {/* Center on user location button */}
+        {/* <TouchableOpacity 
+          style={styles.centerButton}
+          onPress={centerOnUserLocation}
+        >
+          <Ionicons name="locate" size={24} color={COLORS.primary} />
+        </TouchableOpacity> */} 
+
+        {/* Map View Toggle */}
+       
+      </View>
+    
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem}>
@@ -485,10 +433,7 @@ const SearchScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.navItem}>
           <FontAwesome name="envelope" size={26} color={COLORS.primary} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navItem}
-          onPress={() => navigation.navigate('UserAccount')}
-        >
+        <TouchableOpacity style={styles.navItem}>
           <FontAwesome name="user" size={26} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
@@ -583,7 +528,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '90%',
-    height: '100%',
+    height: '85%',
   },
   loadingContainer: {
     flex: 1,
@@ -715,10 +660,6 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   bottomNav: {
-    position:'absolute',
-    bottom:0,
-    left:0,
-    right:0,
     flexDirection: 'row',
     height: 70,
     backgroundColor: '#ffffff',
@@ -740,6 +681,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   row:{
+    flex:1,
     width:'100%',
     flexDirection:'row',
     justifyContent:'space-between',
@@ -749,7 +691,7 @@ const styles = StyleSheet.create({
   sliderContainer: {
     width: '100%',
     paddingHorizontal: 20,
-    marginTop:10
+    flex:1
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -827,34 +769,6 @@ const styles = StyleSheet.create({
     width:18,
     backgroundColor:COLORS.blue,
     height:4
-  },
-  listContainer:{
-    flex:1,
-    paddingHorizontal:10,
-    paddingBottom:100
-  },
-  gridItem:{
-    width:400/2.5,
-    marginBottom:10
-  },
-  image:{
-    width: '100%',
-    height:  400/2.5, // Adjusted for 3:2 ratio (e.g., 120px width -> 80px height)
-    borderRadius: 8,
-  },
-  placeholder: {
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    fontSize: 14,
-    color: '#888888',
-  },
-  itemDetails: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 4,
   }
 });
 
