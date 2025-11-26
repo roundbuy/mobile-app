@@ -69,6 +69,36 @@ import AcceptedOffersScreen from '../screens/user-settings/AcceptedOffersScreen'
 import DeclinedOffersScreen from '../screens/user-settings/DeclinedOffersScreen';
 import MakeCounterofferScreen from '../screens/user-settings/MakeCounterofferScreen';
 import MakeAnOfferScreen from '../screens/user-settings/MakeAnOfferScreen';
+import MyAdsScreen from '../screens/user-settings/MyAdsScreen';
+import MyAdsDetailScreen from '../screens/user-settings/MyAdsDetailScreen';
+import PurchaseVisibilityScreen from '../screens/user-settings/PurchaseVisibilityScreen';
+import PurchaseVisibilityAdsListScreen from '../screens/user-settings/PurchaseVisibilityAdsListScreen';
+import VisibilityAdChoicesScreen from '../screens/user-settings/VisibilityAdChoicesScreen';
+import VisibilityCartScreen from '../screens/user-settings/VisibilityCartScreen';
+import VisibilityPaymentScreen from '../screens/user-settings/VisibilityPaymentScreen';
+import VisibilityTransactionSuccessScreen from '../screens/user-settings/VisibilityTransactionSuccessScreen';
+import DefaultLocationScreen from '../screens/user-settings/DefaultLocationScreen';
+import SetLocationMapScreen from '../screens/user-settings/SetLocationMapScreen';
+import FeedbacksScreen from '../screens/user-settings/FeedbacksScreen';
+import MyFeedbacksScreen from '../screens/user-settings/MyFeedbacksScreen';
+import GiveFeedbackListScreen from '../screens/user-settings/GiveFeedbackListScreen';
+import GiveFeedbackFormScreen from '../screens/user-settings/GiveFeedbackFormScreen';
+import FeedbackStatusScreen from '../screens/user-settings/FeedbackStatusScreen';
+import FavouritesScreen from '../screens/user-settings/FavouritesScreen';
+import RewardsScreen from '../screens/user-settings/RewardsScreen';
+import RewardCategoryDetailScreen from '../screens/user-settings/RewardCategoryDetailScreen';
+import EarnMembershipDetailsScreen from '../screens/user-settings/EarnMembershipDetailsScreen';
+import ReferralCodeScreen from '../screens/user-settings/ReferralCodeScreen';
+import ReferralStatusScreen from '../screens/user-settings/ReferralStatusScreen';
+import RedeemRewardScreen from '../screens/user-settings/RedeemRewardScreen';
+import RewardSuccessScreen from '../screens/user-settings/RewardSuccessScreen';
+import ReviewScreen from '../screens/user-settings/ReviewScreen';
+import ReviewRoundBuyScreen from '../screens/user-settings/ReviewRoundBuyScreen';
+import ReviewAppFormScreen from '../screens/user-settings/ReviewAppFormScreen';
+import ReviewSiteFormScreen from '../screens/user-settings/ReviewSiteFormScreen';
+import AppReviewsScreen from '../screens/user-settings/AppReviewsScreen';
+import SiteReviewsScreen from '../screens/user-settings/SiteReviewsScreen';
+import ShareScreen from '../screens/user-settings/ShareScreen';
 
 const Stack = createNativeStackNavigator();
  
@@ -555,6 +585,222 @@ const AppNavigator = () => {
         <Stack.Screen
           name="MakeAnOffer"
           component={MakeAnOfferScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="MyAds"
+          component={MyAdsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="MyAdsDetail"
+          component={MyAdsDetailScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PurchaseVisibility"
+          component={PurchaseVisibilityScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PurchaseVisibilityAdsList"
+          component={PurchaseVisibilityAdsListScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="VisibilityAdChoices"
+          component={VisibilityAdChoicesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="VisibilityCart"
+          component={VisibilityCartScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="VisibilityPayment"
+          component={VisibilityPaymentScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="VisibilityTransactionSuccess"
+          component={VisibilityTransactionSuccessScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="DefaultLocation"
+          component={DefaultLocationScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="SetLocationMap"
+          component={SetLocationMapScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="Feedbacks"
+          component={FeedbacksScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="MyFeedbacks"
+          component={MyFeedbacksScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="GiveFeedbackList"
+          component={GiveFeedbackListScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="GiveFeedbackForm"
+          component={GiveFeedbackFormScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="FeedbackStatus"
+          component={FeedbackStatusScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="Favourites"
+          component={FavouritesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+
+        {/* Rewards Flow */}
+        <Stack.Screen
+          name="Rewards"
+          component={RewardsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RewardCategoryDetail"
+          component={RewardCategoryDetailScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="EarnMembershipDetails"
+          component={EarnMembershipDetailsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReferralCode"
+          component={ReferralCodeScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReferralStatus"
+          component={ReferralStatusScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RedeemReward"
+          component={RedeemRewardScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RewardSuccess"
+          component={RewardSuccessScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+
+        {/* Review Flow */}
+        <Stack.Screen
+          name="Review"
+          component={ReviewScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReviewRoundBuy"
+          component={ReviewRoundBuyScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReviewAppForm"
+          component={ReviewAppFormScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReviewSiteForm"
+          component={ReviewSiteFormScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="AppReviews"
+          component={AppReviewsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="SiteReviews"
+          component={SiteReviewsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+
+        {/* Share Screen */}
+        <Stack.Screen
+          name="Share"
+          component={ShareScreen}
           options={{
             animationEnabled: true,
           }}

@@ -83,6 +83,24 @@ const UserAccountScreen = ({ navigation }) => {
         navigation.navigate('ContactSupport');
       } else if (item.title === 'Manage offers') {
         navigation.navigate('ManageOffers');
+      } else if (item.title === 'My Ads') {
+        navigation.navigate('MyAds');
+      } else if (item.title === 'Purchase Visibility') {
+        navigation.navigate('PurchaseVisibility');
+      } else if (item.title === 'Default location & Product locations') {
+        navigation.navigate('DefaultLocation');
+      } else if (item.title === 'Membership') {
+        navigation.navigate('AllMemberships');
+      } else if (item.title === 'Feedbacks') {
+        navigation.navigate('Feedbacks');
+      } else if (item.title === 'Favourites') {
+        navigation.navigate('Favourites');
+      } else if (item.title === 'Rewards') {
+        navigation.navigate('Rewards');
+      } else if (item.title === 'Review') {
+        navigation.navigate('Review');
+      } else if (item.title === 'Share') {
+        navigation.navigate('Share');
       } else {
         console.log('Navigate to:', item.title);
       }
