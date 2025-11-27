@@ -1,0 +1,20 @@
+export const IMAGES = {
+  logoCrop: require('../../assets/logo-crop.png'),
+  logoMain: require('../../assets/Logo-main.png'),
+  logoMain2: require('../../assets/Logo-main2.png'),
+  rbLogo: require('../../assets/RB-logo.png'),
+//   whiteLogo512: require('../../assets/white logo 512 px.png'),
+//   whiteLogo1024: require('../../assets/white Logo 1024 px.png'),
+  roundbyIcon: require('../../assets/roundby_icon.png'),
+//   roundbyIcon2x: require('../../assets/roundby_icon@2x.png'),
+//   roundbyIcon3x: require('../../assets/roundby_icon@3x.png'),
+//   splashIcon: require('../../assets/splash-icon.png'),
+//   adaptiveIcon: require('../../assets/adaptive-icon.png'),
+  icon: require('../../assets/icon.png'),
+  favicon: require('../../assets/favicon.png'),
+  chair1: require('../../assets/chair1.png'),
+  chair2: require('../../assets/chair2.png'),
+  chair3: require('../../assets/chair3.png'),
+  logo512: require('../../assets/Logo 12.11.2025 512 px (1).png'),
+  // add more images here
+};

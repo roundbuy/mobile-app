@@ -1,0 +1,699 @@
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Platform,
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { COLORS, SPACING } from '../../../constants/theme';
+
+const SetLocationMapScreen = ({ navigation, route }) => {
+  const { locationType = 'centrePoint', onSave } = route.params || {};
+  
+  const [searchQuery, setSearchQuery] = useState('12 Trafalgar Square, London, WC2N');
+  const [selectedAddress, setSelectedAddress] = useState('12 Trafalgar square');
+  const [mapType, setMapType] = useState('standard'); // 'standard' or 'satellite'
+  const [loading, setLoading] = useState(true);
+  const [mapError, setMapError] = useState(null);
+  const [predictions, setPredictions] = useState([]);
+  const [showPredictions, setShowPredictions] = useState(false);
+  const [markerCoordinate, setMarkerCoordinate] = useState(null);
+  
+  const initialLocation = { latitude: 51.5081, longitude: -0.1279 }; // Trafalgar Square
+  const [region, setRegion] = useState({
+    latitude: initialLocation.latitude,
+    longitude: initialLocation.longitude,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+  
+  const mapRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    getLocationPermission();
+    setMarkerCoordinate(initialLocation);
+  }, []);
+
+  useEffect(() => {
+    // Debounce search for autocomplete
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (searchQuery.length > 2) {
+      searchTimeoutRef.current = setTimeout(() => {
+        searchPlaces(searchQuery);
+      }, 300);
+    } else {
+      setPredictions([]);
+      setShowPredictions(false);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  const getLocationPermission = async () => {
+    try {
+      setLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        console.log('Location permission denied, using default location');
+      }
+    } catch (error) {
+      console.error('Error getting location permission:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Dummy autocomplete function - replace with actual Google Places API
+  const searchPlaces = async (query) => {
+    try {
+      // TODO: Replace with actual Google Places Autocomplete API call
+      // For now, using dummy data
+      const dummyPredictions = [
+        {
+          id: '1',
+          description: '12 Trafalgar Square, London, WC2N 5DN, UK',
+          latitude: 51.5081,
+          longitude: -0.1279,
+        },
+        {
+          id: '2',
+          description: 'Trafalgar Square, London, UK',
+          latitude: 51.5080,
+          longitude: -0.1281,
+        },
+        {
+          id: '3',
+          description: 'National Gallery, Trafalgar Square, London, UK',
+          latitude: 51.5089,
+          longitude: -0.1283,
+        },
+      ];
+      
+      setPredictions(dummyPredictions);
+      setShowPredictions(true);
+    } catch (error) {
+      console.error('Error searching places:', error);
+    }
+  };
+
+  const handleSelectPrediction = (prediction) => {
+    setSearchQuery(prediction.description);
+    setSelectedAddress(prediction.description.split(',')[0]);
+    setPredictions([]);
+    setShowPredictions(false);
+    Keyboard.dismiss();
+
+    const newRegion = {
+      latitude: prediction.latitude,
+      longitude: prediction.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    };
+
+    setRegion(newRegion);
+    setMarkerCoordinate({ latitude: prediction.latitude, longitude: prediction.longitude });
+    
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(newRegion, 1000);
+    }
+  };
+
+  const handleMapPress = (event) => {
+    const coordinate = event.nativeEvent.coordinate;
+    setMarkerCoordinate(coordinate);
+    reverseGeocode(coordinate);
+  };
+
+  const handleMarkerDragEnd = (event) => {
+    const coordinate = event.nativeEvent.coordinate;
+    setMarkerCoordinate(coordinate);
+    reverseGeocode(coordinate);
+  };
+
+  // Reverse geocode to get address from coordinates
+  const reverseGeocode = async (coordinate) => {
+    try {
+      // TODO: Replace with actual Google Geocoding API call
+      // For now, using dummy data
+      const dummyAddress = `${coordinate.latitude.toFixed(4)}, ${coordinate.longitude.toFixed(4)}`;
+      setSelectedAddress(dummyAddress);
+      setSearchQuery(dummyAddress);
+    } catch (error) {
+      console.error('Error reverse geocoding:', error);
+    }
+  };
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  const zoomIn = () => {
+    if (mapRef.current) {
+      const newRegion = {
+        ...region,
+        latitudeDelta: region.latitudeDelta * 0.5,
+        longitudeDelta: region.longitudeDelta * 0.5,
+      };
+      mapRef.current.animateToRegion(newRegion, 300);
+      setRegion(newRegion);
+    }
+  };
+
+  const zoomOut = () => {
+    if (mapRef.current) {
+      const newRegion = {
+        ...region,
+        latitudeDelta: Math.min(region.latitudeDelta * 2, 180),
+        longitudeDelta: Math.min(region.longitudeDelta * 2, 360),
+      };
+      mapRef.current.animateToRegion(newRegion, 300);
+      setRegion(newRegion);
+    }
+  };
+
+  const handleSaveLocation = () => {
+    // Save location data
+    const locationData = {
+      address: selectedAddress,
+      fullAddress: searchQuery,
+      coordinates: {
+        latitude: region.latitude,
+        longitude: region.longitude,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    if (onSave) {
+      onSave(locationData);
+    }
+
+    Alert.alert(
+      'Success',
+      'Location saved successfully!',
+      [
+        {
+          text: 'OK',
+          onPress: () => navigation.goBack(),
+        },
+      ]
+    );
+  };
+
+  const getLocationTitle = () => {
+    switch(locationType) {
+      case 'centrePoint':
+        return 'Centre-point & Product Location 1';
+      case 'productLocation2':
+        return 'Product Location 2';
+      case 'productLocation3':
+        return 'Product Location 3';
+      default:
+        return 'Location';
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={28} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Set Your Location</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <View style={styles.content}>
+        {/* Location Title */}
+        <View style={styles.titleSection}>
+          <Text style={styles.locationTitle}>Your default location:</Text>
+          <Text style={styles.locationSubtitle}>{getLocationTitle()}</Text>
+        </View>
+
+        {/* Search Box with Autocomplete */}
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={24} color="#666" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search for a location"
+              placeholderTextColor="#999"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchQuery('');
+                  setPredictions([]);
+                  setShowPredictions(false);
+                }}
+                style={styles.clearButton}
+              >
+                <Ionicons name="close-circle" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Autocomplete Predictions */}
+          {showPredictions && predictions.length > 0 && (
+            <View style={styles.predictionsContainer}>
+              <FlatList
+                data={predictions}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.predictionItem}
+                    onPress={() => handleSelectPrediction(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="location-outline" size={20} color="#666" style={styles.predictionIcon} />
+                    <Text style={styles.predictionText} numberOfLines={2}>
+                      {item.description}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                style={styles.predictionsList}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Map Container */}
+        <View style={styles.mapContainer}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Loading map...</Text>
+            </View>
+          ) : mapError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Map Error: {mapError}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={() => setMapError(null)}
+              >
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <MapView
+              ref={mapRef}
+              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+              style={styles.map}
+              initialRegion={region}
+              onRegionChangeComplete={setRegion}
+              onPress={handleMapPress}
+              showsUserLocation={false}
+              showsMyLocationButton={false}
+              showsCompass={true}
+              toolbarEnabled={false}
+              mapType={mapType}
+              loadingEnabled={true}
+              showsPointsOfInterest={true}
+              showsBuildings={true}
+              onMapReady={() => {
+                console.log('✅ Map is ready!');
+                setMapError(null);
+              }}
+              onError={(error) => {
+                console.error('❌ Map error:', error);
+                const errorMessage = error?.message || error?.nativeEvent?.message || 'Unknown error';
+                setMapError(errorMessage);
+              }}
+            >
+              {/* Draggable location marker */}
+              {markerCoordinate && (
+                <Marker
+                  coordinate={markerCoordinate}
+                  title={selectedAddress}
+                  draggable
+                  onDragEnd={handleMarkerDragEnd}
+                  pinColor={COLORS.primary}
+                />
+              )}
+            </MapView>
+          )}
+
+          {/* Map Controls */}
+          <View style={styles.mapControls}>
+            <View style={styles.mapTypeSelector}>
+              <TouchableOpacity
+                style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+                onPress={() => setMapType('standard')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.mapTypeText, mapType === 'standard' && styles.mapTypeTextActive]}>
+                  Map
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+                onPress={() => setMapType('satellite')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.mapTypeText, mapType === 'satellite' && styles.mapTypeTextActive]}>
+                  Satellite
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.fullscreenButton} activeOpacity={0.7}>
+              <Ionicons name="expand" size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Zoom Controls */}
+          <View style={styles.zoomControls}>
+            <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} activeOpacity={0.7}>
+              <Ionicons name="add" size={24} color="#666" />
+            </TouchableOpacity>
+            <View style={styles.zoomDivider} />
+            <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} activeOpacity={0.7}>
+              <Ionicons name="remove" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Selected Address Display */}
+        <View style={styles.addressDisplay}>
+          <Text style={styles.addressText}>{selectedAddress}</Text>
+        </View>
+
+        {/* Safety Info */}
+        <View style={styles.safetyInfo}>
+          <Text style={styles.safetyText}>For more information on </Text>
+          <Text style={styles.safetyTextBold}>Safety</Text>
+          <Text style={styles.safetyText}>, click </Text>
+          <Text style={[styles.safetyText, styles.safetyLink]}>here</Text>
+          <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.safetyIcon} />
+        </View>
+
+        {/* Save Button */}
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveLocation}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.saveButtonText}>
+            Save {getLocationTitle()}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+  },
+  headerRight: {
+    width: 32,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  titleSection: {
+    marginBottom: 16,
+  },
+  locationTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  locationSubtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+  searchWrapper: {
+    marginBottom: 16,
+    zIndex: 1000,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#000',
+  },
+  clearButton: {
+    padding: 4,
+  },
+  predictionsContainer: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    maxHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  predictionsList: {
+    maxHeight: 200,
+  },
+  predictionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  predictionIcon: {
+    marginRight: 12,
+  },
+  predictionText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#000',
+  },
+  mapContainer: {
+    height: 400,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 8,
+    marginBottom: 16,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffebee',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#c62828',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  mapControls: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mapTypeSelector: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  mapTypeButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  mapTypeButtonActive: {
+    backgroundColor: '#f0f0f0',
+  },
+  mapTypeText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  mapTypeTextActive: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  fullscreenButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  zoomControls: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  zoomButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zoomDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  addressDisplay: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 16,
+  },
+  addressText: {
+    fontSize: 15,
+    color: '#000',
+  },
+  safetyInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    marginBottom: 24,
+  },
+  safetyText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  safetyTextBold: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#000',
+  },
+  safetyLink: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+  safetyIcon: {
+    marginLeft: 4,
+  },
+  saveButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+});
+
+export default SetLocationMapScreen;

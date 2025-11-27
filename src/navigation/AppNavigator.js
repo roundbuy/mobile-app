@@ -3,102 +3,121 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Import screens
-import SplashScreen from '../screens/SplashScreen';
-import SplashAlternative2Screen from '../screens/SplashAlternative2Screen';
-import SplashAlternative3Screen from '../screens/SplashAlternative3Screen';
-import LicenseAgreementScreen from '../screens/LicenseAgreementScreen';
-import LegalAgreementsScreen from '../screens/LegalAgreementsScreen';
-import PolicySelectionScreen from '../screens/PolicySelectionScreen';
-import PolicyDetailScreen from '../screens/PolicyDetailScreen';
-import ATTPromptScreen from '../screens/ATTPromptScreen';
-import CookiesConsentScreen from '../screens/CookiesConsentScreen';
-import CookieSettingsScreen from '../screens/CookieSettingsScreen';
-import RegistrationScreen from '../screens/RegistrationScreen';
-import SocialLoginScreen from '../screens/SocialLoginScreen';
-import CreateAccountScreen from '../screens/CreateAccountScreen';
-import PasswordGuidelinesScreen from '../screens/PasswordGuidelinesScreen';
-import EmailVerificationScreen from '../screens/EmailVerificationScreen';
-import AccountVerifiedScreen from '../screens/AccountVerifiedScreen';
-import WelcomeScreen from '../screens/WelcomeScreen';
-import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import ForgotPasswordCheckEmailScreen from '../screens/ForgotPasswordCheckEmailScreen';
-import ResetPasswordScreen from '../screens/ResetPasswordScreen';
-import SearchScreen from '../screens/SearchScreen';
-import FilterScreen from '../screens/FilterScreen';
-import ActivityFilterScreen from '../screens/ActivityFilterScreen';
-import CategoryFilterScreen from '../screens/CategoryFilterScreen';
-import DistanceFilterScreen from '../screens/DistanceFilterScreen';
-import PriceFilterScreen from '../screens/PriceFilterScreen';
-import AllMembershipsScreen from '../screens/AllMembershipsScreen';
-import GreenMembershipScreen from '../screens/GreenMembershipScreen';
-import GoldMembershipScreen from '../screens/GoldMembershipScreen';
-import VioletMembershipScreen from '../screens/VioletMembershipScreen';
-import CartScreen from '../screens/CartScreen';
-import PaymentMethodScreen from '../screens/PaymentMethodScreen';
-import TransactionStatusScreen from '../screens/TransactionStatusScreen';
-import MakeAnAdScreen from '../screens/MakeAnAdScreen';
-import ChooseFiltersScreen from '../screens/ChooseFiltersScreen';
-import ChooseRestFiltersScreen from '../screens/ChooseRestFiltersScreen';
-import PreviewAdScreen from '../screens/PreviewAdScreen';
-import AdPaymentMethodScreen from '../screens/AdPaymentMethodScreen';
-import AdCartScreen from '../screens/AdCartScreen';
-import AdTransactionScreen from '../screens/AdTransactionScreen';
-import PublishAdScreen from '../screens/PublishAdScreen';
-import ProductDetailsScreen from '../screens/ProductDetailsScreen';
-import ProductChatScreen from '../screens/ProductChatScreen';
-import UserAccountScreen from '../screens/UserAccountScreen';
-import PersonalInformationScreen from '../screens/user-account/PersonalInformationScreen';
-import PrivacyAccountScreen from '../screens/user-account/PrivacyAccountScreen';
-import LoginSecurityScreen from '../screens/user-account/LoginSecurityScreen';
-import ChangePasswordScreen from '../screens/user-account/ChangePasswordScreen';
-import BillingPaymentsScreen from '../screens/user-account/BillingPaymentsScreen';
-import LegalInfoScreen from '../screens/user-account/LegalInfoScreen';
-import CountrySettingsScreen from '../screens/user-account/CountrySettingsScreen';
-import CurrencySelectionScreen from '../screens/user-account/CurrencySelectionScreen';
-import LanguageSelectionScreen from '../screens/user-account/LanguageSelectionScreen';
-import CustomerSupportScreen from '../screens/user-account/CustomerSupportScreen';
-import HelpFAQScreen from '../screens/user-account/HelpFAQScreen';
-import ContactSupportScreen from '../screens/user-account/ContactSupportScreen';
-import NotificationsScreen from '../screens/user-account/NotificationsScreen';
-import NotificationsListScreen from '../screens/user-account/NotificationsListScreen';
-import CreateSearchNotificationScreen from '../screens/user-account/CreateSearchNotificationScreen';
-import NotificationSettingsScreen from '../screens/user-account/NotificationSettingsScreen';
-import ManageOffersScreen from '../screens/user-settings/ManageOffersScreen';
-import ReceivedOffersScreen from '../screens/user-settings/ReceivedOffersScreen';
-import AcceptedOffersScreen from '../screens/user-settings/AcceptedOffersScreen';
-import DeclinedOffersScreen from '../screens/user-settings/DeclinedOffersScreen';
-import MakeCounterofferScreen from '../screens/user-settings/MakeCounterofferScreen';
-import MakeAnOfferScreen from '../screens/user-settings/MakeAnOfferScreen';
-import MyAdsScreen from '../screens/user-settings/MyAdsScreen';
-import MyAdsDetailScreen from '../screens/user-settings/MyAdsDetailScreen';
-import PurchaseVisibilityScreen from '../screens/user-settings/PurchaseVisibilityScreen';
-import PurchaseVisibilityAdsListScreen from '../screens/user-settings/PurchaseVisibilityAdsListScreen';
-import VisibilityAdChoicesScreen from '../screens/user-settings/VisibilityAdChoicesScreen';
-import VisibilityCartScreen from '../screens/user-settings/VisibilityCartScreen';
-import VisibilityPaymentScreen from '../screens/user-settings/VisibilityPaymentScreen';
-import VisibilityTransactionSuccessScreen from '../screens/user-settings/VisibilityTransactionSuccessScreen';
-import DefaultLocationScreen from '../screens/user-settings/DefaultLocationScreen';
-import SetLocationMapScreen from '../screens/user-settings/SetLocationMapScreen';
-import FeedbacksScreen from '../screens/user-settings/FeedbacksScreen';
-import MyFeedbacksScreen from '../screens/user-settings/MyFeedbacksScreen';
-import GiveFeedbackListScreen from '../screens/user-settings/GiveFeedbackListScreen';
-import GiveFeedbackFormScreen from '../screens/user-settings/GiveFeedbackFormScreen';
-import FeedbackStatusScreen from '../screens/user-settings/FeedbackStatusScreen';
-import FavouritesScreen from '../screens/user-settings/FavouritesScreen';
-import RewardsScreen from '../screens/user-settings/RewardsScreen';
-import RewardCategoryDetailScreen from '../screens/user-settings/RewardCategoryDetailScreen';
-import EarnMembershipDetailsScreen from '../screens/user-settings/EarnMembershipDetailsScreen';
-import ReferralCodeScreen from '../screens/user-settings/ReferralCodeScreen';
-import ReferralStatusScreen from '../screens/user-settings/ReferralStatusScreen';
-import RedeemRewardScreen from '../screens/user-settings/RedeemRewardScreen';
-import RewardSuccessScreen from '../screens/user-settings/RewardSuccessScreen';
-import ReviewScreen from '../screens/user-settings/ReviewScreen';
-import ReviewRoundBuyScreen from '../screens/user-settings/ReviewRoundBuyScreen';
-import ReviewAppFormScreen from '../screens/user-settings/ReviewAppFormScreen';
-import ReviewSiteFormScreen from '../screens/user-settings/ReviewSiteFormScreen';
-import AppReviewsScreen from '../screens/user-settings/AppReviewsScreen';
-import SiteReviewsScreen from '../screens/user-settings/SiteReviewsScreen';
-import ShareScreen from '../screens/user-settings/ShareScreen';
+// Onboarding screens
+import SplashScreen from '../screens/onboarding/SplashScreen';
+import SplashAlternative2Screen from '../screens/onboarding/SplashAlternative2Screen';
+import SplashAlternative3Screen from '../screens/onboarding/SplashAlternative3Screen';
+import ATTPromptScreen from '../screens/onboarding/ATTPromptScreen';
+import CookiesConsentScreen from '../screens/onboarding/CookiesConsentScreen';
+import CookieSettingsScreen from '../screens/onboarding/CookieSettingsScreen';
+import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
+
+// Legal screens
+import LicenseAgreementScreen from '../screens/legal/LicenseAgreementScreen';
+import LegalAgreementsScreen from '../screens/legal/LegalAgreementsScreen';
+import PolicySelectionScreen from '../screens/legal/PolicySelectionScreen';
+import PolicyDetailScreen from '../screens/legal/PolicyDetailScreen';
+
+// Auth screens
+import RegistrationScreen from '../screens/auth/RegistrationScreen';
+import SocialLoginScreen from '../screens/auth/SocialLoginScreen';
+import CreateAccountScreen from '../screens/auth/CreateAccountScreen';
+import PasswordGuidelinesScreen from '../screens/auth/PasswordGuidelinesScreen';
+import EmailVerificationScreen from '../screens/auth/EmailVerificationScreen';
+import AccountVerifiedScreen from '../screens/auth/AccountVerifiedScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import ForgotPasswordCheckEmailScreen from '../screens/auth/ForgotPasswordCheckEmailScreen';
+import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+
+// Home/Search screens
+import SearchScreen from '../screens/home/SearchScreen';
+import FilterScreen from '../screens/home/FilterScreen';
+import ActivityFilterScreen from '../screens/home/ActivityFilterScreen';
+import CategoryFilterScreen from '../screens/home/CategoryFilterScreen';
+import DistanceFilterScreen from '../screens/home/DistanceFilterScreen';
+import PriceFilterScreen from '../screens/home/PriceFilterScreen';
+
+// Membership screens
+import AllMembershipsScreen from '../screens/memberships/AllMembershipsScreen';
+import GreenMembershipScreen from '../screens/memberships/GreenMembershipScreen';
+import GoldMembershipScreen from '../screens/memberships/GoldMembershipScreen';
+import VioletMembershipScreen from '../screens/memberships/VioletMembershipScreen';
+
+// Cart screens
+import CartScreen from '../screens/cart/CartScreen';
+import PaymentMethodScreen from '../screens/cart/PaymentMethodScreen';
+import TransactionStatusScreen from '../screens/cart/TransactionStatusScreen';
+
+// Advertisement screens
+import MakeAnAdScreen from '../screens/advertisements/MakeAnAdScreen';
+import ChooseFiltersScreen from '../screens/advertisements/ChooseFiltersScreen';
+import ChooseRestFiltersScreen from '../screens/advertisements/ChooseRestFiltersScreen';
+import PreviewAdScreen from '../screens/advertisements/PreviewAdScreen';
+import AdPaymentMethodScreen from '../screens/advertisements/AdPaymentMethodScreen';
+import AdCartScreen from '../screens/advertisements/AdCartScreen';
+import AdTransactionScreen from '../screens/advertisements/AdTransactionScreen';
+import PublishAdScreen from '../screens/advertisements/PublishAdScreen';
+
+// Product screens
+import ProductDetailsScreen from '../screens/products/ProductDetailsScreen';
+import ProductChatScreen from '../screens/products/ProductChatScreen';
+
+// User Account screens
+import UserAccountScreen from '../screens/user-account/UserAccountScreen';
+import PersonalInformationScreen from '../screens/user-account/personal-information/PersonalInformationScreen';
+import PrivacyAccountScreen from '../screens/user-account/privacy-account/PrivacyAccountScreen';
+import LoginSecurityScreen from '../screens/user-account/login-security/LoginSecurityScreen';
+import ChangePasswordScreen from '../screens/user-account/login-security/ChangePasswordScreen';
+import BillingPaymentsScreen from '../screens/user-account/billing-payments/BillingPaymentsScreen';
+import LegalInfoScreen from '../screens/user-account/legal-info/LegalInfoScreen';
+import CountrySettingsScreen from '../screens/user-account/country-settings/CountrySettingsScreen';
+import CurrencySelectionScreen from '../screens/user-account/country-settings/CurrencySelectionScreen';
+import LanguageSelectionScreen from '../screens/user-account/country-settings/LanguageSelectionScreen';
+import CustomerSupportScreen from '../screens/user-account/customer-support/CustomerSupportScreen';
+import HelpFAQScreen from '../screens/user-account/customer-support/HelpFAQScreen';
+import ContactSupportScreen from '../screens/user-account/customer-support/ContactSupportScreen';
+import NotificationsScreen from '../screens/user-account/notifications/NotificationsScreen';
+import NotificationsListScreen from '../screens/user-account/notifications/NotificationsListScreen';
+import CreateSearchNotificationScreen from '../screens/user-account/notifications/CreateSearchNotificationScreen';
+import NotificationSettingsScreen from '../screens/user-account/notifications/NotificationSettingsScreen';
+
+// User Settings screens
+import ManageOffersScreen from '../screens/user-settings/manage-offers/ManageOffersScreen';
+import ReceivedOffersScreen from '../screens/user-settings/manage-offers/ReceivedOffersScreen';
+import AcceptedOffersScreen from '../screens/user-settings/manage-offers/AcceptedOffersScreen';
+import DeclinedOffersScreen from '../screens/user-settings/manage-offers/DeclinedOffersScreen';
+import MakeCounterofferScreen from '../screens/user-settings/manage-offers/MakeCounterofferScreen';
+import MakeAnOfferScreen from '../screens/user-settings/manage-offers/MakeAnOfferScreen';
+import MyAdsScreen from '../screens/user-settings/my-ads/MyAdsScreen';
+import MyAdsDetailScreen from '../screens/user-settings/my-ads/MyAdsDetailScreen';
+import PurchaseVisibilityScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityScreen';
+import PurchaseVisibilityAdsListScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityAdsListScreen';
+import VisibilityAdChoicesScreen from '../screens/user-settings/purchase-visibility/VisibilityAdChoicesScreen';
+import VisibilityCartScreen from '../screens/user-settings/purchase-visibility/VisibilityCartScreen';
+import VisibilityPaymentScreen from '../screens/user-settings/purchase-visibility/VisibilityPaymentScreen';
+import VisibilityTransactionSuccessScreen from '../screens/user-settings/purchase-visibility/VisibilityTransactionSuccessScreen';
+import DefaultLocationScreen from '../screens/user-settings/location/DefaultLocationScreen';
+import SetLocationMapScreen from '../screens/user-settings/location/SetLocationMapScreen';
+import FeedbacksScreen from '../screens/user-settings/feedbacks/FeedbacksScreen';
+import MyFeedbacksScreen from '../screens/user-settings/feedbacks/MyFeedbacksScreen';
+import GiveFeedbackListScreen from '../screens/user-settings/feedbacks/GiveFeedbackListScreen';
+import GiveFeedbackFormScreen from '../screens/user-settings/feedbacks/GiveFeedbackFormScreen';
+import FeedbackStatusScreen from '../screens/user-settings/feedbacks/FeedbackStatusScreen';
+import FavouritesScreen from '../screens/user-settings/favourites/FavouritesScreen';
+import RewardsScreen from '../screens/user-settings/rewards/RewardsScreen';
+import RewardCategoryDetailScreen from '../screens/user-settings/rewards/RewardCategoryDetailScreen';
+import EarnMembershipDetailsScreen from '../screens/user-settings/membership/EarnMembershipDetailsScreen';
+import ReferralCodeScreen from '../screens/user-settings/rewards/ReferralCodeScreen';
+import ReferralStatusScreen from '../screens/user-settings/rewards/ReferralStatusScreen';
+import RedeemRewardScreen from '../screens/user-settings/rewards/RedeemRewardScreen';
+import RewardSuccessScreen from '../screens/user-settings/rewards/RewardSuccessScreen';
+import ReviewScreen from '../screens/user-settings/review/ReviewScreen';
+import ReviewRoundBuyScreen from '../screens/user-settings/review/ReviewRoundBuyScreen';
+import ReviewAppFormScreen from '../screens/user-settings/review/ReviewAppFormScreen';
+import ReviewSiteFormScreen from '../screens/user-settings/review/ReviewSiteFormScreen';
+import AppReviewsScreen from '../screens/user-settings/review/AppReviewsScreen';
+import SiteReviewsScreen from '../screens/user-settings/review/SiteReviewsScreen';
+import ShareScreen from '../screens/user-settings/share/ShareScreen';
 
 const Stack = createNativeStackNavigator();
  
