@@ -4,9 +4,12 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
 
-const AccountVerifiedScreen = ({ navigation }) => {
+const AccountVerifiedScreen = ({ navigation, route }) => {
+  const { email } = route.params || {};
+  
   const handleDone = () => {
-    navigation.replace('Welcome');
+    // After email verification, user must select a subscription plan
+    navigation.replace('AllMemberships', { requiresPlan: true, userEmail: email });
   };
 
   const handlePatentInfo = () => {

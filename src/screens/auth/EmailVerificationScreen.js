@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
+import authService from '../../services/authService';
 
 const EmailVerificationScreen = ({ route, navigation }) => {
+  const { verifyEmail } = useAuth();
   const { email } = route.params || {};
   const [code, setCode] = useState(['', '', '', '']);
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleNumberPress = (number) => {
     const emptyIndex = code.findIndex(digit => digit === '');
@@ -25,18 +30,83 @@ const EmailVerificationScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleVerify = () => {
-    if (code.every(digit => digit !== '')) {
-      console.log('Verifying code:', code.join(''));
-      // In real app, call API to verify
-      // On success:
-      navigation.navigate('AccountVerified');
+  const handleVerify = async () => {
+    if (!code.every(digit => digit !== '')) {
+      return;
+    }
+
+    const verificationCode = code.join('');
+    
+    try {
+      setLoading(true);
+      
+      // Call verify email API
+      const response = await verifyEmail(email, verificationCode);
+      
+      if (response.success) {
+        // Navigate to Account Verified screen
+        navigation.navigate('AccountVerified', { email });
+      }
+    } catch (error) {
+      console.error('Email verification error:', error);
+      
+      // Clear code on error
+      setCode(['', '', '', '']);
+      
+      let errorMessage = 'Verification failed. Please check your code and try again.';
+      
+      if (error.message?.includes('expired')) {
+        Alert.alert(
+          'Code Expired',
+          'Your verification code has expired. Please request a new one.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Resend Code',
+              onPress: handleResend
+            }
+          ]
+        );
+        return;
+      } else if (error.message?.includes('Invalid')) {
+        errorMessage = 'Invalid verification code. Please try again.';
+      }
+      
+      Alert.alert('Verification Failed', errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleResend = () => {
-    console.log('Resending code to:', email);
-    setCode(['', '', '', '']);
+  const handleResend = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Email address not found');
+      return;
+    }
+
+    try {
+      setResending(true);
+      setCode(['', '', '', '']);
+      
+      // Call resend verification API
+      const response = await authService.resendVerification(email);
+      
+      if (response.success) {
+        Alert.alert(
+          'Code Sent',
+          'A new verification code has been sent to your email.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      Alert.alert(
+        'Failed to Resend',
+        error.message || 'Could not resend verification code. Please try again.'
+      );
+    } finally {
+      setResending(false);
+    }
   };
 
   const NumericButton = ({ number }) => (
@@ -72,18 +142,29 @@ const EmailVerificationScreen = ({ route, navigation }) => {
 
           {/* Verify Button */}
           <TouchableOpacity
-            style={[styles.verifyButton, !code.every(d => d !== '') && styles.verifyButtonDisabled]}
+            style={[
+              styles.verifyButton,
+              (!code.every(d => d !== '') || loading) && styles.verifyButtonDisabled
+            ]}
             onPress={handleVerify}
-            disabled={!code.every(d => d !== '')}
+            disabled={!code.every(d => d !== '') || loading}
           >
-            <Text style={styles.verifyButtonText}>Verify now</Text>
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.verifyButtonText}>Verify now</Text>
+            )}
           </TouchableOpacity>
 
           {/* Resend Code */}
           <View style={styles.resendContainer}>
             <Text style={styles.resendText}>Didn't receive code? </Text>
-            <TouchableOpacity onPress={handleResend}>
-              <Text style={styles.resendLink}>Resend code</Text>
+            <TouchableOpacity onPress={handleResend} disabled={resending}>
+              {resending ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Text style={styles.resendLink}>Resend code</Text>
+              )}
             </TouchableOpacity>
           </View>
 

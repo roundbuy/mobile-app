@@ -1,15 +1,56 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import SafeScreenContainer from '../components/SafeScreenContainer';
+import FilterDropdown from '../components/FilterDropdown';
+import PriceRangeInput from '../components/PriceRangeInput';
 import { COLORS } from '../constants/theme';
+import { getFilters } from '../services/advertisementService';
 
 const ChooseFiltersScreen = ({ navigation, route }) => {
+  const [filters, setFilters] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Selected values
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [activity, setActivity] = useState('');
-  const [price, setPrice] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [condition, setCondition] = useState('');
   const [gender, setGender] = useState('');
+
+  // Get available subcategories for selected category
+  const availableSubcategories = filters?.categories?.find(cat => cat.id === category)?.subcategories || [];
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getFilters();
+        if (response.success) {
+          setFilters(response.data);
+        } else {
+          setError('Failed to load filters');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+        console.error('Error fetching filters:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilters();
+  }, []);
+
+  // Reset subcategory when category changes
+  useEffect(() => {
+    if (category && !availableSubcategories.find(sub => sub.id === subcategory)) {
+      setSubcategory('');
+    }
+  }, [category, availableSubcategories, subcategory]);
 
   const handleContinue = () => {
     navigation.navigate('ChooseRestFilters', {
@@ -17,11 +58,57 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
       category,
       subcategory,
       activity,
-      price,
+      minPrice,
+      maxPrice,
       condition,
       gender,
     });
   };
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Re-fetch filters
+    const fetchFilters = async () => {
+      try {
+        const response = await getFilters();
+        if (response.success) {
+          setFilters(response.data);
+        } else {
+          setError('Failed to load filters');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFilters();
+  };
+
+  if (loading) {
+    return (
+      <SafeScreenContainer>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading filters...</Text>
+        </View>
+      </SafeScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeScreenContainer>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeScreenContainer>
+    );
+  }
 
   return (
     <SafeScreenContainer>
@@ -39,29 +126,53 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
 
         {/* Filter Fields */}
         <View style={styles.filtersContainer}>
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Category</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Category"
+            value={category}
+            options={filters?.categories || []}
+            onSelect={setCategory}
+            placeholder="Select a category"
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Subcategory</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Subcategory"
+            value={subcategory}
+            options={availableSubcategories}
+            onSelect={setSubcategory}
+            placeholder="Select a subcategory"
+            disabled={!category}
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Activity</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Activity"
+            value={activity}
+            options={filters?.activities || []}
+            onSelect={setActivity}
+            placeholder="Select activity"
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Price</Text>
-          </TouchableOpacity>
+          <PriceRangeInput
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            onMinPriceChange={setMinPrice}
+            onMaxPriceChange={setMaxPrice}
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Condition</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Condition"
+            value={condition}
+            options={filters?.conditions || []}
+            onSelect={setCondition}
+            placeholder="Select condition"
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Gender</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Gender"
+            value={gender}
+            options={filters?.genders || []}
+            onSelect={setGender}
+            placeholder="Select gender"
+          />
         </View>
 
         {/* Info Link */}
@@ -91,6 +202,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -118,19 +262,6 @@ const styles = StyleSheet.create({
   filtersContainer: {
     paddingHorizontal: 20,
     marginBottom: 32,
-  },
-  filterField: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 15,
-    color: '#000',
   },
   infoContainer: {
     flexDirection: 'row',

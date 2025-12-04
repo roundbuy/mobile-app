@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import SafeScreenContainer from '../components/SafeScreenContainer';
+import FilterDropdown from '../components/FilterDropdown';
 import { COLORS } from '../constants/theme';
+import { getFilters } from '../services/advertisementService';
 
 const ChooseRestFiltersScreen = ({ navigation, route }) => {
+  const [filters, setFilters] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Selected values
   const [age, setAge] = useState('');
   const [size, setSize] = useState('');
   const [colour, setColour] = useState('');
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getFilters();
+        if (response.success) {
+          setFilters(response.data);
+        } else {
+          setError('Failed to load filters');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+        console.error('Error fetching filters:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilters();
+  }, []);
 
   const handleContinue = () => {
     navigation.navigate('PreviewAd', {
@@ -16,6 +45,51 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
       colour,
     });
   };
+
+  const handleRetry = () => {
+    setError(null);
+    setLoading(true);
+    // Re-fetch filters
+    const fetchFilters = async () => {
+      try {
+        const response = await getFilters();
+        if (response.success) {
+          setFilters(response.data);
+        } else {
+          setError('Failed to load filters');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFilters();
+  };
+
+  if (loading) {
+    return (
+      <SafeScreenContainer>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading filters...</Text>
+        </View>
+      </SafeScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeScreenContainer>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeScreenContainer>
+    );
+  }
 
   return (
     <SafeScreenContainer>
@@ -33,17 +107,30 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
 
         {/* Filter Fields */}
         <View style={styles.filtersContainer}>
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Age</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Age"
+            value={age}
+            options={filters?.ages || []}
+            onSelect={setAge}
+            placeholder="Select age"
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Size</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Size"
+            value={size}
+            options={filters?.sizes || []}
+            onSelect={setSize}
+            placeholder="Select size"
+          />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Colour</Text>
-          </TouchableOpacity>
+          <FilterDropdown
+            label="Colour"
+            value={colour}
+            options={filters?.colors || []}
+            onSelect={setColour}
+            placeholder="Select colour"
+            isColorPicker={true}
+          />
         </View>
 
         {/* Location Section */}
@@ -82,6 +169,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,19 +229,6 @@ const styles = StyleSheet.create({
   filtersContainer: {
     paddingHorizontal: 20,
     marginBottom: 32,
-  },
-  filterField: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 15,
-    color: '#000',
   },
   locationSection: {
     paddingHorizontal: 20,

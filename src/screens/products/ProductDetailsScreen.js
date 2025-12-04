@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../assets/images';
 import {
   View,
@@ -9,59 +9,113 @@ import {
   TouchableOpacity,
   Dimensions,
   TextInput,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
+import { advertisementService } from '../../services';
+import { useAuth } from '../../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 const ProductDetailsScreen = ({ route, navigation }) => {
-  const { product } = route?.params || {};
+  const { advertisementId, advertisement } = route?.params || {};
+  const { user, hasActiveSubscription } = useAuth();
+
+  // State management
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
 
-  // Default/Mock data - replace with actual product data
-  const defaultProductData = {
-    id: 1,
-    title: 'Armchair',
-    distance: '28 km',
-    maxDistance: '150 km',
-    price: '£350',
-    description: 'A wonderful armchair with brown covering and black legs. Hardly used. Massive wood.',
-    category: 'Furniture',
-    distanceMeters: '1400 m',
-    condition: 'Very Good',
-    gender: '',
-    age: 'Any',
-    size: '50x70x100cm',
-    colour: 'Brown-orange',
-    images: [
-      IMAGES.chair1,
-      IMAGES.chair2,
-      IMAGES.chair3,
-    ],
-    seller: {
-      username: 'jonnmk85598',
-      rating: 4.5,
-    },
-    favorites: 12,
-    offers: [
-      { id: 1, amount: '£100', status: 'received' },
-      { id: 2, amount: '£200', status: 'declined' },
-    ],
+  // Fetch advertisement details on mount
+  useEffect(() => {
+    if (advertisementId) {
+      fetchAdvertisementDetails();
+    } else if (advertisement) {
+      // Use passed advertisement data if available
+      setProductData(formatAdvertisementData(advertisement));
+      setLoading(false);
+    } else {
+      setError('No advertisement ID provided');
+      setLoading(false);
+    }
+  }, [advertisementId, advertisement]);
+
+  const fetchAdvertisementDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await advertisementService.getAdvertisementDetails(advertisementId);
+
+      if (response.success) {
+        const formattedData = formatAdvertisementData(response.data.advertisement);
+        setProductData(formattedData);
+        setIsFavorite(response.data.advertisement.is_favorited || false);
+      } else {
+        setError('Failed to load advertisement details');
+      }
+    } catch (err) {
+      console.error('Error fetching advertisement details:', err);
+      setError(err.message || 'Failed to load advertisement details');
+
+      // Handle specific errors
+      if (err.require_subscription) {
+        Alert.alert(
+          'Subscription Required',
+          'You need an active subscription to view advertisement details.',
+          [{ text: 'View Plans', onPress: () => navigation.navigate('AllMemberships') }]
+        );
+      } else if (err.require_login) {
+        Alert.alert(
+          'Login Required',
+          'Please login to view advertisement details.',
+          [{ text: 'Login', onPress: () => navigation.navigate('SocialLogin') }]
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Merge product data with defaults
-  const productData = {
-    ...defaultProductData,
-    ...product,
-    images: product?.images || defaultProductData.images,
-    seller: {
-      ...defaultProductData.seller,
-      ...(product?.seller || {}),
-    },
+  const formatAdvertisementData = (ad) => {
+    return {
+      id: ad.id,
+      title: ad.title,
+      distance: ad.distance ? `${ad.distance} km` : 'Distance unknown',
+      maxDistance: '150 km', // Default max distance
+      price: `₹${ad.price}`,
+      description: ad.description,
+      category: ad.category_name,
+      distanceMeters: ad.distance ? `${(ad.distance * 1000).toFixed(0)} m` : 'Distance unknown',
+      condition: ad.condition_name,
+      gender: ad.gender_name || '',
+      age: ad.age_name || 'Any',
+      size: ad.size_name || '',
+      colour: ad.color_name || '',
+      images: ad.images ? ad.images.map(img =>
+        img.startsWith('http') ? img : `http://localhost:5001${img}`
+      ) : [IMAGES.placeholder],
+      seller: {
+        id: ad.seller_id,
+        username: ad.seller_name || 'Unknown Seller',
+        rating: ad.seller?.average_rating || 0,
+        avatar: ad.seller?.avatar,
+        memberSince: ad.seller?.member_since,
+      },
+      favorites: 0, // This would need a separate API call
+      location: {
+        city: ad.city,
+        country: ad.country,
+      },
+      createdAt: ad.created_at,
+      viewsCount: ad.views_count || 0,
+    };
   };
 
   const handleBack = () => {
@@ -92,6 +146,8 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   };
 
   const renderImageDots = () => {
+    if (!productData?.images) return null;
+
     return (
       <View style={styles.dotsContainer}>
         {productData.images.map((_, index) => (
@@ -106,6 +162,38 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       </View>
     );
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading advertisement...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (error || !productData) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.errorContainer}>
+          <FontAwesome name="exclamation-triangle" size={48} color="#ccc" />
+          <Text style={styles.errorText}>{error || 'Advertisement not found'}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={advertisementId ? fetchAdvertisementDetails : handleBack}
+          >
+            <Text style={styles.retryButtonText}>
+              {advertisementId ? 'Retry' : 'Go Back'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -122,9 +210,10 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         {/* Product Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={productData.images[currentImageIndex]}
+            source={{ uri: productData.images[currentImageIndex] }}
             style={styles.productImage}
             resizeMode="cover"
+            defaultSource={IMAGES.placeholder}
           />
           <TouchableOpacity
             style={styles.favoriteButton}
@@ -175,9 +264,25 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.sellerSection}>
           <View style={styles.sellerRow}>
             <View style={styles.sellerAvatar}>
-              <FontAwesome name="user" size={24} color="#666" />
+              {productData.seller.avatar ? (
+                <Image
+                  source={{ uri: productData.seller.avatar }}
+                  style={styles.sellerAvatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <FontAwesome name="user" size={24} color="#666" />
+              )}
             </View>
-            <Text style={styles.sellerName}>{productData.seller.username}</Text>
+            <View style={styles.sellerInfo}>
+              <Text style={styles.sellerName}>{productData.seller.username}</Text>
+              {productData.seller.rating > 0 && (
+                <View style={styles.ratingRow}>
+                  <FontAwesome name="star" size={12} color="#FFD700" />
+                  <Text style={styles.ratingText}>{productData.seller.rating.toFixed(1)}</Text>
+                </View>
+              )}
+            </View>
             <TouchableOpacity
               style={styles.chatButton}
               onPress={handleChatWithSeller}
@@ -297,6 +402,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -451,11 +592,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  sellerAvatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  sellerInfo: {
+    flex: 1,
+  },
   sellerName: {
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
-    flex: 1,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 4,
   },
   chatButton: {
     backgroundColor: COLORS.primary,

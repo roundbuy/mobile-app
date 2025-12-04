@@ -1,19 +1,58 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import FilterDropdown from '../../components/FilterDropdown';
+import { advertisementService } from '../../services';
 
 const ChooseRestFiltersScreen = ({ navigation, route }) => {
-  const [age, setAge] = useState('');
-  const [size, setSize] = useState('');
-  const [colour, setColour] = useState('');
+  const [filters, setFilters] = useState({
+    age_id: null,
+    size_id: null,
+    color_id: null,
+  });
+
+  const [filterOptions, setFilterOptions] = useState({
+    ages: [],
+    sizes: [],
+    colors: [],
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadFilterOptions();
+  }, []);
+
+  const loadFilterOptions = async () => {
+    try {
+      setLoading(true);
+      const response = await advertisementService.getFilters();
+      if (response.success) {
+        setFilterOptions(response.data);
+      } else {
+        setError('Failed to load filter options');
+      }
+    } catch (err) {
+      console.error('Error loading filters:', err);
+      setError('Failed to load filter options');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
   const handleContinue = () => {
     navigation.navigate('PreviewAd', {
       ...route.params,
-      age,
-      size,
-      colour,
+      ...filters,
     });
   };
 
@@ -31,29 +70,53 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
         {/* Title */}
         <Text style={styles.title}>Choose rest of the filters:</Text>
 
+        {/* Loading State */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading filter options...</Text>
+          </View>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadFilterOptions}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Filter Fields */}
-        <View style={styles.filtersContainer}>
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Age</Text>
-          </TouchableOpacity>
+        {!loading && !error && (
+          <View style={styles.filtersContainer}>
+            <FilterDropdown
+              label="Age"
+              value={filters.age_id}
+              options={filterOptions.ages}
+              onSelect={(value) => handleFilterChange('age_id', value)}
+              placeholder="Select age group"
+            />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Size</Text>
-          </TouchableOpacity>
+            <FilterDropdown
+              label="Size"
+              value={filters.size_id}
+              options={filterOptions.sizes}
+              onSelect={(value) => handleFilterChange('size_id', value)}
+              placeholder="Select size"
+            />
 
-          <TouchableOpacity style={styles.filterField}>
-            <Text style={styles.filterLabel}>Colour</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Location Section */}
-        <View style={styles.locationSection}>
-          <Text style={styles.locationTitle}>Choose location(s):</Text>
-          <Text style={styles.locationItem}>Location 1 (centre-point; near to your home)</Text>
-          <Text style={styles.locationSubitem}>Trafalgar Square (autodil user default location)</Text>
-          <Text style={styles.locationItem}>Location 2 (e.g. you near to work)</Text>
-          <Text style={styles.locationItem}>Location 3 (e.g. close to cottage)</Text>
-        </View>
+            <FilterDropdown
+              label="Color"
+              value={filters.color_id}
+              options={filterOptions.colors}
+              onSelect={(value) => handleFilterChange('color_id', value)}
+              placeholder="Select color"
+              isColorPicker={true}
+            />
+          </View>
+        )}
 
         {/* Info Link */}
         <View style={styles.infoContainer}>
@@ -106,44 +169,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#FF4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   filtersContainer: {
     paddingHorizontal: 20,
     marginBottom: 32,
-  },
-  filterField: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  filterLabel: {
-    fontSize: 15,
-    color: '#000',
-  },
-  locationSection: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
-  },
-  locationTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-    marginBottom: 16,
-  },
-  locationItem: {
-    fontSize: 14,
-    color: '#000',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  locationSubitem: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 16,
-    marginLeft: 16,
   },
   infoContainer: {
     flexDirection: 'row',

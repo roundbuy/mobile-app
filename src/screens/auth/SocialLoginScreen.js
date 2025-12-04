@@ -1,25 +1,116 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../assets/images';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
-const SocialLoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+const SocialLoginScreen = ({ navigation, route }) => {
+  const { login } = useAuth();
+  const { email: paramEmail, message } = route.params || {};
+  const [email, setEmail] = useState(paramEmail || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = () => {
-    console.log('Sign in with:', email);
-    // In real app, authenticate user
-    navigation.navigate('SearchScreen');
+  // Show message if provided (from registration/payment completion)
+  useEffect(() => {
+    if (message) {
+      Alert.alert('Welcome!', message);
+    }
+  }, [message]);
+
+  const handleSignIn = async () => {
+    // Validate inputs
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Call login API through AuthContext
+      const response = await login(email, password);
+      
+      // Check if user needs subscription
+      if (response && response.requires_subscription) {
+        // User is verified but has no active subscription
+        Alert.alert(
+          'Subscription Required',
+          'Please select a subscription plan to continue.',
+          [
+            {
+              text: 'Choose Plan',
+              onPress: () => {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'AllMemberships' }],
+                });
+              }
+            }
+          ]
+        );
+      } else {
+        // Success - User has subscription, navigate to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'SearchScreen' }],
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      // Handle specific error cases
+      let errorMessage = error.message || 'Login failed. Please try again.';
+      
+      if (error.error_code === 'EMAIL_NOT_VERIFIED' || error.message?.includes('verify your email')) {
+        // User needs to verify email first
+        Alert.alert(
+          'Email Not Verified',
+          'Please verify your email before logging in. We\'ll send you a verification code.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Verify Now',
+              onPress: () => {
+                // Navigate to email verification screen
+                navigation.navigate('EmailVerification', {
+                  email: error.data?.email || email
+                });
+              }
+            }
+          ]
+        );
+      } else if (error.message?.includes('deactivated')) {
+        Alert.alert('Account Deactivated', 'Your account has been deactivated. Please contact support.');
+      } else if (error.message?.includes('Invalid email or password')) {
+        Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
+      } else if (error.message?.includes('Session expired') || error.error_code === 'SESSION_EXPIRED' || error.error_code === 'TOKEN_EXPIRED') {
+        Alert.alert('Session Expired', 'Session expired. Please login again.');
+      } else {
+        Alert.alert('Login Failed', errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider) => {
-    console.log(`Login with ${provider}`);
-    // In real app, implement OAuth flow
-    navigation.navigate('SearchScreen');
+    // TODO: Implement OAuth flow for social login
+    Alert.alert(
+      'Coming Soon',
+      `${provider} login will be available in the next update.`,
+      [{ text: 'OK' }]
+    );
   };
 
   const handleForgotPassword = () => {
@@ -103,10 +194,15 @@ const SocialLoginScreen = ({ navigation }) => {
 
         {/* Sign In Button */}
         <TouchableOpacity
-          style={styles.signInButton}
+          style={[styles.signInButton, loading && styles.signInButtonDisabled]}
           onPress={handleSignIn}
+          disabled={loading}
         >
-          <Text style={styles.signInButtonText}>Sign in</Text>
+          {loading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.signInButtonText}>Sign in</Text>
+          )}
         </TouchableOpacity>
 
         {/* Divider */}
@@ -260,6 +356,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
     letterSpacing: 0.3,
+  },
+  signInButtonDisabled: {
+    opacity: 0.6,
   },
   divider: {
     flexDirection: 'row',

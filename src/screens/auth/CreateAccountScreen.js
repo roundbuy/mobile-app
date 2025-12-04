@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 const CreateAccountScreen = ({ navigation }) => {
+  const { register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fullNameError, setFullNameError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Validate full name
   const validateFullName = (name) => {
@@ -65,10 +68,10 @@ const CreateAccountScreen = ({ navigation }) => {
 
   const passwordInfo = getPasswordStrength();
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     // Validate inputs
     if (!fullName || !email || !password) {
-      console.log('Please fill all fields');
+      Alert.alert('Error', 'Please fill all required fields');
       return;
     }
     
@@ -80,12 +83,43 @@ const CreateAccountScreen = ({ navigation }) => {
     }
 
     if (passwordInfo.strength === 'weak') {
-      console.log('Password is too weak');
+      Alert.alert('Weak Password', 'Please create a stronger password');
       return;
     }
     
-    // Navigate to next screen
-    navigation.navigate('EmailVerification', { email });
+    try {
+      setLoading(true);
+      
+      // Call registration API
+      const response = await register({
+        full_name: fullName,
+        email: email,
+        password: password,
+        language: 'en'
+      });
+      
+      if (response.success) {
+        // Registration successful, navigate to email verification
+        Alert.alert(
+          'Success',
+          'Registration successful! Please check your email for verification code.',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('EmailVerification', { email })
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      Alert.alert(
+        'Registration Failed',
+        error.message || 'An error occurred during registration. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFullNameChange = (text) => {
@@ -225,10 +259,15 @@ const CreateAccountScreen = ({ navigation }) => {
 
         {/* Sign Up Button */}
         <TouchableOpacity
-          style={styles.signUpButton}
+          style={[styles.signUpButton, loading && styles.signUpButtonDisabled]}
           onPress={handleSignUp}
+          disabled={loading}
         >
-          <Text style={styles.signUpButtonText}>Sign up</Text>
+          {loading ? (
+            <ActivityIndicator color="#1a1a1a" />
+          ) : (
+            <Text style={styles.signUpButtonText}>Sign up</Text>
+          )}
         </TouchableOpacity>
 
         {/* Already have account */}
@@ -436,6 +475,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 12,
     marginBottom: 12,
+  },
+  signUpButtonDisabled: {
+    opacity: 0.6,
   },
   signUpButtonText: {
     fontSize: 16,

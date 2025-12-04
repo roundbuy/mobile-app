@@ -21,7 +21,17 @@
       "infoPlist": {
         "NSUserTrackingUsageDescription": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
         "NSLocationWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map.",
+        "NSCameraUsageDescription": "RoundBuy needs camera access to take photos for your advertisements.",
+        "NSPhotoLibraryUsageDescription": "RoundBuy needs access to your photo library to select images for your advertisements.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "localhost": {
+              "NSExceptionAllowsInsecureHTTPLoads": true
+            }
+          }
+        }
       },
       "config": {
         "googleMapsApiKey": "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
@@ -36,7 +46,10 @@
       "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "config": {
         "googleMaps": {

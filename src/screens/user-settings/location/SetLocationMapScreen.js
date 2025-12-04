@@ -18,18 +18,29 @@ import * as Location from 'expo-location';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const SetLocationMapScreen = ({ navigation, route }) => {
-  const { locationType = 'centrePoint', onSave } = route.params || {};
-  
-  const [searchQuery, setSearchQuery] = useState('12 Trafalgar Square, London, WC2N');
-  const [selectedAddress, setSelectedAddress] = useState('12 Trafalgar square');
+  const { locationType = 'centrePoint', onSave, existingLocation } = route.params || {};
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState('');
   const [mapType, setMapType] = useState('standard'); // 'standard' or 'satellite'
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [showPredictions, setShowPredictions] = useState(false);
   const [markerCoordinate, setMarkerCoordinate] = useState(null);
-  
-  const initialLocation = { latitude: 51.5081, longitude: -0.1279 }; // Trafalgar Square
+
+  // Set initial location based on existing location or default
+  const getInitialLocation = () => {
+    if (existingLocation && existingLocation.latitude && existingLocation.longitude) {
+      return {
+        latitude: parseFloat(existingLocation.latitude),
+        longitude: parseFloat(existingLocation.longitude)
+      };
+    }
+    return { latitude: 51.5081, longitude: -0.1279 }; // Trafalgar Square default
+  };
+
+  const initialLocation = getInitialLocation();
   const [region, setRegion] = useState({
     latitude: initialLocation.latitude,
     longitude: initialLocation.longitude,
@@ -43,7 +54,21 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   useEffect(() => {
     getLocationPermission();
     setMarkerCoordinate(initialLocation);
-  }, []);
+
+    // Populate form with existing location data if editing
+    if (existingLocation) {
+      const address = existingLocation.street || existingLocation.city
+        ? `${existingLocation.street || ''} ${existingLocation.city || ''} ${existingLocation.country || ''}`.trim()
+        : `${existingLocation.latitude}, ${existingLocation.longitude}`;
+
+      setSearchQuery(address);
+      setSelectedAddress(existingLocation.name || address);
+    } else {
+      // Set default values for new location
+      setSearchQuery('12 Trafalgar Square, London, WC2N');
+      setSelectedAddress('12 Trafalgar square');
+    }
+  }, [existingLocation]);
 
   useEffect(() => {
     // Debounce search for autocomplete
@@ -191,31 +216,37 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   };
 
   const handleSaveLocation = () => {
-    // Save location data
+    // Prepare location data for callback
     const locationData = {
+      name: getLocationTitle(),
       address: selectedAddress,
       fullAddress: searchQuery,
+      city: selectedAddress.split(',')[0] || 'Unknown',
+      region: '',
+      country: 'Unknown',
+      zipCode: '',
       coordinates: {
-        latitude: region.latitude,
-        longitude: region.longitude,
+        latitude: markerCoordinate.latitude,
+        longitude: markerCoordinate.longitude,
       },
       timestamp: new Date().toISOString(),
     };
 
     if (onSave) {
       onSave(locationData);
+    } else {
+      // Fallback if no callback provided
+      Alert.alert(
+        'Success',
+        'Location saved successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
     }
-
-    Alert.alert(
-      'Success',
-      'Location saved successfully!',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]
-    );
   };
 
   const getLocationTitle = () => {
@@ -231,6 +262,12 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     }
   };
 
+  const getHeaderTitle = () => {
+    const isEditing = !!existingLocation;
+    const action = isEditing ? 'Edit' : 'Set';
+    return `${action} ${getLocationTitle()}`;
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -238,7 +275,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Set Your Location</Text>
+        <Text style={styles.headerTitle}>{getHeaderTitle()}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -415,7 +452,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
           activeOpacity={0.7}
         >
           <Text style={styles.saveButtonText}>
-            Save {getLocationTitle()}
+            {existingLocation ? 'Update' : 'Save'} {getLocationTitle()}
           </Text>
         </TouchableOpacity>
       </View>

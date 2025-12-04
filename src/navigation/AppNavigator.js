@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '../context/AuthContext';
 
 // Import screens
 // Onboarding screens
@@ -53,6 +54,7 @@ import MakeAnAdScreen from '../screens/advertisements/MakeAnAdScreen';
 import ChooseFiltersScreen from '../screens/advertisements/ChooseFiltersScreen';
 import ChooseRestFiltersScreen from '../screens/advertisements/ChooseRestFiltersScreen';
 import PreviewAdScreen from '../screens/advertisements/PreviewAdScreen';
+import AdCreationSuccessScreen from '../screens/advertisements/AdCreationSuccessScreen';
 import AdPaymentMethodScreen from '../screens/advertisements/AdPaymentMethodScreen';
 import AdCartScreen from '../screens/advertisements/AdCartScreen';
 import AdTransactionScreen from '../screens/advertisements/AdTransactionScreen';
@@ -122,10 +124,29 @@ import ShareScreen from '../screens/user-settings/share/ShareScreen';
 const Stack = createNativeStackNavigator();
  
 const AppNavigator = () => {
+  const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
+
+  // Determine initial route based on authentication status
+  const getInitialRouteName = () => {
+    if (isLoading) {
+      return 'Splash';
+    }
+    
+    if (!isAuthenticated) {
+      return 'Registration';
+    }
+    
+    if (!hasActiveSubscription()) {
+      return 'AllMemberships';
+    }
+    
+    return 'SearchScreen';
+  };
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="SearchScreen"
+        initialRouteName={getInitialRouteName()}
         screenOptions={{
           headerShown: false,
           cardStyle: { backgroundColor: '#FFFFFF' },
@@ -283,6 +304,15 @@ const AppNavigator = () => {
             animationEnabled: true,
             headerShown: false,
           }}
+          listeners={({ navigation }) => ({
+            beforeRemove: (e) => {
+              // Prevent going back from SearchScreen if authenticated
+              // User should use logout instead
+              if (isAuthenticated) {
+                e.preventDefault();
+              }
+            },
+          })}
         />
         <Stack.Screen
           name="FilterScreen"
@@ -401,6 +431,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name="PreviewAd"
           component={PreviewAdScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="AdCreationSuccess"
+          component={AdCreationSuccessScreen}
           options={{
             animationEnabled: true,
           }}

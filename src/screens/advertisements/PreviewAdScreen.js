@@ -1,9 +1,77 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator, Alert } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { advertisementService } from '../../services';
 
 const PreviewAdScreen = ({ navigation, route }) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Extract advertisement data from route params
+  const {
+    title = '',
+    description = '',
+    images = [],
+    category_id,
+    subcategory_id,
+    activity_id,
+    condition_id,
+    age_id,
+    size_id,
+    color_id,
+    min_price,
+    max_price,
+    location_id,
+    displayTime = '60days'
+  } = route.params || {};
+
+  const handleSave = async () => {
+    if (!title || !description) {
+      Alert.alert('Error', 'Title and description are required');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // Prepare advertisement data
+      const adData = {
+        title,
+        description,
+        images,
+        category_id,
+        subcategory_id,
+        activity_id,
+        condition_id,
+        age_id,
+        size_id,
+        color_id,
+        price: min_price || 0, // Use min_price as the main price
+        min_price,
+        max_price,
+        location_id,
+        display_duration_days: displayTime === '60days' ? 60 : null, // null for continuous
+      };
+
+      // Create advertisement
+      const response = await advertisementService.createAdvertisement(adData);
+
+      if (response.success) {
+        // Navigate to success screen
+        navigation.navigate('AdCreationSuccess', {
+          advertisement: response.data.advertisement,
+        });
+      } else {
+        Alert.alert('Error', response.message || 'Failed to create advertisement');
+      }
+    } catch (error) {
+      console.error('Save advertisement error:', error);
+      Alert.alert('Error', error.message || 'Failed to save advertisement');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleContinue = () => {
     navigation.navigate('AdPaymentMethod', {
       ...route.params,
@@ -24,15 +92,34 @@ const PreviewAdScreen = ({ navigation, route }) => {
 
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder}>
-            {/* Placeholder for product image */}
-            <View style={styles.imageBox} />
-          </View>
+          {images && images.length > 0 ? (
+            <View style={styles.imagePlaceholder}>
+              <Image
+                source={{ uri: images[0].startsWith('http') ? images[0] : `http://localhost:5001${images[0]}` }}
+                style={styles.imageBox}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <View style={[styles.imageBox, styles.placeholderBox]}>
+                <Text style={styles.placeholderText}>No Image</Text>
+              </View>
+            </View>
+          )}
           {/* Image Dots */}
           <View style={styles.dotsContainer}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
+            {images && images.length > 0 ? (
+              images.slice(0, 3).map((_, index) => (
+                <View key={index} style={[styles.dot, index === 0 && styles.dotActive]} />
+              ))
+            ) : (
+              <>
+                <View style={[styles.dot, styles.dotActive]} />
+                <View style={styles.dot} />
+                <View style={styles.dot} />
+              </>
+            )}
           </View>
         </View>
 
@@ -40,28 +127,59 @@ const PreviewAdScreen = ({ navigation, route }) => {
         <View style={styles.productInfo}>
           <View style={styles.productHeader}>
             <View style={styles.productLeft}>
-              <Text style={styles.productTitle}>Armchair</Text>
-              <Text style={styles.productDistance}>Distance 1000 m / 25 min walk</Text>
+              <Text style={styles.productTitle}>{title || 'Untitled Ad'}</Text>
+              <Text style={styles.productDistance}>
+                Display Time: {displayTime === '60days' ? '60 days' : 'Continuous'}
+              </Text>
             </View>
-            <TouchableOpacity style={styles.buyButton}>
-              <Text style={styles.buyButtonText}>BUY £300</Text>
-            </TouchableOpacity>
+            {min_price && (
+              <View style={styles.priceContainer}>
+                <Text style={styles.priceText}>
+                  {max_price && max_price !== min_price
+                    ? `£${min_price} - £${max_price}`
+                    : `£${min_price}`
+                  }
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Description */}
           <View style={styles.descriptionSection}>
             <Text style={styles.descriptionTitle}>Description</Text>
             <Text style={styles.descriptionText}>
-              A wonderful armchair with brown covering and black legs. Hardly used. Massive wood.{' '}
-              <Text style={styles.readMore}>Read more...</Text>
+              {description || 'No description provided.'}
+              {description && description.length > 100 && (
+                <Text style={styles.readMore}> Read more...</Text>
+              )}
             </Text>
           </View>
         </View>
 
-        {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
+        {/* Action Buttons */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.saveButton]}
+            onPress={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.saveButtonText}>Saving...</Text>
+              </View>
+            ) : (
+              <Text style={styles.saveButtonText}>Save Ad</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionButton, styles.continueButton]}
+            onPress={handleContinue}
+          >
+            <Text style={styles.continueButtonText}>Continue to Payment</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.bottomSpace} />
       </ScrollView>
@@ -113,7 +231,15 @@ const styles = StyleSheet.create({
   imageBox: {
     width: '100%',
     height: '100%',
+  },
+  placeholderBox: {
     backgroundColor: '#E0E0E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 16,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -154,16 +280,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
   },
-  buyButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+  priceContainer: {
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
-  buyButtonText: {
+  priceText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.primary,
   },
   descriptionSection: {
     marginTop: 8,
@@ -183,17 +309,36 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '500',
   },
-  continueButton: {
-    backgroundColor: COLORS.primary,
+  buttonContainer: {
     marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  actionButton: {
     paddingVertical: 16,
     borderRadius: 28,
     alignItems: 'center',
+    marginBottom: 12,
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50', // Green for save
+  },
+  saveButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  continueButton: {
+    backgroundColor: COLORS.primary,
   },
   continueButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bottomSpace: {
     height: 30,

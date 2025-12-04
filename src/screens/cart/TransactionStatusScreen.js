@@ -4,11 +4,13 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 
 const TransactionStatusScreen = ({ navigation, route }) => {
-  const { 
-    success = true, 
-    amount = '2.27', 
+  const {
+    success = true,
+    amount = '2.27',
     planType = 'Gold',
-    planName = 'Gold membership plan' 
+    planName = 'Gold membership plan',
+    requiresPlan = false,
+    userEmail = null
   } = route.params || {};
 
   const transactionId = success ? `****-****-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}` : null;
@@ -18,8 +20,25 @@ const TransactionStatusScreen = ({ navigation, route }) => {
   const formattedTime = currentDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   const handleDone = () => {
-    // Navigate back to home or memberships
-    navigation.navigate('AllMemberships');
+    // If coming from registration, navigate to login
+    if (requiresPlan && userEmail) {
+      navigation.reset({
+        index: 0,
+        routes: [{
+          name: 'SocialLogin',
+          params: {
+            email: userEmail,
+            message: 'Your subscription is active! Please login to continue.'
+          }
+        }]
+      });
+    } else {
+      // Existing user, go to search
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SearchScreen' }]
+      });
+    }
   };
 
   const handleTryAgain = () => {

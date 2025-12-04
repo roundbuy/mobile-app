@@ -1,21 +1,133 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { uploadImages } from '../../services/advertisementService';
 
 const MakeAnAdScreen = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [displayTime, setDisplayTime] = useState('60days');
-  const [images, setImages] = useState([]);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
-  const handleContinue = () => {
-    navigation.navigate('ChooseFilters', {
-      title,
-      description,
-      displayTime,
-      images,
-    });
+  // Request camera/gallery permissions
+  const requestPermissions = async () => {
+    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (cameraStatus !== 'granted' || mediaStatus !== 'granted') {
+      Alert.alert(
+        'Permissions Required',
+        'Camera and media library permissions are required to select images.',
+        [{ text: 'OK' }]
+      );
+      return false;
+    }
+    return true;
+  };
+
+  // Pick image from camera
+  const pickFromCamera = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8, // Compress to reduce file size
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const image = result.assets[0];
+        validateAndAddImage(image);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    }
+  };
+
+  // Pick image from gallery
+  const pickFromGallery = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8, // Compress to reduce file size
+        selectionLimit: 3 - selectedImages.length, // Allow selecting remaining slots
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        result.assets.forEach(image => validateAndAddImage(image));
+      }
+    } catch (error) {
+      console.error('Gallery error:', error);
+      Alert.alert('Error', 'Failed to select images. Please try again.');
+    }
+  };
+
+  // Validate and add image
+  const validateAndAddImage = (image) => {
+    // Check file size (300KB limit)
+    const fileSizeKB = image.fileSize ? image.fileSize / 1024 : 0;
+    if (fileSizeKB > 300) {
+      Alert.alert('File Too Large', 'Please select an image smaller than 300KB.');
+      return;
+    }
+
+    // Check total count
+    if (selectedImages.length >= 3) {
+      Alert.alert('Maximum Images', 'You can only select up to 3 images.');
+      return;
+    }
+
+    setSelectedImages(prev => [...prev, image]);
+  };
+
+  // Remove image
+  const removeImage = (index) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleContinue = async () => {
+    if (selectedImages.length === 0) {
+      Alert.alert('Error', 'Please select at least one image for your advertisement.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError('');
+
+    try {
+      // Upload images first
+      const uploadResponse = await uploadImages(selectedImages);
+      const uploadedImageUrls = uploadResponse.data.images;
+
+      // Navigate to next screen with uploaded image URLs
+      navigation.navigate('ChooseFilters', {
+        title,
+        description,
+        displayTime,
+        images: uploadedImageUrls,
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      setUploadError(error.message || 'Failed to upload images. Please try again.');
+      Alert.alert('Upload Error', error.message || 'Failed to upload images. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -33,34 +145,46 @@ const MakeAnAdScreen = ({ navigation }) => {
         {/* Choose Images Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Choose images:</Text>
-          <View style={styles.imageUploadArea}>
-            <Text style={styles.uploadText}>Add max 3 x images with max picture size 300 kb</Text>
-            <Text style={styles.uploadSubtext}>Drop files here</Text>
-            <Text style={styles.uploadOr}>or</Text>
-            <TouchableOpacity style={styles.selectFilesButton}>
-              <Text style={styles.selectFilesText}>Select files</Text>
+          <Text style={styles.uploadText}>Add max 3 x images with max picture size 300 kb</Text>
+
+          {/* Image Selection Buttons */}
+          <View style={styles.selectionButtons}>
+            <TouchableOpacity style={styles.selectionButton} onPress={pickFromCamera}>
+              <Text style={styles.selectionButtonText}>📷 Camera</Text>
             </TouchableOpacity>
-            <Text style={styles.allowedFiles}>Allowed file</Text>
-            <Text style={styles.fileTypes}>
-              types: .jpg, .jpe, .jpeg, gif, .png, .bmp, .ico, .webp, .avif, .svg
-            </Text>
-            <Text style={styles.dragText}>
-              Please drag & drop the files to rearrange the order
-            </Text>
+            <TouchableOpacity style={styles.selectionButton} onPress={pickFromGallery}>
+              <Text style={styles.selectionButtonText}>🖼️ Gallery</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Image Slots */}
-          <View style={styles.imageSlots}>
-            <View style={styles.imageSlot}>
-              <Text style={styles.trashIcon}>🗑️</Text>
-            </View>
-            <View style={styles.imageSlot}>
-              <Text style={styles.trashIcon}>🗑️</Text>
-            </View>
-            <View style={styles.imageSlot}>
-              <Text style={styles.trashIcon}>🗑️</Text>
-            </View>
+          {/* Selected Images Grid */}
+          <View style={styles.imageGrid}>
+            {selectedImages.map((image, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{ uri: image.uri }} style={styles.selectedImage} />
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeImage(index)}
+                >
+                  <Text style={styles.removeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+
+            {/* Empty slots */}
+            {Array.from({ length: 3 - selectedImages.length }).map((_, index) => (
+              <View key={`empty-${index}`} style={styles.emptySlot}>
+                <Text style={styles.emptySlotText}>+</Text>
+              </View>
+            ))}
           </View>
+
+          <Text style={styles.allowedFiles}>Allowed file types: .jpg, .jpeg, .png, .gif, .bmp, .webp</Text>
+
+          {/* Upload Error */}
+          {uploadError ? (
+            <Text style={styles.errorText}>{uploadError}</Text>
+          ) : null}
         </View>
 
         {/* Title and Description Section */}
@@ -123,8 +247,19 @@ const MakeAnAdScreen = ({ navigation }) => {
         </View>
 
         {/* Continue Button */}
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
+        <TouchableOpacity
+          style={[styles.continueButton, isUploading && styles.continueButtonDisabled]}
+          onPress={handleContinue}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#FFFFFF" />
+              <Text style={styles.continueButtonText}>Uploading...</Text>
+            </View>
+          ) : (
+            <Text style={styles.continueButtonText}>Continue</Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />
@@ -297,6 +432,86 @@ const styles = StyleSheet.create({
   },
   bottomSpace: {
     height: 30,
+  },
+  selectionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  selectionButton: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 4,
+  },
+  selectionButtonText: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  imageContainer: {
+    width: '31%',
+    aspectRatio: 1,
+    position: 'relative',
+  },
+  selectedImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  removeButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF4444',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  emptySlot: {
+    width: '31%',
+    aspectRatio: 1,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptySlotText: {
+    fontSize: 24,
+    color: '#CCCCCC',
+  },
+  errorText: {
+    color: '#FF4444',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  continueButtonDisabled: {
+    opacity: 0.6,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

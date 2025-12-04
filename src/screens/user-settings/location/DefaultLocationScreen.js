@@ -1,79 +1,196 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
+import { useAuth } from '../../../context/AuthContext';
+import { advertisementService } from '../../../services';
 
 const DefaultLocationScreen = ({ navigation }) => {
-  // Dummy data - will be dynamic based on user's membership plan
-  const [membershipPlan, setMembershipPlan] = useState('green'); // 'green' or 'gold'
-  
-  const [locations, setLocations] = useState({
-    centrePoint: null,
-    productLocation2: null,
-    productLocation3: null,
-  });
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [locations, setLocations] = useState([]);
+
+  // Get membership plan from user data
+  const getMembershipPlan = () => {
+    if (!user?.subscription_plan_slug) return 'green';
+    return user.subscription_plan_slug.toLowerCase().includes('gold') ? 'gold' : 'green';
+  };
+
+  const membershipPlan = getMembershipPlan();
+  const maxLocations = membershipPlan === 'gold' ? 3 : 1;
+
+  // Fetch user locations on component mount
+  useEffect(() => {
+    fetchUserLocations();
+  }, []);
+
+  const fetchUserLocations = async () => {
+    try {
+      setLoading(true);
+      const response = await advertisementService.getUserLocations();
+      if (response.success) {
+        setLocations(response.data.locations);
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      Alert.alert('Error', 'Failed to load locations');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSetLocation = (locationType) => {
+  const handleSetLocation = (locationType, existingLocation = null) => {
     navigation.navigate('SetLocationMap', {
       locationType,
       membershipPlan,
-      onSave: (locationData) => {
-        setLocations(prev => ({
-          ...prev,
-          [locationType]: locationData
-        }));
+      existingLocation,
+      onSave: async (locationData) => {
+        try {
+          setSaving(true);
+
+          // Prepare location data for API
+          const locationPayload = {
+            name: locationData.name || getLocationName(locationType),
+            street: locationData.address,
+            city: locationData.city || 'Unknown',
+            region: locationData.region || '',
+            country: locationData.country || 'Unknown',
+            zip_code: locationData.zipCode || '',
+            latitude: locationData.coordinates.latitude,
+            longitude: locationData.coordinates.longitude,
+            is_default: locationType === 'centrePoint' || locations.length === 0,
+          };
+
+          let response;
+          if (existingLocation) {
+            // Update existing location
+            response = await advertisementService.updateLocation(existingLocation.id, locationPayload);
+          } else {
+            // Create new location
+            response = await advertisementService.createLocation(locationPayload);
+          }
+
+          if (response.success) {
+            // Refresh locations
+            await fetchUserLocations();
+            Alert.alert('Success', 'Location saved successfully!');
+          } else {
+            Alert.alert('Error', response.message || 'Failed to save location');
+          }
+        } catch (error) {
+          console.error('Error saving location:', error);
+          Alert.alert('Error', 'Failed to save location');
+        } finally {
+          setSaving(false);
+        }
       }
     });
+  };
+
+  const getLocationName = (locationType) => {
+    switch(locationType) {
+      case 'centrePoint':
+        return 'Centre-point & Product Location 1';
+      case 'productLocation2':
+        return 'Product Location 2';
+      case 'productLocation3':
+        return 'Product Location 3';
+      default:
+        return 'Location';
+    }
+  };
+
+  const getExistingLocation = (locationType) => {
+    // Map location types to database entries
+    const typeMapping = {
+      centrePoint: 0, // First location is centre-point
+      productLocation2: 1, // Second location
+      productLocation3: 2, // Third location
+    };
+
+    const index = typeMapping[locationType];
+    return locations[index] || null;
   };
 
   const handleUpgradeToGold = () => {
     navigation.navigate('AllMemberships');
   };
 
-  const renderLocationButton = (title, description, locationType, disabled = false) => (
-    <View style={styles.locationSection} key={locationType}>
-      {description && (
-        <>
-          <Text style={styles.locationTitle}>{title}</Text>
-          <Text style={styles.locationDescription}>{description}</Text>
-          <Text style={styles.locationNote}>
-            Both Centre-point and Product location 1 are located in the same spot!
-          </Text>
-          <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-            <Text style={styles.infoLinkText}>For more information </Text>
-            <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
-            <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-          </TouchableOpacity>
-        </>
-      )}
-      
-      <TouchableOpacity
-        style={[styles.setLocationButton, disabled && styles.setLocationButtonDisabled]}
-        onPress={() => !disabled && handleSetLocation(locationType)}
-        activeOpacity={0.7}
-        disabled={disabled}
-      >
-        <Text style={styles.setLocationButtonText}>
-          {locationType === 'centrePoint' 
-            ? 'Set Centre-point &\nProduct Location 1'
-            : locationType === 'productLocation2'
-            ? 'Set Product Location 2'
-            : 'Set Product Location 3'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const renderLocationButton = (title, description, locationType, disabled = false) => {
+    const existingLocation = getExistingLocation(locationType);
+    const hasLocation = existingLocation !== null;
+
+    return (
+      <View style={styles.locationSection} key={locationType}>
+        {description && (
+          <>
+            <Text style={styles.locationTitle}>{title}</Text>
+            <Text style={styles.locationDescription}>{description}</Text>
+            <Text style={styles.locationNote}>
+              Both Centre-point and Product location 1 are located in the same spot!
+            </Text>
+            <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
+              <Text style={styles.infoLinkText}>For more information </Text>
+              <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* Show existing location info */}
+        {hasLocation && (
+          <View style={styles.existingLocationInfo}>
+            <Ionicons name="location" size={20} color={COLORS.primary} />
+            <View style={styles.locationDetails}>
+              <Text style={styles.locationName}>{existingLocation.name}</Text>
+              <Text style={styles.locationAddress}>
+                {existingLocation.city}, {existingLocation.country}
+              </Text>
+            </View>
+            {existingLocation.is_default && (
+              <View style={styles.defaultBadge}>
+                <Text style={styles.defaultBadgeText}>Default</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={[styles.setLocationButton, disabled && styles.setLocationButtonDisabled]}
+          onPress={() => !disabled && handleSetLocation(locationType, existingLocation)}
+          activeOpacity={0.7}
+          disabled={disabled || saving}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.setLocationButtonText}>
+              {hasLocation ? 'Edit Location' :
+                (locationType === 'centrePoint'
+                  ? 'Set Centre-point &\nProduct Location 1'
+                  : locationType === 'productLocation2'
+                  ? 'Set Product Location 2'
+                  : 'Set Product Location 3')}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -89,72 +206,69 @@ const DefaultLocationScreen = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Info Section */}
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Your default location has two functions:</Text>
-          
-          <View style={styles.infoItem}>
-            <Text style={styles.infoItemTitle}>Centre-point</Text>
-            <Text style={styles.infoItemText}>
-              For safety, an imprecise home address, and a spot to Buy around.
-            </Text>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading your locations...</Text>
           </View>
-
-          <View style={styles.infoItem}>
-            <Text style={styles.infoItemTitle}>Product location 1</Text>
-            <Text style={styles.infoItemText}>
-              The spot you advertise and Sell your own products.
-            </Text>
-          </View>
-        </View>
-
-        {/* Centre-point & Product Location 1 */}
-        {renderLocationButton(
-          '',
-          '',
-          'centrePoint'
-        )}
-
-        {/* Additional locations for Gold membership */}
-        {membershipPlan === 'gold' && (
+        ) : (
           <>
-            <View style={styles.locationSection}>
-              <Text style={styles.locationTitle}>Product Location 2</Text>
-              <Text style={styles.locationDescription}>
-                Your secondary spot to advertise the products you want to Sell e.g. near to work.
-              </Text>
-              <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                <Text style={styles.infoLinkText}>For more information </Text>
-                <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
-                <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.setLocationButton}
-                onPress={() => handleSetLocation('productLocation2')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.setLocationButtonText}>Set Product Location 2</Text>
-              </TouchableOpacity>
+            {/* Info Section */}
+            <View style={styles.infoSection}>
+              <Text style={styles.infoTitle}>Your default location has two functions:</Text>
+
+              <View style={styles.infoItem}>
+                <Text style={styles.infoItemTitle}>Centre-point</Text>
+                <Text style={styles.infoItemText}>
+                  For safety, an imprecise home address, and a spot to Buy around.
+                </Text>
+              </View>
+
+              <View style={styles.infoItem}>
+                <Text style={styles.infoItemTitle}>Product location 1</Text>
+                <Text style={styles.infoItemText}>
+                  The spot you advertise and Sell your own products.
+                </Text>
+              </View>
             </View>
 
-            <View style={styles.locationSection}>
-              <Text style={styles.locationTitle}>Product Location 3</Text>
-              <Text style={styles.locationDescription}>
-                Your secondary spot to advertise the products you want to Sell e.g. second home.
-              </Text>
-              <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                <Text style={styles.infoLinkText}>For more information </Text>
-                <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
-                <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.setLocationButton}
-                onPress={() => handleSetLocation('productLocation3')}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.setLocationButtonText}>Set Product Location 3</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Centre-point & Product Location 1 */}
+            {renderLocationButton(
+              '',
+              '',
+              'centrePoint'
+            )}
+
+            {/* Additional locations for Gold membership */}
+            {membershipPlan === 'gold' && (
+              <>
+                <View style={styles.locationSection}>
+                  <Text style={styles.locationTitle}>Product Location 2</Text>
+                  <Text style={styles.locationDescription}>
+                    Your secondary spot to advertise the products you want to Sell e.g. near to work.
+                  </Text>
+                  <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
+                    <Text style={styles.infoLinkText}>For more information </Text>
+                    <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+                  </TouchableOpacity>
+                  {renderLocationButton('', '', 'productLocation2')}
+                </View>
+
+                <View style={styles.locationSection}>
+                  <Text style={styles.locationTitle}>Product Location 3</Text>
+                  <Text style={styles.locationDescription}>
+                    Your secondary spot to advertise the products you want to Sell e.g. second home.
+                  </Text>
+                  <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
+                    <Text style={styles.infoLinkText}>For more information </Text>
+                    <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+                  </TouchableOpacity>
+                  {renderLocationButton('', '', 'productLocation3')}
+                </View>
+              </>
+            )}
           </>
         )}
 
@@ -328,6 +442,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  existingLocationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  locationDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  locationName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  locationAddress: {
+    fontSize: 14,
+    color: '#666',
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  defaultBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
   },
   bottomSpacer: {
     height: 40,

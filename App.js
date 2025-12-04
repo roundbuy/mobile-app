@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/roboto';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/constants/theme';
+import { AuthProvider } from './src/context/AuthContext';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -43,10 +44,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
-      {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
-      <AppNavigator />
-      {/* </SafeAreaView> */}
+      <AuthProvider>
+        <StatusBar style="auto" />
+        {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
+        <AppNavigator />
+        {/* </SafeAreaView> */}
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
