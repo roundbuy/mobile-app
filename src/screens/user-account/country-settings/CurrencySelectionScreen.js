@@ -1,33 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { settingsService } from '../../../services';
 
 const CurrencySelectionScreen = ({ route, navigation }) => {
-  const { selectedCurrency } = route?.params || {};
-  const [selected, setSelected] = useState(selectedCurrency || '£ sterling pounds');
+  const { currentCurrency, onCurrencySelected } = route?.params || {};
+  const [currencies, setCurrencies] = useState([]);
+  const [selected, setSelected] = useState(currentCurrency || '');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const currencies = [
-    '£ sterling pounds',
-    '€ euroe',
-    '$ USD',
-    'India',
-  ];
+  // Fetch currencies on component mount
+  useEffect(() => {
+    fetchCurrencies();
+  }, []);
+
+  const fetchCurrencies = async () => {
+    try {
+      setIsLoading(true);
+      const response = await settingsService.getCurrencies();
+
+      if (response.success && response.data?.currencies) {
+        setCurrencies(response.data.currencies);
+      }
+    } catch (error) {
+      console.error('Error fetching currencies:', error);
+      Alert.alert('Error', 'Failed to load currencies. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSelect = (currency) => {
-    setSelected(currency);
-    // Auto navigate back after selection (optional)
-    // setTimeout(() => navigation.goBack(), 300);
+  const handleSelect = async (currency) => {
+    try {
+      setSelected(currency.name);
+
+      // Update user preferences
+      const response = await settingsService.updateUserPreferences({
+        currency_code: currency.code
+      });
+
+      if (response.success) {
+        // Call the callback if provided
+        if (onCurrencySelected) {
+          onCurrencySelected(currency);
+        }
+
+        // Navigate back after successful update
+        setTimeout(() => navigation.goBack(), 300);
+      } else {
+        throw new Error(response.message || 'Failed to update currency');
+      }
+    } catch (error) {
+      console.error('Error updating currency:', error);
+      Alert.alert('Error', error.message || 'Failed to update your currency preference. Please try again.');
+    }
   };
 
   return (
@@ -42,21 +81,30 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {currencies.map((currency, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.currencyItem}
-            onPress={() => handleSelect(currency)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, selected === currency && styles.checkboxSelected]}>
-              {selected === currency && (
-                <Ionicons name="checkmark" size={16} color="#fff" />
-              )}
-            </View>
-            <Text style={styles.currencyText}>{currency}</Text>
-          </TouchableOpacity>
-        ))}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000" />
+            <Text style={styles.loadingText}>Loading currencies...</Text>
+          </View>
+        ) : (
+          currencies.map((currency, index) => (
+            <TouchableOpacity
+              key={currency.id || index}
+              style={styles.currencyItem}
+              onPress={() => handleSelect(currency)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, selected === currency.name && styles.checkboxSelected]}>
+                {selected === currency.name && (
+                  <Ionicons name="checkmark" size={16} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.currencyText}>
+                {currency.symbol} {currency.name} ({currency.code})
+              </Text>
+            </TouchableOpacity>
+          ))
+        )}
 
         {/* Copyright */}
         <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>

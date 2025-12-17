@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
 import {
   View,
@@ -7,112 +7,194 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  FlatList,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { favoritesService } from '../../../services';
 
 const FavouritesScreen = ({ navigation }) => {
-  const handleBack = () => {
-    navigation.goBack();
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, []);
+
+  const fetchFavorites = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch favorites from API
+      const response = await favoritesService.getUserFavorites({ page: 1, limit: 50 });
+
+      if (response.success && response.data) {
+        // Format the favorites data
+        const formattedFavorites = response.data.favorites.map(fav => ({
+          id: fav.advertisement_id,
+          title: fav.advertisement?.title || 'Untitled',
+          price: fav.advertisement?.price || '0.00',
+          images: fav.advertisement?.images ?
+            fav.advertisement.images.map(img =>
+              img.startsWith('http') ? { uri: img } : { uri: `http://localhost:5001${img}` }
+            ) : [IMAGES.chair1],
+          category_name: fav.advertisement?.category_name || 'Uncategorized',
+          location_name: fav.advertisement?.city || 'Unknown',
+          seller_name: fav.advertisement?.seller_name || 'Unknown Seller',
+          created_at: fav.created_at,
+          advertisement: fav.advertisement,
+        }));
+
+        setFavorites(formattedFavorites);
+      } else {
+        // If API fails, show empty state
+        setFavorites([]);
+      }
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+
+      // Check if it's an authentication error
+      if (error.message?.includes('token') || error.message?.includes('auth')) {
+        Alert.alert(
+          'Authentication Required',
+          'Please login to view your favorites.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login', onPress: () => navigation.navigate('SocialLogin') }
+          ]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to load favorites. Please try again.');
+      }
+
+      setFavorites([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  // Sample data - replace with actual API data
-  const favourites = [
-    {
-      id: '1',
-      title: 'Armchair',
-      type: 'SELL',
-      distance: '1000 m / 25 min walk',
-      image: IMAGES.chair1,
-    },
-    {
-      id: '2',
-      title: 'Wooden Chair',
-      type: 'RENT',
-      distance: '750 m / 15 min walk',
-      image: IMAGES.chair2,
-    },
-    {
-      id: '3',
-      title: 'Work-chair',
-      type: 'SELL',
-      distance: '250 m / 5 min walk',
-      image: IMAGES.chair3,
-    },
-    {
-      id: '4',
-      title: 'Cosy Chair',
-      type: 'BUY',
-      distance: '500 m / 10 min walk',
-      image: IMAGES.chair1,
-    },
-  ];
-
-  const handleViewAd = (product) => {
-    navigation.navigate('ProductDetails', { product });
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchFavorites();
   };
 
-  const handleRemoveFavourite = (productId) => {
-    // Remove from favourites
-    console.log('Remove favourite:', productId);
+  const handleRemoveFavorite = async (advertisementId) => {
+    try {
+      Alert.alert(
+        'Remove from Favorites',
+        'Are you sure you want to remove this item from your favorites?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                // Remove from API
+                const response = await favoritesService.removeFromFavorites(advertisementId);
+
+                if (response.success) {
+                  // Remove from local state
+                  setFavorites(prev => prev.filter(item => item.id !== advertisementId));
+                  Alert.alert('Success', 'Removed from favorites');
+                } else {
+                  Alert.alert('Error', response.message || 'Failed to remove from favorites');
+                }
+              } catch (error) {
+                console.error('Error removing favorite:', error);
+                Alert.alert('Error', 'Failed to remove from favorites. Please try again.');
+              }
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to remove from favorites');
+    }
   };
+
+  const handleAdPress = (ad) => {
+    // Navigate to ad details
+    navigation.navigate('ProductDetails', {
+      advertisementId: ad.id,
+      advertisement: ad.advertisement,
+    });
+  };
+
+  const renderFavoriteItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.favoriteCard}
+      onPress={() => handleAdPress(item)}
+      activeOpacity={0.7}
+    >
+      <Image
+        source={item.images && item.images.length > 0 ? item.images[0] : IMAGES.chair1}
+        style={styles.adImage}
+      />
+
+      <View style={styles.adContent}>
+        <View style={styles.adHeader}>
+          <Text style={styles.adTitle} numberOfLines={2}>{item.title}</Text>
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={() => handleRemoveFavorite(item.id)}
+          >
+            <Ionicons name="heart" size={20} color="#f44336" />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.priceText}>₹{item.price}</Text>
+
+        <View style={styles.adDetails}>
+          <Text style={styles.categoryText}>{item.category_name}</Text>
+          <Text style={styles.locationText}>📍 {item.location_name}</Text>
+        </View>
+
+        <Text style={styles.sellerText}>Seller: {item.seller_name}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Favorites</Text>
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {favourites.map((product) => (
-          <View key={product.id} style={styles.productCard}>
-            <Image source={product.image} style={styles.productImage} />
-            
-            <View style={styles.productContent}>
-              <View style={styles.productHeader}>
-                <Text style={styles.productTitle}>{product.title}</Text>
-                <View style={[
-                  styles.typeBadge,
-                  product.type === 'SELL' && styles.sellBadge,
-                  product.type === 'RENT' && styles.rentBadge,
-                  product.type === 'BUY' && styles.buyBadge,
-                ]}>
-                  <Text style={styles.typeBadgeText}>{product.type}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.distanceText}>Distance: {product.distance}</Text>
-
-              <TouchableOpacity
-                style={styles.viewAdButton}
-                onPress={() => handleViewAd(product)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.viewAdButtonText}>View Ad</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={styles.heartButton}
-              onPress={() => handleRemoveFavourite(product.id)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="heart" size={24} color="#FF6B6B" />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+      {/* Content */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading favorites...</Text>
         </View>
-      </ScrollView>
+      ) : (
+        <FlatList
+          data={favorites}
+          renderItem={renderFavoriteItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="heart-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>No favorites yet</Text>
+              <Text style={styles.emptySubtext}>Items you favorite will appear here</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -136,98 +218,103 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#000',
   },
   headerRight: {
     width: 32,
   },
-  content: {
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  productCard: {
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  listContent: {
+    padding: 16,
+  },
+  favoriteCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 16,
     borderRadius: 8,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#e0e0e0',
     overflow: 'hidden',
-    position: 'relative',
   },
-  productImage: {
+  adImage: {
     width: 100,
     height: 120,
     backgroundColor: '#f5f5f5',
   },
-  productContent: {
+  adContent: {
     flex: 1,
     padding: 12,
   },
-  productHeader: {
+  adHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 8,
   },
-  productTitle: {
+  adTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
     flex: 1,
+    marginRight: 8,
   },
-  typeBadge: {
+  favoriteButton: {
+    padding: 4,
+  },
+  priceText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 8,
+  },
+  adDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#666',
+    backgroundColor: '#f0f0f0',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
-    marginLeft: 8,
   },
-  sellBadge: {
-    backgroundColor: '#4CAF50',
-  },
-  rentBadge: {
-    backgroundColor: '#FF9800',
-  },
-  buyBadge: {
-    backgroundColor: COLORS.primary,
-  },
-  typeBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  distanceText: {
+  locationText: {
     fontSize: 12,
     color: '#666',
-    marginBottom: 12,
   },
-  viewAdButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 10,
-    borderRadius: 6,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  viewAdButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-  },
-  heartButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    padding: 8,
-  },
-  footer: {
-    paddingVertical: 40,
-    alignItems: 'center',
-  },
-  copyright: {
+  sellerText: {
     fontSize: 12,
     color: '#999',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
 

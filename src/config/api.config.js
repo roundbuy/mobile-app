@@ -1,21 +1,60 @@
 /**
  * API Configuration for RoundBuy Mobile App
+ * Supports environment-based configuration for development and production
  */
 
-// API Base URL - Change based on environment
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+/**
+ * Get the appropriate API base URL based on environment and platform
+ * Priority:
+ * 1. Environment variable (EXPO_PUBLIC_API_URL)
+ * 2. Auto-detection based on platform
+ * 3. Production URL
+ */
 const getApiUrl = () => {
+  // Check for environment variable first (highest priority)
+  const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
+  
+  if (envApiUrl) {
+    console.log('📡 Using API URL from environment:', envApiUrl);
+    return envApiUrl;
+  }
+
+  // Development mode - auto-detect platform
   if (__DEV__) {
-    // Development - use your local IP or localhost
-    // For iOS Simulator: use 'localhost'
-    // For Android Emulator: use '10.0.2.2'
-    // For Physical Device: use your computer's IP (e.g., '192.168.1.100')
-    return 'http://localhost:5001/api/v1/mobile-app';
+    // Get local IP from environment variable if set
+    const localIp = Constants.expoConfig?.extra?.localIp || process.env.EXPO_PUBLIC_LOCAL_IP;
+    
+    if (Platform.OS === 'ios') {
+      // iOS Simulator can use localhost
+      const url = localIp ? `http://${localIp}:5001/api/v1/mobile-app` : 'http://localhost:5001/api/v1/mobile-app';
+      console.log('📱 iOS Development - Using:', url);
+      return url;
+    } else if (Platform.OS === 'android') {
+      // Android Emulator uses special IP
+      // 10.0.2.2 maps to host machine's localhost
+      const url = localIp ? `http://${localIp}:5001/api/v1/mobile-app` : 'http://10.0.2.2:5001/api/v1/mobile-app';
+      console.log('🤖 Android Development - Using:', url);
+      return url;
+    } else if (Platform.OS === 'web') {
+      // Web can use localhost
+      const url = 'http://localhost:5001/api/v1/mobile-app';
+      console.log('🌐 Web Development - Using:', url);
+      return url;
+    }
   }
   
-  // Production
-  return 'https://api.roundbuy.com/backend/api/v1/mobile-app';
+  // Production mode
+  const productionUrl = 'https://api.roundbuy.com/backend/api/v1/mobile-app';
+  console.log('🚀 Production - Using:', productionUrl);
+  return productionUrl;
 };
 
+/**
+ * API Configuration
+ */
 export const API_CONFIG = {
   BASE_URL: getApiUrl(),
   TIMEOUT: 30000, // 30 seconds

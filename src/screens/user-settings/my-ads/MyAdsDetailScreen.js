@@ -7,29 +7,35 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
+import { advertisementService } from '../../../services';
 
 const MyAdsDetailScreen = ({ navigation, route }) => {
   const { ad } = route.params;
   const [adStatus, setAdStatus] = useState(ad.status);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleModify = () => {
-    // Navigate to edit ad screen
-    console.log('Modify ad:', ad.id);
-    Alert.alert('Modify Ad', 'This will take you to the edit ad screen');
+    // Navigate to edit ad screen - assuming MakeAnAdScreen can handle editing
+    navigation.navigate('MakeAnAd', {
+      editMode: true,
+      adData: ad
+    });
   };
 
-  const handleToggleStatus = () => {
-    const newStatus = adStatus === 'active' ? 'inactive' : 'active';
-    const action = adStatus === 'active' ? 'Inactivate' : 'Activate';
-    
+  const handleToggleStatus = async () => {
+    const currentStatus = adStatus === 'published' ? 'active' : 'inactive';
+    const newStatus = currentStatus === 'active' ? 'draft' : 'published';
+    const action = currentStatus === 'active' ? 'Inactivate' : 'Activate';
+
     Alert.alert(
       `${action} Ad`,
       `Are you sure you want to ${action.toLowerCase()} this ad?`,
@@ -40,9 +46,26 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
         },
         {
           text: action,
-          onPress: () => {
-            setAdStatus(newStatus);
-            Alert.alert('Success', `Ad ${action.toLowerCase()}d successfully`);
+          onPress: async () => {
+            try {
+              setIsLoadingStatus(true);
+
+              const response = await advertisementService.updateAdvertisement(ad.id, {
+                status: newStatus
+              });
+
+              if (response.success) {
+                setAdStatus(newStatus);
+                Alert.alert('Success', `Ad ${action.toLowerCase()}d successfully`);
+              } else {
+                throw new Error(response.message || 'Failed to update ad status');
+              }
+            } catch (error) {
+              console.error('Error updating ad status:', error);
+              Alert.alert('Error', error.message || 'Failed to update ad status. Please try again.');
+            } finally {
+              setIsLoadingStatus(false);
+            }
           },
         },
       ]
@@ -119,14 +142,20 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.statusButton,
-              adStatus === 'active' ? styles.inactivateButton : styles.activateButton
+              (adStatus === 'published' ? styles.inactivateButton : styles.activateButton),
+              isLoadingStatus && styles.disabledButton
             ]}
             onPress={handleToggleStatus}
             activeOpacity={0.7}
+            disabled={isLoadingStatus}
           >
-            <Text style={styles.statusButtonText}>
-              {adStatus === 'active' ? 'Inactivate' : 'Activate'}
-            </Text>
+            {isLoadingStatus ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <Text style={styles.statusButtonText}>
+                {adStatus === 'published' ? 'Inactivate' : 'Activate'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -311,6 +340,9 @@ const styles = StyleSheet.create({
   },
   activateButton: {
     backgroundColor: COLORS.primary,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   statusButtonText: {
     fontSize: 16,

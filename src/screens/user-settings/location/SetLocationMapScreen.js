@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from '../../../components/MapView';
 import * as Location from 'expo-location';
 import { COLORS, SPACING } from '../../../constants/theme';
 
@@ -47,7 +47,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
-  
+
   const mapRef = useRef(null);
   const searchTimeoutRef = useRef(null);
 
@@ -96,7 +96,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
-      
+
       if (status !== 'granted') {
         console.log('Location permission denied, using default location');
       }
@@ -132,7 +132,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
           longitude: -0.1283,
         },
       ];
-      
+
       setPredictions(dummyPredictions);
       setShowPredictions(true);
     } catch (error) {
@@ -156,7 +156,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
 
     setRegion(newRegion);
     setMarkerCoordinate({ latitude: prediction.latitude, longitude: prediction.longitude });
-    
+
     if (mapRef.current) {
       mapRef.current.animateToRegion(newRegion, 1000);
     }
@@ -250,7 +250,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   };
 
   const getLocationTitle = () => {
-    switch(locationType) {
+    switch (locationType) {
       case 'centrePoint':
         return 'Centre-point & Product Location 1';
       case 'productLocation2':
@@ -345,7 +345,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
           ) : mapError ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>Map Error: {mapError}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.retryButton}
                 onPress={() => setMapError(null)}
               >

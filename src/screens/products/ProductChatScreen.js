@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { IMAGES } from '../../assets/images';
 import {
   View,
@@ -11,178 +11,425 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
+import { messagingService } from '../../services';
+import { AuthContext } from '../../context/AuthContext';
 
 const ProductChatScreen = ({ route, navigation }) => {
-  const { product, mode } = route?.params || {};
+  // Accept both 'advertisement' and 'product' parameter names for compatibility
+  const { advertisement, product, mode } = route?.params || {};
+  
+  // Get current user from AuthContext (with fallback)
+  let currentUserId = null;
+  let userCurrency = 'INR';
+  
+  try {
+    const authContext = useContext(AuthContext);
+    currentUserId = authContext?.user?.id;
+    userCurrency = authContext?.user?.currency_code || 'INR';
+  } catch (error) {
+    console.log('AuthContext not available, using fallback values');
+  }
+  
   const [message, setMessage] = useState('');
   const [offerAmount, setOfferAmount] = useState('');
   const [showOfferInput, setShowOfferInput] = useState(mode === 'makeOffer');
   const scrollViewRef = useRef(null);
 
-  // Mock chat messages - replace with actual data
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      userId: 'jonnmk85598',
-      username: 'jonnmk85598',
-      text: 'I like the chair! 😊❤️ Is it sturdy?',
-      timestamp: '12:51',
-      isCurrentUser: false,
-    },
-    {
-      id: 2,
-      userId: 'susanSmit',
-      username: 'susanSmit',
-      text: 'It is very sturdy!',
-      timestamp: '12:52',
-      isCurrentUser: true,
-    },
-    {
-      id: 3,
-      userId: 'jonnmk85598',
-      username: 'jonnmk85598',
-      text: 'I am ready to make an offer. Here it is.',
-      timestamp: '12:54',
-      isCurrentUser: false,
-    },
-  ]);
+  // API state
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [conversation, setConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingOffers, setLoadingOffers] = useState(false);
 
   // Offer status - can be: null, 'pending', 'accepted', 'declined'
   const [offerStatus, setOfferStatus] = useState(null);
   const [currentOffer, setCurrentOffer] = useState(null);
 
-  const productData = product || {
-    title: 'Wooden Chair',
-    price: '£300',
-    distance: '26.2m / 15 km walk',
-    image: IMAGES.chair1,
-    seller: {
-      username: 'susanSmit',
-    },
+  // Store advertisement data from route params (accept both parameter names) or conversation
+  const [advertisementData, setAdvertisementData] = useState(advertisement || product || null);
+  
+  // Get currency symbol from user preferences or default
+  const currencySymbol = userCurrency === 'USD' ? '$' :
+                         userCurrency === 'EUR' ? '€' :
+                         userCurrency === 'GBP' ? '£' : '₹';
+
+  // Load conversation and messages on mount
+  useEffect(() => {
+    loadConversationAndMessages();
+  }, []);
+
+  const loadConversationAndMessages = async () => {
+    try {
+      setLoading(true);
+
+      // First, try to find existing conversation
+      const conversationsResponse = await messagingService.getConversations();
+      if (conversationsResponse.data && conversationsResponse.data.success && conversationsResponse.data.conversations) {
+        const existingConversation = conversationsResponse.data.conversations.find(
+          conv => conv.advertisement_id === (advertisementData?.id || advertisement?.id || product?.id)
+        );
+
+        if (existingConversation) {
+          setConversation(existingConversation);
+          
+          // Update advertisement data from conversation if not fully populated
+          if (!advertisementData || !advertisementData.title) {
+            setAdvertisementData({
+              id: existingConversation.advertisement_id,
+              title: existingConversation.advertisement_title,
+              price: existingConversation.advertisement_price,
+              images: existingConversation.advertisement_images ? JSON.parse(existingConversation.advertisement_images) : [],
+            });
+          }
+          
+          await loadMessages(existingConversation.id);
+          await loadOffers(existingConversation.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      // Don't show error alert here as it's not critical for first-time chat
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMessages = async (conversationId) => {
+    try {
+      setLoadingMessages(true);
+      const response = await messagingService.getConversationMessages(conversationId);
+      if (response.data && response.data.success) {
+        const conversationData = response.data.conversation;
+        setConversation(conversationData);
+        setMessages(response.data.messages || []);
+        
+        // Update advertisement data from conversation if not provided
+        if (!advertisementData && conversationData) {
+          setAdvertisementData({
+            id: conversationData.advertisement_id,
+            title: conversationData.advertisement_title,
+            price: conversationData.advertisement_price,
+            images: conversationData.advertisement_images ? JSON.parse(conversationData.advertisement_images) : [],
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const loadOffers = async (conversationId) => {
+    try {
+      setLoadingOffers(true);
+      const response = await messagingService.getConversationOffers(conversationId);
+      if (response.data && response.data.success) {
+        setOffers(response.data.offers || []);
+        // Set current offer status based on latest offer
+        const latestOffer = response.data.offers?.[0];
+        if (latestOffer) {
+          setCurrentOffer(latestOffer);
+          setOfferStatus(latestOffer.status);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading offers:', error);
+    } finally {
+      setLoadingOffers(false);
+    }
   };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage = {
-        id: Date.now(),
-        userId: 'currentUser',
-        username: 'You',
-        text: message,
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        isCurrentUser: true,
-      };
-      setMessages([...messages, newMessage]);
-      setMessage('');
-      
-      // Scroll to bottom after sending message
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+  const handleSendMessage = async () => {
+    console.log('Send message sending:', sending);
+    console.log('Send message message:', message);
+    console.log('Advertisement data:', advertisementData);
+    console.log('Advertisement from params:', advertisement);
+    console.log('Product from params:', product);
+    
+    if (message.trim() && !sending) {
+      // Validate we have an advertisement ID (check all possible sources)
+      const adId = advertisementData?.id || advertisement?.id || product?.id;
+      if (!adId) {
+        Alert.alert('Error', 'Advertisement information is missing. Please go back and try again.');
+        return;
+      }
+
+      try {
+        setSending(true);
+
+        const messageData = {
+          advertisement_id: adId,
+          message: message.trim()
+        };
+        console.log('Send message messageData:', messageData);
+
+        const response = await messagingService.sendMessage(messageData);
+
+        if (response.data && response.data.success) {
+          // Add the message to local state
+          const newMessage = {
+            id: response.data.message.id,
+            sender_id: response.data.message.sender_id,
+            receiver_id: response.data.message.receiver_id,
+            message: response.data.message.message,
+            is_read: response.data.message.is_read,
+            created_at: response.data.message.created_at,
+            sender_name: response.data.message.sender_name,
+            sender_avatar: response.data.message.sender_avatar,
+            isCurrentUser: true,
+          };
+
+          setMessages(prev => [...prev, newMessage]);
+          setMessage('');
+
+          // Update conversation if it was just created
+          if (response.data.conversation_id && !conversation) {
+            setConversation({ id: response.data.conversation_id });
+            console.log('Conversation set with ID:', response.data.conversation_id);
+          }
+
+          // Scroll to bottom after sending message
+          setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        } else {
+          Alert.alert('Error', response.data?.message || 'Failed to send message');
+        }
+      } catch (error) {
+        console.error('Send message error:', error);
+        Alert.alert('Error', error.message || 'Failed to send message. Please try again.');
+      } finally {
+        setSending(false);
+      }
     }
   };
 
-  const handleMakeOffer = () => {
-    if (offerAmount.trim()) {
-      setCurrentOffer(offerAmount);
-      setOfferStatus('pending');
-      setShowOfferInput(false);
-      
-      const offerMessage = {
-        id: Date.now(),
-        type: 'offer',
-        amount: offerAmount,
-        status: 'pending',
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-      };
-      
-      setMessages([...messages, offerMessage]);
-      setOfferAmount('');
+  const handleMakeOffer = async () => {
+    if (offerAmount.trim() && !sending) {
+      // Validate we have an advertisement ID (check all possible sources)
+      const adId = advertisementData?.id || advertisement?.id || product?.id;
+      if (!adId) {
+        Alert.alert('Error', 'Advertisement information is missing. Please go back and try again.');
+        return;
+      }
+
+      try {
+        setSending(true);
+
+        // First, ensure we have a conversation
+        let conversationId = conversation?.id;
+
+        if (!conversationId) {
+          // Send a message first to create conversation
+          const messageResponse = await messagingService.sendMessage({
+            advertisement_id: adId,
+            message: `I'm interested in this item and would like to make an offer of ${currencySymbol}${offerAmount}`
+          });
+
+          if (messageResponse.data && messageResponse.data.success) {
+            // Extract conversation_id from response
+            conversationId = messageResponse.data.conversation_id;
+            
+            // Validate conversation_id was received
+            if (!conversationId) {
+              console.error('Full message response:', JSON.stringify(messageResponse.data, null, 2));
+              throw new Error('No conversation ID received from server');
+            }
+            
+            console.log('Conversation created with ID:', conversationId);
+            setConversation({ id: conversationId });
+            await loadMessages(conversationId);
+          } else {
+            throw new Error(messageResponse.data?.message || 'Failed to create conversation');
+          }
+        }
+
+        // Validate we have a valid conversation_id before making offer
+        if (!conversationId) {
+          throw new Error('No conversation ID available. Please try sending a message first.');
+        }
+
+        // Now make the offer
+        const offerData = {
+          conversation_id: parseInt(conversationId),
+          offered_price: parseFloat(offerAmount),
+          message: `Offer: ${currencySymbol}${offerAmount}`
+        };
+
+        console.log('Making offer with data:', offerData);
+
+        const response = await messagingService.makeOffer(offerData);
+
+        if (response.data && response.data.success) {
+          setCurrentOffer(response.data.offer);
+          setOfferStatus('pending');
+          setShowOfferInput(false);
+          setOfferAmount('');
+
+          // Reload offers to get updated status
+          await loadOffers(conversationId);
+
+          // Add offer message to display
+          const offerMessage = {
+            id: `offer_${response.data.offer.id}`,
+            type: 'offer',
+            amount: offerAmount,
+            status: 'pending',
+            offer_id: response.data.offer.id,
+            sender_name: response.data.offer.sender_name,
+            created_at: response.data.offer.created_at,
+          };
+
+          setMessages(prev => [...prev, offerMessage]);
+          Alert.alert('Success', 'Offer sent successfully!');
+        } else {
+          Alert.alert('Error', response.data?.message || 'Failed to send offer');
+        }
+      } catch (error) {
+        console.error('Make offer error:', error);
+        Alert.alert('Error', error.message || 'Failed to send offer. Please try again.');
+      } finally {
+        setSending(false);
+      }
     }
   };
 
-  const handleAcceptOffer = () => {
-    setOfferStatus('accepted');
+  const handleAcceptOffer = async () => {
+    if (!currentOffer || !conversation) return;
+
+    try {
+      setSending(true);
+      const response = await messagingService.respondToOffer(currentOffer.id, {
+        action: 'accept'
+      });
+
+      if (response.data && response.data.success) {
+        setOfferStatus('accepted');
+        await loadOffers(conversation.id);
+        Alert.alert('Success', 'Offer accepted successfully!');
+      } else {
+        Alert.alert('Error', response.data?.message || 'Failed to accept offer');
+      }
+    } catch (error) {
+      console.error('Accept offer error:', error);
+      Alert.alert('Error', error.message || 'Failed to accept offer. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleDeclineOffer = () => {
-    setOfferStatus('declined');
+  const handleDeclineOffer = async () => {
+    if (!currentOffer || !conversation) return;
+
+    try {
+      setSending(true);
+      const response = await messagingService.respondToOffer(currentOffer.id, {
+        action: 'reject'
+      });
+
+      if (response.data && response.data.success) {
+        setOfferStatus('rejected');
+        await loadOffers(conversation.id);
+        Alert.alert('Success', 'Offer declined.');
+      } else {
+        Alert.alert('Error', response.data?.message || 'Failed to decline offer');
+      }
+    } catch (error) {
+      console.error('Decline offer error:', error);
+      Alert.alert('Error', error.message || 'Failed to decline offer. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   const renderMessage = ({ item }) => {
     // Render offer message
     if (item.type === 'offer') {
+      const offer = offers.find(o => o.id === item.offer_id) || currentOffer;
+      const isOfferFromCurrentUser = offer?.sender_id === currentUserId;
+
       return (
         <View style={styles.offerMessageContainer}>
           <View style={styles.offerCard}>
-            <Text style={styles.offerSuccessText}>An offer made successfully!</Text>
+            <Text style={styles.offerSuccessText}>
+              {isOfferFromCurrentUser ? 'You made an offer!' : 'An offer was made!'}
+            </Text>
             <View style={styles.offerDetails}>
-              <Text style={styles.offerUsername}>jonnmk85598</Text>
-              <Text style={styles.offerText}>has made an offer for</Text>
-              <Text style={styles.offerAmount}>{item.amount}</Text>
+              <Text style={styles.offerUsername}>{item.sender_name || 'User'}</Text>
+              <Text style={styles.offerText}>offered</Text>
+              <Text style={styles.offerAmount}>{currencySymbol}{item.amount || offer?.offered_price}</Text>
             </View>
-            
-            {offerStatus === 'accepted' && (
+
+            {offer?.status === 'accepted' && (
               <View style={styles.acceptedContainer}>
-                <Text style={styles.acceptedTitle}>Accepted for {item.amount}</Text>
+                <Text style={styles.acceptedTitle}>Accepted for {currencySymbol}{offer.offered_price}</Text>
                 <Text style={styles.acceptedSubtext}>
                   Now schedule a Pick up Exchange!
                 </Text>
                 <Text style={styles.acceptedDescription}>
-                  Arrange a meet up with the seller want to inspect the product immediately.
+                  Arrange a meet up with the seller to inspect the product immediately.
                 </Text>
                 <TouchableOpacity style={styles.scheduleButton}>
                   <Text style={styles.scheduleButtonText}>Schedule a Pick Up</Text>
                 </TouchableOpacity>
               </View>
             )}
-            
-            {offerStatus === 'declined' && (
+
+            {offer?.status === 'rejected' && (
               <View style={styles.declinedContainer}>
                 <Text style={styles.declinedText}>Declined</Text>
                 <Text style={styles.declinedSubtext}>
-                  Apologies! Declined Just few days from the Design and share you-
+                  The seller has declined this offer.
                 </Text>
               </View>
             )}
-            
-            {offerStatus === 'pending' && (
+
+            {offer?.status === 'pending' && !isOfferFromCurrentUser && (
               <View style={styles.offerActions}>
                 <Text style={styles.offerActionText}>
-                  susanSmit will either Accept, Decline or Make an offer to you.
+                  {advertisementData.seller?.full_name || 'Seller'} will either Accept, Decline or Make a counter offer.
                 </Text>
                 <View style={styles.offerButtonsRow}>
-                  <TouchableOpacity 
-                    style={styles.declineButton}
+                  <TouchableOpacity
+                    style={[styles.declineButton, sending && styles.buttonDisabled]}
                     onPress={handleDeclineOffer}
+                    disabled={sending}
                   >
                     <Text style={styles.declineButtonText}>Decline</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.acceptButton}
+                  <TouchableOpacity
+                    style={[styles.acceptButton, sending && styles.buttonDisabled]}
                     onPress={handleAcceptOffer}
+                    disabled={sending}
                   >
                     <Text style={styles.acceptButtonText}>Accept</Text>
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity style={styles.makeOfferLink}>
-                  <Text style={styles.makeOfferLinkText}>Make an Offer</Text>
+                  <Text style={styles.makeOfferLinkText}>Make a Counter Offer</Text>
                 </TouchableOpacity>
+              </View>
+            )}
+
+            {offer?.status === 'pending' && isOfferFromCurrentUser && (
+              <View style={styles.pendingOfferContainer}>
+                <Text style={styles.pendingOfferText}>
+                  Waiting for {advertisementData.seller?.full_name || 'seller'} to respond...
+                </Text>
               </View>
             )}
           </View>
@@ -191,11 +438,19 @@ const ProductChatScreen = ({ route, navigation }) => {
     }
 
     // Render regular message
+    const isCurrentUser = item.sender_id === currentUserId || item.isCurrentUser;
+    const timestamp = item.created_at ?
+      new Date(item.created_at).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }) : item.timestamp;
+
     return (
       <View
         style={[
           styles.messageContainer,
-          item.isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
+          isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage,
         ]}
       >
         <View style={styles.messageHeader}>
@@ -204,13 +459,13 @@ const ProductChatScreen = ({ route, navigation }) => {
           </View>
           <View style={styles.messageContent}>
             <View style={styles.messageTop}>
-              <Text style={styles.username}>{item.username}</Text>
-              <Text style={styles.timestamp}>{item.timestamp}</Text>
+              <Text style={styles.username}>{item.sender_name || item.username || 'User'}</Text>
+              <Text style={styles.timestamp}>{timestamp}</Text>
             </View>
-            <Text style={styles.messageText}>{item.text}</Text>
-            {!item.isCurrentUser && (
+            <Text style={styles.messageText}>{item.message || item.text}</Text>
+            {!isCurrentUser && (
               <View style={styles.reactionContainer}>
-                <Text style={styles.reactionText}>❤️ Is it sturdy?</Text>
+                <Text style={styles.reactionText}>❤️</Text>
               </View>
             )}
           </View>
@@ -231,24 +486,36 @@ const ProductChatScreen = ({ route, navigation }) => {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Product Chat: {productData.title}</Text>
+          <Text style={styles.headerTitle}>Product Chat: {advertisementData?.title || 'Loading...'}</Text>
         </View>
 
         {/* Product Info Card */}
         <View style={styles.productCard}>
-          <Image source={productData.image} style={styles.productImage} />
+          <Image
+            source={advertisementData?.images?.[0] || advertisementData?.image || IMAGES.chair1}
+            style={styles.productImage}
+          />
           <View style={styles.productInfo}>
             <View style={styles.productHeader}>
-              <Text style={styles.productTitle}>{productData.title}</Text>
-              <Text style={styles.productPrice}>{productData.price}</Text>
+              <Text style={styles.productTitle}>{advertisementData?.title || 'Product'}</Text>
+              <Text style={styles.productPrice}>{currencySymbol}{advertisementData?.price || '0'}</Text>
             </View>
-            <Text style={styles.productDistance}>
-              Distance: {productData.distance}
-            </Text>
+            {advertisementData?.distance && (
+              <Text style={styles.productDistance}>
+                Distance: {advertisementData.distance} km
+              </Text>
+            )}
+            {advertisementData?.location && (
+              <Text style={styles.productLocation}>
+                Location: {typeof advertisementData.location === 'string'
+                  ? advertisementData.location
+                  : `${advertisementData.location.city || ''}, ${advertisementData.location.country || ''}`.trim().replace(/^,\s*|,\s*$/g, '')}
+              </Text>
+            )}
             <View style={styles.offerPriceContainer}>
               <TextInput
                 style={styles.offerPriceInput}
-                placeholder="£ 0.00"
+                placeholder={`${currencySymbol} 0.00`}
                 placeholderTextColor="#999"
                 value={offerAmount}
                 onChangeText={setOfferAmount}
@@ -264,17 +531,44 @@ const ProductChatScreen = ({ route, navigation }) => {
           <Text style={styles.makeOfferButtonText}>Make an offer</Text>
         </TouchableOpacity>
 
-        <Text style={styles.dateHeader}>12 October 2025</Text>
+        {messages.length > 0 && messages[0]?.created_at && (
+          <Text style={styles.dateHeader}>
+            {new Date(messages[0].created_at).toLocaleDateString('en-US', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </Text>
+        )}
+
+        {/* Loading Messages */}
+        {loadingMessages && (
+          <View style={styles.loadingMessagesContainer}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.loadingMessagesText}>Loading messages...</Text>
+          </View>
+        )}
 
         {/* Messages List */}
-        <FlatList
-          ref={scrollViewRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.messagesContainer}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-        />
+        {!loadingMessages && (
+          <FlatList
+            ref={scrollViewRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+            contentContainerStyle={styles.messagesContainer}
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            ListEmptyComponent={
+              !loading ? (
+                <View style={styles.emptyMessagesContainer}>
+                  <Text style={styles.emptyMessagesText}>
+                    No messages yet. Start the conversation!
+                  </Text>
+                </View>
+              ) : null
+            }
+          />
+        )}
 
         {/* Warning Text */}
         <View style={styles.warningContainer}>
@@ -289,7 +583,7 @@ const ProductChatScreen = ({ route, navigation }) => {
           <View style={styles.offerInputContainer}>
             <TextInput
               style={styles.offerInput}
-              placeholder="Enter offer amount (e.g., £250.00)"
+              placeholder={`Enter offer amount (e.g., ${currencySymbol}250.00)`}
               placeholderTextColor="#999"
               value={offerAmount}
               onChangeText={setOfferAmount}
@@ -308,14 +602,27 @@ const ProductChatScreen = ({ route, navigation }) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.messageInput}
-            placeholder="Send a message"
+            placeholder={
+              !advertisementData?.id && !advertisement?.id && !product?.id
+                ? "Advertisement data missing..."
+                : "Send a message"
+            }
             placeholderTextColor="#999"
             value={message}
             onChangeText={setMessage}
             multiline
+            editable={!sending && (advertisementData?.id || advertisement?.id || product?.id)}
           />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-            <Ionicons name="send" size={24} color={COLORS.primary} />
+          <TouchableOpacity
+            style={[styles.sendButton, sending && styles.sendButtonDisabled]}
+            onPress={handleSendMessage}
+            disabled={sending || !message.trim() || (!advertisementData?.id && !advertisement?.id && !product?.id)}
+          >
+            {sending ? (
+              <ActivityIndicator size="small" color={COLORS.primary} />
+            ) : (
+              <Ionicons name="send" size={24} color={message.trim() && (advertisementData?.id || advertisement?.id || product?.id) ? COLORS.primary : '#ccc'} />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -382,6 +689,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   productDistance: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  productLocation: {
     fontSize: 12,
     color: '#666',
     marginBottom: 8,
@@ -667,6 +979,41 @@ const styles = StyleSheet.create({
   sendButton: {
     marginLeft: 8,
     padding: 8,
+  },
+  sendButtonDisabled: {
+    opacity: 0.6,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  pendingOfferContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  pendingOfferText: {
+    fontSize: 12,
+    color: '#856404',
+    textAlign: 'center',
+  },
+  loadingMessagesContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  loadingMessagesText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyMessagesContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  emptyMessagesText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
   },
 });
 

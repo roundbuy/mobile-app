@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,51 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { userService } from '../../../services';
 
 const PersonalInformationScreen = ({ navigation }) => {
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: 'John Gerald Rogerson',
-    email: 'john.rogersens@gmail.com',
-    phone: '+44 20 765345554',
-    billingAddress: '119 Regent Street, London, WW1 XZ, UK',
+    name: '',
+    email: '',
+    phone: '',
+    billingAddress: '',
   });
+
+  // Fetch user profile data on component mount
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      const response = await userService.getUserProfile();
+
+      if (response.success && response.data) {
+        const user = response.data;
+        setFormData({
+          name: user.full_name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          billingAddress: user.billing_address || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      Alert.alert('Error', 'Failed to load user information. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -28,15 +60,46 @@ const PersonalInformationScreen = ({ navigation }) => {
     setIsEditMode(true);
   };
 
-  const handleSave = () => {
-    // Save logic here
-    console.log('Saving changes:', formData);
-    setIsEditMode(false);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+
+      const updateData = {
+        full_name: formData.name,
+        phone: formData.phone,
+        billing_address: formData.billingAddress,
+      };
+
+      const response = await userService.updateUserProfile(updateData);
+
+      if (response.success) {
+        Alert.alert('Success', 'Your information has been updated successfully.');
+        setIsEditMode(false);
+      } else {
+        throw new Error(response.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', error.message || 'Failed to update your information. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const updateField = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading your information...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -120,10 +183,15 @@ const PersonalInformationScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.actionButton, isEditMode && styles.saveButton]}
           onPress={isEditMode ? handleSave : handleEdit}
+          disabled={isSaving}
         >
-          <Text style={[styles.actionButtonText, isEditMode && styles.saveButtonText]}>
-            {isEditMode ? 'Save changes' : 'Edit'}
-          </Text>
+          {isSaving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={[styles.actionButtonText, isEditMode && styles.saveButtonText]}>
+              {isEditMode ? 'Save changes' : 'Edit'}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -136,6 +204,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',

@@ -1,26 +1,107 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import paddleService from '../../services/paddleService';
 
 const PaymentMethodScreen = ({ navigation, route }) => {
-  const { total = '2.27', planType = 'Gold', planName = 'Gold membership plan' } = route.params || {};
-  const [selectedPayment, setSelectedPayment] = useState(null);
+  const { total = '2.27', planType = 'Gold', planName = 'Gold membership plan', planId } = route.params || {};
+  const [selectedPayment, setSelectedPayment] = useState('paddle');
   const [cardNumber, setCardNumber] = useState('');
   const [cvc, setCvc] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [saveForFuture, setSaveForFuture] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [paddleInitialized, setPaddleInitialized] = useState(false);
+
+  useEffect(() => {
+    // Initialize Paddle when component mounts
+    initializePaddle();
+  }, []);
+
+  const initializePaddle = async () => {
+    try {
+      await paddleService.initPaddle();
+      setPaddleInitialized(true);
+      console.log('Paddle initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Paddle:', error);
+      Alert.alert(
+        'Payment System Error',
+        'Unable to initialize payment system. Please try again later.'
+      );
+    }
+  };
+
+  const handlePaddlePayment = async () => {
+    if (!paddleInitialized) {
+      Alert.alert('Error', 'Payment system is not ready. Please wait...');
+      return;
+    }
+
+    if (!planId) {
+      Alert.alert('Error', 'Plan information is missing. Please try again.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Create transaction and get checkout URL
+      const transaction = await paddleService.createTransaction(planId, 'USD');
+      
+      // Open Paddle checkout
+      await paddleService.openCheckout(transaction.transaction_id);
+      
+      // Poll for transaction status
+      setTimeout(async () => {
+        try {
+          const status = await paddleService.getTransactionStatus(transaction.transaction_id);
+          
+          if (status.status === 'completed' || status.status === 'paid') {
+            navigation.navigate('TransactionStatus', {
+              success: true,
+              amount: total,
+              planType,
+              planName,
+              transactionId: transaction.transaction_id,
+            });
+          } else if (status.status === 'failed') {
+            navigation.navigate('TransactionStatus', {
+              success: false,
+              amount: total,
+              planType,
+              planName,
+            });
+          }
+        } catch (error) {
+          console.error('Error checking transaction status:', error);
+        }
+        setLoading(false);
+      }, 3000);
+    } catch (error) {
+      setLoading(false);
+      console.error('Payment error:', error);
+      Alert.alert(
+        'Payment Failed',
+        error.message || 'Unable to process payment. Please try again.'
+      );
+    }
+  };
 
   const handleContinue = () => {
-    // Navigate to success or failure based on random condition (for demo)
-    const isSuccess = Math.random() > 0.3; // 70% success rate
-    
-    navigation.navigate('TransactionStatus', {
-      success: isSuccess,
-      amount: total,
-      planType,
-      planName,
-    });
+    if (selectedPayment === 'paddle') {
+      handlePaddlePayment();
+    } else {
+      // For other payment methods (demo mode)
+      const isSuccess = Math.random() > 0.3; // 70% success rate
+      
+      navigation.navigate('TransactionStatus', {
+        success: isSuccess,
+        amount: total,
+        planType,
+        planName,
+      });
+    }
   };
 
   return (
@@ -34,9 +115,31 @@ const PaymentMethodScreen = ({ navigation, route }) => {
           <Text style={styles.headerTitle}>Choose a payment method</Text>
         </View>
 
+        {/* Paddle Payment (Recommended) */}
+        <TouchableOpacity
+          style={[
+            styles.paymentOption,
+            selectedPayment === 'paddle' && styles.paymentOptionSelected
+          ]}
+          onPress={() => setSelectedPayment('paddle')}
+          disabled={!paddleInitialized}
+        >
+          <View style={styles.paddleIcon}>
+            <Text style={styles.paddleText}>P</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.paymentText}>Pay with Paddle</Text>
+            <Text style={styles.recommendedText}>Recommended • Secure</Text>
+          </View>
+          {!paddleInitialized && <ActivityIndicator size="small" color={COLORS.primary} />}
+        </TouchableOpacity>
+
         {/* Google Pay */}
-        <TouchableOpacity 
-          style={styles.paymentOption}
+        <TouchableOpacity
+          style={[
+            styles.paymentOption,
+            selectedPayment === 'googlepay' && styles.paymentOptionSelected
+          ]}
           onPress={() => setSelectedPayment('googlepay')}
         >
           <View style={styles.googlePayIcon}>
@@ -46,7 +149,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
         {/* Or pay using */}
-        <Text style={styles.orText}>Or pay using</Text>
+        <Text style={styles.orText}>Or pay with card</Text>
 
         {/* Payment Method Icons */}
         <View style={styles.paymentIcons}>
@@ -173,11 +276,21 @@ const PaymentMethodScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
         {/* Continue Button */}
-        <TouchableOpacity 
-          style={styles.continueButton}
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            loading && styles.continueButtonDisabled
+          ]}
           onPress={handleContinue}
+          disabled={loading || (selectedPayment === 'paddle' && !paddleInitialized)}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={styles.continueButtonText}>
+              {selectedPayment === 'paddle' ? 'Pay with Paddle' : 'Continue'}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />
@@ -216,8 +329,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     marginHorizontal: 20,
     paddingVertical: 14,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    marginBottom: 24,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  paymentOptionSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: '#F0F8FF',
+  },
+  paddleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#6C5CE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  paddleText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  recommendedText: {
+    fontSize: 12,
+    color: '#4CAF50',
+    marginTop: 2,
+    fontWeight: '500',
   },
   googlePayIcon: {
     width: 32,
@@ -401,6 +541,10 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: 'center',
     marginBottom: 20,
+  continueButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+    opacity: 0.7,
+  },
   },
   continueButtonText: {
     fontSize: 18,

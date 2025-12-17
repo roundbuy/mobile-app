@@ -22,7 +22,7 @@ const RegistrationScreen = ({ navigation }) => {
 
   const handleTestDemo = () => {
     console.log('Navigate to Test Demo');
-    // Navigate to demo mode
+    navigation.navigate('Demo');
   };
 
   return (
@@ -49,7 +49,7 @@ const RegistrationScreen = ({ navigation }) => {
         <Text style={styles.subtitle}>
           Buy and Sell products and services just around you!
         </Text>
-        
+
         <TouchableOpacity
           style={styles.demoButton}
           onPress={handleTestDemo}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6a6a6a',
+    color: '#676777ff',
     textAlign: 'center',
     lineHeight: 22,
     letterSpacing: -0.9,

@@ -38,6 +38,10 @@ import CategoryFilterScreen from '../screens/home/CategoryFilterScreen';
 import DistanceFilterScreen from '../screens/home/DistanceFilterScreen';
 import PriceFilterScreen from '../screens/home/PriceFilterScreen';
 
+// Demo screen
+import DemoScreen from '../screens/demo/DemoScreen';
+import DemoProductDetailsScreen from '../screens/demo/DemoProductDetailsScreen';
+
 // Membership screens
 import AllMembershipsScreen from '../screens/memberships/AllMembershipsScreen';
 import GreenMembershipScreen from '../screens/memberships/GreenMembershipScreen';
@@ -48,6 +52,9 @@ import VioletMembershipScreen from '../screens/memberships/VioletMembershipScree
 import CartScreen from '../screens/cart/CartScreen';
 import PaymentMethodScreen from '../screens/cart/PaymentMethodScreen';
 import TransactionStatusScreen from '../screens/cart/TransactionStatusScreen';
+
+// Payment screens
+import PaddlePaymentScreen from '../screens/payments/PaddlePaymentScreen';
 
 // Advertisement screens
 import MakeAnAdScreen from '../screens/advertisements/MakeAnAdScreen';
@@ -121,8 +128,31 @@ import AppReviewsScreen from '../screens/user-settings/review/AppReviewsScreen';
 import SiteReviewsScreen from '../screens/user-settings/review/SiteReviewsScreen';
 import ShareScreen from '../screens/user-settings/share/ShareScreen';
 
+// Resolution Center screens
+import ResolutionCenterHomeScreen from '../screens/resolution-center/ResolutionCenterHomeScreen';
+import DisputeListScreen from '../screens/resolution-center/DisputeListScreen';
+import DisputeCategoryScreen from '../screens/resolution-center/DisputeCategoryScreen';
+import SelectProductScreen from '../screens/resolution-center/SelectProductScreen';
+import SelectProblemScreen from '../screens/resolution-center/SelectProblemScreen';
+import ReviewEligibilityScreen from '../screens/resolution-center/ReviewEligibilityScreen';
+import DisputeFormScreen from '../screens/resolution-center/DisputeFormScreen';
+import UploadEvidenceScreen from '../screens/resolution-center/UploadEvidenceScreen';
+import DisputeConfirmationScreen from '../screens/resolution-center/DisputeConfirmationScreen';
+import DisputeDetailScreen from '../screens/resolution-center/DisputeDetailScreen';
+import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagingScreen';
+
+// My Support screens
+import MySupportHomeScreen from '../screens/my-support/MySupportHomeScreen';
+import SupportTicketListScreen from '../screens/my-support/SupportTicketListScreen';
+import CreateTicketScreen from '../screens/my-support/CreateTicketScreen';
+import TicketDetailScreen from '../screens/my-support/TicketDetailScreen';
+import TicketMessagingScreen from '../screens/my-support/TicketMessagingScreen';
+import DeletedAdsScreen from '../screens/my-support/DeletedAdsScreen';
+import AdAppealScreen from '../screens/my-support/AdAppealScreen';
+import AppealStatusScreen from '../screens/my-support/AppealStatusScreen';
+
 const Stack = createNativeStackNavigator();
- 
+
 const AppNavigator = () => {
   const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
 
@@ -131,15 +161,15 @@ const AppNavigator = () => {
     if (isLoading) {
       return 'Splash';
     }
-    
+
     if (!isAuthenticated) {
       return 'Registration';
     }
-    
+
     if (!hasActiveSubscription()) {
       return 'AllMemberships';
     }
-    
+
     return 'SearchScreen';
   };
 
@@ -153,8 +183,8 @@ const AppNavigator = () => {
         }}
       >
         {/* Onboarding Flow */}
-        <Stack.Screen 
-          name="Splash" 
+        <Stack.Screen
+          name="Splash"
           component={SplashScreen}
           options={{
             animationEnabled: false,
@@ -181,45 +211,45 @@ const AppNavigator = () => {
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="LegalAgreements" 
+        <Stack.Screen
+          name="LegalAgreements"
           component={LegalAgreementsScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="PolicySelection" 
+        <Stack.Screen
+          name="PolicySelection"
           component={PolicySelectionScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="PolicyDetail" 
+        <Stack.Screen
+          name="PolicyDetail"
           component={PolicyDetailScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="ATTPrompt" 
+        <Stack.Screen
+          name="ATTPrompt"
           component={ATTPromptScreen}
           options={{
             animationEnabled: true,
             presentation: 'transparentModal',
           }}
         />
-        <Stack.Screen 
-          name="CookiesConsent" 
+        <Stack.Screen
+          name="CookiesConsent"
           component={CookiesConsentScreen}
           options={{
             animationEnabled: true,
             presentation: 'transparentModal',
           }}
         />
-        <Stack.Screen 
-          name="CookieSettings" 
+        <Stack.Screen
+          name="CookieSettings"
           component={CookieSettingsScreen}
           options={{
             animationEnabled: true,
@@ -227,43 +257,43 @@ const AppNavigator = () => {
         />
 
         {/* Registration Flow */}
-        <Stack.Screen 
-          name="Registration" 
+        <Stack.Screen
+          name="Registration"
           component={RegistrationScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="SocialLogin" 
+        <Stack.Screen
+          name="SocialLogin"
           component={SocialLoginScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="CreateAccount" 
+        <Stack.Screen
+          name="CreateAccount"
           component={CreateAccountScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="PasswordGuidelines" 
+        <Stack.Screen
+          name="PasswordGuidelines"
           component={PasswordGuidelinesScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="EmailVerification" 
+        <Stack.Screen
+          name="EmailVerification"
           component={EmailVerificationScreen}
           options={{
             animationEnabled: true,
           }}
         />
-        <Stack.Screen 
-          name="AccountVerified" 
+        <Stack.Screen
+          name="AccountVerified"
           component={AccountVerifiedScreen}
           options={{
             animationEnabled: true,
@@ -297,6 +327,27 @@ const AppNavigator = () => {
             animationEnabled: true,
           }}
         />
+
+        {/* Demo Screen - Public Access */}
+        <Stack.Screen
+          name="Demo"
+          component={DemoScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+
+        {/* Demo Product Details - Public Access */}
+        <Stack.Screen
+          name="DemoProductDetails"
+          component={DemoProductDetailsScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen
           name="SearchScreen"
           component={SearchScreen}
@@ -403,6 +454,14 @@ const AppNavigator = () => {
           component={TransactionStatusScreen}
           options={{
             animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PaddlePayment"
+          component={PaddlePaymentScreen}
+          options={{
+            animationEnabled: true,
+            presentation: 'modal',
           }}
         />
 
@@ -859,6 +918,162 @@ const AppNavigator = () => {
           component={ShareScreen}
           options={{
             animationEnabled: true,
+          }}
+        />
+
+        {/* Resolution Center Flow */}
+        <Stack.Screen
+          name="ResolutionCenter"
+          component={ResolutionCenterHomeScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Resolution Center',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeList"
+          component={DisputeListScreen}
+          options={{
+            animationEnabled: true,
+            title: 'My Disputes',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeCategory"
+          component={DisputeCategoryScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Choose Dispute Type',
+          }}
+        />
+        <Stack.Screen
+          name="SelectProduct"
+          component={SelectProductScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Select Product',
+          }}
+        />
+        <Stack.Screen
+          name="SelectProblem"
+          component={SelectProblemScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Select Problem',
+          }}
+        />
+        <Stack.Screen
+          name="ReviewEligibility"
+          component={ReviewEligibilityScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Review Eligibility',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeForm"
+          component={DisputeFormScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Dispute Details',
+          }}
+        />
+        <Stack.Screen
+          name="UploadEvidence"
+          component={UploadEvidenceScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Upload Evidence',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeConfirmation"
+          component={DisputeConfirmationScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Review & Confirm',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeDetail"
+          component={DisputeDetailScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Dispute Details',
+          }}
+        />
+        <Stack.Screen
+          name="DisputeMessaging"
+          component={DisputeMessagingScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Dispute Chat',
+          }}
+        />
+
+        {/* My Support Flow */}
+        <Stack.Screen
+          name="MySupport"
+          component={MySupportHomeScreen}
+          options={{
+            animationEnabled: true,
+            title: 'My Support',
+          }}
+        />
+        <Stack.Screen
+          name="SupportTicketList"
+          component={SupportTicketListScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Support Tickets',
+          }}
+        />
+        <Stack.Screen
+          name="CreateTicket"
+          component={CreateTicketScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Create Support Ticket',
+          }}
+        />
+        <Stack.Screen
+          name="TicketDetail"
+          component={TicketDetailScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Ticket Details',
+          }}
+        />
+        <Stack.Screen
+          name="TicketMessaging"
+          component={TicketMessagingScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Ticket Chat',
+          }}
+        />
+        <Stack.Screen
+          name="DeletedAds"
+          component={DeletedAdsScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Deleted Ads',
+          }}
+        />
+        <Stack.Screen
+          name="AdAppeal"
+          component={AdAppealScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Appeal Ad Deletion',
+          }}
+        />
+        <Stack.Screen
+          name="AppealStatus"
+          component={AppealStatusScreen}
+          options={{
+            animationEnabled: true,
+            title: 'Appeal Status',
           }}
         />
       </Stack.Navigator>

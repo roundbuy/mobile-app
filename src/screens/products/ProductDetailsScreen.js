@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
-import { advertisementService } from '../../services';
+import { advertisementService, favoritesService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -30,6 +30,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
 
   // Fetch advertisement details on mount
@@ -122,8 +123,43 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     navigation.goBack();
   };
 
-  const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
+  const handleFavorite = async () => {
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'Please login to add items to favorites.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => navigation.navigate('SocialLogin') }
+        ]
+      );
+      return;
+    }
+
+    try {
+      setFavoriteLoading(true);
+
+      // Toggle favorite status via API
+      const response = await favoritesService.toggleFavorite(productData.id);
+
+      if (response.success) {
+        const newFavoriteStatus = response.data.is_favorited;
+        setIsFavorite(newFavoriteStatus);
+
+        // Show feedback
+        Alert.alert(
+          'Success',
+          newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites'
+        );
+      } else {
+        Alert.alert('Error', response.message || 'Failed to update favorites');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      Alert.alert('Error', 'Failed to update favorites. Please try again.');
+    } finally {
+      setFavoriteLoading(false);
+    }
   };
 
   const handleBuy = () => {
@@ -216,15 +252,19 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             defaultSource={IMAGES.placeholder}
           />
           <TouchableOpacity
-            style={styles.favoriteButton}
+            style={[styles.favoriteButton, favoriteLoading && styles.favoriteButtonDisabled]}
             onPress={handleFavorite}
+            disabled={favoriteLoading}
           >
-            <FontAwesome
-              name={isFavorite ? 'heart' : 'heart-o'}
-              size={24}
-              color={isFavorite ? COLORS.primary : '#fff'}
-            />
-            <Text style={styles.favoriteCount}>{productData.favorites}</Text>
+            {favoriteLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <FontAwesome
+                name={isFavorite ? 'heart' : 'heart-o'}
+                size={24}
+                color={isFavorite ? COLORS.primary : '#fff'}
+              />
+            )}
           </TouchableOpacity>
           {renderImageDots()}
         </View>
@@ -482,6 +522,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  favoriteButtonDisabled: {
+    opacity: 0.6,
   },
   favoriteCount: {
     color: '#fff',

@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList, RefreshControl } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE } from '../../components/MapView';
 import * as Location from 'expo-location';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, SLIDER_CONFIG } from '../../constants/theme';
+import { ACTIVITY_COLORS } from '../../constants/demoCities';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { advertisementService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
@@ -16,7 +17,7 @@ import CombinedFiltersModal from '../../components/CombinedFiltersModal';
 
 const SearchScreen = ({ navigation, route }) => {
   const { user, hasActiveSubscription } = useAuth();
-  
+
   // Search and filter state
   const [searchText, setSearchText] = useState('');
   const [viewMode, setViewMode] = useState('map');
@@ -26,7 +27,7 @@ const SearchScreen = ({ navigation, route }) => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  
+
   // Filter state
   const [filters, setFilters] = useState({
     search: '',
@@ -52,12 +53,12 @@ const SearchScreen = ({ navigation, route }) => {
   });
   const [mapError, setMapError] = useState(null);
   const mapRef = useRef(null);
-  
+
   // Slider for distance
   const SLIDER_MAX = SLIDER_CONFIG.max;
   const SLIDER_MIN = SLIDER_CONFIG.min;
   const SLIDER_DECIMAL_PRECISION = SLIDER_CONFIG.decimalPrecision;
-  const [sliderValue, setSliderValue] = useState(SLIDER_CONFIG.defaultValue);
+  const [sliderValue, setSliderValue] = useState(2); // Default 2km radius
   const sliderTrackRef = useRef(null);
   const sliderLayout = useRef({ x: 0, width: 0 });
   const [selectedLocation, setSelectedLocation] = useState(1);
@@ -83,8 +84,13 @@ const SearchScreen = ({ navigation, route }) => {
   }, [filters]);
 
 
+
   // Get user location and locations
   useEffect(() => {
+    console.log('🗺️ SearchScreen mounted');
+    console.log('🔑 PROVIDER_GOOGLE value:', PROVIDER_GOOGLE);
+    console.log('📦 MapView available:', MapView !== null);
+    console.log('📍 Initial region:', region);
     getLocationAsync();
     fetchUserLocations();
   }, []);
@@ -94,6 +100,26 @@ const SearchScreen = ({ navigation, route }) => {
     setFilters({ ...filters, radius: sliderValue });
   }, [sliderValue]);
 
+  // Dynamic zoom when radius changes
+  useEffect(() => {
+    if (mapRef.current && sliderValue) {
+      const radiusInKm = sliderValue;
+      const radiusInDegrees = radiusInKm / 111; // Approximate conversion
+      const newDelta = radiusInDegrees * 2.5; // Add padding around circle
+
+      const centerLocation = getSelectedUserLocation();
+
+      mapRef.current.animateToRegion({
+        latitude: centerLocation.latitude,
+        longitude: centerLocation.longitude,
+        latitudeDelta: newDelta,
+        longitudeDelta: newDelta,
+      }, 300); // 300ms animation
+
+      console.log(`🔍 Zoom updated: Radius ${radiusInKm}km → Delta ${newDelta.toFixed(4)}`);
+    }
+  }, [sliderValue, selectedLocation]); // Added selectedLocation dependency
+
   const fetchAdvertisements = async (loadMore = false) => {
     try {
       if (!loadMore) {
@@ -102,7 +128,7 @@ const SearchScreen = ({ navigation, route }) => {
       }
 
       const currentPage = loadMore ? page + 1 : 1;
-      
+
       // Determine search center: user's first location > GPS location > default location
       let searchLatitude, searchLongitude;
       if (userLocations.length > 0) {
@@ -142,7 +168,7 @@ const SearchScreen = ({ navigation, route }) => {
 
       if (response.success) {
         const newAds = response.data.advertisements;
-        
+
         if (loadMore) {
           setAdvertisements([...advertisements, ...newAds]);
         } else {
@@ -155,7 +181,7 @@ const SearchScreen = ({ navigation, route }) => {
     } catch (err) {
       console.error('Error fetching advertisements:', err);
       setError(err.message || 'Failed to load advertisements');
-      
+
       // Handle specific errors
       if (err.require_subscription) {
         Alert.alert(
@@ -302,6 +328,20 @@ const SearchScreen = ({ navigation, route }) => {
     return null;
   };
 
+  // Get the currently selected user location (1, 2, or 3)
+  const getSelectedUserLocation = () => {
+    const index = selectedLocation - 1; // Convert 1,2,3 to 0,1,2
+    if (userLocations.length > index) {
+      const selectedLoc = userLocations[index];
+      return {
+        latitude: parseFloat(selectedLoc.latitude),
+        longitude: parseFloat(selectedLoc.longitude),
+      };
+    }
+    // Fallback to first location or current location
+    return getFirstUserLocation() || location || defaultLocation;
+  };
+
   const zoomIn = () => {
     if (mapRef.current) {
       const newRegion = {
@@ -372,7 +412,7 @@ const SearchScreen = ({ navigation, route }) => {
   const updateSliderValue = (pageX) => {
     const { x, width } = sliderLayout.current;
     if (width === 0) return;
-    
+
     const relativeX = pageX - x;
     const percentage = Math.max(0, Math.min(100, (relativeX / width) * 100));
     const actualValue = (percentage / 100) * SLIDER_MAX;
@@ -390,7 +430,7 @@ const SearchScreen = ({ navigation, route }) => {
       onPanResponderMove: (evt) => {
         updateSliderValue(evt.nativeEvent.pageX);
       },
-      onPanResponderRelease: () => {},
+      onPanResponderRelease: () => { },
     })
   ).current;
 
@@ -401,8 +441,8 @@ const SearchScreen = ({ navigation, route }) => {
       activeOpacity={0.7}
     >
       {item.images && item.images.length > 0 ? (
-        <Image 
-          source={{ uri: item.images[0] }} 
+        <Image
+          source={{ uri: item.images[0] }}
           style={styles.image}
           defaultSource={IMAGES.placeholder}
         />
@@ -431,7 +471,7 @@ const SearchScreen = ({ navigation, route }) => {
           <Text style={styles.subscriptionText}>
             Active subscription required to browse advertisements
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.subscribeButton}
             onPress={() => navigation.navigate('AllMemberships')}
           >
@@ -443,7 +483,7 @@ const SearchScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView edges={['top','bottom']} style={styles.container}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchSection}>
         <View style={styles.searchBar}>
@@ -501,7 +541,7 @@ const SearchScreen = ({ navigation, route }) => {
       </View>
 
       {/* Main Content */}
-      <View style={{flex:1, paddingBottom:50}}>
+      <View style={{ flex: 1, paddingBottom: 20 }}>
         {/* List View */}
         {viewMode === 'list' && (
           <FlatList
@@ -539,7 +579,7 @@ const SearchScreen = ({ navigation, route }) => {
 
         {/* Map View */}
         {viewMode === 'map' && (
-          <View style={styles.mapContainer}>
+          <View key="map-view" style={styles.mapContainer}>
             <View style={styles.fixedButtons}>
               <View style={styles.topLocations}>
                 <TouchableOpacity
@@ -574,19 +614,19 @@ const SearchScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               <View style={styles.zoomControls}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.zoomButton}
                   onPress={zoomIn}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.zoomButtonText}>+</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.zoomButton, styles.zoomButtonBottom]}
                   onPress={zoomOut}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.minusText}/>
+                  <View style={styles.minusText} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -594,7 +634,7 @@ const SearchScreen = ({ navigation, route }) => {
             {mapError ? (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>Map Error: {mapError}</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.retryButton}
                   onPress={() => setMapError(null)}
                 >
@@ -604,7 +644,7 @@ const SearchScreen = ({ navigation, route }) => {
             ) : (
               <MapView
                 ref={mapRef}
-                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                provider={PROVIDER_GOOGLE}
                 style={styles.map}
                 initialRegion={region}
                 onRegionChangeComplete={setRegion}
@@ -616,53 +656,75 @@ const SearchScreen = ({ navigation, route }) => {
                 loadingEnabled={true}
                 showsPointsOfInterest={false}
                 showsBuildings={false}
-                onPress={handleMapPress}
                 customMapStyle={[
                   {
                     featureType: "poi",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.business",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.park",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.attraction",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.government",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.medical",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.place_of_worship",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.school",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "poi.sports_complex",
+                    stylers: [{ visibility: "off" }]
+                  },
+                  {
+                    featureType: "transit",
+                    elementType: "labels",
                     stylers: [{ visibility: "off" }]
                   }
                 ]}
                 onMapReady={() => {
                   console.log('✅ Map is ready!');
+                  console.log('📍 Current region:', region);
+                  console.log('🔑 Using PROVIDER_GOOGLE:', PROVIDER_GOOGLE);
                   setMapError(null);
+                }}
+                onMapLoaded={() => {
+                  console.log('✅ Map loaded successfully!');
                 }}
                 onError={(error) => {
                   console.error('❌ Map error:', error);
+                  console.error('❌ Error details:', JSON.stringify(error, null, 2));
                   const errorMessage = error?.message || error?.nativeEvent?.message || 'Unknown error';
                   setMapError(errorMessage);
                 }}
               >
-                {/* Search radius circle */}
+                {/* Search radius circle - follows selected location */}
                 <Circle
-                  center={getFirstUserLocation() || location || defaultLocation}
+                  center={getSelectedUserLocation()}
                   radius={sliderValue * 1000}
                   strokeWidth={2}
-                  strokeColor={COLORS.primary}
-                  fillColor="rgba(63, 81, 181, 0.1)"
+                  strokeColor="#001C64"
+                  fillColor="rgba(0, 28, 100, 0.1)"
                 />
-
-                {/* Default circle around user's first location */}
-                {getFirstUserLocation() && (
-                  <Circle
-                    center={getFirstUserLocation()}
-                    radius={5000} // 5km default circle
-                    strokeWidth={2}
-                    strokeColor="#4CAF50"
-                    fillColor="rgba(76, 175, 80, 0.1)"
-                  />
-                )}
-
-                {/* Circle around clicked location */}
-                {clickedLocation && (
-                  <Circle
-                    center={clickedLocation}
-                    radius={clickedLocationRadius * 1000}
-                    strokeWidth={2}
-                    strokeColor="#FF9800"
-                    fillColor="rgba(255, 152, 0, 0.1)"
-                  />
-                )}
 
                 {/* User location marker */}
                 {location && (
@@ -689,8 +751,10 @@ const SearchScreen = ({ navigation, route }) => {
                   // Only show ads with location data
                   if (!ad.latitude || !ad.longitude) return null;
 
-                  // Get first letter of activity name or fallback to price
-                  const activityFirstLetter = ad.activity_name ? ad.activity_name.charAt(0).toUpperCase() : '₹';
+                  // Get activity color and label from ACTIVITY_COLORS
+                  const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
+                  const markerLabel = activityData.label;
+                  const markerColor = activityData.color;
 
                   return (
                     <Marker
@@ -700,11 +764,11 @@ const SearchScreen = ({ navigation, route }) => {
                         longitude: parseFloat(ad.longitude),
                       }}
                       title={ad.title}
-                      description={`₹${ad.price} - ${ad.activity_name || 'General'}`}
+                      description={`₹${ad.price} - ${activityData.name}`}
                       onPress={() => handleProductPress(ad)}
                     >
-                      <View style={styles.customMarker}>
-                        <Text style={styles.markerText}>{activityFirstLetter}</Text>
+                      <View style={[styles.customMarker, { backgroundColor: markerColor }]}>
+                        <Text style={styles.markerText}>{markerLabel}</Text>
                       </View>
                     </Marker>
                   );
@@ -716,24 +780,24 @@ const SearchScreen = ({ navigation, route }) => {
       </View>
 
       {/* View Toggle & Distance Slider */}
-      <View style={styles.rowa}>
+      <View style={[styles.rowa, { marginBottom: viewMode === 'list' ? 35 : 5 }]}>
         {viewMode === 'map' && (
           <TouchableOpacity style={styles.mapViewToggle}>
             <Text style={styles.mapViewText}>Distance</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity 
-          style={[styles.mapViewToggle, {alignSelf:'flex-end'}]}
+        <TouchableOpacity
+          style={[styles.mapViewToggle, { alignSelf: 'center' }]}
           onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
           <Text style={styles.mapViewText}>{viewMode === 'map' ? 'List' : 'Map'}</Text>
         </TouchableOpacity>
       </View>
-      
+
       {/* Distance Slider (Map View Only) */}
       {viewMode === 'map' && (
         <View style={styles.sliderContainer}>
-          <View 
+          <View
             style={styles.sliderTrack}
             ref={sliderTrackRef}
             onLayout={(event) => {
@@ -742,7 +806,7 @@ const SearchScreen = ({ navigation, route }) => {
             }}
             {...sliderPanResponder.panHandlers}
           >
-            <View 
+            <View
               style={[
                 styles.sliderFill,
                 { width: `${(sliderValue / SLIDER_MAX) * 100}%` }
@@ -872,7 +936,7 @@ const styles = StyleSheet.create({
     gap: 6,
     position: 'relative',
   },
-  filterButtonText: {
+  filterButtonFText: {
     fontSize: 14,
     fontWeight: '500',
     color: '#1a1a1a',
@@ -918,10 +982,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: COLORS.white,
     alignItems: 'center',
+    marginBottom: 10,
   },
   map: {
     width: '90%',
-    height: '100%',
+    height: '95%',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -966,8 +1031,8 @@ const styles = StyleSheet.create({
   customMarker: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    // backgroundColor set dynamically based on activity
     borderWidth: 2,
     borderColor: '#ffffff',
     shadowColor: '#000',
@@ -977,15 +1042,15 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   markerText: {
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: '700',
     color: '#ffffff',
   },
   bottomNav: {
-    position:'absolute',
-    bottom:0,
-    left:0,
-    right:0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     height: 70,
     backgroundColor: '#ffffff',
@@ -1006,31 +1071,32 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderRadius: 25,
   },
-  row:{
-    width:'100%',
-    flexDirection:'row',
-    justifyContent:'space-between',
-    paddingHorizontal:20,
-    paddingTop:10
+  row: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 10
   },
-  rowa:{
-    width:'100%',
-    flexDirection:'row',
-    justifyContent:'space-between',
-    paddingHorizontal:20,
-    paddingTop:10
+  rowa: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingTop: 10
   },
   sliderContainer: {
     width: '100%',
     paddingHorizontal: 20,
-    marginTop:10
+    marginTop: 10,
+    marginBottom: 30
   },
   sliderLabel: {
     fontSize: 14,
     fontWeight: '500',
     color: '#666666',
-    marginTop:12,
-    textAlign:'right'
+    marginTop: 12,
+    textAlign: 'right'
   },
   sliderTrack: {
     height: 5,
@@ -1073,7 +1139,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: COLORS.primary,
-    marginTop:12
+    marginTop: 12
   },
   zoomButtonBottom: {
     marginTop: 8,
@@ -1084,24 +1150,24 @@ const styles = StyleSheet.create({
     color: COLORS.blue,
     lineHeight: 28,
   },
-  fixedButtons:{
-    position:'absolute',
-    left:32,
-    top:12,
-    zIndex:99999
+  fixedButtons: {
+    position: 'absolute',
+    left: 32,
+    top: 12,
+    zIndex: 99999
   },
-  minusText:{
-    width:18,
-    backgroundColor:COLORS.blue,
-    height:4
+  minusText: {
+    width: 18,
+    backgroundColor: COLORS.blue,
+    height: 4
   },
-  listContainer:{
-    paddingHorizontal:10,
-    paddingBottom:100
+  listContainer: {
+    paddingHorizontal: 10,
+    paddingBottom: 100
   },
-  gridItem:{
+  gridItem: {
     width: '48%',
-    marginBottom:16,
+    marginBottom: 16,
     backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
@@ -1111,7 +1177,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  image:{
+  image: {
     width: '100%',
     height: 150,
     backgroundColor: '#f0f0f0',
@@ -1184,9 +1250,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   mapViewToggle: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   mapViewText: {
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '500',
     color: '#1a1a1a',
   },

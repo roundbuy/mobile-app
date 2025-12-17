@@ -47,15 +47,17 @@ const UserAccountScreen = ({ navigation }) => {
     settings: [
       { id: 1, title: 'Manage offers', icon: 'pricetag-outline' },
       { id: 2, title: 'My Ads', icon: 'megaphone-outline' },
-      { id: 3, title: 'Purchase Visibility', icon: 'eye-outline' },
-      { id: 4, title: 'Default location & Product locations', icon: 'location-outline' },
-      { id: 5, title: 'Membership', icon: 'card-outline' },
-      { id: 6, title: 'Feedbacks', icon: 'chatbubble-outline' },
-      { id: 7, title: 'Favourites', icon: 'heart-outline' },
-      { id: 8, title: 'Rewards', icon: 'gift-outline' },
-      { id: 9, title: 'Review', icon: 'star-outline' },
-      { id: 10, title: 'Share', icon: 'share-social-outline' },
-      { id: 11, title: 'Follow', icon: 'person-add-outline' },
+      { id: 3, title: 'Resolution Center', icon: 'warning-outline', badge: 0 },
+      { id: 4, title: 'My Support', icon: 'help-circle-outline', badge: 0 },
+      { id: 5, title: 'Purchase Visibility', icon: 'eye-outline' },
+      { id: 6, title: 'Default location & Product locations', icon: 'location-outline' },
+      { id: 7, title: 'Membership', icon: 'card-outline' },
+      { id: 8, title: 'Feedbacks', icon: 'chatbubble-outline' },
+      { id: 9, title: 'Favourites', icon: 'heart-outline' },
+      { id: 10, title: 'Rewards', icon: 'gift-outline' },
+      { id: 11, title: 'Review', icon: 'star-outline' },
+      { id: 12, title: 'Share', icon: 'share-social-outline' },
+      { id: 13, title: 'Follow', icon: 'person-add-outline' },
     ],
   };
 
@@ -85,6 +87,10 @@ const UserAccountScreen = ({ navigation }) => {
         navigation.navigate('ManageOffers');
       } else if (item.title === 'My Ads') {
         navigation.navigate('MyAds');
+      } else if (item.title === 'Resolution Center') {
+        navigation.navigate('ResolutionCenter');
+      } else if (item.title === 'My Support') {
+        navigation.navigate('MySupport');
       } else if (item.title === 'Purchase Visibility') {
         navigation.navigate('PurchaseVisibility');
       } else if (item.title === 'Default location & Product locations') {
@@ -118,6 +124,11 @@ const UserAccountScreen = ({ navigation }) => {
           <Text style={[styles.menuItemText, item.isLogout && styles.logoutText]}>
             {item.title}
           </Text>
+          {item.badge !== undefined && item.badge > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{item.badge}</Text>
+            </View>
+          )}
         </View>
         <Ionicons name="chevron-forward" size={20} color="#999" />
       </TouchableOpacity>
@@ -308,6 +319,21 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
     width: '100%',
+  },
+  badge: {
+    backgroundColor: '#FF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+    paddingHorizontal: 6,
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

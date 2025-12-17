@@ -7,7 +7,7 @@ import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../..
 const WelcomeScreen = ({ navigation }) => {
   const handleTryDemo = () => {
     console.log('Navigate to Demo');
-    // Navigate to demo mode
+    navigation.navigate('Demo');
   };
 
   const handleChoosePlan = () => {
@@ -39,7 +39,7 @@ const WelcomeScreen = ({ navigation }) => {
           <Text style={styles.sectionDescription}>
             Try the service in four test cities: London,{'\n'}Paris, New York and Tokyo
           </Text>
-          
+
           <TouchableOpacity
             style={styles.demoButton}
             onPress={handleTryDemo}
@@ -54,7 +54,7 @@ const WelcomeScreen = ({ navigation }) => {
           <Text style={styles.sectionDescription}>
             For safety, you must choose a plan to proceed
           </Text>
-          
+
           <TouchableOpacity
             style={styles.planButton}
             onPress={handleChoosePlan}

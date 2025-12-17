@@ -15,6 +15,16 @@ const CartScreen = ({ navigation, route }) => {
     navigation.navigate('PaymentMethod', { total, planType, planName });
   };
 
+  const handleTestPaddlePayment = () => {
+    navigation.navigate('PaddlePayment', {
+      total,
+      planType,
+      planName,
+      planId: 1, // Test plan ID
+      currencyCode: 'USD'
+    });
+  };
+
   const getPlanColor = () => {
     switch(planType) {
       case 'Green': return '#7FD957';
@@ -80,11 +90,19 @@ const CartScreen = ({ navigation, route }) => {
         </View>
 
         {/* Pay Now Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.payButton}
           onPress={handlePayNow}
         >
           <Text style={styles.payButtonText}>Pay now</Text>
+        </TouchableOpacity>
+
+        {/* Test Paddle Payment Button */}
+        <TouchableOpacity
+          style={styles.testPaddleButton}
+          onPress={handleTestPaddlePayment}
+        >
+          <Text style={styles.testPaddleButtonText}>🧪 Test Paddle Payment</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeScreenContainer>
@@ -214,6 +232,21 @@ const styles = StyleSheet.create({
   },
   payButtonText: {
     fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  testPaddleButton: {
+    backgroundColor: '#6C5CE7',
+    marginHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 28,
+    alignItems: 'center',
+    marginBottom: 30,
+    borderWidth: 2,
+    borderColor: '#5B4CD3',
+  },
+  testPaddleButtonText: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
   },

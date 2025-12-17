@@ -1,49 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { settingsService } from '../../../services';
 
 const CountrySettingsScreen = ({ navigation }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState('£ sterling pounds');
-  const [selectedLanguage, setSelectedLanguage] = useState('United Kingdom');
+  const [isLoading, setIsLoading] = useState(true);
+  const [userPreferences, setUserPreferences] = useState({
+    currency_name: '',
+    currency_symbol: '',
+    language_name: '',
+  });
 
-  const currencies = [
-    '£ sterling pounds',
-    '€ euroe',
-    '$ USD',
-    'India',
-  ];
+  // Fetch user preferences on component mount
+  useEffect(() => {
+    fetchUserPreferences();
+  }, []);
 
-  const languages = [
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'Indpia',
-    'United Kingdom',
-    'India',
-  ];
+  const fetchUserPreferences = async () => {
+    try {
+      setIsLoading(true);
+      const response = await settingsService.getUserPreferences();
+
+      if (response.success && response.data?.preferences) {
+        const prefs = response.data.preferences;
+        setUserPreferences({
+          currency_name: prefs.currency_name || 'Not set',
+          currency_symbol: prefs.currency_symbol || '',
+          language_name: prefs.language_name || 'Not set',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user preferences:', error);
+      Alert.alert('Error', 'Failed to load your preferences. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleCurrencyPress = () => {
-    navigation.navigate('CurrencySelection', { selectedCurrency });
+    navigation.navigate('CurrencySelection', {
+      currentCurrency: userPreferences.currency_name,
+      onCurrencySelected: handleCurrencySelected
+    });
   };
 
   const handleLanguagePress = () => {
-    navigation.navigate('LanguageSelection', { selectedLanguage });
+    navigation.navigate('LanguageSelection', {
+      currentLanguage: userPreferences.language_name,
+      onLanguageSelected: handleLanguageSelected
+    });
   };
+
+  const handleCurrencySelected = (currency) => {
+    setUserPreferences(prev => ({
+      ...prev,
+      currency_name: currency.name,
+      currency_symbol: currency.symbol,
+    }));
+  };
+
+  const handleLanguageSelected = (language) => {
+    setUserPreferences(prev => ({
+      ...prev,
+      language_name: language.name,
+    }));
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000" />
+          <Text style={styles.loadingText}>Loading your preferences...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -63,7 +108,12 @@ const CountrySettingsScreen = ({ navigation }) => {
           onPress={handleCurrencyPress}
           activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Currency</Text>
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemText}>Currency</Text>
+            <Text style={styles.menuItemValue}>
+              {userPreferences.currency_symbol} {userPreferences.currency_name}
+            </Text>
+          </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
@@ -73,7 +123,10 @@ const CountrySettingsScreen = ({ navigation }) => {
           onPress={handleLanguagePress}
           activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Language</Text>
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemText}>Language</Text>
+            <Text style={styles.menuItemValue}>{userPreferences.language_name}</Text>
+          </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
@@ -88,6 +141,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',
@@ -128,11 +191,21 @@ const styles = StyleSheet.create({
   menuItemLast: {
     borderBottomWidth: 0,
   },
+  menuItemContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   menuItemText: {
     fontSize: 15,
     color: '#000',
     fontWeight: '400',
-    flex: 1,
+  },
+  menuItemValue: {
+    fontSize: 15,
+    color: '#666',
+    fontWeight: '400',
   },
   copyright: {
     fontSize: 11,

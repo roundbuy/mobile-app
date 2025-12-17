@@ -1,39 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { settingsService } from '../../../services';
 
 const LanguageSelectionScreen = ({ route, navigation }) => {
-  const { selectedLanguage } = route?.params || {};
-  const [selected, setSelected] = useState(selectedLanguage || 'United Kingdom');
+  const { currentLanguage, onLanguageSelected } = route?.params || {};
+  const [languages, setLanguages] = useState([]);
+  const [selected, setSelected] = useState(currentLanguage || '');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const languages = [
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'India',
-    'United Kingdom',
-    'Indpia',
-    'United Kingdom',
-    'India',
-  ];
+  // Fetch languages on component mount
+  useEffect(() => {
+    fetchLanguages();
+  }, []);
+
+  const fetchLanguages = async () => {
+    try {
+      setIsLoading(true);
+      const response = await settingsService.getLanguages();
+
+      if (response.success && response.data?.languages) {
+        setLanguages(response.data.languages);
+      }
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+      Alert.alert('Error', 'Failed to load languages. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSelect = (language) => {
-    setSelected(language);
-    // Auto navigate back after selection (optional)
-    // setTimeout(() => navigation.goBack(), 300);
+  const handleSelect = async (language) => {
+    try {
+      setSelected(language.name);
+
+      // Update user preferences
+      const response = await settingsService.updateUserPreferences({
+        language_preference: language.code
+      });
+
+      if (response.success) {
+        // Call the callback if provided
+        if (onLanguageSelected) {
+          onLanguageSelected(language);
+        }
+
+        // Navigate back after successful update
+        setTimeout(() => navigation.goBack(), 300);
+      } else {
+        throw new Error(response.message || 'Failed to update language');
+      }
+    } catch (error) {
+      console.error('Error updating language:', error);
+      Alert.alert('Error', error.message || 'Failed to update your language preference. Please try again.');
+    }
   };
 
   return (
@@ -48,21 +81,30 @@ const LanguageSelectionScreen = ({ route, navigation }) => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {languages.map((language, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.languageItem}
-            onPress={() => handleSelect(language)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, selected === language && styles.checkboxSelected]}>
-              {selected === language && (
-                <Ionicons name="checkmark" size={16} color="#fff" />
-              )}
-            </View>
-            <Text style={styles.languageText}>{language}</Text>
-          </TouchableOpacity>
-        ))}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000" />
+            <Text style={styles.loadingText}>Loading languages...</Text>
+          </View>
+        ) : (
+          languages.map((language, index) => (
+            <TouchableOpacity
+              key={language.id || index}
+              style={styles.languageItem}
+              onPress={() => handleSelect(language)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, selected === language.name && styles.checkboxSelected]}>
+                {selected === language.name && (
+                  <Ionicons name="checkmark" size={16} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.languageText}>
+                {language.name} ({language.code.toUpperCase()})
+              </Text>
+            </TouchableOpacity>
+          ))
+        )}
 
         {/* Copyright */}
         <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
