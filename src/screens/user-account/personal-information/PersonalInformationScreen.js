@@ -8,16 +8,23 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../../constants/theme';
 import { userService } from '../../../services';
+import GlobalHeader from '../../../components/GlobalHeader';
+import { useAuth } from '../../../context/AuthContext';
 
 const PersonalInformationScreen = ({ navigation }) => {
+  const { user, updateUser } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,19 +43,84 @@ const PersonalInformationScreen = ({ navigation }) => {
       const response = await userService.getUserProfile();
 
       if (response.success && response.data) {
-        const user = response.data;
+        const userData = response.data;
         setFormData({
-          name: user.full_name || '',
-          email: user.email || '',
-          phone: user.phone || '',
-          billingAddress: user.billing_address || '',
+          name: userData.full_name || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          billingAddress: userData.billing_address || '',
         });
+        setProfileImage(userData.profile_image || null);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       Alert.alert('Error', 'Failed to load user information. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your photo library to upload a profile picture.');
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        await uploadProfileImage(result.assets[0]);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
+  };
+
+  const uploadProfileImage = async (imageAsset) => {
+    try {
+      setIsUploadingImage(true);
+
+      // Create form data
+      const formData = new FormData();
+      const filename = imageAsset.uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+      formData.append('profile_image', {
+        uri: imageAsset.uri,
+        name: filename,
+        type: type,
+      });
+
+      // Upload to backend
+      const response = await userService.updateProfileImage(formData);
+
+      if (response.success) {
+        setProfileImage(response.data.profile_image);
+        // Update AuthContext
+        if (updateUser) {
+          updateUser({ ...user, profile_image: response.data.profile_image });
+        }
+        Alert.alert('Success', 'Profile picture updated successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to upload image');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', error.message || 'Failed to upload profile picture. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -103,18 +175,44 @@ const PersonalInformationScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isEditMode ? 'Edit my personal information' : 'My personal information'}
-        </Text>
-        <View style={styles.headerRight} />
-      </View>
+      {/* Global Header */}
+      <GlobalHeader
+        title={isEditMode ? 'Edit my personal information' : 'My personal information'}
+        navigation={navigation}
+        showBackButton={true}
+        showIcons={true}
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Profile Image Section */}
+        <View style={styles.profileImageSection}>
+          <TouchableOpacity
+            style={styles.profileImageContainer}
+            onPress={handleImagePick}
+            activeOpacity={0.7}
+            disabled={isUploadingImage}
+          >
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <FontAwesome name="user" size={40} color="#999" />
+              </View>
+            )}
+            <View style={styles.cameraIconContainer}>
+              {isUploadingImage ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="camera" size={18} color="#fff" />
+              )}
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.profileImageHint}>Tap to change profile picture</Text>
+        </View>
+
         {/* Your Name */}
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Your Name</Text>
@@ -215,29 +313,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 16,
-  },
-  headerRight: {
-    width: 32,
-  },
+
   content: {
     flex: 1,
     paddingHorizontal: 20,
@@ -302,6 +378,47 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  profileImageSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+    paddingTop: 8,
+  },
+  profileImageContainer: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f0f0f0',
+  },
+  profileImagePlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primary,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  profileImageHint: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 

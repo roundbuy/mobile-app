@@ -10,7 +10,7 @@ class SupportService {
    */
   async createTicket(ticketData) {
     try {
-      const response = await api.post('/mobile-app/support/tickets', ticketData);
+      const response = await api.post('/support/tickets', ticketData);
       return response.data;
     } catch (error) {
       console.error('Create ticket error:', error);
@@ -23,7 +23,7 @@ class SupportService {
    */
   async getUserTickets(filters = {}) {
     try {
-      const response = await api.get('/mobile-app/support/tickets', { params: filters });
+      const response = await api.get('/support/tickets', { params: filters });
       return response.data;
     } catch (error) {
       console.error('Get tickets error:', error);
@@ -36,7 +36,7 @@ class SupportService {
    */
   async getTicketById(ticketId) {
     try {
-      const response = await api.get(`/mobile-app/support/tickets/${ticketId}`);
+      const response = await api.get(`/support/tickets/${ticketId}`);
       return response.data;
     } catch (error) {
       console.error('Get ticket by ID error:', error);
@@ -49,7 +49,7 @@ class SupportService {
    */
   async getTicketByNumber(ticketNumber) {
     try {
-      const response = await api.get(`/mobile-app/support/tickets/number/${ticketNumber}`);
+      const response = await api.get(`/support/tickets/number/${ticketNumber}`);
       return response.data;
     } catch (error) {
       console.error('Get ticket by number error:', error);
@@ -62,7 +62,7 @@ class SupportService {
    */
   async addTicketMessage(ticketId, message) {
     try {
-      const response = await api.post(`/mobile-app/support/tickets/${ticketId}/messages`, {
+      const response = await api.post(`/support/tickets/${ticketId}/messages`, {
         message
       });
       return response.data;
@@ -77,7 +77,7 @@ class SupportService {
    */
   async getTicketMessages(ticketId) {
     try {
-      const response = await api.get(`/mobile-app/support/tickets/${ticketId}/messages`);
+      const response = await api.get(`/support/tickets/${ticketId}/messages`);
       return response.data;
     } catch (error) {
       console.error('Get ticket messages error:', error);
@@ -101,7 +101,7 @@ class SupportService {
       }
 
       const response = await api.post(
-        `/mobile-app/support/tickets/${ticketId}/attachments`,
+        `/support/tickets/${ticketId}/attachments`,
         formData,
         {
           headers: {
@@ -121,7 +121,7 @@ class SupportService {
    */
   async getTicketAttachments(ticketId) {
     try {
-      const response = await api.get(`/mobile-app/support/tickets/${ticketId}/attachments`);
+      const response = await api.get(`/support/tickets/${ticketId}/attachments`);
       return response.data;
     } catch (error) {
       console.error('Get ticket attachments error:', error);
@@ -134,7 +134,7 @@ class SupportService {
    */
   async updateTicketStatus(ticketId, status) {
     try {
-      const response = await api.put(`/mobile-app/support/tickets/${ticketId}/status`, {
+      const response = await api.put(`/support/tickets/${ticketId}/status`, {
         status
       });
       return response.data;
@@ -149,7 +149,7 @@ class SupportService {
    */
   async getTicketStats() {
     try {
-      const response = await api.get('/mobile-app/support/tickets/stats');
+      const response = await api.get('/support/tickets/stats');
       return response.data;
     } catch (error) {
       console.error('Get ticket stats error:', error);
@@ -162,7 +162,7 @@ class SupportService {
    */
   async getSupportCategories() {
     try {
-      const response = await api.get('/mobile-app/support/categories');
+      const response = await api.get('/support/categories');
       return response.data;
     } catch (error) {
       console.error('Get support categories error:', error);
@@ -176,7 +176,7 @@ class SupportService {
   async hasOpenTickets(category = null) {
     try {
       const params = category ? { category } : {};
-      const response = await api.get('/mobile-app/support/has-open-tickets', { params });
+      const response = await api.get('/support/has-open-tickets', { params });
       return response.data;
     } catch (error) {
       console.error('Check open tickets error:', error);
@@ -193,7 +193,7 @@ class SupportService {
    */
   async getDeletedAds(filters = {}) {
     try {
-      const response = await api.get('/mobile-app/support/deleted-ads', { params: filters });
+      const response = await api.get('/support/deleted-ads', { params: filters });
       return response.data;
     } catch (error) {
       console.error('Get deleted ads error:', error);
@@ -206,7 +206,7 @@ class SupportService {
    */
   async getDeletedAdById(deletedAdId) {
     try {
-      const response = await api.get(`/mobile-app/support/deleted-ads/${deletedAdId}`);
+      const response = await api.get(`/support/deleted-ads/${deletedAdId}`);
       return response.data;
     } catch (error) {
       console.error('Get deleted ad error:', error);
@@ -219,7 +219,7 @@ class SupportService {
    */
   async createAppeal(deletedAdId, appealReason) {
     try {
-      const response = await api.post(`/mobile-app/support/deleted-ads/${deletedAdId}/appeal`, {
+      const response = await api.post(`/support/deleted-ads/${deletedAdId}/appeal`, {
         appeal_reason: appealReason
       });
       return response.data;
@@ -234,12 +234,45 @@ class SupportService {
    */
   async getAppealStats() {
     try {
-      const response = await api.get('/mobile-app/support/appeals/stats');
+      const response = await api.get('/support/appeals/stats');
       return response.data;
     } catch (error) {
       console.error('Get appeal stats error:', error);
       throw error.response?.data || error;
     }
+  }
+
+  /**
+   * Get all support items (for "All" tab)
+   */
+  async getAllSupport(filters = {}) {
+    try {
+      const response = await api.get('/support/all', { params: filters });
+      return response.data;
+    } catch (error) {
+      console.error('Get all support error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Get ad appeals
+   */
+  async getAdAppeals(filters = {}) {
+    try {
+      const response = await api.get('/support/appeals', { params: filters });
+      return response.data;
+    } catch (error) {
+      console.error('Get ad appeals error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Get support tickets (alias for getUserTickets for consistency)
+   */
+  async getSupportTickets(filters = {}) {
+    return this.getUserTickets(filters);
   }
 
   // ==========================================
@@ -310,15 +343,15 @@ class SupportService {
    */
   calculateAppealDeadline(deadline) {
     if (!deadline) return null;
-    
+
     const now = new Date();
     const deadlineDate = new Date(deadline);
     const diff = deadlineDate - now;
-    
+
     if (diff < 0) return 'Expired';
-    
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) {
       return 'Today';
     } else if (days === 1) {
@@ -333,10 +366,10 @@ class SupportService {
    */
   canAppeal(deletedAd) {
     if (!deletedAd) return false;
-    
+
     const now = new Date();
     const deadline = new Date(deletedAd.appeal_deadline);
-    
+
     return (
       deletedAd.can_appeal &&
       deletedAd.appeal_status === 'not_appealed' &&

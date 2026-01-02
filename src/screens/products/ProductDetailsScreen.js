@@ -17,6 +17,8 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { advertisementService, favoritesService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
+import { getFullImageUrl } from '../../utils/imageUtils';
+import GlobalHeader from '../../components/GlobalHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -233,20 +235,19 @@ const ProductDetailsScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Product</Text>
-        <View style={styles.headerRight} />
-      </View>
+      {/* Global Header */}
+      <GlobalHeader
+        title="Product"
+        navigation={navigation}
+        showBackButton={true}
+        showIcons={true}
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Product Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: productData.images[currentImageIndex] }}
+            source={{ uri: getFullImageUrl(productData.images[currentImageIndex]) }}
             style={styles.productImage}
             resizeMode="cover"
             defaultSource={IMAGES.placeholder}
@@ -306,7 +307,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             <View style={styles.sellerAvatar}>
               {productData.seller.avatar ? (
                 <Image
-                  source={{ uri: productData.seller.avatar }}
+                  source={{ uri: getFullImageUrl(productData.seller.avatar) }}
                   style={styles.sellerAvatarImage}
                   resizeMode="cover"
                 />
@@ -425,6 +426,21 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.manageOffersText}>Manage offers</Text>
         </TouchableOpacity>
 
+        {/* Issue a Dispute Link */}
+        <TouchableOpacity
+          style={styles.issueDisputeLink}
+          onPress={() => navigation.navigate('CreateIssue', {
+            advertisementId: productData?.id,
+            otherPartyId: productData?.seller?.id || productData?.user_id,
+            adTitle: productData?.title,
+            sellerName: productData?.seller?.username || productData?.seller?.full_name || 'Seller'
+          })}
+        >
+          <Ionicons name="alert-circle-outline" size={20} color="#DC143C" />
+          <Text style={styles.issueDisputeLinkText}>Issue a Dispute</Text>
+          <Ionicons name="chevron-forward" size={20} color="#999" />
+        </TouchableOpacity>
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
@@ -479,26 +495,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerRight: {
-    width: 32,
-  },
+
   scrollView: {
     flex: 1,
   },
@@ -804,6 +801,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
+  },
+  issueDisputeLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    margin: 16,
+    marginTop: 8,
+    padding: 16,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFE0E0',
+  },
+  issueDisputeLinkText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#DC143C',
+    marginLeft: 12,
   },
   bottomSpacer: {
     height: 40,

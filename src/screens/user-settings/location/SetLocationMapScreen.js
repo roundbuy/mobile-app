@@ -4,32 +4,38 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   Alert,
   Platform,
   ActivityIndicator,
-  FlatList,
   Keyboard,
+  ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE } from '../../../components/MapView';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import * as Location from 'expo-location';
 import { COLORS, SPACING } from '../../../constants/theme';
+import Constants from 'expo-constants';
 
 const SetLocationMapScreen = ({ navigation, route }) => {
   const { locationType = 'centrePoint', onSave, existingLocation } = route.params || {};
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedAddress, setSelectedAddress] = useState('');
-  const [mapType, setMapType] = useState('standard'); // 'standard' or 'satellite'
+  const [mapType, setMapType] = useState('standard');
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState(null);
-  const [predictions, setPredictions] = useState([]);
-  const [showPredictions, setShowPredictions] = useState(false);
   const [markerCoordinate, setMarkerCoordinate] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Set initial location based on existing location or default
+  // Get Google Maps API key from config
+  const GOOGLE_MAPS_API_KEY = Platform.select({
+    ios: Constants.expoConfig?.ios?.config?.googleMapsApiKey,
+    android: Constants.expoConfig?.android?.config?.googleMaps?.apiKey,
+  }) || 'AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE';
+
+  // Set initial location
   const getInitialLocation = () => {
     if (existingLocation && existingLocation.latitude && existingLocation.longitude) {
       return {
@@ -37,7 +43,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
         longitude: parseFloat(existingLocation.longitude)
       };
     }
-    return { latitude: 51.5081, longitude: -0.1279 }; // Trafalgar Square default
+    return { latitude: 51.5081, longitude: -0.1279 };
   };
 
   const initialLocation = getInitialLocation();
@@ -49,116 +55,41 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   });
 
   const mapRef = useRef(null);
-  const searchTimeoutRef = useRef(null);
+  const autocompleteRef = useRef(null);
 
   useEffect(() => {
     getLocationPermission();
     setMarkerCoordinate(initialLocation);
 
-    // Populate form with existing location data if editing
     if (existingLocation) {
       const address = existingLocation.street || existingLocation.city
         ? `${existingLocation.street || ''} ${existingLocation.city || ''} ${existingLocation.country || ''}`.trim()
         : `${existingLocation.latitude}, ${existingLocation.longitude}`;
 
-      setSearchQuery(address);
       setSelectedAddress(existingLocation.name || address);
+
+      if (autocompleteRef.current) {
+        autocompleteRef.current.setAddressText(address);
+      }
     } else {
-      // Set default values for new location
-      setSearchQuery('12 Trafalgar Square, London, WC2N');
       setSelectedAddress('12 Trafalgar square');
+      if (autocompleteRef.current) {
+        autocompleteRef.current.setAddressText('12 Trafalgar Square, London, WC2N');
+      }
     }
   }, [existingLocation]);
-
-  useEffect(() => {
-    // Debounce search for autocomplete
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (searchQuery.length > 2) {
-      searchTimeoutRef.current = setTimeout(() => {
-        searchPlaces(searchQuery);
-      }, 300);
-    } else {
-      setPredictions([]);
-      setShowPredictions(false);
-    }
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [searchQuery]);
 
   const getLocationPermission = async () => {
     try {
       setLoading(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== 'granted') {
-        console.log('Location permission denied, using default location');
+        console.log('Location permission denied');
       }
     } catch (error) {
       console.error('Error getting location permission:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Dummy autocomplete function - replace with actual Google Places API
-  const searchPlaces = async (query) => {
-    try {
-      // TODO: Replace with actual Google Places Autocomplete API call
-      // For now, using dummy data
-      const dummyPredictions = [
-        {
-          id: '1',
-          description: '12 Trafalgar Square, London, WC2N 5DN, UK',
-          latitude: 51.5081,
-          longitude: -0.1279,
-        },
-        {
-          id: '2',
-          description: 'Trafalgar Square, London, UK',
-          latitude: 51.5080,
-          longitude: -0.1281,
-        },
-        {
-          id: '3',
-          description: 'National Gallery, Trafalgar Square, London, UK',
-          latitude: 51.5089,
-          longitude: -0.1283,
-        },
-      ];
-
-      setPredictions(dummyPredictions);
-      setShowPredictions(true);
-    } catch (error) {
-      console.error('Error searching places:', error);
-    }
-  };
-
-  const handleSelectPrediction = (prediction) => {
-    setSearchQuery(prediction.description);
-    setSelectedAddress(prediction.description.split(',')[0]);
-    setPredictions([]);
-    setShowPredictions(false);
-    Keyboard.dismiss();
-
-    const newRegion = {
-      latitude: prediction.latitude,
-      longitude: prediction.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    };
-
-    setRegion(newRegion);
-    setMarkerCoordinate({ latitude: prediction.latitude, longitude: prediction.longitude });
-
-    if (mapRef.current) {
-      mapRef.current.animateToRegion(newRegion, 1000);
     }
   };
 
@@ -168,22 +99,46 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     reverseGeocode(coordinate);
   };
 
+  const handleMarkerDragStart = () => {
+    setIsDragging(true);
+  };
+
   const handleMarkerDragEnd = (event) => {
+    setIsDragging(false);
     const coordinate = event.nativeEvent.coordinate;
     setMarkerCoordinate(coordinate);
     reverseGeocode(coordinate);
   };
 
-  // Reverse geocode to get address from coordinates
   const reverseGeocode = async (coordinate) => {
     try {
-      // TODO: Replace with actual Google Geocoding API call
-      // For now, using dummy data
-      const dummyAddress = `${coordinate.latitude.toFixed(4)}, ${coordinate.longitude.toFixed(4)}`;
-      setSelectedAddress(dummyAddress);
-      setSearchQuery(dummyAddress);
+      const { latitude, longitude } = coordinate;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results.length > 0) {
+        const address = data.results[0].formatted_address;
+        setSelectedAddress(address);
+
+        if (autocompleteRef.current) {
+          autocompleteRef.current.setAddressText(address);
+        }
+      } else {
+        const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        setSelectedAddress(fallbackAddress);
+        if (autocompleteRef.current) {
+          autocompleteRef.current.setAddressText(fallbackAddress);
+        }
+      }
     } catch (error) {
       console.error('Error reverse geocoding:', error);
+      const fallbackAddress = `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`;
+      setSelectedAddress(fallbackAddress);
+      if (autocompleteRef.current) {
+        autocompleteRef.current.setAddressText(fallbackAddress);
+      }
     }
   };
 
@@ -216,14 +171,18 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   };
 
   const handleSaveLocation = () => {
-    // Prepare location data for callback
+    if (!markerCoordinate) {
+      Alert.alert('Error', 'Please select a location on the map');
+      return;
+    }
+
     const locationData = {
       name: getLocationTitle(),
       address: selectedAddress,
-      fullAddress: searchQuery,
+      fullAddress: selectedAddress,
       city: selectedAddress.split(',')[0] || 'Unknown',
       region: '',
-      country: 'Unknown',
+      country: selectedAddress.split(',').pop()?.trim() || 'Unknown',
       zipCode: '',
       coordinates: {
         latitude: markerCoordinate.latitude,
@@ -235,16 +194,10 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     if (onSave) {
       onSave(locationData);
     } else {
-      // Fallback if no callback provided
       Alert.alert(
         'Success',
         'Location saved successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
     }
   };
@@ -279,183 +232,268 @@ const SetLocationMapScreen = ({ navigation, route }) => {
         <View style={styles.headerRight} />
       </View>
 
-      <View style={styles.content}>
-        {/* Location Title */}
-        <View style={styles.titleSection}>
-          <Text style={styles.locationTitle}>Your default location:</Text>
-          <Text style={styles.locationSubtitle}>{getLocationTitle()}</Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={true}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            {/* Location Title */}
+            <View style={styles.titleSection}>
+              <Text style={styles.locationTitle}>Your default location:</Text>
+              <Text style={styles.locationSubtitle}>{getLocationTitle()}</Text>
+            </View>
 
-        {/* Search Box with Autocomplete */}
-        <View style={styles.searchWrapper}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={24} color="#666" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search for a location"
-              placeholderTextColor="#999"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => {
-                  setSearchQuery('');
-                  setPredictions([]);
-                  setShowPredictions(false);
+            {/* Google Places Autocomplete */}
+            <View style={styles.searchWrapper}>
+              <GooglePlacesAutocomplete
+                ref={autocompleteRef}
+                placeholder="Search for a location"
+                onPress={(data, details = null) => {
+                  if (details) {
+                    const { lat, lng } = details.geometry.location;
+                    const newRegion = {
+                      latitude: lat,
+                      longitude: lng,
+                      latitudeDelta: 0.01,
+                      longitudeDelta: 0.01,
+                    };
+
+                    setRegion(newRegion);
+                    setMarkerCoordinate({ latitude: lat, longitude: lng });
+                    setSelectedAddress(data.description);
+
+                    if (mapRef.current) {
+                      mapRef.current.animateToRegion(newRegion, 1000);
+                    }
+
+                    Keyboard.dismiss();
+
+                    setTimeout(() => {
+                      if (autocompleteRef.current) {
+                        autocompleteRef.current.setAddressText(data.description);
+                      }
+                    }, 100);
+                  }
                 }}
-                style={styles.clearButton}
-              >
-                <Ionicons name="close-circle" size={20} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Autocomplete Predictions */}
-          {showPredictions && predictions.length > 0 && (
-            <View style={styles.predictionsContainer}>
-              <FlatList
-                data={predictions}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
+                query={{
+                  key: GOOGLE_MAPS_API_KEY,
+                  language: 'en',
+                }}
+                fetchDetails={true}
+                enablePoweredByContainer={false}
+                keepResultsAfterBlur={false}
+                listViewDisplayed="auto"
+                minLength={2}
+                debounce={300}
+                styles={{
+                  container: {
+                    flex: 0,
+                    zIndex: 1000,
+                  },
+                  textInputContainer: {
+                    backgroundColor: '#fff',
+                    borderWidth: 1,
+                    borderColor: '#d0d0d0',
+                    borderRadius: 8,
+                    paddingHorizontal: 8,
+                  },
+                  textInput: {
+                    height: 44,
+                    fontSize: 14,
+                    color: '#000',
+                    backgroundColor: '#fff',
+                  },
+                  listView: {
+                    backgroundColor: '#fff',
+                    borderWidth: 1,
+                    borderColor: '#d0d0d0',
+                    borderTopWidth: 0,
+                    borderBottomLeftRadius: 8,
+                    borderBottomRightRadius: 8,
+                    marginTop: -1,
+                  },
+                  row: {
+                    backgroundColor: '#fff',
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                  },
+                  separator: {
+                    height: 1,
+                    backgroundColor: '#f0f0f0',
+                  },
+                  description: {
+                    fontSize: 14,
+                    color: '#000',
+                  },
+                  poweredContainer: {
+                    display: 'none',
+                  },
+                }}
+                renderLeftButton={() => (
+                  <View style={styles.searchIconContainer}>
+                    <Ionicons name="search" size={20} color="#666" />
+                  </View>
+                )}
+                renderRightButton={() => (
                   <TouchableOpacity
-                    style={styles.predictionItem}
-                    onPress={() => handleSelectPrediction(item)}
-                    activeOpacity={0.7}
+                    onPress={() => {
+                      if (autocompleteRef.current) {
+                        autocompleteRef.current.setAddressText('');
+                        autocompleteRef.current.clear();
+                      }
+                    }}
+                    style={styles.clearButton}
                   >
-                    <Ionicons name="location-outline" size={20} color="#666" style={styles.predictionIcon} />
-                    <Text style={styles.predictionText} numberOfLines={2}>
-                      {item.description}
-                    </Text>
+                    <Ionicons name="close-circle" size={20} color="#999" />
                   </TouchableOpacity>
                 )}
-                style={styles.predictionsList}
               />
             </View>
-          )}
-        </View>
 
-        {/* Map Container */}
-        <View style={styles.mapContainer}>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Loading map...</Text>
-            </View>
-          ) : mapError ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Map Error: {mapError}</Text>
-              <TouchableOpacity
-                style={styles.retryButton}
-                onPress={() => setMapError(null)}
-              >
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <MapView
-              ref={mapRef}
-              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-              style={styles.map}
-              initialRegion={region}
-              onRegionChangeComplete={setRegion}
-              onPress={handleMapPress}
-              showsUserLocation={false}
-              showsMyLocationButton={false}
-              showsCompass={true}
-              toolbarEnabled={false}
-              mapType={mapType}
-              loadingEnabled={true}
-              showsPointsOfInterest={true}
-              showsBuildings={true}
-              onMapReady={() => {
-                console.log('✅ Map is ready!');
-                setMapError(null);
-              }}
-              onError={(error) => {
-                console.error('❌ Map error:', error);
-                const errorMessage = error?.message || error?.nativeEvent?.message || 'Unknown error';
-                setMapError(errorMessage);
-              }}
-            >
-              {/* Draggable location marker */}
-              {markerCoordinate && (
-                <Marker
-                  coordinate={markerCoordinate}
-                  title={selectedAddress}
-                  draggable
-                  onDragEnd={handleMarkerDragEnd}
-                  pinColor={COLORS.primary}
-                />
+            {/* Map Container */}
+            <View style={styles.mapContainer}>
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={styles.loadingText}>Loading map...</Text>
+                </View>
+              ) : mapError ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>Map Error: {mapError}</Text>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => setMapError(null)}
+                  >
+                    <Text style={styles.retryButtonText}>Retry</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <MapView
+                  ref={mapRef}
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  initialRegion={region}
+                  onRegionChangeComplete={setRegion}
+                  onPress={handleMapPress}
+                  showsUserLocation={false}
+                  showsMyLocationButton={false}
+                  showsCompass={true}
+                  toolbarEnabled={false}
+                  mapType={mapType}
+                  loadingEnabled={true}
+                  showsPointsOfInterest={true}
+                  showsBuildings={true}
+                  onMapReady={() => {
+                    console.log('✅ Map is ready!');
+                    setMapError(null);
+                  }}
+                  onError={(error) => {
+                    console.error('❌ Map error:', error);
+                    const errorMessage = error?.message || error?.nativeEvent?.message || 'Unknown error';
+                    setMapError(errorMessage);
+                  }}
+                >
+                  {markerCoordinate && (
+                    <Marker
+                      coordinate={markerCoordinate}
+                      title={selectedAddress}
+                      draggable
+                      onDragStart={handleMarkerDragStart}
+                      onDragEnd={handleMarkerDragEnd}
+                      pinColor={COLORS.primary}
+                    >
+                      <View style={[styles.customMarker, isDragging && styles.customMarkerDragging]}>
+                        <Ionicons
+                          name="location"
+                          size={40}
+                          color={isDragging ? COLORS.secondary : COLORS.primary}
+                        />
+                      </View>
+                    </Marker>
+                  )}
+                </MapView>
               )}
-            </MapView>
-          )}
 
-          {/* Map Controls */}
-          <View style={styles.mapControls}>
-            <View style={styles.mapTypeSelector}>
-              <TouchableOpacity
-                style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
-                onPress={() => setMapType('standard')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.mapTypeText, mapType === 'standard' && styles.mapTypeTextActive]}>
-                  Map
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
-                onPress={() => setMapType('satellite')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.mapTypeText, mapType === 'satellite' && styles.mapTypeTextActive]}>
-                  Satellite
-                </Text>
-              </TouchableOpacity>
+              {/* Map Controls */}
+              <View style={styles.mapControls}>
+                <View style={styles.mapTypeSelector}>
+                  <TouchableOpacity
+                    style={[styles.mapTypeButton, mapType === 'standard' && styles.mapTypeButtonActive]}
+                    onPress={() => setMapType('standard')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.mapTypeText, mapType === 'standard' && styles.mapTypeTextActive]}>
+                      Map
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
+                    onPress={() => setMapType('satellite')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.mapTypeText, mapType === 'satellite' && styles.mapTypeTextActive]}>
+                      Satellite
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Zoom Controls */}
+              <View style={styles.zoomControls}>
+                <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} activeOpacity={0.7}>
+                  <Ionicons name="add" size={24} color="#666" />
+                </TouchableOpacity>
+                <View style={styles.zoomDivider} />
+                <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} activeOpacity={0.7}>
+                  <Ionicons name="remove" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Drag Instruction */}
+              {isDragging && (
+                <View style={styles.dragInstruction}>
+                  <Text style={styles.dragInstructionText}>Drag marker to adjust location</Text>
+                </View>
+              )}
             </View>
 
-            <TouchableOpacity style={styles.fullscreenButton} activeOpacity={0.7}>
-              <Ionicons name="expand" size={20} color="#666" />
+            {/* Selected Address Display */}
+            <View style={styles.addressDisplay}>
+              <Ionicons name="location-outline" size={20} color={COLORS.primary} style={styles.addressIcon} />
+              <Text style={styles.addressText} numberOfLines={2}>
+                {selectedAddress || 'No address selected'}
+              </Text>
+            </View>
+
+            {/* Safety Info */}
+            <View style={styles.safetyInfo}>
+              <Text style={styles.safetyText}>For more information on </Text>
+              <Text style={styles.safetyTextBold}>Safety</Text>
+              <Text style={styles.safetyText}>, click </Text>
+              <Text style={[styles.safetyText, styles.safetyLink]}>here</Text>
+              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.safetyIcon} />
+            </View>
+
+            {/* Save Button */}
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={handleSaveLocation}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.saveButtonText}>
+                {existingLocation ? 'Update' : 'Save'} {getLocationTitle()}
+              </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Zoom Controls */}
-          <View style={styles.zoomControls}>
-            <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} activeOpacity={0.7}>
-              <Ionicons name="add" size={24} color="#666" />
-            </TouchableOpacity>
-            <View style={styles.zoomDivider} />
-            <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} activeOpacity={0.7}>
-              <Ionicons name="remove" size={24} color="#666" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Selected Address Display */}
-        <View style={styles.addressDisplay}>
-          <Text style={styles.addressText}>{selectedAddress}</Text>
-        </View>
-
-        {/* Safety Info */}
-        <View style={styles.safetyInfo}>
-          <Text style={styles.safetyText}>For more information on </Text>
-          <Text style={styles.safetyTextBold}>Safety</Text>
-          <Text style={styles.safetyText}>, click </Text>
-          <Text style={[styles.safetyText, styles.safetyLink]}>here</Text>
-          <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.safetyIcon} />
-        </View>
-
-        {/* Save Button */}
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSaveLocation}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.saveButtonText}>
-            {existingLocation ? 'Update' : 'Save'} {getLocationTitle()}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -485,8 +523,16 @@ const styles = StyleSheet.create({
   headerRight: {
     width: 32,
   },
-  content: {
+  keyboardView: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
     padding: 20,
   },
   titleSection: {
@@ -507,59 +553,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     zIndex: 1000,
   },
-  searchContainer: {
-    flexDirection: 'row',
+  searchIconContainer: {
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#000',
+    paddingLeft: 8,
+    paddingRight: 4,
   },
   clearButton: {
-    padding: 4,
-  },
-  predictionsContainer: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    maxHeight: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  predictionsList: {
-    maxHeight: 200,
-  },
-  predictionItem: {
-    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  predictionIcon: {
-    marginRight: 12,
-  },
-  predictionText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#000',
+    paddingRight: 8,
+    paddingLeft: 4,
   },
   mapContainer: {
     height: 400,
@@ -608,6 +612,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  customMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customMarkerDragging: {
+    transform: [{ scale: 1.2 }],
+  },
   mapControls: {
     position: 'absolute',
     top: 16,
@@ -644,19 +655,6 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-  fullscreenButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   zoomControls: {
     position: 'absolute',
     right: 16,
@@ -680,7 +678,25 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#e0e0e0',
   },
+  dragInstruction: {
+    position: 'absolute',
+    bottom: 70,
+    left: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  dragInstructionText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   addressDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#d0d0d0',
@@ -689,7 +705,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginBottom: 16,
   },
+  addressIcon: {
+    marginRight: 12,
+  },
   addressText: {
+    flex: 1,
     fontSize: 15,
     color: '#000',
   },

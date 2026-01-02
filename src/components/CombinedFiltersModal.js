@@ -43,6 +43,7 @@ const CombinedFiltersModal = ({
   };
 
   const handleClearAll = () => {
+    // Clear activity toggles
     setTempFilters({
       buy: false,
       sell: false,
@@ -51,6 +52,20 @@ const CombinedFiltersModal = ({
       community: false,
       giveaway: false,
     });
+
+    // Clear all other filters and apply immediately
+    onUpdateFilters({
+      ...filters,
+      activity_id: null,
+      category_id: null,
+      subcategory_id: null,
+      condition_id: null,
+      min_price: null,
+      max_price: null,
+      radius: 50, // Reset to default
+    });
+
+    onClose();
   };
 
   const handleApply = () => {
@@ -80,10 +95,10 @@ const CombinedFiltersModal = ({
 
   const hasActiveFilters = () => {
     return Object.values(tempFilters).some(value => value) ||
-           filters.category_id ||
-           filters.min_price ||
-           filters.max_price ||
-           (filters.radius && filters.radius !== 50);
+      filters.category_id ||
+      filters.min_price ||
+      filters.max_price ||
+      (filters.radius && filters.radius !== 50);
   };
 
   return (

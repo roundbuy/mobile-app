@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { IMAGES } from '../../assets/images';
+import { getFullImageUrl } from '../../utils/imageUtils';
 import {
   View,
   Text,
@@ -23,11 +24,11 @@ import { AuthContext } from '../../context/AuthContext';
 const ProductChatScreen = ({ route, navigation }) => {
   // Accept both 'advertisement' and 'product' parameter names for compatibility
   const { advertisement, product, mode } = route?.params || {};
-  
+
   // Get current user from AuthContext (with fallback)
   let currentUserId = null;
   let userCurrency = 'INR';
-  
+
   try {
     const authContext = useContext(AuthContext);
     currentUserId = authContext?.user?.id;
@@ -35,7 +36,7 @@ const ProductChatScreen = ({ route, navigation }) => {
   } catch (error) {
     console.log('AuthContext not available, using fallback values');
   }
-  
+
   const [message, setMessage] = useState('');
   const [offerAmount, setOfferAmount] = useState('');
   const [showOfferInput, setShowOfferInput] = useState(mode === 'makeOffer');
@@ -56,11 +57,11 @@ const ProductChatScreen = ({ route, navigation }) => {
 
   // Store advertisement data from route params (accept both parameter names) or conversation
   const [advertisementData, setAdvertisementData] = useState(advertisement || product || null);
-  
+
   // Get currency symbol from user preferences or default
   const currencySymbol = userCurrency === 'USD' ? '$' :
-                         userCurrency === 'EUR' ? '€' :
-                         userCurrency === 'GBP' ? '£' : '₹';
+    userCurrency === 'EUR' ? '€' :
+      userCurrency === 'GBP' ? '£' : '₹';
 
   // Load conversation and messages on mount
   useEffect(() => {
@@ -80,7 +81,7 @@ const ProductChatScreen = ({ route, navigation }) => {
 
         if (existingConversation) {
           setConversation(existingConversation);
-          
+
           // Update advertisement data from conversation if not fully populated
           if (!advertisementData || !advertisementData.title) {
             setAdvertisementData({
@@ -90,7 +91,7 @@ const ProductChatScreen = ({ route, navigation }) => {
               images: existingConversation.advertisement_images ? JSON.parse(existingConversation.advertisement_images) : [],
             });
           }
-          
+
           await loadMessages(existingConversation.id);
           await loadOffers(existingConversation.id);
         }
@@ -111,7 +112,7 @@ const ProductChatScreen = ({ route, navigation }) => {
         const conversationData = response.data.conversation;
         setConversation(conversationData);
         setMessages(response.data.messages || []);
-        
+
         // Update advertisement data from conversation if not provided
         if (!advertisementData && conversationData) {
           setAdvertisementData({
@@ -159,7 +160,7 @@ const ProductChatScreen = ({ route, navigation }) => {
     console.log('Advertisement data:', advertisementData);
     console.log('Advertisement from params:', advertisement);
     console.log('Product from params:', product);
-    
+
     if (message.trim() && !sending) {
       // Validate we have an advertisement ID (check all possible sources)
       const adId = advertisementData?.id || advertisement?.id || product?.id;
@@ -243,13 +244,13 @@ const ProductChatScreen = ({ route, navigation }) => {
           if (messageResponse.data && messageResponse.data.success) {
             // Extract conversation_id from response
             conversationId = messageResponse.data.conversation_id;
-            
+
             // Validate conversation_id was received
             if (!conversationId) {
               console.error('Full message response:', JSON.stringify(messageResponse.data, null, 2));
               throw new Error('No conversation ID received from server');
             }
-            
+
             console.log('Conversation created with ID:', conversationId);
             setConversation({ id: conversationId });
             await loadMessages(conversationId);
@@ -492,7 +493,7 @@ const ProductChatScreen = ({ route, navigation }) => {
         {/* Product Info Card */}
         <View style={styles.productCard}>
           <Image
-            source={advertisementData?.images?.[0] || advertisementData?.image || IMAGES.chair1}
+            source={getFullImageUrl(advertisementData?.images?.[0]) || advertisementData?.image || IMAGES.chair1}
             style={styles.productImage}
           />
           <View style={styles.productInfo}>

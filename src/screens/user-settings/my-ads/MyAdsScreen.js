@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 import { advertisementService } from '../../../services';
+import GlobalHeader from '../../../components/GlobalHeader';
 
 const MyAdsScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'active', 'inactive'
@@ -152,14 +153,13 @@ const MyAdsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage My Ads</Text>
-        <View style={styles.headerRight} />
-      </View>
+      {/* Global Header */}
+      <GlobalHeader
+        title="Manage My Ads"
+        navigation={navigation}
+        showBackButton={true}
+        showIcons={true}
+      />
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -228,26 +228,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerRight: {
-    width: 32,
-  },
+
   tabContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,

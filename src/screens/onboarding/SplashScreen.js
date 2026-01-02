@@ -7,8 +7,8 @@ const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     // Navigate to Alternative 2 after 2 seconds
     const timer = setTimeout(() => {
-      navigation.replace('SplashAlternative2');
-    }, 2000);
+      navigation.replace('LicenseAgreement');
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [navigation]);
@@ -17,10 +17,10 @@ const SplashScreen = ({ navigation }) => {
     <View style={styles.container}>
       {/* Logo Circle */}
       <Image
-          source={IMAGES.logoCrop}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        source={IMAGES.logoCrop}
+        style={styles.logo}
+        resizeMode="contain"
+      />
 
       {/* Brand Text */}
       <Text style={styles.brandText}>Round Buy</Text>

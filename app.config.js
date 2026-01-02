@@ -78,7 +78,7 @@ export default {
         scheme: "roundbuy",
         extra: {
             eas: {
-                projectId: "your-project-id"
+                projectId: "e99b7176-13bb-4556-b403-08d45d1ec1fe"
             },
             // Environment variables for API configuration
             apiUrl: process.env.EXPO_PUBLIC_API_URL,

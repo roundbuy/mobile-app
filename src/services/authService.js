@@ -77,8 +77,11 @@ export const login = async (email, password) => {
 
     // Save tokens and user data to storage
     if (response.success && response.data) {
-      const { access_token, refresh_token, user } = response.data;
-      
+      // Support both camelCase (accessToken) and snake_case (access_token)
+      const access_token = response.data.access_token || response.data.accessToken;
+      const refresh_token = response.data.refresh_token || response.data.refreshToken;
+      const user = response.data.user;
+
       if (__DEV__) {
         console.log('📱 Extracted from response:', {
           has_access_token: !!access_token,
@@ -88,7 +91,7 @@ export const login = async (email, password) => {
           refresh_token_type: typeof refresh_token
         });
       }
-      
+
       // Only save if tokens exist and are not undefined
       if (access_token && refresh_token && access_token !== 'undefined' && refresh_token !== 'undefined') {
         await storage.saveTokens(access_token, refresh_token);
@@ -98,7 +101,7 @@ export const login = async (email, password) => {
         console.error('Response data:', response.data);
         throw new Error('Login successful but authentication tokens were not provided by server');
       }
-      
+
       // Save user data if exists
       if (user) {
         await storage.saveUserData(user);

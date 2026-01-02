@@ -2,7 +2,7 @@
   "expo": {
     "name": "RoundBuy",
     "slug": "roundbuy",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo-crop.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.roundbuy.app",
-      "buildNumber": "1.0.0",
+      "buildNumber": "2.0.0",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
         "NSLocationWhenInUseUsageDescription": "RoundBuy needs your location to show nearby search results on the map.",
@@ -64,11 +64,6 @@
     "plugins": [
       "expo-font"
     ],
-    "scheme": "roundbuy",
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id"
-      }
-    }
+    "scheme": "roundbuy"
   }
 }

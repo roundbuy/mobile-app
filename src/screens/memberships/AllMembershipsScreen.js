@@ -11,7 +11,7 @@ const AllMembershipsScreen = ({ navigation, route }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCurrency, setSelectedCurrency] = useState('INR');
+  const [selectedCurrency, setSelectedCurrency] = useState('GBP'); // British Pound £
 
   useEffect(() => {
     fetchPlans();
@@ -21,16 +21,29 @@ const AllMembershipsScreen = ({ navigation, route }) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await subscriptionService.getSubscriptionPlans('INR', 'en');
-      
+
+      const response = await subscriptionService.getSubscriptionPlans(selectedCurrency, 'en');
+
+      console.log('📦 API Response:', JSON.stringify(response, null, 2));
+
       if (response.success) {
         setPlans(response.data.plans);
+
+        // Log each plan's pricing details
+        response.data.plans.forEach(plan => {
+          console.log(`\n💳 ${plan.name} Plan Details:`);
+          console.log('  - Slug:', plan.slug);
+          console.log('  - Price:', plan.target_currency?.total_price);
+          console.log('  - Renewal Price:', plan.renewal?.total_price);
+          console.log('  - Currency:', plan.target_currency?.code);
+          console.log('  - Symbol:', plan.target_currency?.symbol);
+          console.log('  - Is Different Renewal:', plan.renewal?.is_different);
+        });
       }
     } catch (err) {
       console.error('Error fetching plans:', err);
       setError(err.message || 'Failed to load subscription plans');
-      
+
       // Show alert but don't block UI
       Alert.alert(
         'Connection Error',
@@ -55,7 +68,7 @@ const AllMembershipsScreen = ({ navigation, route }) => {
               try {
                 // Call API to activate free plan with email for new users
                 const response = await subscriptionService.activateFreePlan(userEmail);
-                
+
                 if (response.success) {
                   Alert.alert(
                     'Plan Activated',
@@ -96,8 +109,8 @@ const AllMembershipsScreen = ({ navigation, route }) => {
       taxRate: plan.target_currency.tax_rate,
       currency: plan.target_currency.code,
       currencySymbol: plan.target_currency.symbol,
-      renewalPrice: plan.renewal.total_price,
-      isDifferentRenewal: plan.renewal.is_different,
+      renewalPrice: plan.renewal?.total_price || plan.target_currency.total_price,
+      isDifferentRenewal: plan.renewal?.is_different || false,
       durationDays: plan.duration_days,
       requiresPlan: requiresPlan, // Pass through if coming from registration
       userEmail: userEmail
@@ -112,11 +125,27 @@ const AllMembershipsScreen = ({ navigation, route }) => {
     const isBest = plan.tag === 'best' || plan.is_best;
     const isPopular = plan.tag === 'popular' || plan.is_popular;
     const planColor = plan.color || '#4CAF50';
-    const price = plan.target_currency.total_price;
-    const originalPrice = plan.target_currency.price;
-    const symbol = plan.target_currency.symbol;
-    const renewalPrice = plan.renewal.total_price;
-    const hasDifferentRenewal = plan.renewal.is_different;
+    const price = parseFloat(plan.target_currency?.total_price || 0);
+    const originalPrice = parseFloat(plan.target_currency?.price || 0);
+    const symbol = plan.target_currency?.symbol || '$';
+    const renewalPrice = parseFloat(plan.renewal?.total_price || price);
+    const hasDifferentRenewal = plan.renewal?.is_different || false;
+
+    // Determine if plan is free
+    const isFree = price === 0 && renewalPrice > 0;
+    const isFreeFirstYear = price === 0 && renewalPrice > 0;
+
+    // Debug logging for Violet plan
+    if (plan.slug === 'violet') {
+      console.log('\n🔍 VIOLET PLAN CALCULATION:');
+      console.log('  Raw price:', plan.target_currency?.total_price);
+      console.log('  Parsed price:', price);
+      console.log('  Raw renewal:', plan.renewal?.total_price);
+      console.log('  Parsed renewal:', renewalPrice);
+      console.log('  isFree:', isFree);
+      console.log('  isFreeFirstYear:', isFreeFirstYear);
+      console.log('  hasDifferentRenewal:', hasDifferentRenewal);
+    }
 
     return (
       <View key={plan.id} style={[styles.planCard, isBest && styles.bestPlanCard]}>
@@ -138,12 +167,14 @@ const AllMembershipsScreen = ({ navigation, route }) => {
 
         <View style={styles.planContent}>
           <Text style={styles.planSubtitle}>{plan.subheading || plan.description}</Text>
-          
+
           <View style={styles.priceContainer}>
             <Text style={styles.priceText}>
-              {plan.slug === 'green' ? (
+              {isFreeFirstYear ? (
+                `FREE, then ${symbol}${renewalPrice.toFixed(2)} / ${plan.duration_days} days`
+              ) : isFree ? (
                 `FREE / ${plan.duration_days} days`
-              ) : hasDifferentRenewal ? (
+              ) : hasDifferentRenewal && renewalPrice !== price ? (
                 `Price ${symbol}${price.toFixed(2)} now, then ${symbol}${renewalPrice.toFixed(2)} / ${plan.duration_days} days`
               ) : (
                 `Price ${symbol}${price.toFixed(2)} / ${plan.duration_days} days`

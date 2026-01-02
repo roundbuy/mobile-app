@@ -13,6 +13,7 @@ import DistanceFilterModal from '../../components/DistanceFilterModal';
 import PriceRangeFilterModal from '../../components/PriceRangeFilterModal';
 import CombinedFiltersModal from '../../components/CombinedFiltersModal';
 import DemoInstructionsModal from '../../components/DemoInstructionsModal';
+import SortDropdown from '../../components/SortDropdown';
 import { DEMO_CITIES, ACTIVITY_COLORS, getDefaultCity } from '../../constants/demoCities';
 
 const DemoScreen = ({ navigation, route }) => {
@@ -496,10 +497,18 @@ const DemoScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Search Results Count */}
-        <Text style={styles.resultCount}>
-          {loading ? 'Loading...' : `${advertisements.length} results`}
-        </Text>
+        {/* Search Results Count and Sort */}
+        <View style={styles.resultRow}>
+          <Text style={styles.resultCount}>
+            {loading ? 'Loading...' : `${advertisements.length} results`}
+          </Text>
+          <SortDropdown
+            selectedSort={{ sort: filters.sort, order: filters.order }}
+            onSortChange={(sortOptions) => {
+              setFilters({ ...filters, ...sortOptions });
+            }}
+          />
+        </View>
       </View>
 
       {/* Instructions Button Section */}
@@ -849,7 +858,7 @@ const DemoScreen = ({ navigation, route }) => {
           style={[styles.mapViewToggle, { alignSelf: 'center' }]}
           onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
-          <Text style={styles.mapViewText}>{viewMode === 'map' ? 'List' : 'Map'}</Text>
+          <Text style={styles.mapViewText}>{viewMode === 'map' ? 'Products' : 'Map'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1023,11 +1032,16 @@ const styles = StyleSheet.create({
     top: -2,
     right: -2,
   },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   resultCount: {
     fontSize: 13,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 8,
   },
   instructionsButtonSection: {
     flexDirection: 'row',

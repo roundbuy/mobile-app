@@ -31,6 +31,23 @@ const userService = {
       throw error;
     }
   },
+
+  /**
+   * Update user's profile image
+   */
+  async updateProfileImage(formData) {
+    try {
+      const response = await apiRequest('POST', '/user/profile-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Error updating profile image:', error);
+      throw error;
+    }
+  },
 };
 
 export default userService;

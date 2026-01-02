@@ -135,21 +135,49 @@ import DisputeCategoryScreen from '../screens/resolution-center/DisputeCategoryS
 import SelectProductScreen from '../screens/resolution-center/SelectProductScreen';
 import SelectProblemScreen from '../screens/resolution-center/SelectProblemScreen';
 import ReviewEligibilityScreen from '../screens/resolution-center/ReviewEligibilityScreen';
-import DisputeFormScreen from '../screens/resolution-center/DisputeFormScreen';
-import UploadEvidenceScreen from '../screens/resolution-center/UploadEvidenceScreen';
 import DisputeConfirmationScreen from '../screens/resolution-center/DisputeConfirmationScreen';
-import DisputeDetailScreen from '../screens/resolution-center/DisputeDetailScreen';
 import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagingScreen';
 
 // My Support screens
 import MySupportHomeScreen from '../screens/my-support/MySupportHomeScreen';
 import SupportTicketListScreen from '../screens/my-support/SupportTicketListScreen';
-import CreateTicketScreen from '../screens/my-support/CreateTicketScreen';
-import TicketDetailScreen from '../screens/my-support/TicketDetailScreen';
 import TicketMessagingScreen from '../screens/my-support/TicketMessagingScreen';
 import DeletedAdsScreen from '../screens/my-support/DeletedAdsScreen';
 import AdAppealScreen from '../screens/my-support/AdAppealScreen';
 import AppealStatusScreen from '../screens/my-support/AppealStatusScreen';
+
+// Combined Support & Resolution screen
+import SupportResolutionScreen from '../screens/support-resolution/SupportResolutionScreen';
+
+// Issue screens
+import CreateIssueScreen from '../screens/issues/CreateIssueScreen';
+import IssueDetailScreen from '../screens/issues/IssueDetailScreen';
+import DisputeDetailScreen from '../screens/disputes/DisputeDetailScreen';
+import AttachEvidenceScreen from '../screens/issues/AttachEvidenceScreen';
+
+// Claim screens
+import ClaimDetailScreen from '../screens/claims/ClaimDetailScreen';
+import CreateClaimScreen from '../screens/claims/CreateClaimScreen';
+
+import IssueDisputeInfoScreen from '../screens/issues/IssueDisputeInfoScreen';
+import IssueDisputeBuyerReasonsScreen from '../screens/issues/IssueDisputeBuyerReasonsScreen';
+import IssueDisputeSellerReasonsScreen from '../screens/issues/IssueDisputeSellerReasonsScreen';
+import IssueDisputeEligibilityScreen from '../screens/issues/IssueDisputeEligibilityScreen';
+import IssueDisputeFormScreen from '../screens/issues/IssueDisputeFormScreen';
+
+// Dispute Flow screens
+import DisputeInformationScreen from '../screens/dispute-flow/DisputeInformationScreen';
+import DisputeTypeSelectionScreen from '../screens/dispute-flow/DisputeTypeSelectionScreen';
+import ProblemSelectionScreen from '../screens/dispute-flow/ProblemSelectionScreen';
+import ReviewEligibility1Screen from '../screens/dispute-flow/ReviewEligibility1Screen';
+import ReviewEligibility2Screen from '../screens/dispute-flow/ReviewEligibility2Screen';
+import DisputeFormScreen from '../screens/dispute-flow/DisputeFormScreen';
+import UploadEvidenceScreen from '../screens/dispute-flow/UploadEvidenceScreen';
+
+// Support Ticket screens
+import MySupportScreen from '../screens/support/MySupportScreen';
+import TicketDetailScreen from '../screens/support/TicketDetailScreen';
+import CreateTicketScreen from '../screens/support/CreateTicketScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -995,14 +1023,6 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
-          name="DisputeDetail"
-          component={DisputeDetailScreen}
-          options={{
-            animationEnabled: true,
-            title: 'Dispute Details',
-          }}
-        />
-        <Stack.Screen
           name="DisputeMessaging"
           component={DisputeMessagingScreen}
           options={{
@@ -1011,9 +1031,173 @@ const AppNavigator = () => {
           }}
         />
 
-        {/* My Support Flow */}
+        {/* Combined Support & Resolution Screen */}
+        <Stack.Screen
+          name="SupportResolution"
+          component={SupportResolutionScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+
+        {/* Issue Screens */}
+        <Stack.Screen
+          name="CreateIssue"
+          component={CreateIssueScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="IssueDetail"
+          component={IssueDetailScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="AttachEvidence"
+          component={AttachEvidenceScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="DisputeDetail"
+          component={DisputeDetailScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ClaimDetail"
+          component={ClaimDetailScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="CreateClaim"
+          component={CreateClaimScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+
+        <Stack.Screen
+          name="IssueDisputeInfo"
+          component={IssueDisputeInfoScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="IssueDisputeBuyerReasons"
+          component={IssueDisputeBuyerReasonsScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="IssueDisputeSellerReasons"
+          component={IssueDisputeSellerReasonsScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="IssueDisputeEligibility"
+          component={IssueDisputeEligibilityScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="IssueDisputeForm"
+          component={IssueDisputeFormScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+
+        {/* Dispute Flow - 5 Steps */}
+        <Stack.Screen
+          name="DisputeInformation"
+          component={DisputeInformationScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="DisputeTypeSelection"
+          component={DisputeTypeSelectionScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="ProblemSelection"
+          component={ProblemSelectionScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="ReviewEligibility1"
+          component={ReviewEligibility1Screen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="ReviewEligibility2"
+          component={ReviewEligibility2Screen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="DisputeFormScreen"
+          component={DisputeFormScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="UploadEvidenceScreen"
+          component={UploadEvidenceScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+
+        {/* Support Ticket Screens */}
         <Stack.Screen
           name="MySupport"
+          component={MySupportScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="TicketDetail"
+          component={TicketDetailScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="CreateTicket"
+          component={CreateTicketScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+
+        {/* My Support Flow (Old) - Renamed to avoid duplicates */}
+        <Stack.Screen
+          name="MySupportHome"
           component={MySupportHomeScreen}
           options={{
             animationEnabled: true,
@@ -1029,7 +1213,7 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
-          name="CreateTicket"
+          name="CreateTicketOld"
           component={CreateTicketScreen}
           options={{
             animationEnabled: true,
@@ -1037,7 +1221,7 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
-          name="TicketDetail"
+          name="TicketDetailOld"
           component={TicketDetailScreen}
           options={{
             animationEnabled: true,

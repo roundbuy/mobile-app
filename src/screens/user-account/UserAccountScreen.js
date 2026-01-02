@@ -6,28 +6,60 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
+import GlobalHeader from '../../components/GlobalHeader';
 
 const UserAccountScreen = ({ navigation }) => {
+  const { logout, user } = useAuth();
   const [activeTab, setActiveTab] = useState('account'); // 'account' or 'settings'
 
+  // Use real user data from AuthContext
   const userData = {
-    name: 'Mike Round',
-    username: 'jonnie12',
-    memberId: '1426858289',
+    name: user?.full_name || user?.name || 'User',
+    username: user?.email?.split('@')[0] || 'user',
+    email: user?.email || '',
+    memberId: user?.id?.toString() || 'N/A',
     appVersion: 'Version 1.7',
+    profileImage: user?.profile_image || null, // Profile image URL
   };
 
   const handleClose = () => {
     navigation.goBack();
   };
 
-  const handleLogout = () => {
-    // Add logout logic here
-    console.log('Logout');
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              // Navigate to login screen and reset navigation stack
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SocialLogin' }],
+              });
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const menuItems = {
@@ -47,17 +79,16 @@ const UserAccountScreen = ({ navigation }) => {
     settings: [
       { id: 1, title: 'Manage offers', icon: 'pricetag-outline' },
       { id: 2, title: 'My Ads', icon: 'megaphone-outline' },
-      { id: 3, title: 'Resolution Center', icon: 'warning-outline', badge: 0 },
-      { id: 4, title: 'My Support', icon: 'help-circle-outline', badge: 0 },
-      { id: 5, title: 'Purchase Visibility', icon: 'eye-outline' },
-      { id: 6, title: 'Default location & Product locations', icon: 'location-outline' },
-      { id: 7, title: 'Membership', icon: 'card-outline' },
-      { id: 8, title: 'Feedbacks', icon: 'chatbubble-outline' },
-      { id: 9, title: 'Favourites', icon: 'heart-outline' },
-      { id: 10, title: 'Rewards', icon: 'gift-outline' },
-      { id: 11, title: 'Review', icon: 'star-outline' },
-      { id: 12, title: 'Share', icon: 'share-social-outline' },
-      { id: 13, title: 'Follow', icon: 'person-add-outline' },
+      { id: 3, title: 'Support & Resolution', icon: 'help-circle-outline', badge: 0 },
+      { id: 4, title: 'Purchase Visibility', icon: 'eye-outline' },
+      { id: 5, title: 'Default location & Product locations', icon: 'location-outline' },
+      { id: 6, title: 'Membership', icon: 'card-outline' },
+      { id: 7, title: 'Feedbacks', icon: 'chatbubble-outline' },
+      { id: 8, title: 'Favourites', icon: 'heart-outline' },
+      { id: 9, title: 'Rewards', icon: 'gift-outline' },
+      { id: 10, title: 'Review', icon: 'star-outline' },
+      { id: 11, title: 'Share', icon: 'share-social-outline' },
+      { id: 12, title: 'Follow', icon: 'person-add-outline' },
     ],
   };
 
@@ -87,10 +118,8 @@ const UserAccountScreen = ({ navigation }) => {
         navigation.navigate('ManageOffers');
       } else if (item.title === 'My Ads') {
         navigation.navigate('MyAds');
-      } else if (item.title === 'Resolution Center') {
-        navigation.navigate('ResolutionCenter');
-      } else if (item.title === 'My Support') {
-        navigation.navigate('MySupport');
+      } else if (item.title === 'Support & Resolution') {
+        navigation.navigate('SupportResolution');
       } else if (item.title === 'Purchase Visibility') {
         navigation.navigate('PurchaseVisibility');
       } else if (item.title === 'Default location & Product locations') {
@@ -137,20 +166,33 @@ const UserAccountScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleClose} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>User account</Text>
-        <View style={styles.headerRight} />
-      </View>
+      {/* Global Header */}
+      <GlobalHeader
+        title="User account"
+        navigation={navigation}
+        showBackButton={true}
+        showIcons={true}
+      />
 
       {/* User Info */}
       <View style={styles.userSection}>
-        <View style={styles.avatarContainer}>
-          <FontAwesome name="user-circle" size={60} color="#666" />
-        </View>
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          onPress={() => navigation.navigate('PersonalInformation')}
+          activeOpacity={0.7}
+        >
+          {userData.profileImage ? (
+            <Image
+              source={{ uri: userData.profileImage }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <FontAwesome name="user-circle" size={60} color="#666" />
+          )}
+          <View style={styles.editBadge}>
+            <Ionicons name="camera" size={16} color="#fff" />
+          </View>
+        </TouchableOpacity>
         <Text style={styles.userName}>{userData.name}</Text>
         <Text style={styles.username}>{userData.username}</Text>
       </View>
@@ -206,26 +248,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerRight: {
-    width: 32,
-  },
+
   userSection: {
     alignItems: 'center',
     paddingVertical: 20,
@@ -234,6 +257,26 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginBottom: 12,
+    position: 'relative',
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f0f0f0',
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primary,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   userName: {
     fontSize: 20,

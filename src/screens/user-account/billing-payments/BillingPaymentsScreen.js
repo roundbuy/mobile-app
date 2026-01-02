@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import GlobalHeader from '../../../components/GlobalHeader';
 
 const BillingPaymentsScreen = ({ navigation }) => {
   const [savedCards, setSavedCards] = useState([
@@ -25,7 +26,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
   ]); // Empty array means no saved cards
   const [showAddCard, setShowAddCard] = useState(false);
   const [saveCard, setSaveCard] = useState(false);
-  
+
   const [newCard, setNewCard] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -77,14 +78,14 @@ const BillingPaymentsScreen = ({ navigation }) => {
   const renderSavedCard = (card) => (
     <View key={card.id} style={styles.savedCardContainer}>
       <Text style={styles.sectionTitle}>My Payment method</Text>
-      
+
       <View style={styles.cardInfo}>
         <Text style={styles.label}>Card information</Text>
         <View style={styles.cardNumberRow}>
           <Text style={styles.cardNumber}>xxx xxxx xxxx {card.lastFour}</Text>
           <FontAwesome name="credit-card" size={20} color="#666" />
         </View>
-        
+
         <View style={styles.expiryRow}>
           <View style={styles.expiryField}>
             <Text style={styles.fieldLabel}>Expiry date</Text>
@@ -136,7 +137,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
   const renderNoCards = () => (
     <View style={styles.noCardsContainer}>
       <Text style={styles.sectionTitle}>My Payment method</Text>
-      
+
       <View style={styles.cardInfo}>
         <Text style={styles.label}>Card information</Text>
         <View style={styles.noneSelected}>
@@ -175,7 +176,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
   const renderAddCard = () => (
     <View style={styles.addCardContainer}>
       <Text style={styles.sectionTitle}>Choose a payment method</Text>
-      
+
       {/* Google Pay */}
       <TouchableOpacity style={styles.googlePayButton}>
         <Image
@@ -211,20 +212,20 @@ const BillingPaymentsScreen = ({ navigation }) => {
             placeholder="Card number"
             placeholderTextColor="#999"
             value={newCard.cardNumber}
-            onChangeText={(text) => setNewCard({...newCard, cardNumber: text})}
+            onChangeText={(text) => setNewCard({ ...newCard, cardNumber: text })}
             keyboardType="numeric"
             maxLength={19}
           />
           <FontAwesome name="credit-card" size={20} color="#666" />
         </View>
-        
+
         <View style={styles.expiryRow}>
           <TextInput
             style={[styles.cardInput, styles.expiryInput]}
             placeholder="MM/YY"
             placeholderTextColor="#999"
             value={newCard.expiryDate}
-            onChangeText={(text) => setNewCard({...newCard, expiryDate: text})}
+            onChangeText={(text) => setNewCard({ ...newCard, expiryDate: text })}
             maxLength={5}
           />
           <TextInput
@@ -232,7 +233,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
             placeholder="CVC"
             placeholderTextColor="#999"
             value={newCard.cvc}
-            onChangeText={(text) => setNewCard({...newCard, cvc: text})}
+            onChangeText={(text) => setNewCard({ ...newCard, cvc: text })}
             keyboardType="numeric"
             maxLength={4}
           />
@@ -249,7 +250,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
         <TextInput
           style={styles.zipInput}
           value={newCard.zip}
-          onChangeText={(text) => setNewCard({...newCard, zip: text})}
+          onChangeText={(text) => setNewCard({ ...newCard, zip: text })}
           placeholder="Enter ZIP"
           placeholderTextColor="#999"
         />
@@ -278,16 +279,13 @@ const BillingPaymentsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {showAddCard ? 'Choose a payment method' : 'Billing& Payments'}
-        </Text>
-        <View style={styles.headerRight} />
-      </View>
+      <GlobalHeader
+        title={showAddCard ? 'Choose a payment method' : 'Billing & Payments'}
+        navigation={navigation}
+        showBackButton={true}
+        showIcons={true}
+        onBackPress={handleBack}
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {showAddCard ? renderAddCard() : (
@@ -304,29 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: 16,
-  },
-  headerRight: {
-    width: 32,
-  },
+
   content: {
     flex: 1,
     paddingHorizontal: 20,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList, RefreshControl } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,9 @@ import CategoryFilterModal from '../../components/CategoryFilterModal';
 import DistanceFilterModal from '../../components/DistanceFilterModal';
 import PriceRangeFilterModal from '../../components/PriceRangeFilterModal';
 import CombinedFiltersModal from '../../components/CombinedFiltersModal';
+import SortDropdown from '../../components/SortDropdown';
+import { useFocusEffect } from '@react-navigation/native';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const SearchScreen = ({ navigation, route }) => {
   const { user, hasActiveSubscription } = useAuth();
@@ -95,6 +98,14 @@ const SearchScreen = ({ navigation, route }) => {
     fetchUserLocations();
   }, []);
 
+  // Reload user locations when screen comes into focus (after changing location)
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('🔄 SearchScreen focused - reloading user locations');
+      fetchUserLocations();
+    }, [])
+  );
+
   // Update radius when slider changes
   useEffect(() => {
     setFilters({ ...filters, radius: sliderValue });
@@ -169,6 +180,26 @@ const SearchScreen = ({ navigation, route }) => {
       if (response.success) {
         const newAds = response.data.advertisements;
 
+        // Log API response for debugging
+        console.log('📦 API Response:', JSON.stringify(response.data, null, 2));
+        console.log(`📊 Total ads received: ${newAds.length}`);
+
+        // Log first ad details including images
+        if (newAds.length > 0) {
+          const firstAd = newAds[0];
+          console.log('\n🔍 First Advertisement Details:');
+          console.log('  - ID:', firstAd.id);
+          console.log('  - Title:', firstAd.title);
+          console.log('  - Price:', firstAd.price);
+          console.log('  - Images:', firstAd.images);
+          console.log('  - Images type:', typeof firstAd.images);
+          console.log('  - Images is array:', Array.isArray(firstAd.images));
+          console.log('  - Images length:', firstAd.images?.length);
+          if (firstAd.images && firstAd.images.length > 0) {
+            console.log('  - First image URL:', firstAd.images[0]);
+          }
+        }
+
         if (loadMore) {
           setAdvertisements([...advertisements, ...newAds]);
         } else {
@@ -227,6 +258,23 @@ const SearchScreen = ({ navigation, route }) => {
       if (response.success) {
         const locations = response.data.locations;
         setUserLocations(locations);
+
+        // If user has no locations, redirect to default location setup
+        if (locations.length === 0) {
+          console.log('⚠️ No user locations found - redirecting to setup');
+          Alert.alert(
+            'Set Your Location',
+            'Please set your default location to start browsing advertisements.',
+            [
+              {
+                text: 'Set Location',
+                onPress: () => navigation.navigate('DefaultLocation')
+              }
+            ],
+            { cancelable: false }
+          );
+          return;
+        }
 
         // Set initial region to user's first location if available
         if (locations.length > 0) {
@@ -442,7 +490,7 @@ const SearchScreen = ({ navigation, route }) => {
     >
       {item.images && item.images.length > 0 ? (
         <Image
-          source={{ uri: item.images[0] }}
+          source={{ uri: getFullImageUrl(item.images[0]) }}
           style={styles.image}
           defaultSource={IMAGES.placeholder}
         />
@@ -534,10 +582,18 @@ const SearchScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Search Results Count */}
-        <Text style={styles.resultCount}>
-          {loading ? 'Loading...' : `${advertisements.length} results`}
-        </Text>
+        {/* Search Results Count and Sort */}
+        <View style={styles.resultRow}>
+          <Text style={styles.resultCount}>
+            {loading ? 'Loading...' : `${advertisements.length} results`}
+          </Text>
+          <SortDropdown
+            selectedSort={{ sort: filters.sort, order: filters.order }}
+            onSortChange={(sortOptions) => {
+              setFilters({ ...filters, ...sortOptions });
+            }}
+          />
+        </View>
       </View>
 
       {/* Main Content */}
@@ -726,6 +782,20 @@ const SearchScreen = ({ navigation, route }) => {
                   fillColor="rgba(0, 28, 100, 0.1)"
                 />
 
+                {/* Center location marker - small icon at circle center */}
+                <Marker
+                  key={`center-marker-${selectedLocation}`}
+                  coordinate={getSelectedUserLocation()}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  tracksViewChanges={false}
+                >
+                  <Image
+                    source={require('../../../assets/icon.png')}
+                    style={{ width: 15, height: 15 }}
+                    resizeMode="contain"
+                  />
+                </Marker>
+
                 {/* User location marker */}
                 {location && (
                   <Marker
@@ -790,7 +860,7 @@ const SearchScreen = ({ navigation, route }) => {
           style={[styles.mapViewToggle, { alignSelf: 'center' }]}
           onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
-          <Text style={styles.mapViewText}>{viewMode === 'map' ? 'List' : 'Map'}</Text>
+          <Text style={styles.mapViewText}>{viewMode === 'map' ? 'Products' : 'Map'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -950,11 +1020,16 @@ const styles = StyleSheet.create({
     top: -2,
     right: -2,
   },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   resultCount: {
     fontSize: 13,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 8,
   },
   topLocations: {
     flexDirection: 'row',

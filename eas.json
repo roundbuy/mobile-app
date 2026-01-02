@@ -1,48 +1,43 @@
 {
-    "cli": {
-        "version": ">= 5.0.0"
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
     },
-    "build": {
-        "development": {
-            "developmentClient": true,
-            "distribution": "internal",
-            "ios": {
-                "simulator": true
-            }
-        },
-        "preview": {
-            "distribution": "internal",
-            "ios": {
-                "simulator": false
-            },
-            "android": {
-                "buildType": "apk"
-            }
-        },
-        "production": {
-            "autoIncrement": true,
-            "env": {
-                "API_URL": "https://your-production-api.com/api/v1"
-            },
-            "ios": {
-                "buildNumber": "1"
-            },
-            "android": {
-                "versionCode": 1
-            }
-        }
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      }
     },
-    "submit": {
-        "production": {
-            "ios": {
-                "appleId": "your-apple-id@email.com",
-                "ascAppId": "your-app-store-connect-app-id",
-                "appleTeamId": "your-apple-team-id"
-            },
-            "android": {
-                "serviceAccountKeyPath": "./google-play-service-account.json",
-                "track": "internal"
-            }
-        }
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.roundbuy.com/backend/api/v1/mobile-app"
+      }
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@email.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "your-apple-team-id"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
 }
