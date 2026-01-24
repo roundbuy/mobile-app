@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -11,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const ProblemSelectionScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { disputeType } = route.params;
     const [selectedProblems, setSelectedProblems] = useState([]);
 
@@ -139,7 +141,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
 
     const handleContinue = () => {
         if (selectedProblems.length === 0) {
-            Alert.alert('Selection Required', 'Please select at least one problem to continue');
+            Alert.alert(t('Selection Required'), t('Please select at least one problem to continue'));
             return;
         }
 
@@ -172,7 +174,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>Dispute an Issue</Text>
+                    <Text style={styles.headerTitle}>{t('Dispute an Issue')}</Text>
                     <Text style={styles.headerStep}>2/5</Text>
                 </View>
             </View>
@@ -184,7 +186,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
                     <Text style={styles.categoryText}>{getTitle()}</Text>
                 </View>
 
-                <Text style={styles.instruction}>Select at least one problem from below:</Text>
+                <Text style={styles.instruction}>{t('Select at least one problem from below:')}</Text>
 
                 {problems.map((problem) => (
                     <TouchableOpacity
@@ -215,7 +217,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
                 {/* Info Link */}
                 <TouchableOpacity style={styles.infoLink}>
                     <Text style={styles.infoLinkText}>
-                        More information on Disputes & Resolution, <Text style={styles.linkText}>click here</Text>
+                        More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                 </TouchableOpacity>
@@ -231,7 +233,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
                     onPress={handleContinue}
                     disabled={selectedProblems.length === 0}
                 >
-                    <Text style={styles.continueButtonText}>Continue</Text>
+                    <Text style={styles.continueButtonText}>{t('Continue')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

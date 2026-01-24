@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -16,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import disputeService from '../../services/disputeService';
 
 const UploadEvidenceScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { disputeType, problems, formData } = route.params;
 
     const [files, setFiles] = useState([]);
@@ -38,7 +40,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             if (result.type === 'success') {
                 // Check file size (16MB = 16777216 bytes)
                 if (result.size > 16777216) {
-                    Alert.alert('File Too Large', 'Maximum file size is 16MB');
+                    Alert.alert(t('File Too Large'), t('Maximum file size is 16MB'));
                     return;
                 }
 
@@ -53,7 +55,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (status !== 'granted') {
-            Alert.alert('Permission Required', 'Please grant permission to access photos');
+            Alert.alert(t('Permission Required'), t('Please grant permission to access photos'));
             return;
         }
 
@@ -74,7 +76,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             // Check total size
             const totalSize = newFiles.reduce((sum, file) => sum + (file.size || 0), 0);
             if (totalSize > 16777216) {
-                Alert.alert('Files Too Large', 'Total file size must be less than 16MB');
+                Alert.alert(t('Files Too Large'), t('Total file size must be less than 16MB'));
                 return;
             }
 
@@ -88,12 +90,12 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
 
     const handleSubmit = async () => {
         if (!agreed) {
-            Alert.alert('Agreement Required', 'Please agree to the terms before submitting');
+            Alert.alert(t('Agreement Required'), t('Please agree to the terms before submitting'));
             return;
         }
 
         if (files.length === 0) {
-            Alert.alert('Evidence Required', 'Please upload at least one piece of evidence');
+            Alert.alert(t('Evidence Required'), t('Please upload at least one piece of evidence'));
             return;
         }
 
@@ -117,11 +119,11 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                 // Note: This would need a separate endpoint for file uploads
 
                 Alert.alert(
-                    'Dispute Submitted',
-                    'Your dispute has been submitted successfully. We will review it and get back to you soon.',
+                    t('Dispute Submitted'),
+                    t('Your dispute has been submitted successfully. We will review it and get back to you soon.'),
                     [
                         {
-                            text: 'OK',
+                            text: t('OK'),
                             onPress: () => {
                                 navigation.navigate('SupportResolution');
                             },
@@ -131,7 +133,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Submit dispute error:', error);
-            Alert.alert('Error', error.message || 'Failed to submit dispute. Please try again.');
+            Alert.alert(t('Error'), error.message || t('Failed to submit dispute. Please try again.'));
         } finally {
             setSubmitting(false);
         }
@@ -147,19 +149,19 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>Dispute</Text>
+                    <Text style={styles.headerTitle}>{t('Dispute')}</Text>
                     <Text style={styles.headerStep}>5/5</Text>
                 </View>
             </View>
 
             <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
                 {/* Title */}
-                <Text style={styles.title}>Upload dispute evidence</Text>
-                <Text style={styles.subtitle}>Please provide evidence for the dispute</Text>
+                <Text style={styles.title}>{t('Upload dispute evidence')}</Text>
+                <Text style={styles.subtitle}>{t('Please provide evidence for the dispute')}</Text>
 
                 {/* Evidence Types */}
                 <View style={styles.evidenceTypesCard}>
-                    <Text style={styles.evidenceTypesTitle}>List of evidence types:</Text>
+                    <Text style={styles.evidenceTypesTitle}>{t('List of evidence types:')}</Text>
                     {evidenceTypes.map((type, index) => (
                         <View key={index} style={styles.evidenceTypeItem}>
                             <View style={styles.bullet}>
@@ -171,31 +173,31 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                 </View>
 
                 {/* Evidence List Label */}
-                <Text style={styles.evidenceListLabel}>Evidence List</Text>
+                <Text style={styles.evidenceListLabel}>{t('Evidence List')}</Text>
 
                 {/* Upload Area */}
                 <TouchableOpacity
                     style={styles.uploadArea}
                     onPress={() => {
                         Alert.alert(
-                            'Choose Upload Method',
-                            'Select how you want to upload files',
+                            t('Choose Upload Method'),
+                            t('Select how you want to upload files'),
                             [
-                                { text: 'Photos', onPress: pickImage },
-                                { text: 'Documents', onPress: pickDocument },
-                                { text: 'Cancel', style: 'cancel' },
+                                { text: t('Photos'), onPress: pickImage },
+                                { text: t('Documents'), onPress: pickDocument },
+                                { text: t('Cancel'), style: t('cancel') },
                             ]
                         );
                     }}
                 >
                     <Ionicons name="cloud-upload-outline" size={48} color="#999" />
                     <Text style={styles.uploadText}>
-                        <Text style={styles.uploadLink}>Choose file(s)</Text> or drag file(s) here
+                        <Text style={styles.uploadLink}>{t('Choose file(s)')}</Text> or drag file(s) here
                     </Text>
                 </TouchableOpacity>
 
                 {/* File Size Info */}
-                <Text style={styles.fileSizeInfo}>Maximum file size: 16MB</Text>
+                <Text style={styles.fileSizeInfo}>{t('Maximum file size: 16MB')}</Text>
 
                 {/* Uploaded Files */}
                 {files.length > 0 && (
@@ -217,7 +219,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                 {/* Info Link */}
                 <TouchableOpacity style={styles.infoLink}>
                     <Text style={styles.infoLinkText}>
-                        More information on Disputes & Resolution, <Text style={styles.linkText}>click here</Text>
+                        More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                 </TouchableOpacity>
@@ -230,11 +232,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                     <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
                         {agreed && <Ionicons name="checkmark" size={16} color="#FFF" />}
                     </View>
-                    <Text style={styles.agreementText}>
-                        By clicking the "Submit dispute" button below you're agreeing to
-                        abide by provided information will RoundBuy once you submit
-                        this case
-                    </Text>
+                    <Text style={styles.agreementText}>{t("By clicking the \"Submit dispute\" button below you're agreeing to abide by provided information will RoundBuy once you submit this case")}</Text>
                 </TouchableOpacity>
             </ScrollView>
 
@@ -251,7 +249,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                     {submitting ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.submitButtonText}>Submit dispute</Text>
+                        <Text style={styles.submitButtonText}>{t('Submit dispute')}</Text>
                     )}
                 </TouchableOpacity>
             </View>

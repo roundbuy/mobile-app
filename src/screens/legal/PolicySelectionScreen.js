@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PolicySelectionScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handlePolicyPress = (policyType) => {
     navigation.navigate('PolicyDetail', { policyType });
   };
@@ -24,45 +26,37 @@ const PolicySelectionScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
-        <Text style={styles.brandText}>Round Buy</Text>
+        <Text style={styles.brandText}>{t('Round Buy')}</Text>
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>License Agreement & Terms</Text>
-        <Text style={styles.subtitle}>
-          You have the right to know exactly how RoundBuy keeps or uses data. You should know before you complete with installation and use RoundBuy.
-        </Text>
+        <Text style={styles.title}>{t('License Agreement & Terms')}</Text>
+        <Text style={styles.subtitle}>{t('You have the right to know exactly how RoundBuy keeps or uses data. You should know before you complete with installation and use RoundBuy.')}</Text>
 
         {/* Policy Options */}
         <View style={styles.policyOptions}>
-          <Text style={styles.sectionTitle}>Here are the Terms & Conditions Of here</Text>
+          <Text style={styles.sectionTitle}>{t('Here are the Terms & Conditions Of here')}</Text>
 
           <TouchableOpacity 
             style={styles.policyButton}
             onPress={() => handlePolicyPress('terms')}
           >
-            <Text style={styles.policyButtonText}>
-              Read the Terms & Conditions Of here
-            </Text>
+            <Text style={styles.policyButtonText}>{t('Read the Terms & Conditions Of here')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.policyButton}
             onPress={() => handlePolicyPress('license')}
           >
-            <Text style={styles.policyButtonText}>
-              Read the License Agreement Of here
-            </Text>
+            <Text style={styles.policyButtonText}>{t('Read the License Agreement Of here')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.policyButton}
             onPress={() => handlePolicyPress('privacy')}
           >
-            <Text style={styles.policyButtonText}>
-              Read the Privacy Policy Of here
-            </Text>
+            <Text style={styles.policyButtonText}>{t('Read the Privacy Policy Of here')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -71,12 +65,10 @@ const PolicySelectionScreen = ({ navigation }) => {
           style={styles.acceptButton}
           onPress={handleAccept}
         >
-          <Text style={styles.acceptButtonText}>I Accept</Text>
+          <Text style={styles.acceptButtonText}>{t('I Accept')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.disclaimer}>
-          License Agreement must be accepted, or RoundBuy cannot be accessed.
-        </Text>
+        <Text style={styles.disclaimer}>{t('License Agreement must be accepted, or RoundBuy cannot be accessed.')}</Text>
       </View>
     </SafeScreenContainer>
   );

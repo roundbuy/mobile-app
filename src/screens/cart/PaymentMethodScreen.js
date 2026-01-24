@@ -1,107 +1,141 @@
-import React, { useState, useEffect } from 'react';
+import stripeService from '../../services/stripeService';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
-import paddleService from '../../services/paddleService';
+import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 
+/**
+ * Simple Payment Method Screen
+ * Uses backend Stripe integration without React Native SDK
+ * This avoids the StripeSdk native module requirement
+ */
 const PaymentMethodScreen = ({ navigation, route }) => {
-  const { total = '2.27', planType = 'Gold', planName = 'Gold membership plan', planId } = route.params || {};
-  const [selectedPayment, setSelectedPayment] = useState('paddle');
+    const { t } = useTranslation();
+  const {
+    planId,
+    planType = 'Gold',
+    planName = 'Gold membership plan',
+    planSlug,
+    total = '2.27',
+    subtotal,
+    taxes,
+    currency = 'GBP',
+    currencySymbol = '£',
+    requiresPlan = false,
+    userEmail
+  } = route.params || {};
+
+  const { completeRegistration } = useAuth();
+
   const [cardNumber, setCardNumber] = useState('');
+  const [expiryMonth, setExpiryMonth] = useState('');
+  const [expiryYear, setExpiryYear] = useState('');
   const [cvc, setCvc] = useState('');
   const [zipCode, setZipCode] = useState('');
+  const [country, setCountry] = useState('US');
   const [saveForFuture, setSaveForFuture] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [paddleInitialized, setPaddleInitialized] = useState(false);
 
-  useEffect(() => {
-    // Initialize Paddle when component mounts
-    initializePaddle();
-  }, []);
-
-  const initializePaddle = async () => {
-    try {
-      await paddleService.initPaddle();
-      setPaddleInitialized(true);
-      console.log('Paddle initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize Paddle:', error);
-      Alert.alert(
-        'Payment System Error',
-        'Unable to initialize payment system. Please try again later.'
-      );
+  const validateCard = () => {
+    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 13) {
+      Alert.alert(t('Invalid Card'), t('Please enter a valid card number'));
+      return false;
     }
+    if (!expiryMonth || !expiryYear) {
+      Alert.alert(t('Invalid Expiry'), t('Please enter card expiry date'));
+      return false;
+    }
+    if (!cvc || cvc.length < 3) {
+      Alert.alert(t('Invalid CVC'), t('Please enter card CVC'));
+      return false;
+    }
+    if (!zipCode) {
+      Alert.alert(t('Missing ZIP'), t('Please enter your ZIP/Postal code'));
+      return false;
+    }
+    return true;
   };
 
-  const handlePaddlePayment = async () => {
-    if (!paddleInitialized) {
-      Alert.alert('Error', 'Payment system is not ready. Please wait...');
-      return;
-    }
-
-    if (!planId) {
-      Alert.alert('Error', 'Plan information is missing. Please try again.');
+  const handlePayment = async () => {
+    if (!validateCard()) {
       return;
     }
 
     setLoading(true);
     try {
-      // Create transaction and get checkout URL
-      const transaction = await paddleService.createTransaction(planId, 'USD');
-      
-      // Open Paddle checkout
-      await paddleService.openCheckout(transaction.transaction_id);
-      
-      // Poll for transaction status
-      setTimeout(async () => {
-        try {
-          const status = await paddleService.getTransactionStatus(transaction.transaction_id);
-          
-          if (status.status === 'completed' || status.status === 'paid') {
-            navigation.navigate('TransactionStatus', {
-              success: true,
-              amount: total,
-              planType,
-              planName,
-              transactionId: transaction.transaction_id,
-            });
-          } else if (status.status === 'failed') {
-            navigation.navigate('TransactionStatus', {
-              success: false,
-              amount: total,
-              planType,
-              planName,
-            });
-          }
-        } catch (error) {
-          console.error('Error checking transaction status:', error);
-        }
-        setLoading(false);
-      }, 3000);
+      // 1. Create Payment Method via Backend (Server-side tokenization)
+      const paymentMethodId = await stripeService.createPaymentMethod({
+        number: cardNumber.replace(/\s/g, ''),
+        exp_month: parseInt(expiryMonth),
+        exp_year: parseInt(expiryYear),
+        cvc: cvc
+      });
+
+      // 2. Confirm Subscription with Backend using paymentMethodId
+      const response = await stripeService.confirmPaymentAndSubscribe({
+        planId: planId,
+        currencyCode: currency,
+        paymentMethodId: paymentMethodId,
+        savePaymentMethod: saveForFuture,
+        country: country,
+        zipCode: zipCode
+      });
+
+      console.log('✅ Subscription created:', response);
+
+      // Handle successful payment
+      if (requiresPlan && completeRegistration) {
+        // Complete registration flow
+        await completeRegistration({
+          email: userEmail,
+          subscription_plan_id: planId,
+          subscription_plan_name: planName,
+          subscription_plan_slug: planSlug,
+          subscription_start_date: response.subscription.start_date,
+          subscription_end_date: response.subscription.end_date,
+          has_active_subscription: true,
+          requires_subscription: false
+        });
+
+        Alert.alert(
+          t('Welcome to RoundBuy!'),
+          `Your ${planType} plan has been activated successfully!`,
+          [{
+            text: t('Start Browsing'),
+            onPress: () => navigation.replace('Main')
+          }]
+        );
+      } else {
+        // Regular subscription purchase
+        navigation.navigate('TransactionStatus', {
+          success: true,
+          amount: total,
+          planType,
+          planName,
+          transactionId: response.transaction.id,
+        });
+      }
     } catch (error) {
       setLoading(false);
       console.error('Payment error:', error);
-      Alert.alert(
-        'Payment Failed',
-        error.message || 'Unable to process payment. Please try again.'
-      );
+
+      let errorMessage = 'Unable to process payment. Please try again.';
+      if (error.message?.includes('card')) {
+        errorMessage = 'Card payment failed. Please check your card details.';
+      } else if (error.message?.includes('insufficient')) {
+        errorMessage = 'Insufficient funds. Please use a different card.';
+      }
+
+      Alert.alert(t('Payment Failed'), errorMessage);
     }
   };
 
-  const handleContinue = () => {
-    if (selectedPayment === 'paddle') {
-      handlePaddlePayment();
-    } else {
-      // For other payment methods (demo mode)
-      const isSuccess = Math.random() > 0.3; // 70% success rate
-      
-      navigation.navigate('TransactionStatus', {
-        success: isSuccess,
-        amount: total,
-        planType,
-        planName,
-      });
-    }
+  const formatCardNumber = (text) => {
+    const cleaned = text.replace(/\s/g, '');
+    const formatted = cleaned.match(/.{1,4}/g)?.join(' ') || cleaned;
+    setCardNumber(formatted);
   };
 
   return (
@@ -112,186 +146,149 @@ const PaymentMethodScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.closeButton}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Choose a payment method</Text>
+          <Text style={styles.headerTitle}>{t('Payment Details')}</Text>
         </View>
 
-        {/* Paddle Payment (Recommended) */}
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            selectedPayment === 'paddle' && styles.paymentOptionSelected
-          ]}
-          onPress={() => setSelectedPayment('paddle')}
-          disabled={!paddleInitialized}
-        >
-          <View style={styles.paddleIcon}>
-            <Text style={styles.paddleText}>P</Text>
+        {/* Plan Summary */}
+        <View style={styles.planSummary}>
+          <Text style={styles.planSummaryTitle}>{t('Order Summary')}</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{planName}</Text>
+            <Text style={styles.summaryValue}>{currencySymbol}{parseFloat(subtotal || total).toFixed(2)}</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.paymentText}>Pay with Paddle</Text>
-            <Text style={styles.recommendedText}>Recommended • Secure</Text>
+          {taxes > 0 && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>{t('Taxes')}</Text>
+              <Text style={styles.summaryValue}>{currencySymbol}{parseFloat(taxes).toFixed(2)}</Text>
+            </View>
+          )}
+          <View style={[styles.summaryRow, styles.totalRow]}>
+            <Text style={styles.totalLabel}>{t('Total')}</Text>
+            <Text style={styles.totalValue}>{currencySymbol}{parseFloat(total).toFixed(2)}</Text>
           </View>
-          {!paddleInitialized && <ActivityIndicator size="small" color={COLORS.primary} />}
-        </TouchableOpacity>
-
-        {/* Google Pay */}
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            selectedPayment === 'googlepay' && styles.paymentOptionSelected
-          ]}
-          onPress={() => setSelectedPayment('googlepay')}
-        >
-          <View style={styles.googlePayIcon}>
-            <Text style={styles.googleText}>G</Text>
-          </View>
-          <Text style={styles.paymentText}>Pay</Text>
-        </TouchableOpacity>
-
-        {/* Or pay using */}
-        <Text style={styles.orText}>Or pay with card</Text>
-
-        {/* Payment Method Icons */}
-        <View style={styles.paymentIcons}>
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'card' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('card')}
-          >
-            <View style={styles.cardIcon}>
-              <View style={styles.cardStripe} />
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'klarna' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('klarna')}
-          >
-            <View style={styles.klarnaIcon}>
-              <Text style={styles.klarnaText}>K</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'paypal' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('paypal')}
-          >
-            <View style={styles.paypalIcon}>
-              <Text style={styles.paypalText}>P</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'bank' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('bank')}
-          >
-            <View style={styles.bankIcon} />
-          </TouchableOpacity>
         </View>
 
         {/* Card Information */}
-        <View style={styles.cardInfoSection}>
-          <Text style={styles.sectionTitle}>Card information</Text>
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitle}>{t('Card Information')}</Text>
 
+          {/* Card Number - Full Width */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Card number"
+              placeholder={t('Card number')}
               placeholderTextColor="#999"
               value={cardNumber}
-              onChangeText={setCardNumber}
+              onChangeText={formatCardNumber}
               keyboardType="numeric"
+              maxLength={19}
             />
-            <View style={styles.cardIconSmall} />
           </View>
 
-          <View style={styles.inputRow}>
-            <View style={[styles.inputContainer, { flex: 1, marginRight: 12 }]}>
-              <TextInput
-                style={styles.input}
-                placeholder="Card number"
-                placeholderTextColor="#999"
-                value={cardNumber}
-                onChangeText={setCardNumber}
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={[styles.inputContainer, { width: 100 }]}>
-              <TextInput
-                style={styles.input}
-                placeholder="CVC"
-                placeholderTextColor="#999"
-                value={cvc}
-                onChangeText={setCvc}
-                keyboardType="numeric"
-                maxLength={3}
-              />
-              <View style={styles.cvcIcon} />
-            </View>
+          {/* Expiry Month - Full Width */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('Expiry Month (MM)')}
+              placeholderTextColor="#999"
+              value={expiryMonth}
+              onChangeText={setExpiryMonth}
+              keyboardType="numeric"
+              maxLength={2}
+            />
+          </View>
+
+          {/* Expiry Year - Full Width */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('Expiry Year (YY)')}
+              placeholderTextColor="#999"
+              value={expiryYear}
+              onChangeText={setExpiryYear}
+              keyboardType="numeric"
+              maxLength={2}
+            />
+          </View>
+
+          {/* CVC - Full Width */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('CVC')}
+              placeholderTextColor="#999"
+              value={cvc}
+              onChangeText={setCvc}
+              keyboardType="numeric"
+              maxLength={4}
+            />
           </View>
         </View>
 
-        {/* Country or Region */}
-        <View style={styles.countrySection}>
-          <Text style={styles.sectionTitle}>Country or region</Text>
-          
-          <View style={styles.countryInput}>
-            <Text style={styles.countryText}>United Kingdom</Text>
+        {/* Billing Details */}
+        <View style={styles.billingSection}>
+          <Text style={styles.sectionTitle}>{t('Billing Details')}</Text>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('ZIP / Postal Code')}
+              placeholderTextColor="#999"
+              value={zipCode}
+              onChangeText={setZipCode}
+              keyboardType="default"
+            />
           </View>
 
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="ZIP"
+              placeholder={t('Country')}
               placeholderTextColor="#999"
-              value={zipCode}
-              onChangeText={setZipCode}
-              keyboardType="numeric"
+              value={country}
+              onChangeText={setCountry}
             />
           </View>
         </View>
 
         {/* Save for Future */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.saveForFutureContainer}
           onPress={() => setSaveForFuture(!saveForFuture)}
         >
-          <Text style={styles.saveForFutureText}>
-            Save for future RoundBuy payments
-          </Text>
+          <Text style={styles.saveForFutureText}>{t('Save card for future payments')}</Text>
           <View style={[styles.checkbox, saveForFuture && styles.checkboxChecked]}>
-            {saveForFuture && <Text style={styles.checkmark}>✕</Text>}
+            {saveForFuture && <Text style={styles.checkmark}>✓</Text>}
           </View>
         </TouchableOpacity>
 
-        {/* Continue Button */}
+        {/* Pay Button */}
         <TouchableOpacity
           style={[
-            styles.continueButton,
-            loading && styles.continueButtonDisabled
+            styles.payButton,
+            loading && styles.payButtonDisabled
           ]}
-          onPress={handleContinue}
-          disabled={loading || (selectedPayment === 'paddle' && !paddleInitialized)}
+          onPress={handlePayment}
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <Text style={styles.continueButtonText}>
-              {selectedPayment === 'paddle' ? 'Pay with Paddle' : 'Continue'}
+            <Text style={styles.payButtonText}>
+              Pay {currencySymbol}{parseFloat(total).toFixed(2)}
             </Text>
           )}
         </TouchableOpacity>
+
+        {/* Security Notice */}
+        <Text style={styles.securityText}>{t('🔒 Secured by Stripe. Your payment information is encrypted and secure.')}</Text>
+
+        {/* Test Card Info */}
+        <View style={styles.testCardInfo}>
+          <Text style={styles.testCardTitle}>{t('Test Card (Development)')}</Text>
+          <Text style={styles.testCardText}>{t('Card: 4242 4242 4242 4242')}</Text>
+          <Text style={styles.testCardText}>{t('Expiry: 12/25 | CVC: 123')}</Text>
+        </View>
 
         <View style={styles.bottomSpace} />
       </ScrollView>
@@ -322,134 +319,49 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
   },
-  paymentOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+  planSummary: {
+    backgroundColor: '#F8F9FA',
     marginHorizontal: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
   },
-  paymentOptionSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#F0F8FF',
-  },
-  paddleIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#6C5CE7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  paddleText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  recommendedText: {
-    fontSize: 12,
-    color: '#4CAF50',
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  googlePayIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#4285F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  googleText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  paymentText: {
+  planSummaryTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+    marginBottom: 12,
   },
-  orText: {
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  summaryLabel: {
     fontSize: 14,
     color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
   },
-  paymentIcons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 20,
+  summaryValue: {
+    fontSize: 14,
+    color: '#666',
   },
-  iconButton: {
-    width: 70,
-    height: 50,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 6,
-    borderWidth: 2,
-    borderColor: 'transparent',
+  totalRow: {
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
   },
-  iconButtonSelected: {
-    borderColor: COLORS.primary,
-  },
-  cardIcon: {
-    width: 32,
-    height: 24,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  cardStripe: {
-    height: 4,
-    backgroundColor: '#999',
-    borderRadius: 2,
-  },
-  klarnaIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFB3C7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  klarnaText: {
-    fontSize: 18,
+  totalLabel: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#000',
   },
-  paypalIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#B4E96D',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paypalText: {
-    fontSize: 18,
+  totalValue: {
+    fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#000',
   },
-  bankIcon: {
-    width: 32,
-    height: 24,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-  },
-  cardInfoSection: {
+  cardSection: {
     paddingHorizontal: 20,
     marginBottom: 24,
   },
@@ -460,55 +372,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingHorizontal: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   input: {
-    flex: 1,
     paddingVertical: 14,
     fontSize: 15,
     color: '#000',
   },
-  inputRow: {
-    flexDirection: 'row',
-  },
-  cardIconSmall: {
-    width: 24,
-    height: 18,
-    backgroundColor: '#D0D0D0',
-    borderRadius: 3,
-  },
-  cvcIcon: {
-    width: 24,
-    height: 18,
-    backgroundColor: '#D0D0D0',
-    borderRadius: 3,
-  },
-  countrySection: {
+  billingSection: {
     paddingHorizontal: 20,
     marginBottom: 24,
-  },
-  countryInput: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 12,
-  },
-  countryText: {
-    fontSize: 15,
-    color: '#000',
   },
   saveForFutureContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   saveForFutureText: {
     fontSize: 14,
@@ -516,8 +401,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   checkbox: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     borderRadius: 6,
     borderWidth: 2,
     borderColor: '#D0D0D0',
@@ -526,30 +411,59 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   checkboxChecked: {
-    backgroundColor: '#000',
-    borderColor: '#000',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   checkmark: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  continueButton: {
+  payButton: {
     backgroundColor: COLORS.primary,
     marginHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 28,
     alignItems: 'center',
-    marginBottom: 20,
-  continueButtonDisabled: {
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  payButtonDisabled: {
     backgroundColor: '#CCCCCC',
     opacity: 0.7,
   },
-  },
-  continueButtonText: {
+  payButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  securityText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 40,
+    marginBottom: 16,
+  },
+  testCardInfo: {
+    backgroundColor: '#FFF3CD',
+    marginHorizontal: 20,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  testCardTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 4,
+  },
+  testCardText: {
+    fontSize: 11,
+    color: '#856404',
   },
   bottomSpace: {
     height: 30,

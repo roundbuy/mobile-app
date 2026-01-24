@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ReviewSiteFormScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [experience, setExperience] = useState('');
   const [improvements, setImprovements] = useState('');
@@ -24,16 +26,16 @@ const ReviewSiteFormScreen = ({ navigation }) => {
 
   const handleSubmit = () => {
     if (rating === 0) {
-      Alert.alert('Rating Required', 'Please provide a rating before submitting.');
+      Alert.alert(t('Rating Required'), t('Please provide a rating before submitting.'));
       return;
     }
     
     Alert.alert(
-      'Success',
-      'Thank you for your review!',
+      t('Success'),
+      t('Thank you for your review!'),
       [
         {
-          text: 'OK',
+          text: t('OK'),
           onPress: () => navigation.navigate('SiteReviews'),
         },
       ]
@@ -65,7 +67,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Review the Site</Text>
+        <Text style={styles.headerTitle}>{t('Review the Site')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -84,7 +86,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
 
         {/* Rating Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Rate Your Experience:</Text>
+          <Text style={styles.sectionTitle}>{t('Rate Your Experience:')}</Text>
           <View style={styles.starsContainer}>
             {[0, 1, 2, 3, 4].map((index) => renderStar(index))}
           </View>
@@ -92,12 +94,10 @@ const ReviewSiteFormScreen = ({ navigation }) => {
 
         {/* Experience Input */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Please provide us feedback, your experiences, or suggestions of improvement:
-          </Text>
+          <Text style={styles.sectionTitle}>{t('Please provide us feedback, your experiences, or suggestions of improvement:')}</Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Share more about your experience"
+            placeholder={t('Share more about your experience')}
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
@@ -109,16 +109,16 @@ const ReviewSiteFormScreen = ({ navigation }) => {
 
         {/* Satisfaction Check */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Are you satisfied with the service?</Text>
+          <Text style={styles.sectionTitle}>{t('Are you satisfied with the service?')}</Text>
           {/* This could be a Yes/No toggle or additional input */}
         </View>
 
         {/* Improvements Input */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tell us how we can improve...</Text>
+          <Text style={styles.sectionTitle}>{t('Tell us how we can improve...')}</Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Your suggestions here..."
+            placeholder={t('Your suggestions here...')}
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
@@ -134,7 +134,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
           onPress={handleSubmit}
           activeOpacity={0.8}
         >
-          <Text style={styles.submitButtonText}>Send your review</Text>
+          <Text style={styles.submitButtonText}>{t('Send your review')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

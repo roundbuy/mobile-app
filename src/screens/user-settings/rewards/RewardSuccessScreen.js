@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RewardSuccessScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, selectedPlan, selectedProducts } = route.params;
 
   // Animation values
@@ -67,7 +69,7 @@ const RewardSuccessScreen = ({ navigation, route }) => {
           <View style={styles.logoContainer}>
             <Ionicons name="logo-dropbox" size={48} color={COLORS.primary} />
           </View>
-          <Text style={styles.logoText}>RoundBuy</Text>
+          <Text style={styles.logoText}>{t('RoundBuy')}</Text>
         </View>
 
         <Animated.View
@@ -78,16 +80,14 @@ const RewardSuccessScreen = ({ navigation, route }) => {
             },
           ]}
         >
-          <Text style={styles.successTitle}>Reward Redeemed Successfully</Text>
-          <Text style={styles.successMessage}>
-            Thank you! Your Ad has been spot-listed.
-          </Text>
+          <Text style={styles.successTitle}>{t('Reward Redeemed Successfully')}</Text>
+          <Text style={styles.successMessage}>{t('Thank you! Your Ad has been spot-listed.')}</Text>
 
           {/* Reward Details */}
           <View style={styles.detailsCard}>
             <View style={styles.detailRow}>
               <Ionicons name="gift" size={20} color={COLORS.primary} />
-              <Text style={styles.detailLabel}>Reward Type:</Text>
+              <Text style={styles.detailLabel}>{t('Reward Type:')}</Text>
               <Text style={styles.detailValue}>
                 {category.type === 'plan_upgrade' 
                   ? 'Membership Upgrade' 
@@ -98,7 +98,7 @@ const RewardSuccessScreen = ({ navigation, route }) => {
             {selectedPlan && (
               <View style={styles.detailRow}>
                 <Ionicons name="star" size={20} color={COLORS.primary} />
-                <Text style={styles.detailLabel}>Plan:</Text>
+                <Text style={styles.detailLabel}>{t('Plan:')}</Text>
                 <Text style={styles.detailValue}>{selectedPlan.toUpperCase()}</Text>
               </View>
             )}
@@ -106,7 +106,7 @@ const RewardSuccessScreen = ({ navigation, route }) => {
             {selectedProducts && selectedProducts.length > 0 && (
               <View style={styles.detailRow}>
                 <Ionicons name="cube" size={20} color={COLORS.primary} />
-                <Text style={styles.detailLabel}>Products:</Text>
+                <Text style={styles.detailLabel}>{t('Products:')}</Text>
                 <Text style={styles.detailValue}>{selectedProducts.length} selected</Text>
               </View>
             )}
@@ -118,7 +118,7 @@ const RewardSuccessScreen = ({ navigation, route }) => {
             onPress={handleDone}
             activeOpacity={0.8}
           >
-            <Text style={styles.primaryButtonText}>Done</Text>
+            <Text style={styles.primaryButtonText}>{t('Done')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -127,12 +127,12 @@ const RewardSuccessScreen = ({ navigation, route }) => {
             activeOpacity={0.8}
           >
             <Ionicons name="gift-outline" size={20} color={COLORS.primary} />
-            <Text style={styles.secondaryButtonText}>View More Rewards</Text>
+            <Text style={styles.secondaryButtonText}>{t('View More Rewards')}</Text>
           </TouchableOpacity>
         </Animated.View>
 
         {/* Footer */}
-        <Text style={styles.footerText}>© 2024-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
       </View>
     </SafeAreaView>
   );

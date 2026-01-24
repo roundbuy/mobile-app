@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ad, type, duration, distance, total = '0.00' } = route.params || {};
 
   const handleDone = () => {
@@ -28,7 +30,7 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft} />
-        <Text style={styles.headerTitle}>Transaction Details</Text>
+        <Text style={styles.headerTitle}>{t('Transaction Details')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -43,22 +45,20 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
         </View>
 
         {/* Success Message */}
-        <Text style={styles.successTitle}>Payment Successful</Text>
-        <Text style={styles.successSubtitle}>
-          Your visibility ad purchase has been completed successfully
-        </Text>
+        <Text style={styles.successTitle}>{t('Payment Successful')}</Text>
+        <Text style={styles.successSubtitle}>{t('Your visibility ad purchase has been completed successfully')}</Text>
 
         {/* Transaction Details Card */}
         <View style={styles.detailsCard}>
-          <Text style={styles.cardTitle}>Transaction Details</Text>
+          <Text style={styles.cardTitle}>{t('Transaction Details')}</Text>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Order ID</Text>
+            <Text style={styles.detailLabel}>{t('Order ID')}</Text>
             <Text style={styles.detailValue}>#VIS{Date.now().toString().slice(-8)}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date</Text>
+            <Text style={styles.detailLabel}>{t('Date')}</Text>
             <Text style={styles.detailValue}>
               {new Date().toLocaleDateString('en-GB', {
                 day: '2-digit',
@@ -69,43 +69,43 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Product</Text>
+            <Text style={styles.detailLabel}>{t('Product')}</Text>
             <Text style={styles.detailValue}>{ad.title}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Visibility Type</Text>
+            <Text style={styles.detailLabel}>{t('Visibility Type')}</Text>
             <Text style={[styles.detailValue, { textTransform: 'capitalize' }]}>
               {type} Ad
             </Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Duration</Text>
+            <Text style={styles.detailLabel}>{t('Duration')}</Text>
             <Text style={styles.detailValue}>{duration.label}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Distance</Text>
+            <Text style={styles.detailLabel}>{t('Distance')}</Text>
             <Text style={styles.detailValue}>{distance.label}</Text>
           </View>
           
           <View style={styles.divider} />
           
           <View style={styles.detailRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalLabel}>{t('Total Amount')}</Text>
             <Text style={styles.totalValue}>£{typeof total === 'string' ? total : total.toFixed(2)}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Payment Method</Text>
-            <Text style={styles.detailValue}>Card •••• 4242</Text>
+            <Text style={styles.detailLabel}>{t('Payment Method')}</Text>
+            <Text style={styles.detailValue}>{t('Card •••• 4242')}</Text>
           </View>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Status</Text>
+            <Text style={styles.detailLabel}>{t('Status')}</Text>
             <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>Paid</Text>
+              <Text style={styles.statusText}>{t('Paid')}</Text>
             </View>
           </View>
         </View>
@@ -116,7 +116,7 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
           onPress={handleDone}
           activeOpacity={0.7}
         >
-          <Text style={styles.doneButtonText}>Done</Text>
+          <Text style={styles.doneButtonText}>{t('Done')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -124,7 +124,7 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
           onPress={handleViewDetails}
           activeOpacity={0.7}
         >
-          <Text style={styles.detailsButtonText}>View Receipt</Text>
+          <Text style={styles.detailsButtonText}>{t('View Receipt')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

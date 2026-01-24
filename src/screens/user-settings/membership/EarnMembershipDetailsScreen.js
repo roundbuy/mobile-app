@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const EarnMembershipDetailsScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { category } = route.params;
 
   const handleBack = () => {
@@ -49,7 +51,7 @@ const EarnMembershipDetailsScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Referral Get Gold Plan</Text>
+        <Text style={styles.headerTitle}>{t('Referral Get Gold Plan')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -60,11 +62,8 @@ const EarnMembershipDetailsScreen = ({ navigation, route }) => {
       >
         {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.mainTitle}>Earn Gold membership for free</Text>
-          <Text style={styles.subtitle}>
-            Welcome to RoundBuy. How to use this referral code to 5 friends. 
-            Share and receive Gold membership for free of charge.
-          </Text>
+          <Text style={styles.mainTitle}>{t('Earn Gold membership for free')}</Text>
+          <Text style={styles.subtitle}>{t("Welcome to RoundBuy. How to use this referral code to 5 friends. Share and receive Gold membership for free of charge.")}</Text>
         </View>
 
         {/* Steps Section */}
@@ -89,11 +88,11 @@ const EarnMembershipDetailsScreen = ({ navigation, route }) => {
         <View style={styles.infoBox}>
           <View style={styles.infoHeader}>
             <Ionicons name="information-circle" size={24} color={COLORS.primary} />
-            <Text style={styles.infoHeaderText}>For more information, click here</Text>
+            <Text style={styles.infoHeaderText}>{t('For more information, click here')}</Text>
           </View>
           <TouchableOpacity style={styles.infoLink}>
             <Ionicons name="help-circle-outline" size={20} color={COLORS.primary} />
-            <Text style={styles.infoLinkText}>Learn more about rewards</Text>
+            <Text style={styles.infoLinkText}>{t('Learn more about rewards')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -103,11 +102,11 @@ const EarnMembershipDetailsScreen = ({ navigation, route }) => {
           onPress={handleStartNow}
           activeOpacity={0.8}
         >
-          <Text style={styles.startButtonText}>Start now</Text>
+          <Text style={styles.startButtonText}>{t('Start now')}</Text>
         </TouchableOpacity>
 
         {/* Footer */}
-        <Text style={styles.footerText}>© 2024-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeConfirmationScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, order, problem, formData, files = [] } = route.params;
   const [submitting, setSubmitting] = useState(false);
 
@@ -41,17 +43,17 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
       }
 
       Alert.alert(
-        'Dispute Created',
-        'Your dispute has been submitted successfully. We will review it within 24 hours.',
+        t('Dispute Created'),
+        t('Your dispute has been submitted successfully. We will review it within 24 hours.'),
         [
           {
-            text: 'OK',
+            text: t('OK'),
             onPress: () => navigation.navigate('DisputeDetail', { disputeId }),
           },
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit dispute. Please try again.');
+      Alert.alert(t('Error'), t('Failed to submit dispute. Please try again.'));
       console.error('Error submitting dispute:', error);
     } finally {
       setSubmitting(false);
@@ -62,42 +64,40 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Review & Confirm</Text>
-          <Text style={styles.subtitle}>
-            Please review your dispute before submitting
-          </Text>
+          <Text style={styles.title}>{t('Review & Confirm')}</Text>
+          <Text style={styles.subtitle}>{t('Please review your dispute before submitting')}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Information</Text>
+          <Text style={styles.sectionTitle}>{t('Order Information')}</Text>
           <View style={styles.card}>
-            <InfoRow label="Order Number" value={`#${order.order_number}`} />
-            <InfoRow label="Product" value={order.product_name} />
-            <InfoRow label="Amount" value={`$${order.total_amount}`} />
+            <InfoRow label={t('Order Number')} value={`#${order.order_number}`} />
+            <InfoRow label={t('Product')} value={order.product_name} />
+            <InfoRow label={t('Amount')} value={`$${order.total_amount}`} />
             <InfoRow 
-              label="Order Date" 
+              label={t('Order Date')} 
               value={new Date(order.order_date).toLocaleDateString()} 
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dispute Details</Text>
+          <Text style={styles.sectionTitle}>{t('Dispute Details')}</Text>
           <View style={styles.card}>
-            <InfoRow label="Category" value={category.name} />
-            <InfoRow label="Problem" value={problem.name} />
+            <InfoRow label={t('Category')} value={category.name} />
+            <InfoRow label={t('Problem')} value={problem.name} />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Description</Text>
+          <Text style={styles.sectionTitle}>{t('Your Description')}</Text>
           <View style={styles.card}>
             <Text style={styles.descriptionText}>{formData.description}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Expected Resolution</Text>
+          <Text style={styles.sectionTitle}>{t('Expected Resolution')}</Text>
           <View style={styles.card}>
             <Text style={styles.descriptionText}>
               {formData.expectedResolution}
@@ -107,7 +107,7 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
 
         {formData.additionalInfo && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Additional Information</Text>
+            <Text style={styles.sectionTitle}>{t('Additional Information')}</Text>
             <View style={styles.card}>
               <Text style={styles.descriptionText}>
                 {formData.additionalInfo}
@@ -118,7 +118,7 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
 
         {files.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Evidence Files</Text>
+            <Text style={styles.sectionTitle}>{t('Evidence Files')}</Text>
             <View style={styles.card}>
               <Text style={styles.filesCount}>
                 {files.length} file{files.length > 1 ? 's' : ''} attached
@@ -142,7 +142,7 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
         <View style={styles.warningCard}>
           <Feather name="alert-circle" size={20} color="#FFA500" />
           <View style={styles.warningContent}>
-            <Text style={styles.warningTitle}>Important Notice</Text>
+            <Text style={styles.warningTitle}>{t('Important Notice')}</Text>
             <Text style={styles.warningText}>
               • You'll have 3 days to negotiate with the seller{'\n'}
               • Disputes cannot be edited after submission{'\n'}
@@ -158,7 +158,7 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
             onPress={() => navigation.goBack()}
             disabled={submitting}
           >
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>{t('Go Back')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -169,7 +169,7 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
             {submitting ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.submitButtonText}>Submit Dispute</Text>
+              <Text style={styles.submitButtonText}>{t('Submit Dispute')}</Text>
             )}
           </TouchableOpacity>
         </View>

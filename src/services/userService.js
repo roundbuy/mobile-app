@@ -33,6 +33,32 @@ const userService = {
   },
 
   /**
+   * Check if username is available
+   */
+  async checkUsername(username) {
+    try {
+      const response = await apiRequest('POST', '/user/check-username', { username });
+      return response;
+    } catch (error) {
+      console.error('Error checking username:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update user's username
+   */
+  async updateUsername(username) {
+    try {
+      const response = await apiRequest('PUT', '/user/username', { username });
+      return response;
+    } catch (error) {
+      console.error('Error updating username:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Update user's profile image
    */
   async updateProfileImage(formData) {

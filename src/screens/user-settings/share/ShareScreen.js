@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ShareScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -27,7 +29,7 @@ const ShareScreen = ({ navigation }) => {
         title: 'Share RoundBuy',
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share');
+      Alert.alert(t('Error'), t('Failed to share'));
     }
   };
 
@@ -105,7 +107,7 @@ const ShareScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Share</Text>
+        <Text style={styles.headerTitle}>{t('Share')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -115,12 +117,10 @@ const ShareScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Info Text */}
-        <Text style={styles.infoText}>
-          Share with your friends and connections.
-        </Text>
+        <Text style={styles.infoText}>{t('Share with your friends and connections.')}</Text>
 
         {/* Share With Section */}
-        <Text style={styles.sectionTitle}>Share with</Text>
+        <Text style={styles.sectionTitle}>{t('Share with')}</Text>
 
         {/* Social Icons Grid */}
         <View style={styles.socialGrid}>

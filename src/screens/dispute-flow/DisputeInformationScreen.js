@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -10,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const DisputeInformationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <View style={styles.header}>
@@ -19,7 +21,7 @@ const DisputeInformationScreen = ({ navigation }) => {
                 >
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Dispute information</Text>
+                <Text style={styles.headerTitle}>{t('Dispute information')}</Text>
             </View>
 
             <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -34,47 +36,47 @@ const DisputeInformationScreen = ({ navigation }) => {
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>DISPUTE RESOLUTION STEPS</Text>
+                <Text style={styles.title}>{t('DISPUTE RESOLUTION STEPS')}</Text>
 
                 {/* Steps */}
                 <View style={styles.stepsContainer}>
                     <StepItem
                         number="1"
-                        title="Contact Seller directly to negotiate an agreement"
-                        subtitle="Settle here"
+                        title={t('Contact Seller directly to negotiate an agreement')}
+                        subtitle={t('Settle here')}
                     />
                     <StepItem
                         number="2"
-                        title="Open a Dispute (if Seller Fails)"
-                        subtitle="If unable to settle, Issue a Dispute"
+                        title={t('Open a Dispute (if Seller Fails)')}
+                        subtitle={t('If unable to settle, Issue a Dispute')}
                     />
                     <StepItem
                         number="3"
-                        title="Escalate to a Claim & Provide Documentation"
-                        subtitle="If without agreement, claim"
+                        title={t('Escalate to a Claim & Provide Documentation')}
+                        subtitle={t('If without agreement, claim')}
                     />
                     <StepItem
                         number="4"
-                        title="RoundBuy provides Resolution"
-                        subtitle="Resolution instructions"
+                        title={t('RoundBuy provides Resolution')}
+                        subtitle={t('Resolution instructions')}
                     />
                     <StepItem
                         number="5"
-                        title="RoundBuy closure, Arbitration guidance"
-                        subtitle="Continue private arbitration or criminal case"
+                        title={t('RoundBuy closure, Arbitration guidance')}
+                        subtitle={t('Continue private arbitration or criminal case')}
                     />
                 </View>
 
                 {/* Info Link */}
                 <TouchableOpacity style={styles.infoLink}>
                     <Text style={styles.infoLinkText}>
-                        For more detailed information on Disputes, <Text style={styles.linkText}>click here</Text>
+                        For more detailed information on Disputes, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
                 </TouchableOpacity>
 
                 {/* No close link */}
                 <TouchableOpacity style={styles.noCloseLink}>
-                    <Text style={styles.noCloseLinkText}>No close <Text style={styles.linkText}>click here</Text></Text>
+                    <Text style={styles.noCloseLinkText}>No close <Text style={styles.linkText}>{t('click here')}</Text></Text>
                 </TouchableOpacity>
             </ScrollView>
 
@@ -84,7 +86,7 @@ const DisputeInformationScreen = ({ navigation }) => {
                     style={styles.continueButton}
                     onPress={() => navigation.navigate('DisputeTypeSelection')}
                 >
-                    <Text style={styles.continueButtonText}>Continue</Text>
+                    <Text style={styles.continueButtonText}>{t('Continue')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -14,6 +15,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const MySupportScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('tickets');
     const [tickets, setTickets] = useState([]);
     const [deletedAds, setDeletedAds] = useState([]);
@@ -104,7 +106,7 @@ const MySupportScreen = ({ navigation }) => {
                 <Text style={styles.adTitle}>{ad.title}</Text>
                 {ad.appeal_status && (
                     <View style={[styles.statusBadge, { backgroundColor: '#FFA500' }]}>
-                        <Text style={styles.statusText}>APPEAL</Text>
+                        <Text style={styles.statusText}>{t('APPEAL')}</Text>
                     </View>
                 )}
             </View>
@@ -120,7 +122,7 @@ const MySupportScreen = ({ navigation }) => {
                         style={styles.appealButton}
                         onPress={() => navigation.navigate('CreateAppeal', { adId: ad.id })}
                     >
-                        <Text style={styles.appealButtonText}>Appeal</Text>
+                        <Text style={styles.appealButtonText}>{t('Appeal')}</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -148,7 +150,7 @@ const MySupportScreen = ({ navigation }) => {
                                     style={styles.viewAllButton}
                                     onPress={() => setActiveTab('tickets')}
                                 >
-                                    <Text style={styles.viewAllText}>View All Tickets</Text>
+                                    <Text style={styles.viewAllText}>{t('View All Tickets')}</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -162,7 +164,7 @@ const MySupportScreen = ({ navigation }) => {
                                     style={styles.viewAllButton}
                                     onPress={() => setActiveTab('deleted_ads')}
                                 >
-                                    <Text style={styles.viewAllText}>View All Deleted Ads</Text>
+                                    <Text style={styles.viewAllText}>{t('View All Deleted Ads')}</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -170,7 +172,7 @@ const MySupportScreen = ({ navigation }) => {
                     {tickets.length === 0 && deletedAds.length === 0 && (
                         <View style={styles.emptyState}>
                             <Ionicons name="folder-open-outline" size={64} color="#CCC" />
-                            <Text style={styles.emptyText}>No support items</Text>
+                            <Text style={styles.emptyText}>{t('No support items')}</Text>
                         </View>
                     )}
                 </View>
@@ -184,8 +186,8 @@ const MySupportScreen = ({ navigation }) => {
                     {tickets.length === 0 && (
                         <View style={styles.emptyState}>
                             <Ionicons name="ticket-outline" size={64} color="#CCC" />
-                            <Text style={styles.emptyText}>No tickets yet</Text>
-                            <Text style={styles.emptySubtext}>Create a ticket to get support</Text>
+                            <Text style={styles.emptyText}>{t('No tickets yet')}</Text>
+                            <Text style={styles.emptySubtext}>{t('Create a ticket to get support')}</Text>
                         </View>
                     )}
                 </View>
@@ -199,7 +201,7 @@ const MySupportScreen = ({ navigation }) => {
                     {deletedAds.length === 0 && (
                         <View style={styles.emptyState}>
                             <Ionicons name="trash-outline" size={64} color="#CCC" />
-                            <Text style={styles.emptyText}>No deleted ads</Text>
+                            <Text style={styles.emptyText}>{t('No deleted ads')}</Text>
                         </View>
                     )}
                 </View>
@@ -214,7 +216,7 @@ const MySupportScreen = ({ navigation }) => {
                     {appeals.length === 0 && (
                         <View style={styles.emptyState}>
                             <Ionicons name="document-text-outline" size={64} color="#CCC" />
-                            <Text style={styles.emptyText}>No appeals</Text>
+                            <Text style={styles.emptyText}>{t('No appeals')}</Text>
                         </View>
                     )}
                 </View>
@@ -233,7 +235,7 @@ const MySupportScreen = ({ navigation }) => {
                     >
                         <Ionicons name="chevron-back" size={28} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>My Support</Text>
+                    <Text style={styles.headerTitle}>{t('My Support')}</Text>
                     <TouchableOpacity
                         style={styles.createButton}
                         onPress={() => navigation.navigate('CreateTicket')}
@@ -246,15 +248,15 @@ const MySupportScreen = ({ navigation }) => {
                 <View style={styles.statsContainer}>
                     <View style={styles.statCard}>
                         <Text style={styles.statNumber}>{stats.total_tickets || 0}</Text>
-                        <Text style={styles.statLabel}>Total Tickets</Text>
+                        <Text style={styles.statLabel}>{t('Total Tickets')}</Text>
                     </View>
                     <View style={styles.statCard}>
                         <Text style={styles.statNumber}>{stats.open_tickets || 0}</Text>
-                        <Text style={styles.statLabel}>Open</Text>
+                        <Text style={styles.statLabel}>{t('Open')}</Text>
                     </View>
                     <View style={styles.statCard}>
                         <Text style={styles.statNumber}>{stats.deleted_ads || 0}</Text>
-                        <Text style={styles.statLabel}>Deleted Ads</Text>
+                        <Text style={styles.statLabel}>{t('Deleted Ads')}</Text>
                     </View>
                 </View>
 
@@ -264,33 +266,25 @@ const MySupportScreen = ({ navigation }) => {
                         style={[styles.tab, activeTab === 'all' && styles.activeTab]}
                         onPress={() => setActiveTab('all')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
-                            All
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>{t('All')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'tickets' && styles.activeTab]}
                         onPress={() => setActiveTab('tickets')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'tickets' && styles.activeTabText]}>
-                            Tickets
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'tickets' && styles.activeTabText]}>{t('Tickets')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'deleted_ads' && styles.activeTab]}
                         onPress={() => setActiveTab('deleted_ads')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'deleted_ads' && styles.activeTabText]}>
-                            Deleted ads
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'deleted_ads' && styles.activeTabText]}>{t('Deleted ads')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'appeals' && styles.activeTab]}
                         onPress={() => setActiveTab('appeals')}
                     >
-                        <Text style={[styles.tabText, activeTab === 'appeals' && styles.activeTabText]}>
-                            Appeals
-                        </Text>
+                        <Text style={[styles.tabText, activeTab === 'appeals' && styles.activeTabText]}>{t('Appeals')}</Text>
                     </TouchableOpacity>
                 </View>
 

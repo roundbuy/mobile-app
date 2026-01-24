@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const DeletedAdsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [deletedAds, setDeletedAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,9 +47,9 @@ const DeletedAdsScreen = ({ navigation }) => {
       navigation.navigate('AdAppeal', { adId: ad.id });
     } else {
       Alert.alert(
-        'Cannot Appeal',
-        'The appeal window for this ad has expired or an appeal has already been submitted.',
-        [{ text: 'OK' }]
+        t('Cannot Appeal'),
+        t('The appeal window for this ad has expired or an appeal has already been submitted.'),
+        [{ text: t('OK') }]
       );
     }
   };
@@ -113,7 +115,7 @@ const DeletedAdsScreen = ({ navigation }) => {
               onPress={() => handleAppeal(item)}
             >
               <Feather name="file-text" size={16} color="#FFF" />
-              <Text style={styles.appealButtonText}>Appeal</Text>
+              <Text style={styles.appealButtonText}>{t('Appeal')}</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -139,10 +141,8 @@ const DeletedAdsScreen = ({ navigation }) => {
     <SafeScreenContainer>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Deleted Ads</Text>
-          <Text style={styles.subtitle}>
-            View ads removed for policy violations
-          </Text>
+          <Text style={styles.title}>{t('Deleted Ads')}</Text>
+          <Text style={styles.subtitle}>{t('View ads removed for policy violations')}</Text>
         </View>
 
         <FlatList
@@ -156,10 +156,8 @@ const DeletedAdsScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="check-circle" size={64} color="#32CD32" />
-              <Text style={styles.emptyTitle}>No Deleted Ads</Text>
-              <Text style={styles.emptyText}>
-                You don't have any deleted ads. Keep following our community guidelines!
-              </Text>
+              <Text style={styles.emptyTitle}>{t('No Deleted Ads')}</Text>
+              <Text style={styles.emptyText}>{t("You don't have any deleted ads. Keep following our community guidelines!")}</Text>
             </View>
           }
         />
@@ -167,7 +165,7 @@ const DeletedAdsScreen = ({ navigation }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>About Appeals</Text>
+            <Text style={styles.infoTitle}>{t('About Appeals')}</Text>
             <Text style={styles.infoText}>
               • You have 30 days to appeal{'\n'}
               • Provide evidence why the decision should be reversed{'\n'}

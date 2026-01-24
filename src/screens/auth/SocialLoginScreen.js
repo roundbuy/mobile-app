@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 
 const SocialLoginScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const { email: paramEmail, message } = route.params || {};
   const [email, setEmail] = useState(paramEmail || '');
@@ -17,39 +19,39 @@ const SocialLoginScreen = ({ navigation, route }) => {
   // Show message if provided (from registration/payment completion)
   useEffect(() => {
     if (message) {
-      Alert.alert('Welcome!', message);
+      Alert.alert(t('Welcome!'), message);
     }
   }, [message]);
 
   const handleSignIn = async () => {
     // Validate inputs
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert(t('Error'), t('Please enter both email and password'));
       return;
     }
 
     // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      Alert.alert(t('Invalid Email'), t('Please enter a valid email address'));
       return;
     }
 
     try {
       setLoading(true);
-      
+
       // Call login API through AuthContext
       const response = await login(email, password);
-      
+
       // Check if user needs subscription
       if (response && response.requires_subscription) {
         // User is verified but has no active subscription
         Alert.alert(
-          'Subscription Required',
-          'Please select a subscription plan to continue.',
+          t('Subscription Required'),
+          t('Please select a subscription plan to continue.'),
           [
             {
-              text: 'Choose Plan',
+              text: t('Choose Plan'),
               onPress: () => {
                 navigation.reset({
                   index: 0,
@@ -68,19 +70,19 @@ const SocialLoginScreen = ({ navigation, route }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      
+
       // Handle specific error cases
       let errorMessage = error.message || 'Login failed. Please try again.';
-      
+
       if (error.error_code === 'EMAIL_NOT_VERIFIED' || error.message?.includes('verify your email')) {
         // User needs to verify email first
         Alert.alert(
-          'Email Not Verified',
-          'Please verify your email before logging in. We\'ll send you a verification code.',
+          t('Email Not Verified'),
+          t("Please verify your email before logging in. We'll send you a verification code."),
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: t('Cancel'), style: 'cancel' },
             {
-              text: 'Verify Now',
+              text: t('Verify Now'),
               onPress: () => {
                 // Navigate to email verification screen
                 navigation.navigate('EmailVerification', {
@@ -91,13 +93,13 @@ const SocialLoginScreen = ({ navigation, route }) => {
           ]
         );
       } else if (error.message?.includes('deactivated')) {
-        Alert.alert('Account Deactivated', 'Your account has been deactivated. Please contact support.');
+        Alert.alert(t('Account Deactivated'), t('Your account has been deactivated. Please contact support.'));
       } else if (error.message?.includes('Invalid email or password')) {
-        Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
+        Alert.alert(t('Login Failed'), t('Invalid email or password. Please try again.'));
       } else if (error.message?.includes('Session expired') || error.error_code === 'SESSION_EXPIRED' || error.error_code === 'TOKEN_EXPIRED') {
-        Alert.alert('Session Expired', 'Session expired. Please login again.');
+        Alert.alert(t('Session Expired'), t('Session expired. Please login again.'));
       } else {
-        Alert.alert('Login Failed', errorMessage);
+        Alert.alert(t('Login Failed'), errorMessage);
       }
     } finally {
       setLoading(false);
@@ -107,14 +109,18 @@ const SocialLoginScreen = ({ navigation, route }) => {
   const handleSocialLogin = (provider) => {
     // TODO: Implement OAuth flow for social login
     Alert.alert(
-      'Coming Soon',
+      t('Coming Soon'),
       `${provider} login will be available in the next update.`,
-      [{ text: 'OK' }]
+      [{ text: t('OK') }]
     );
   };
 
   const handleForgotPassword = () => {
     navigation.navigate('ForgotPassword');
+  };
+
+  const handlePatentInfo = () => {
+    navigation.navigate('PatentPending');
   };
 
   return (
@@ -134,24 +140,31 @@ const SocialLoginScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Logo */}
+        {/* Header with Logo and Patent Info */}
         <View style={styles.logoContainer}>
           <Image
             source={IMAGES.logoMain}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <TouchableOpacity onPress={handlePatentInfo}>
+            <Text style={styles.infoLink}>
+              for more information{' '}
+              <Text style={styles.clickHere}>{t('click here')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Sign in</Text>
+        <Text style={styles.title}>{t('Sign in')}</Text>
 
         {/* Email Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={styles.label}>{t('Email address')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="johnround@gmail.com"
+            placeholder={t('johnround@gmail.com')}
             placeholderTextColor="#c7c7cc"
             value={email}
             onChangeText={setEmail}
@@ -163,7 +176,7 @@ const SocialLoginScreen = ({ navigation, route }) => {
 
         {/* Password Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('Password')}</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
@@ -179,16 +192,20 @@ const SocialLoginScreen = ({ navigation, route }) => {
               style={styles.showPasswordButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={22}
+                color="#6a6a6a"
+              />
             </TouchableOpacity>
           </View>
-          
+
           {/* Forgotten Password Link */}
           <TouchableOpacity
             onPress={handleForgotPassword}
             style={styles.forgotPasswordButton}
           >
-            <Text style={styles.forgotPasswordText}>Forgotten password?</Text>
+            <Text style={styles.forgotPasswordText}>{t('Forgotten password?')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -201,14 +218,14 @@ const SocialLoginScreen = ({ navigation, route }) => {
           {loading ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.signInButtonText}>Sign in</Text>
+            <Text style={styles.signInButtonText}>{t('Sign in')}</Text>
           )}
         </TouchableOpacity>
 
         {/* Divider */}
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Or</Text>
+          <Text style={styles.dividerText}>{t('Or')}</Text>
           <View style={styles.dividerLine} />
         </View>
 
@@ -217,37 +234,31 @@ const SocialLoginScreen = ({ navigation, route }) => {
           style={styles.socialButton}
           onPress={() => handleSocialLogin('Google')}
         >
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="google" size={20} color="#DB4437" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with google</Text>
-          </View>
+          <FontAwesome name="google" size={20} color="#DB4437" style={styles.socialIcon} />
+          <Text style={styles.socialButtonText}>{t('Sign up with google')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.socialButton}
           onPress={() => handleSocialLogin('Apple')}
         >
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="apple" size={20} color="#000000" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with apple</Text>
-          </View>
+          <FontAwesome name="apple" size={20} color="#000000" style={styles.socialIcon} />
+          <Text style={styles.socialButtonText}>{t('Sign up with apple')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.socialButton}
           onPress={() => handleSocialLogin('Instagram')}
         >
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="instagram" size={20} color="#E4405F" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with instagram</Text>
-          </View>
+          <FontAwesome name="instagram" size={20} color="#E4405F" style={styles.socialIcon} />
+          <Text style={styles.socialButtonText}>{t('Sign up with instagram')}</Text>
         </TouchableOpacity>
 
         {/* Terms */}
         <Text style={styles.termsText}>
           By continuing, you agree to our{' '}
-          <Text style={styles.termsLink}>Terms of service</Text> and{' '}
-          <Text style={styles.termsLink}>Privacy Policy</Text>.
+          <Text style={styles.termsLink}>{t('Terms of service')}</Text> and{' '}
+          <Text style={styles.termsLink}>{t('Privacy Policy')}</Text>.
         </Text>
       </ScrollView>
     </SafeScreenContainer>
@@ -281,6 +292,25 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 50,
+  },
+  patentText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginTop: 12,
+    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  infoLink: {
+    fontSize: 10,
+    fontWeight: '400',
+    color: '#6a6a6a',
+    letterSpacing: -0.1,
+  },
+  clickHere: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   title: {
     fontSize: 24,
@@ -322,10 +352,9 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   showPasswordButton: {
-    padding: 6,
-  },
-  eyeIcon: {
-    fontSize: 18,
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
@@ -377,26 +406,27 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   socialButton: {
+    flexDirection: 'row',
     height: 48,
     backgroundColor: '#f5f5f5',
     borderRadius: 24,
     marginBottom: 10,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  socialButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingLeft: 16,
+    paddingRight: 16,
   },
   socialIcon: {
-    marginRight: 12,
+    width: 24,
+    textAlign: 'center',
+    marginLeft: 100,
   },
   socialButtonText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#1a1a1a',
     letterSpacing: 0.1,
+    marginLeft: 5,
+    flex: 1,
   },
   termsText: {
     fontSize: 10,

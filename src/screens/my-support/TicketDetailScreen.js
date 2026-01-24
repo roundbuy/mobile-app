@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const TicketDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ticketId } = route.params;
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +90,7 @@ const TicketDetailScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.errorContainer}>
           <Feather name="alert-circle" size={48} color="#FF4444" />
-          <Text style={styles.errorText}>Ticket not found</Text>
+          <Text style={styles.errorText}>{t('Ticket not found')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -122,21 +124,21 @@ const TicketDetailScreen = ({ navigation, route }) => {
 
         {/* Ticket Info */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ticket Information</Text>
+          <Text style={styles.sectionTitle}>{t('Ticket Information')}</Text>
           <View style={styles.card}>
-            <InfoRow label="Category" value={ticket.category_name} />
+            <InfoRow label={t('Category')} value={ticket.category_name} />
             <InfoRow
-              label="Priority"
+              label={t('Priority')}
               value={ticket.priority.toUpperCase()}
               valueColor={getPriorityColor(ticket.priority)}
             />
             <InfoRow
-              label="Created"
+              label={t('Created')}
               value={new Date(ticket.created_at).toLocaleString()}
             />
             {ticket.updated_at !== ticket.created_at && (
               <InfoRow
-                label="Last Updated"
+                label={t('Last Updated')}
                 value={new Date(ticket.updated_at).toLocaleString()}
               />
             )}
@@ -145,7 +147,7 @@ const TicketDetailScreen = ({ navigation, route }) => {
 
         {/* Subject */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Subject</Text>
+          <Text style={styles.sectionTitle}>{t('Subject')}</Text>
           <View style={styles.card}>
             <Text style={styles.subjectText}>{ticket.subject}</Text>
           </View>
@@ -153,7 +155,7 @@ const TicketDetailScreen = ({ navigation, route }) => {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('Description')}</Text>
           <View style={styles.card}>
             <Text style={styles.descriptionText}>{ticket.description}</Text>
           </View>
@@ -162,11 +164,11 @@ const TicketDetailScreen = ({ navigation, route }) => {
         {/* Admin Response */}
         {ticket.admin_response && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Support Response</Text>
+            <Text style={styles.sectionTitle}>{t('Support Response')}</Text>
             <View style={[styles.card, styles.responseCard]}>
               <View style={styles.responseHeader}>
                 <Feather name="shield" size={20} color="#4169E1" />
-                <Text style={styles.responseTitle}>Support Team</Text>
+                <Text style={styles.responseTitle}>{t('Support Team')}</Text>
               </View>
               <Text style={styles.descriptionText}>{ticket.admin_response}</Text>
               <Text style={styles.responseDate}>
@@ -179,11 +181,11 @@ const TicketDetailScreen = ({ navigation, route }) => {
         {/* Resolution Details */}
         {ticket.status === 'resolved' && ticket.resolution && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Resolution</Text>
+            <Text style={styles.sectionTitle}>{t('Resolution')}</Text>
             <View style={[styles.card, styles.resolvedCard]}>
               <View style={styles.resolvedHeader}>
                 <Feather name="check-circle" size={24} color="#32CD32" />
-                <Text style={styles.resolvedTitle}>Ticket Resolved</Text>
+                <Text style={styles.resolvedTitle}>{t('Ticket Resolved')}</Text>
               </View>
               <Text style={styles.descriptionText}>{ticket.resolution}</Text>
               <Text style={styles.resolvedDate}>
@@ -220,23 +222,21 @@ const TicketDetailScreen = ({ navigation, route }) => {
               onPress={handleSendMessage}
             >
               <Feather name="message-circle" size={20} color="#FFF" />
-              <Text style={styles.messageButtonText}>View Messages</Text>
+              <Text style={styles.messageButtonText}>{t('View Messages')}</Text>
             </TouchableOpacity>
           )}
 
           {ticket.status === 'resolved' && (
             <View style={styles.resolvedBanner}>
               <Feather name="check-circle" size={24} color="#32CD32" />
-              <Text style={styles.resolvedBannerText}>
-                This ticket has been resolved
-              </Text>
+              <Text style={styles.resolvedBannerText}>{t('This ticket has been resolved')}</Text>
             </View>
           )}
 
           {ticket.status === 'closed' && (
             <View style={styles.closedBanner}>
               <Feather name="x-circle" size={24} color="#666" />
-              <Text style={styles.closedBannerText}>This ticket is closed</Text>
+              <Text style={styles.closedBannerText}>{t('This ticket is closed')}</Text>
             </View>
           )}
         </View>

@@ -1,52 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder } from 'react-native';
 import { COLORS } from '../constants/theme';
 
 const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectPriceRange }) => {
-  const [tempMinPrice, setTempMinPrice] = useState(minPrice || '');
-  const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice || '');
+  const MAX_PRICE = 100000; // Maximum price limit (₹1,00,000)
+  const MIN_PRICE = 0;
+
+  const [tempMinPrice, setTempMinPrice] = useState(minPrice || MIN_PRICE);
+  const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice || MAX_PRICE);
+
+  const sliderLayout = useRef({ x: 0, width: 0 });
+  const sliderTrackRef = useRef(null);
 
   useEffect(() => {
     if (visible) {
-      setTempMinPrice(minPrice || '');
-      setTempMaxPrice(maxPrice || '');
+      setTempMinPrice(minPrice || MIN_PRICE);
+      setTempMaxPrice(maxPrice || MAX_PRICE);
     }
   }, [visible, minPrice, maxPrice]);
 
   const handleApply = () => {
-    const min = tempMinPrice ? parseFloat(tempMinPrice) : null;
-    const max = tempMaxPrice ? parseFloat(tempMaxPrice) : null;
-
-    // Validation
-    if (min !== null && max !== null && min >= max) {
-      Alert.alert('Invalid Range', 'Minimum price must be less than maximum price.');
-      return;
-    }
-
-    if (min !== null && min < 0) {
-      Alert.alert('Invalid Price', 'Minimum price cannot be negative.');
-      return;
-    }
-
-    if (max !== null && max < 0) {
-      Alert.alert('Invalid Price', 'Maximum price cannot be negative.');
-      return;
-    }
+    const min = tempMinPrice === MIN_PRICE ? null : tempMinPrice;
+    const max = tempMaxPrice === MAX_PRICE ? null : tempMaxPrice;
 
     onSelectPriceRange(min, max);
     onClose();
   };
 
   const handleClear = () => {
-    setTempMinPrice('');
-    setTempMaxPrice('');
+    setTempMinPrice(MIN_PRICE);
+    setTempMaxPrice(MAX_PRICE);
   };
 
   const formatPrice = (value) => {
-    if (!value) return '';
-    const num = parseFloat(value);
-    return isNaN(num) ? '' : num.toString();
+    if (value >= 100000) {
+      return `₹${(value / 100000).toFixed(1)}L`;
+    } else if (value >= 1000) {
+      return `₹${(value / 1000).toFixed(1)}K`;
+    }
+    return `₹${value}`;
   };
+
+  // Update slider value based on touch position
+  const updateSliderValue = (pageX, isMin) => {
+    const { x, width } = sliderLayout.current;
+    if (width === 0) return;
+
+    const relativeX = pageX - x;
+    const percentage = Math.max(0, Math.min(100, (relativeX / width) * 100));
+    const value = Math.round((percentage / 100) * MAX_PRICE);
+
+    if (isMin) {
+      // Update min price, but don't exceed max price
+      const newMin = Math.min(value, tempMaxPrice - 100);
+      setTempMinPrice(Math.max(MIN_PRICE, newMin));
+    } else {
+      // Update max price, but don't go below min price
+      const newMax = Math.max(value, tempMinPrice + 100);
+      setTempMaxPrice(Math.min(MAX_PRICE, newMax));
+    }
+  };
+
+  // Pan responder for min handle
+  const minPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        updateSliderValue(evt.nativeEvent.pageX, true);
+      },
+      onPanResponderMove: (evt) => {
+        updateSliderValue(evt.nativeEvent.pageX, true);
+      },
+      onPanResponderRelease: () => { },
+    })
+  ).current;
+
+  // Pan responder for max handle
+  const maxPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        updateSliderValue(evt.nativeEvent.pageX, false);
+      },
+      onPanResponderMove: (evt) => {
+        updateSliderValue(evt.nativeEvent.pageX, false);
+      },
+      onPanResponderRelease: () => { },
+    })
+  ).current;
+
+  const minPercentage = (tempMinPrice / MAX_PRICE) * 100;
+  const maxPercentage = (tempMaxPrice / MAX_PRICE) * 100;
 
   return (
     <Modal
@@ -69,53 +115,66 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
             <Text style={styles.description}>
-              Set your preferred price range to find items within your budget.
+              Drag the handles to set your preferred price range.
             </Text>
 
-            <View style={styles.inputRow}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Minimum Price</Text>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.currencySymbol}>₹</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="0"
-                    placeholderTextColor="#c7c7cc"
-                    value={tempMinPrice}
-                    onChangeText={(text) => setTempMinPrice(formatPrice(text))}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Maximum Price</Text>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.currencySymbol}>₹</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="No limit"
-                    placeholderTextColor="#c7c7cc"
-                    value={tempMaxPrice}
-                    onChangeText={(text) => setTempMaxPrice(formatPrice(text))}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* Price Range Preview */}
+            {/* Price Range Display */}
             <View style={styles.rangePreview}>
               <Text style={styles.rangeText}>
-                {tempMinPrice || tempMaxPrice ?
-                  `₹${tempMinPrice || '0'} - ${tempMaxPrice ? `₹${tempMaxPrice}` : 'No limit'}` :
-                  'No price range set'
-                }
+                {formatPrice(tempMinPrice)} - {formatPrice(tempMaxPrice)}
               </Text>
             </View>
 
+            {/* Dual Handle Slider */}
+            <View style={styles.sliderContainer}>
+              <View
+                style={styles.sliderTrack}
+                ref={sliderTrackRef}
+                onLayout={(event) => {
+                  const { x, width } = event.nativeEvent.layout;
+                  sliderLayout.current = { x, width };
+                }}
+              >
+                {/* Background track */}
+                <View style={styles.sliderTrackBackground} />
+
+                {/* Active range fill */}
+                <View
+                  style={[
+                    styles.sliderFill,
+                    {
+                      left: `${minPercentage}%`,
+                      width: `${maxPercentage - minPercentage}%`,
+                    },
+                  ]}
+                />
+
+                {/* Min handle */}
+                <View
+                  style={[styles.sliderThumb, { left: `${minPercentage}%` }]}
+                  {...minPanResponder.panHandlers}
+                >
+                  <View style={styles.thumbInner} />
+                </View>
+
+                {/* Max handle */}
+                <View
+                  style={[styles.sliderThumb, { left: `${maxPercentage}%` }]}
+                  {...maxPanResponder.panHandlers}
+                >
+                  <View style={styles.thumbInner} />
+                </View>
+              </View>
+
+              {/* Labels */}
+              <View style={styles.labelsContainer}>
+                <Text style={styles.labelText}>₹0</Text>
+                <Text style={styles.labelText}>₹1L</Text>
+              </View>
+            </View>
+
             <Text style={styles.hint}>
-              Leave fields empty for no minimum or maximum limit.
+              Drag the handles to adjust minimum and maximum price limits.
             </Text>
           </View>
         </ScrollView>
@@ -181,59 +240,74 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    color: '#666666',
+    color: '#303234',
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 22,
   },
-  inputRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 30,
-  },
-  inputContainer: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 48,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-  },
-  currencySymbol: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#1a1a1a',
-  },
   rangePreview: {
     alignItems: 'center',
     paddingVertical: 20,
-    marginBottom: 20,
+    marginBottom: 40,
     backgroundColor: '#f8f9fa',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e9ecef',
   },
   rangeText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  sliderContainer: {
+    marginBottom: 40,
+  },
+  sliderTrack: {
+    height: 40,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  sliderTrackBackground: {
+    height: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+  },
+  sliderFill: {
+    position: 'absolute',
+    height: 4,
+    backgroundColor: COLORS.primary,
+    borderRadius: 2,
+  },
+  sliderThumb: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    marginLeft: -14,
+    marginTop: -12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thumbInner: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  labelsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  labelText: {
+    fontSize: 12,
+    color: '#888888',
   },
   hint: {
     fontSize: 14,

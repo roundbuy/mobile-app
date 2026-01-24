@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -11,6 +12,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 
 const IssueDisputeBuyerReasonsScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId, issueNumber } = route.params || {};
 
     const handleNext = () => {
@@ -41,68 +43,46 @@ const IssueDisputeBuyerReasonsScreen = ({ navigation, route }) => {
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>
-                    Reason for Buyer Disputes
-                </Text>
+                <Text style={styles.title}>{t('Reason for Buyer Disputes')}</Text>
 
                 {/* Subtitle */}
-                <Text style={styles.subtitle}>
-                    Find out the eligibility criteria for Buyer to Buyer Disputes
-                </Text>
+                <Text style={styles.subtitle}>{t('Find out the eligibility criteria for Buyer to Buyer Disputes')}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.sectionHeader}>
-                        The buyer can escalate the exchange into a dispute if:
-                    </Text>
+                    <Text style={styles.sectionHeader}>{t('The buyer can escalate the exchange into a dispute if:')}</Text>
 
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The seller has not responded to the exchange request within the specified timeframe (e.g., 3 days).
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The seller has not responded to the exchange request within the specified timeframe (e.g., 3 days).')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The seller's response does not address the buyer's concerns or is not satisfactory.
-                        </Text>
+                        <Text style={styles.bulletText}>{t("The seller's response does not address the buyer's concerns or is not satisfactory.")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The product received significantly differs from the description or is defective.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The product received significantly differs from the description or is defective.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The seller refuses to provide a refund or replacement despite valid reasons.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The seller refuses to provide a refund or replacement despite valid reasons.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Communication breakdown: The seller is unresponsive or unwilling to cooperate in resolving the issue.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Communication breakdown: The seller is unresponsive or unwilling to cooperate in resolving the issue.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Evidence of fraud or misrepresentation by the seller.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Evidence of fraud or misrepresentation by the seller.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The buyer has provided all necessary evidence and documentation to support their claim.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The buyer has provided all necessary evidence and documentation to support their claim.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Escalate Delayed & Incorrect product: Allegations where the buyer did not receive the item or received an item that was not as described.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Escalate Delayed & Incorrect product: Allegations where the buyer did not receive the item or received an item that was not as described.')}</Text>
                     </View>
                 </View>
 
@@ -110,7 +90,7 @@ const IssueDisputeBuyerReasonsScreen = ({ navigation, route }) => {
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
@@ -125,13 +105,11 @@ const IssueDisputeBuyerReasonsScreen = ({ navigation, route }) => {
 
                 {/* Read More Button */}
                 <TouchableOpacity style={styles.readMoreButton} onPress={handleNext}>
-                    <Text style={styles.readMoreText}>Read more</Text>
+                    <Text style={styles.readMoreText}>{t('Read more')}</Text>
                 </TouchableOpacity>
 
                 {/* Note */}
-                <Text style={styles.note}>
-                    Only one is shown for dispute escalation shown in the
-                </Text>
+                <Text style={styles.note}>{t('Only one is shown for dispute escalation shown in the')}</Text>
             </ScrollView>
         </SafeAreaView>
     );

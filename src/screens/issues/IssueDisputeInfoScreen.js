@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -11,6 +12,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 
 const IssueDisputeInfoScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId, issueNumber } = route.params || {};
 
     const handleNext = () => {
@@ -41,54 +43,40 @@ const IssueDisputeInfoScreen = ({ navigation, route }) => {
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>
-                    Recording General Information for the Disputes
-                </Text>
+                <Text style={styles.title}>{t('Recording General Information for the Disputes')}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Lorem ipsum lorem ipsum lorem ipsum
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                 </View>
 
                 {/* For more information */}
-                <Text style={styles.moreInfo}>
-                    For more information click here
-                </Text>
+                <Text style={styles.moreInfo}>{t('For more information click here')}</Text>
 
                 {/* Info Link */}
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
@@ -103,13 +91,11 @@ const IssueDisputeInfoScreen = ({ navigation, route }) => {
 
                 {/* Read More Button */}
                 <TouchableOpacity style={styles.readMoreButton} onPress={handleNext}>
-                    <Text style={styles.readMoreText}>Read more</Text>
+                    <Text style={styles.readMoreText}>{t('Read more')}</Text>
                 </TouchableOpacity>
 
                 {/* Note */}
-                <Text style={styles.note}>
-                    Only one is shown for dispute escalation shown in the
-                </Text>
+                <Text style={styles.note}>{t('Only one is shown for dispute escalation shown in the')}</Text>
             </ScrollView>
         </SafeAreaView>
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import { COLORS } from '../../constants/theme';
 import paddleService from '../../services/paddleService';
 
 const PaddlePaymentScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const {
     total = '2.27',
     planType = 'Gold',
@@ -53,10 +55,10 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
       setLoading(false);
       console.error('Failed to initialize Paddle checkout:', error);
       Alert.alert(
-        'Initialization Error',
-        'Unable to load payment form. Please try again.',
+        t('Initialization Error'),
+        t('Unable to load payment form. Please try again.'),
         [
-          { text: 'Go Back', onPress: () => navigation.goBack() }
+          { text: t('Go Back'), onPress: () => navigation.goBack() }
         ]
       );
     }
@@ -287,10 +289,10 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
 
         case 'payment_error':
           Alert.alert(
-            'Payment Failed',
-            message.error?.message || 'Unable to process payment. Please try again.',
+            t('Payment Failed'),
+            message.error?.message || t('Unable to process payment. Please try again.'),
             [
-              { text: 'Try Again', onPress: () => initializePaddleCheckout() },
+              { text: t('Try Again'), onPress: () => initializePaddleCheckout() },
               { text: 'Cancel', onPress: () => navigation.goBack(), style: 'cancel' }
             ]
           );
@@ -316,7 +318,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Initializing secure payment...</Text>
+          <Text style={styles.loadingText}>{t('Initializing secure payment...')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -335,7 +337,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
             <Text style={styles.backButtonText}>✕</Text>
           </TouchableOpacity>
           <View style={styles.securityBadge}>
-            <Text style={styles.securityText}>🔒 Secure Payment</Text>
+            <Text style={styles.securityText}>{t('🔒 Secure Payment')}</Text>
           </View>
         </View>
 
@@ -356,7 +358,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
           onError={(syntheticEvent) => {
             const { nativeEvent } = syntheticEvent;
             console.error('WebView error:', nativeEvent);
-            Alert.alert('Error', 'Unable to load payment form. Please try again.');
+            Alert.alert(t('Error'), t('Unable to load payment form. Please try again.'));
           }}
         />
 
@@ -364,8 +366,8 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
           <View style={styles.processingOverlay}>
             <View style={styles.processingCard}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.processingText}>Processing payment...</Text>
-              <Text style={styles.processingSubtext}>Please wait</Text>
+              <Text style={styles.processingText}>{t('Processing payment...')}</Text>
+              <Text style={styles.processingSubtext}>{t('Please wait')}</Text>
             </View>
           </View>
         )}

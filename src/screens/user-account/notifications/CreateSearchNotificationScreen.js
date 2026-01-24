@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const CreateSearchNotificationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [activity, setActivity] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -42,82 +44,80 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create Search Notification</Text>
+        <Text style={styles.headerTitle}>{t('Create Search Notification')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.intro}>
-          Create a Search Notification for a product you want to find. When such a product is put on sale online, you will receive a notification.
-        </Text>
+        <Text style={styles.intro}>{t('Create a Search Notification for a product you want to find. When such a product is put on sale online, you will receive a notification.')}</Text>
 
         {/* Activity */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Activity</Text>
+          <Text style={styles.label}>{t('Activity')}</Text>
           <TextInput
             style={styles.input}
             value={activity}
             onChangeText={setActivity}
-            placeholder="Select activity"
+            placeholder={t('Select activity')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Category */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Category</Text>
+          <Text style={styles.label}>{t('Category')}</Text>
           <TextInput
             style={styles.input}
             value={category}
             onChangeText={setCategory}
-            placeholder="Select category"
+            placeholder={t('Select category')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Subcategory */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Subcategory</Text>
+          <Text style={styles.label}>{t('Subcategory')}</Text>
           <TextInput
             style={styles.input}
             value={subcategory}
             onChangeText={setSubcategory}
-            placeholder="Select subcategory"
+            placeholder={t('Select subcategory')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Keywords */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Keyword(s)</Text>
+          <Text style={styles.label}>{t('Keyword(s)')}</Text>
           <TextInput
             style={styles.input}
             value={keywords}
             onChangeText={setKeywords}
-            placeholder="Enter keywords"
+            placeholder={t('Enter keywords')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Condition */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Condition</Text>
+          <Text style={styles.label}>{t('Condition')}</Text>
           <TextInput
             style={styles.input}
             value={condition}
             onChangeText={setCondition}
-            placeholder="Select condition"
+            placeholder={t('Select condition')}
             placeholderTextColor="#999"
           /> </View>
 
         {/* Price */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Price</Text>
+          <Text style={styles.label}>{t('Price')}</Text>
           <TextInput
             style={styles.input}
             value={price}
             onChangeText={setPrice}
-            placeholder="Enter price range"
+            placeholder={t('Enter price range')}
             placeholderTextColor="#999"
             keyboardType="numeric"
           />
@@ -125,11 +125,11 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
 
         {/* Create Button */}
         <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
-          <Text style={styles.createButtonText}>Create a Search Notification</Text>
+          <Text style={styles.createButtonText}>{t('Create a Search Notification')}</Text>
         </TouchableOpacity>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

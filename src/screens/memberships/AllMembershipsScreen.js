@@ -4,8 +4,10 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { subscriptionService, authService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 
 const AllMembershipsScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { completeRegistration } = useAuth();
   const { requiresPlan, userEmail } = route.params || {};
   const [plans, setPlans] = useState([]);
@@ -46,9 +48,9 @@ const AllMembershipsScreen = ({ navigation, route }) => {
 
       // Show alert but don't block UI
       Alert.alert(
-        'Connection Error',
-        'Could not load subscription plans. Using cached data.',
-        [{ text: 'Retry', onPress: fetchPlans }, { text: 'Cancel' }]
+        t('Connection Error'),
+        t('Could not load subscription plans. Using cached data.'),
+        [{ text: t('Retry'), onPress: fetchPlans }, { text: t('Cancel') }]
       );
     } finally {
       setLoading(false);
@@ -59,34 +61,56 @@ const AllMembershipsScreen = ({ navigation, route }) => {
     // Handle free/green plan
     if (plan.slug === 'green' || plan.target_currency.total_price === 0) {
       Alert.alert(
-        'Free Plan Selected',
-        'The Green plan is free! You can start using the app immediately.',
+        t('Free Plan Selected'),
+        t('The Green plan is free! You can start using the app immediately.'),
         [
           {
-            text: 'Continue',
+            text: t('Continue'),
             onPress: async () => {
               try {
                 // Call API to activate free plan with email for new users
                 const response = await subscriptionService.activateFreePlan(userEmail);
 
                 if (response.success) {
-                  Alert.alert(
-                    'Plan Activated',
-                    'Your free plan has been activated successfully! Please login to continue.',
-                    [{
-                      text: 'Login',
-                      onPress: () => navigation.replace('SocialLogin', {
-                        email: userEmail,
-                        message: 'Your free plan is ready! Please login to start browsing.'
-                      })
-                    }]
-                  );
+                  // If this is part of registration flow, complete the registration
+                  if (requiresPlan && completeRegistration) {
+                    // Complete registration with subscription data
+                    await completeRegistration({
+                      email: userEmail,
+                      subscription_plan_id: response.data.subscription.plan_id || plan.id,
+                      subscription_plan_name: response.data.subscription.plan_name,
+                      subscription_plan_slug: response.data.subscription.plan_slug,
+                      subscription_start_date: response.data.subscription.start_date,
+                      subscription_end_date: response.data.subscription.end_date,
+                      has_active_subscription: true,
+                      requires_subscription: false
+                    });
+
+                    Alert.alert(
+                      t('Welcome to RoundBuy!'),
+                      t('Your free plan has been activated successfully!'),
+                      [{
+                        text: t('Start Browsing'),
+                        onPress: () => navigation.replace('Main')
+                      }]
+                    );
+                  } else {
+                    // User is already logged in, just show success
+                    Alert.alert(
+                      t('Plan Activated'),
+                      t('Your free plan has been activated successfully!'),
+                      [{
+                        text: t('OK'),
+                        onPress: () => navigation.goBack()
+                      }]
+                    );
+                  }
                 } else {
-                  Alert.alert('Error', response.message || 'Failed to activate free plan');
+                  Alert.alert(t('Error'), response.message || t('Failed to activate free plan'));
                 }
               } catch (error) {
                 console.error('Error activating free plan:', error);
-                Alert.alert('Error', error.message || 'Failed to activate free plan. Please try again.');
+                Alert.alert(t('Error'), error.message || t('Failed to activate free plan. Please try again.'));
               }
             }
           },
@@ -154,12 +178,12 @@ const AllMembershipsScreen = ({ navigation, route }) => {
             <Text style={styles.planTitle}>{plan.name}</Text>
             {isBest && (
               <View style={styles.bestBadge}>
-                <Text style={styles.bestBadgeText}>BEST VALUE</Text>
+                <Text style={styles.bestBadgeText}>{t('BEST VALUE')}</Text>
               </View>
             )}
             {isPopular && !isBest && (
               <View style={styles.popularBadge}>
-                <Text style={styles.popularBadgeText}>POPULAR</Text>
+                <Text style={styles.popularBadgeText}>{t('POPULAR')}</Text>
               </View>
             )}
           </View>
@@ -208,7 +232,7 @@ const AllMembershipsScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading subscription plans...</Text>
+          <Text style={styles.loadingText}>{t('Loading subscription plans...')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -224,16 +248,16 @@ const AllMembershipsScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.title}>All Memberships</Text>
+        <Text style={styles.title}>{t('All Memberships')}</Text>
 
         {/* Dynamic Plan Cards */}
         {plans.map(plan => renderPlanCard(plan))}
 
         {plans.length === 0 && !loading && (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No subscription plans available</Text>
+            <Text style={styles.emptyText}>{t('No subscription plans available')}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={fetchPlans}>
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('Retry')}</Text>
             </TouchableOpacity>
           </View>
         )}

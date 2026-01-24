@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,10 +13,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
-const ContactSupportScreen = ({ navigation }) => {
+const ContactSupportScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
+  const { initialTopic } = route?.params || {};
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [selectedTopic, setSelectedTopic] = useState('Technical support');
+  const [selectedTopic, setSelectedTopic] = useState(initialTopic || 'Technical support');
   const [description, setDescription] = useState('');
   const [showTopicPicker, setShowTopicPicker] = useState(false);
 
@@ -50,42 +53,40 @@ const ContactSupportScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Contact support</Text>
+        <Text style={styles.headerTitle}>{t('Contact support')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header Section */}
         <View style={styles.introSection}>
-          <Text style={styles.introTitle}>Contact us</Text>
+          <Text style={styles.introTitle}>{t('Contact us')}</Text>
           <View style={styles.introTextContainer}>
-            <Text style={styles.introText}>
-              If you would like to contact us for help, suggestions or enquiries, please be in touch through this form.
-            </Text>
+            <Text style={styles.introText}>{t('If you would like to contact us for help, suggestions or enquiries, please be in touch through this form.')}</Text>
             <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
           </View>
         </View>
 
         {/* Your Name */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Your Name</Text>
+          <Text style={styles.label}>{t('Your Name')}</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="Enter your name"
+            placeholder={t('Enter your name')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Email Address */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={styles.label}>{t('Email address')}</Text>
           <TextInput
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="Enter your email"
+            placeholder={t('Enter your email')}
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -94,7 +95,7 @@ const ContactSupportScreen = ({ navigation }) => {
 
         {/* Choose Topic */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Choose topic:</Text>
+          <Text style={styles.label}>{t('Choose topic:')}</Text>
           <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setShowTopicPicker(!showTopicPicker)}
@@ -102,7 +103,7 @@ const ContactSupportScreen = ({ navigation }) => {
             <Text style={styles.pickerButtonText}>{selectedTopic}</Text>
             <Ionicons name="chevron-down" size={20} color="#000" />
           </TouchableOpacity>
-          
+
           {showTopicPicker && (
             <View style={styles.pickerDropdown}>
               {topics.map((topic, index) => (
@@ -123,12 +124,12 @@ const ContactSupportScreen = ({ navigation }) => {
 
         {/* Description */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Description</Text>
+          <Text style={styles.label}>{t('Description')}</Text>
           <TextInput
             style={styles.textArea}
             value={description}
             onChangeText={setDescription}
-            placeholder="Please write your enquiries here!"
+            placeholder={t('Please write your enquiries here!')}
             placeholderTextColor="#999"
             multiline
             numberOfLines={6}
@@ -138,7 +139,7 @@ const ContactSupportScreen = ({ navigation }) => {
 
         {/* Submit Button */}
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Report to Support</Text>
+          <Text style={styles.submitButtonText}>{t('Report to Support')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

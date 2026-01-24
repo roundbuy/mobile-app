@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const MySupportHomeScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [ticketStats, setTicketStats] = useState(null);
   const [appealStats, setAppealStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,29 +64,27 @@ const MySupportHomeScreen = ({ navigation }) => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>My Support</Text>
-          <Text style={styles.subtitle}>
-            Get help and manage your support requests
-          </Text>
+          <Text style={styles.title}>{t('My Support')}</Text>
+          <Text style={styles.subtitle}>{t('Get help and manage your support requests')}</Text>
         </View>
 
         {/* Statistics Overview */}
         <View style={styles.statsContainer}>
           <StatCard
             icon="inbox"
-            label="Open Tickets"
+            label={t('Open Tickets')}
             count={ticketStats?.open || 0}
             color="#4169E1"
           />
           <StatCard
             icon="clock"
-            label="In Progress"
+            label={t('In Progress')}
             count={ticketStats?.in_progress || 0}
             color="#FFA500"
           />
           <StatCard
             icon="check-circle"
-            label="Resolved"
+            label={t('Resolved')}
             count={ticketStats?.resolved || 0}
             color="#32CD32"
           />
@@ -92,7 +92,7 @@ const MySupportHomeScreen = ({ navigation }) => {
 
         {/* Support Categories */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support Categories</Text>
+          <Text style={styles.sectionTitle}>{t('Support Categories')}</Text>
 
           <TouchableOpacity
             style={styles.categoryCard}
@@ -102,7 +102,7 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Feather name="trash-2" size={24} color="#DC143C" />
             </View>
             <View style={styles.categoryContent}>
-              <Text style={styles.categoryTitle}>Deleted Ads</Text>
+              <Text style={styles.categoryTitle}>{t('Deleted Ads')}</Text>
               <Text style={styles.categorySubtitle}>
                 {appealStats?.total_deleted || 0} deleted ads •{' '}
                 {appealStats?.can_appeal || 0} can appeal
@@ -121,7 +121,7 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Feather name="alert-circle" size={24} color="#FFA500" />
             </View>
             <View style={styles.categoryContent}>
-              <Text style={styles.categoryTitle}>Ad Appeals</Text>
+              <Text style={styles.categoryTitle}>{t('Ad Appeals')}</Text>
               <Text style={styles.categorySubtitle}>
                 {appealStats?.pending || 0} pending appeals
               </Text>
@@ -137,7 +137,7 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Feather name="help-circle" size={24} color="#4169E1" />
             </View>
             <View style={styles.categoryContent}>
-              <Text style={styles.categoryTitle}>Support Tickets</Text>
+              <Text style={styles.categoryTitle}>{t('Support Tickets')}</Text>
               <Text style={styles.categorySubtitle}>
                 {ticketStats?.total_tickets || 0} total tickets
               </Text>
@@ -155,10 +155,8 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Feather name="tool" size={24} color="#9C27B0" />
             </View>
             <View style={styles.categoryContent}>
-              <Text style={styles.categoryTitle}>Technical Issues</Text>
-              <Text style={styles.categorySubtitle}>
-                Get help with technical problems
-              </Text>
+              <Text style={styles.categoryTitle}>{t('Technical Issues')}</Text>
+              <Text style={styles.categorySubtitle}>{t('Get help with technical problems')}</Text>
             </View>
             <Feather name="chevron-right" size={24} color="#999" />
           </TouchableOpacity>
@@ -173,10 +171,8 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Feather name="credit-card" size={24} color="#4CAF50" />
             </View>
             <View style={styles.categoryContent}>
-              <Text style={styles.categoryTitle}>Billing & Payments</Text>
-              <Text style={styles.categorySubtitle}>
-                Payment and subscription help
-              </Text>
+              <Text style={styles.categoryTitle}>{t('Billing & Payments')}</Text>
+              <Text style={styles.categorySubtitle}>{t('Payment and subscription help')}</Text>
             </View>
             <Feather name="chevron-right" size={24} color="#999" />
           </TouchableOpacity>
@@ -188,14 +184,14 @@ const MySupportHomeScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('CreateTicket')}
         >
           <Feather name="plus-circle" size={24} color="#FFF" />
-          <Text style={styles.createButtonText}>Create New Support Ticket</Text>
+          <Text style={styles.createButtonText}>{t('Create New Support Ticket')}</Text>
         </TouchableOpacity>
 
         {/* Help Info */}
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Need Quick Help?</Text>
+            <Text style={styles.infoTitle}>{t('Need Quick Help?')}</Text>
             <Text style={styles.infoText}>
               • Check our FAQ for common questions{'\n'}
               • Response time: 24-48 hours{'\n'}

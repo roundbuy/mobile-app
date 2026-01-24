@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -16,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import disputeService from '../../services/disputeService';
 
 const TicketDetailScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
     const { ticketId } = route.params;
     const [ticket, setTicket] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -35,7 +37,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
             setMessages(response.data.messages || []);
         } catch (error) {
             console.error('Load ticket error:', error);
-            Alert.alert('Error', 'Failed to load ticket details');
+            Alert.alert(t('Error'), t('Failed to load ticket details'));
         } finally {
             setLoading(false);
         }
@@ -43,7 +45,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
 
     const handleSendMessage = async () => {
         if (!newMessage.trim()) {
-            Alert.alert('Error', 'Please enter a message');
+            Alert.alert(t('Error'), t('Please enter a message'));
             return;
         }
 
@@ -54,7 +56,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
             await loadTicketDetail();
         } catch (error) {
             console.error('Send message error:', error);
-            Alert.alert('Error', 'Failed to send message');
+            Alert.alert(t('Error'), t('Failed to send message'));
         } finally {
             setSending(false);
         }
@@ -62,21 +64,21 @@ const TicketDetailScreen = ({ route, navigation }) => {
 
     const handleCloseTicket = () => {
         Alert.alert(
-            'Close Ticket',
-            'Are you sure you want to close this ticket?',
+            t('Close Ticket'),
+            t('Are you sure you want to close this ticket?'),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('Cancel'), style: t('cancel') },
                 {
-                    text: 'Close',
-                    style: 'destructive',
+                    text: t('Close'),
+                    style: t('destructive'),
                     onPress: async () => {
                         try {
                             await disputeService.closeTicket(ticketId);
-                            Alert.alert('Success', 'Ticket closed successfully', [
-                                { text: 'OK', onPress: () => navigation.goBack() }
+                            Alert.alert(t('Success'), t('Ticket closed successfully'), [
+                                { text: t('OK'), onPress: () => navigation.goBack() }
                             ]);
                         } catch (error) {
-                            Alert.alert('Error', 'Failed to close ticket');
+                            Alert.alert(t('Error'), t('Failed to close ticket'));
                         }
                     },
                 },
@@ -108,7 +110,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
         return (
             <SafeAreaView style={styles.container} edges={['top']}>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Ticket not found</Text>
+                    <Text style={styles.errorText}>{t('Ticket not found')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -185,7 +187,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
                     <View style={styles.inputContainer}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Type your message..."
+                            placeholder={t('Type your message...')}
                             value={newMessage}
                             onChangeText={setNewMessage}
                             multiline
@@ -213,7 +215,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
                             onPress={handleCloseTicket}
                         >
                             <Ionicons name="close-circle" size={20} color="#DC143C" />
-                            <Text style={styles.closeButtonText}>Close Ticket</Text>
+                            <Text style={styles.closeButtonText}>{t('Close Ticket')}</Text>
                         </TouchableOpacity>
                     </View>
                 )}

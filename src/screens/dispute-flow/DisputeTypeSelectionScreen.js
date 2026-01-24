@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -11,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const DisputeTypeSelectionScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [selectedType, setSelectedType] = useState(null);
 
     const disputeTypes = [
@@ -36,7 +38,7 @@ const DisputeTypeSelectionScreen = ({ navigation }) => {
 
     const handleContinue = () => {
         if (!selectedType) {
-            Alert.alert('Selection Required', 'Please select a dispute type to continue');
+            Alert.alert(t('Selection Required'), t('Please select a dispute type to continue'));
             return;
         }
 
@@ -53,13 +55,13 @@ const DisputeTypeSelectionScreen = ({ navigation }) => {
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>Dispute an Issue</Text>
+                    <Text style={styles.headerTitle}>{t('Dispute an Issue')}</Text>
                     <Text style={styles.headerStep}>1/5</Text>
                 </View>
             </View>
 
             <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-                <Text style={styles.instruction}>Choose one, from below:</Text>
+                <Text style={styles.instruction}>{t('Choose one, from below:')}</Text>
 
                 {disputeTypes.map((type) => (
                     <TouchableOpacity
@@ -90,7 +92,7 @@ const DisputeTypeSelectionScreen = ({ navigation }) => {
                 {/* Info Link */}
                 <TouchableOpacity style={styles.infoLink}>
                     <Text style={styles.infoLinkText}>
-                        More information on Disputes & Resolution, <Text style={styles.linkText}>click here</Text>
+                        More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                 </TouchableOpacity>
@@ -106,7 +108,7 @@ const DisputeTypeSelectionScreen = ({ navigation }) => {
                     onPress={handleContinue}
                     disabled={!selectedType}
                 >
-                    <Text style={styles.continueButtonText}>Continue</Text>
+                    <Text style={styles.continueButtonText}>{t('Continue')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

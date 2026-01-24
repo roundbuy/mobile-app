@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const CategoryFilterScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const categories = [
@@ -25,7 +27,7 @@ const CategoryFilterScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Category</Text>
+          <Text style={styles.headerTitle}>{t('Category')}</Text>
         </View>
 
         <View style={styles.optionsList}>
@@ -46,10 +48,10 @@ const CategoryFilterScreen = ({ navigation }) => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.showResultsButton} onPress={handleShowResults}>
-          <Text style={styles.showResultsButtonText}>Show results</Text>
+          <Text style={styles.showResultsButtonText}>{t('Show results')}</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
-          <Text style={styles.footerLink}>Terms of service</Text>
+          <Text style={styles.footerLink}>{t('Terms of service')}</Text>
         </Text>
       </View>
     </SafeScreenContainer>

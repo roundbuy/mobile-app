@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -18,6 +19,7 @@ import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
 const CreateIssueScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { advertisementId, otherPartyId, adTitle, sellerName } = route.params || {};
 
     const [issueDescription, setIssueDescription] = useState('');
@@ -49,17 +51,17 @@ const CreateIssueScreen = ({ navigation, route }) => {
 
         // Validation
         if (!issueDescription || issueDescription.trim().length < 10) {
-            Alert.alert('Error', 'Please describe the issue (minimum 10 characters)');
+            Alert.alert(t('Error'), 'Please describe the issue (minimum 10 characters)');
             return;
         }
 
         if (!buyerRequest || buyerRequest.trim().length < 10) {
-            Alert.alert('Error', 'Please describe your request (minimum 10 characters)');
+            Alert.alert(t('Error'), 'Please describe your request (minimum 10 characters)');
             return;
         }
 
         if (!advertisementId || !otherPartyId) {
-            Alert.alert('Error', 'Missing required information');
+            Alert.alert(t('Error'), t('Missing required information'));
             return;
         }
 
@@ -82,11 +84,11 @@ const CreateIssueScreen = ({ navigation, route }) => {
 
             if (response.success) {
                 Alert.alert(
-                    'Issue Created',
-                    'Your issue has been sent to the seller. They have 3 days to respond.',
+                    t('Issue Created'),
+                    t('Your issue has been sent to the seller. They have 3 days to respond.'),
                     [
                         {
-                            text: 'OK',
+                            text: t('OK'),
                             onPress: () => {
                                 navigation.goBack();
                                 // Navigate to issue detail
@@ -110,7 +112,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                 errorMessage = error.message;
             }
 
-            Alert.alert('Error', errorMessage);
+            Alert.alert(t('Error'), errorMessage);
         } finally {
             setLoading(false);
         }
@@ -130,7 +132,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                     >
                         <Ionicons name="chevron-back" size={28} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>An Issue</Text>
+                    <Text style={styles.headerTitle}>{t('An Issue')}</Text>
                     <View style={styles.headerRight} />
                 </View>
 
@@ -146,22 +148,22 @@ const CreateIssueScreen = ({ navigation, route }) => {
 
                     {/* Status Message */}
                     <View style={styles.statusContainer}>
-                        <Text style={styles.statusText}>Creating a new issue</Text>
-                        <Text style={styles.timeText}>Just now</Text>
+                        <Text style={styles.statusText}>{t('Creating a new issue')}</Text>
+                        <Text style={styles.timeText}>{t('Just now')}</Text>
                     </View>
 
                     {/* Product/Buyer/Seller Info */}
                     <View style={styles.infoSection}>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Product:</Text>
+                            <Text style={styles.infoLabel}>{t('Product:')}</Text>
                             <Text style={styles.infoValue}>{adTitle || 'N/A'}</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Issuer:</Text>
+                            <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
                             <Text style={styles.infoValue}>{currentUser?.full_name || 'You'}</Text>
                         </View>
                         <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>Issued to:</Text>
+                            <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
                             <Text style={styles.infoValue}>{sellerName || 'Seller'}</Text>
                         </View>
                     </View>
@@ -169,13 +171,13 @@ const CreateIssueScreen = ({ navigation, route }) => {
                     {/* Buyer's Issue Section */}
                     <View style={styles.section}>
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>BUYER'S ISSUE</Text>
-                            <Text style={styles.sectionTime}>Now</Text>
+                            <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
+                            <Text style={styles.sectionTime}>{t('Now')}</Text>
                         </View>
-                        <Text style={styles.fieldLabel}>The issue with the product:</Text>
+                        <Text style={styles.fieldLabel}>{t('The issue with the product:')}</Text>
                         <TextInput
                             style={styles.textArea}
-                            placeholder="Describe the issue you're experiencing..."
+                            placeholder={t("Describe the issue you're experiencing...")}
                             placeholderTextColor="#999"
                             multiline
                             numberOfLines={6}
@@ -191,10 +193,10 @@ const CreateIssueScreen = ({ navigation, route }) => {
 
                     {/* Issuer's Request Section */}
                     <View style={styles.section}>
-                        <Text style={styles.fieldLabel}>Issuers Requests:</Text>
+                        <Text style={styles.fieldLabel}>{t('Issuers Requests:')}</Text>
                         <TextInput
                             style={styles.textArea}
-                            placeholder="What would you like the seller to do? (e.g., refund, replacement, etc.)"
+                            placeholder={t('What would you like the seller to do? (e.g., refund, replacement, etc.)')}
                             placeholderTextColor="#999"
                             multiline
                             numberOfLines={6}
@@ -214,7 +216,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                             More information on Issues & Disputes,{' '}
                         </Text>
                         <TouchableOpacity>
-                            <Text style={styles.infoLink}>click here</Text>
+                            <Text style={styles.infoLink}>{t('click here')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.infoIcon}>
                             <Ionicons name="information-circle-outline" size={20} color="#666" />
@@ -234,7 +236,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                         {loading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (
-                            <Text style={styles.submitButtonText}>Send Issue to Seller</Text>
+                            <Text style={styles.submitButtonText}>{t('Send Issue to Seller')}</Text>
                         )}
                     </TouchableOpacity>
                 </ScrollView>

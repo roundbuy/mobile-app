@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
+import { useTranslation } from '../../context/TranslationContext';
 
 const SplashAlternative2Screen = ({ navigation }) => {
+    const { t } = useTranslation();
   useEffect(() => {
     // Navigate to Alternative 3 after 2 seconds
     const timer = setTimeout(() => {
@@ -23,16 +25,12 @@ const SplashAlternative2Screen = ({ navigation }) => {
       />
 
       {/* Tagline */}
-      <Text style={styles.tagline}>SHOP AROUND YOU</Text>
-      <Text style={styles.description}>
-        Buy and Sell products and services
-      </Text>
-      <Text style={styles.description}>
-        just around you!
-      </Text>
+      <Text style={styles.tagline}>{t('SHOP AROUND YOU')}</Text>
+      <Text style={styles.description}>{t('Buy and Sell products and services')}</Text>
+      <Text style={styles.description}>{t('just around you!')}</Text>
 
       {/* Patent Pending */}
-      <Text style={styles.patent}>Patent Pending</Text>
+      <Text style={styles.patent}>{t('Patent Pending')}</Text>
     </View>
   );
 };

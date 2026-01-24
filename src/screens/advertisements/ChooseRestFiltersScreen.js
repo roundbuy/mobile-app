@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import FilterDropdown from '../../components/FilterDropdown';
 import { advertisementService } from '../../services';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ChooseRestFiltersScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const [filters, setFilters] = useState({
     age_id: null,
     size_id: null,
@@ -20,17 +22,44 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categoryData, setCategoryData] = useState(null);
+
+  // Get gender_id and category_id from previous screen
+  const selectedGenderId = route.params?.gender_id;
+  const selectedCategoryId = route.params?.category_id;
 
   useEffect(() => {
     loadFilterOptions();
+    loadCategoryData();
   }, []);
+
+  const loadCategoryData = async () => {
+    try {
+      // Fetch category details to check requires_size
+      const response = await advertisementService.getFilters();
+      if (response.success && response.data.categories) {
+        const category = response.data.categories.find(c => c.id === selectedCategoryId);
+        setCategoryData(category);
+      }
+    } catch (err) {
+      console.error('Error loading category data:', err);
+    }
+  };
 
   const loadFilterOptions = async () => {
     try {
       setLoading(true);
       const response = await advertisementService.getFilters();
       if (response.success) {
-        setFilterOptions(response.data);
+        // Filter sizes based on selected gender_id
+        const filteredSizes = selectedGenderId
+          ? response.data.sizes.filter(size => size.gender_id === selectedGenderId)
+          : response.data.sizes;
+
+        setFilterOptions({
+          ...response.data,
+          sizes: filteredSizes
+        });
       } else {
         setError('Failed to load filter options');
       }
@@ -49,10 +78,52 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     }));
   };
 
+  const validateFilters = () => {
+    if (!filters.age_id) {
+      Alert.alert(t('Validation Error'), t('Please select an age group'));
+      return false;
+    }
+
+    // Check if size is required based on category
+    const requiresSize = categoryData?.requires_size;
+
+    if (requiresSize === 'required' && !filters.size_id) {
+      Alert.alert(t('Validation Error'), t('Size is required for this category. Please select a size.'));
+      return false;
+    }
+
+    if (!filters.color_id) {
+      Alert.alert(t('Validation Error'), t('Please select a color'));
+      return false;
+    }
+
+    return true;
+  };
+
   const handleContinue = () => {
+    // Validate before continuing
+    if (!validateFilters()) {
+      return;
+    }
+
+    // Get filter names for display
+    const ageName = filters.age_id
+      ? filterOptions.ages.find(a => a.id === filters.age_id)?.name
+      : null;
+    const sizeName = filters.size_id
+      ? filterOptions.sizes.find(s => s.id === filters.size_id)?.name
+      : null;
+    const colorName = filters.color_id
+      ? filterOptions.colors.find(c => c.id === filters.color_id)?.name
+      : null;
+
     navigation.navigate('PreviewAd', {
       ...route.params,
       ...filters,
+      // Add filter names for preview
+      ageName,
+      sizeName,
+      colorName,
     });
   };
 
@@ -64,17 +135,17 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>3/8</Text>
+          {/* <Text style={styles.stepIndicator}>3/8</Text> */}
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Choose rest of the filters:</Text>
+        <Text style={styles.title}>{t('Choose rest of the filters:')}</Text>
 
         {/* Loading State */}
         {loading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading filter options...</Text>
+            <Text style={styles.loadingText}>{t('Loading filter options...')}</Text>
           </View>
         )}
 
@@ -83,7 +154,7 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadFilterOptions}>
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('Retry')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -92,46 +163,45 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
         {!loading && !error && (
           <View style={styles.filtersContainer}>
             <FilterDropdown
-              label="Age"
+              label={t('Age *')}
               value={filters.age_id}
               options={filterOptions.ages}
               onSelect={(value) => handleFilterChange('age_id', value)}
-              placeholder="Select age group"
+              placeholder={t('Select age group')}
             />
 
+            {/* Only show size if category requires it (required or optional) */}
+
             <FilterDropdown
-              label="Size"
+              label={`Size ${categoryData?.requires_size === 'required' ? '*' : '(Optional)'}`}
               value={filters.size_id}
               options={filterOptions.sizes}
               onSelect={(value) => handleFilterChange('size_id', value)}
-              placeholder="Select size"
+              placeholder={t('Select size')}
             />
 
             <FilterDropdown
-              label="Color"
+              label={t('Color *')}
               value={filters.color_id}
               options={filterOptions.colors}
               onSelect={(value) => handleFilterChange('color_id', value)}
-              placeholder="Select color"
+              placeholder={t('Select color')}
               isColorPicker={true}
             />
           </View>
         )}
 
-        {/* Info Link */}
+        {/* Info Text */}
         <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>For more information, </Text>
-          <TouchableOpacity>
-            <Text style={styles.infoLink}>click here</Text>
-          </TouchableOpacity>
-          <View style={styles.infoIcon}>
-            <Text style={styles.infoIconText}>ⓘ</Text>
-          </View>
+          <Text style={styles.infoText}>
+            * Required fields
+            {categoryData?.requires_size === 'not_applicable' && ' (Size not applicable for this category)'}
+          </Text>
         </View>
 
         {/* Continue Button */}
         <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />

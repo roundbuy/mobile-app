@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -9,6 +11,7 @@ import {
   Image,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
@@ -16,6 +19,7 @@ import { COLORS } from '../../../constants/theme';
 import { offersService } from '../../../services';
 
 const AcceptedOffersScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -33,7 +37,7 @@ const AcceptedOffersScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching offers:', error);
-      Alert.alert('Error', 'Failed to load offers. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load offers. Please try again.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -45,43 +49,59 @@ const AcceptedOffersScreen = ({ navigation }) => {
     fetchAcceptedOffers();
   };
 
-  const renderOffer = ({ item }) => (
-    <View style={styles.offerCard}>
-      <View style={styles.offerHeader}>
-        <Image
-          source={item.ad_images && item.ad_images.length > 0 ? item.ad_images[0] : IMAGES.chair1}
-          style={styles.productImage}
-        />
-        <View style={styles.productInfo}>
-          <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{item.ad_title}</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>Accepted</Text>
+  const renderOffer = ({ item }) => {
+    // Parse advertisement images
+    let imageSource = IMAGES.chair1;
+    if (item.advertisement_images) {
+      try {
+        const images = JSON.parse(item.advertisement_images);
+        if (images && images.length > 0) {
+          imageSource = getFullImageUrl(images[0]);
+        }
+      } catch (e) {
+        console.log('Error parsing images:', e);
+      }
+    }
+
+    return (
+      <View style={styles.offerCard}>
+        <View style={styles.offerHeader}>
+          <Image
+            source={imageSource}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+          <View style={styles.productInfo}>
+            <View style={styles.titleRow}>
+              <Text style={styles.productTitle}>{item.ad_title}</Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>{t('Accepted')}</Text>
+              </View>
             </View>
+            <Text style={styles.offerText}>
+              {item.is_buyer ? `You offered ${item.currency_code || '₹'}${item.offered_price} to ${item.seller_name}` :
+                `${item.buyer_name} accepted your offer of ${item.currency_code || '₹'}${item.offered_price}`}
+            </Text>
+            <Text style={styles.dateText}>
+              {new Date(item.created_at).toLocaleDateString()}
+            </Text>
           </View>
-          <Text style={styles.offerText}>
-            {item.is_buyer ? `You offered ${item.currency_code || '₹'}${item.offered_price} to ${item.seller_name}` :
-             `${item.buyer_name} accepted your offer of ${item.currency_code || '₹'}${item.offered_price}`}
-          </Text>
-          <Text style={styles.dateText}>
-            {new Date(item.created_at).toLocaleDateString()}
-          </Text>
+        </View>
+
+        <View style={styles.offerActions}>
+          <TouchableOpacity
+            style={styles.contactButton}
+            onPress={() => {
+              // Navigate to chat or contact
+              console.log('Contact:', item.is_buyer ? item.seller_name : item.buyer_name);
+            }}
+          >
+            <Text style={styles.contactButtonText}>{t('Contact')}</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.offerActions}>
-        <TouchableOpacity
-          style={styles.contactButton}
-          onPress={() => {
-            // Navigate to chat or contact
-            console.log('Contact:', item.is_buyer ? item.seller_name : item.buyer_name);
-          }}
-        >
-          <Text style={styles.contactButtonText}>Contact</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -90,7 +110,7 @@ const AcceptedOffersScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Accepted Offers</Text>
+        <Text style={styles.headerTitle}>{t('Accepted Offers')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -98,7 +118,7 @@ const AcceptedOffersScreen = ({ navigation }) => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading offers...</Text>
+          <Text style={styles.loadingText}>{t('Loading offers...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -112,7 +132,7 @@ const AcceptedOffersScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="checkmark-circle-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No accepted offers yet</Text>
+              <Text style={styles.emptyText}>{t('No accepted offers yet')}</Text>
             </View>
           }
         />

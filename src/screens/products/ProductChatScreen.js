@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect, useContext, useMemo } from 'react';
 import { IMAGES } from '../../assets/images';
 import { getFullImageUrl } from '../../utils/imageUtils';
 import {
@@ -20,19 +20,22 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { messagingService } from '../../services';
 import { AuthContext } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
+import ChatRestrictionsModal from '../../components/ChatRestrictionsModal';
 
 const ProductChatScreen = ({ route, navigation }) => {
+  const { t } = useTranslation();
   // Accept both 'advertisement' and 'product' parameter names for compatibility
   const { advertisement, product, mode } = route?.params || {};
 
   // Get current user from AuthContext (with fallback)
   let currentUserId = null;
-  let userCurrency = 'INR';
+  let userCurrency = 'GBP';
 
   try {
     const authContext = useContext(AuthContext);
     currentUserId = authContext?.user?.id;
-    userCurrency = authContext?.user?.currency_code || 'INR';
+    userCurrency = authContext?.user?.currency_code || 'GBP';
   } catch (error) {
     console.log('AuthContext not available, using fallback values');
   }
@@ -54,14 +57,36 @@ const ProductChatScreen = ({ route, navigation }) => {
   // Offer status - can be: null, 'pending', 'accepted', 'declined'
   const [offerStatus, setOfferStatus] = useState(null);
   const [currentOffer, setCurrentOffer] = useState(null);
+  const [chatRestrictionsModalVisible, setChatRestrictionsModalVisible] = useState(false);
 
   // Store advertisement data from route params (accept both parameter names) or conversation
   const [advertisementData, setAdvertisementData] = useState(advertisement || product || null);
 
-  // Get currency symbol from user preferences or default
+  // Get currency symbol from user preferences or default to Euro
   const currencySymbol = userCurrency === 'USD' ? '$' :
     userCurrency === 'EUR' ? '€' :
-      userCurrency === 'GBP' ? '£' : '₹';
+      userCurrency === 'GBP' ? '£' :
+        userCurrency === 'INR' ? '₹' : '£'; // Default to Euro
+
+  // Combine messages and offers into a single timeline
+  const combinedMessages = useMemo(() => {
+    const offerMessages = offers.map(offer => ({
+      ...offer,
+      type: 'offer',
+      offer_id: offer.id,
+      created_at: offer.created_at,
+      sender_id: offer.sender_id,
+      sender_name: offer.sender_name,
+      amount: offer.offered_price,
+    }));
+
+    const allItems = [...messages, ...offerMessages];
+
+    // Sort by created_at ascending (oldest first, newest at bottom)
+    return allItems.sort((a, b) =>
+      new Date(a.created_at) - new Date(b.created_at)
+    );
+  }, [messages, offers]);
 
   // Load conversation and messages on mount
   useEffect(() => {
@@ -165,7 +190,7 @@ const ProductChatScreen = ({ route, navigation }) => {
       // Validate we have an advertisement ID (check all possible sources)
       const adId = advertisementData?.id || advertisement?.id || product?.id;
       if (!adId) {
-        Alert.alert('Error', 'Advertisement information is missing. Please go back and try again.');
+        Alert.alert(t('Error'), t('Advertisement information is missing. Please go back and try again.'));
         return;
       }
 
@@ -208,11 +233,11 @@ const ProductChatScreen = ({ route, navigation }) => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
           }, 100);
         } else {
-          Alert.alert('Error', response.data?.message || 'Failed to send message');
+          Alert.alert(t('Error'), response.data?.message || t('Failed to send message'));
         }
       } catch (error) {
         console.error('Send message error:', error);
-        Alert.alert('Error', error.message || 'Failed to send message. Please try again.');
+        Alert.alert(t('Error'), error.message || t('Failed to send message. Please try again.'));
       } finally {
         setSending(false);
       }
@@ -224,7 +249,7 @@ const ProductChatScreen = ({ route, navigation }) => {
       // Validate we have an advertisement ID (check all possible sources)
       const adId = advertisementData?.id || advertisement?.id || product?.id;
       if (!adId) {
-        Alert.alert('Error', 'Advertisement information is missing. Please go back and try again.');
+        Alert.alert(t('Error'), t('Advertisement information is missing. Please go back and try again.'));
         return;
       }
 
@@ -296,18 +321,45 @@ const ProductChatScreen = ({ route, navigation }) => {
           };
 
           setMessages(prev => [...prev, offerMessage]);
-          Alert.alert('Success', 'Offer sent successfully!');
+          Alert.alert(t('Success'), t('Offer sent successfully!'));
         } else {
-          Alert.alert('Error', response.data?.message || 'Failed to send offer');
+          Alert.alert(t('Error'), response.data?.message || t('Failed to send offer'));
         }
       } catch (error) {
         console.error('Make offer error:', error);
-        Alert.alert('Error', error.message || 'Failed to send offer. Please try again.');
+        Alert.alert(t('Error'), error.message || t('Failed to send offer. Please try again.'));
       } finally {
         setSending(false);
       }
     }
   };
+
+  const handleRespondToOffer = async (offerId, action) => {
+    if (!offerId || !conversation) return;
+
+    try {
+      setSending(true);
+      const response = await messagingService.respondToOffer(offerId, {
+        action: action // 'accept' or 'reject'
+      });
+
+      if (response.data && response.data.success) {
+        // Reload offers to get updated status
+        await loadOffers(conversation.id);
+
+        const actionText = action === 'accept' ? 'accepted' : 'declined';
+        Alert.alert(t('Success'), `Offer ${actionText} successfully!`);
+      } else {
+        Alert.alert(t('Error'), response.data?.message || `Failed to ${action} offer`);
+      }
+    } catch (error) {
+      console.error(`${action} offer error:`, error);
+      Alert.alert(t('Error'), `Failed to ${action} offer. Please try again.`);
+    } finally {
+      setSending(false);
+    }
+  };
+
 
   const handleAcceptOffer = async () => {
     if (!currentOffer || !conversation) return;
@@ -321,13 +373,13 @@ const ProductChatScreen = ({ route, navigation }) => {
       if (response.data && response.data.success) {
         setOfferStatus('accepted');
         await loadOffers(conversation.id);
-        Alert.alert('Success', 'Offer accepted successfully!');
+        Alert.alert(t('Success'), t('Offer accepted successfully!'));
       } else {
-        Alert.alert('Error', response.data?.message || 'Failed to accept offer');
+        Alert.alert(t('Error'), response.data?.message || t('Failed to accept offer'));
       }
     } catch (error) {
       console.error('Accept offer error:', error);
-      Alert.alert('Error', error.message || 'Failed to accept offer. Please try again.');
+      Alert.alert(t('Error'), error.message || t('Failed to accept offer. Please try again.'));
     } finally {
       setSending(false);
     }
@@ -345,13 +397,13 @@ const ProductChatScreen = ({ route, navigation }) => {
       if (response.data && response.data.success) {
         setOfferStatus('rejected');
         await loadOffers(conversation.id);
-        Alert.alert('Success', 'Offer declined.');
+        Alert.alert(t('Success'), t('Offer declined.'));
       } else {
-        Alert.alert('Error', response.data?.message || 'Failed to decline offer');
+        Alert.alert(t('Error'), response.data?.message || t('Failed to decline offer'));
       }
     } catch (error) {
       console.error('Decline offer error:', error);
-      Alert.alert('Error', error.message || 'Failed to decline offer. Please try again.');
+      Alert.alert(t('Error'), error.message || t('Failed to decline offer. Please try again.'));
     } finally {
       setSending(false);
     }
@@ -362,67 +414,60 @@ const ProductChatScreen = ({ route, navigation }) => {
     if (item.type === 'offer') {
       const offer = offers.find(o => o.id === item.offer_id) || currentOffer;
       const isOfferFromCurrentUser = offer?.sender_id === currentUserId;
+      const isCurrentUserSeller = conversation?.seller_id === currentUserId;
 
       return (
         <View style={styles.offerMessageContainer}>
           <View style={styles.offerCard}>
             <Text style={styles.offerSuccessText}>
-              {isOfferFromCurrentUser ? 'You made an offer!' : 'An offer was made!'}
+              {isOfferFromCurrentUser ? 'You made an offer!' : 'New offer received!'}
             </Text>
             <View style={styles.offerDetails}>
               <Text style={styles.offerUsername}>{item.sender_name || 'User'}</Text>
-              <Text style={styles.offerText}>offered</Text>
+              <Text style={styles.offerText}>{t('offered')}</Text>
               <Text style={styles.offerAmount}>{currencySymbol}{item.amount || offer?.offered_price}</Text>
             </View>
 
             {offer?.status === 'accepted' && (
               <View style={styles.acceptedContainer}>
                 <Text style={styles.acceptedTitle}>Accepted for {currencySymbol}{offer.offered_price}</Text>
-                <Text style={styles.acceptedSubtext}>
-                  Now schedule a Pick up Exchange!
-                </Text>
-                <Text style={styles.acceptedDescription}>
-                  Arrange a meet up with the seller to inspect the product immediately.
-                </Text>
+                <Text style={styles.acceptedSubtext}>{t('Now schedule a Pick up Exchange!')}</Text>
+                <Text style={styles.acceptedDescription}>{t('Arrange a meet up with the seller to inspect the product immediately.')}</Text>
                 <TouchableOpacity style={styles.scheduleButton}>
-                  <Text style={styles.scheduleButtonText}>Schedule a Pick Up</Text>
+                  <Text style={styles.scheduleButtonText}>{t('Schedule a Pick Up')}</Text>
                 </TouchableOpacity>
               </View>
             )}
 
             {offer?.status === 'rejected' && (
               <View style={styles.declinedContainer}>
-                <Text style={styles.declinedText}>Declined</Text>
+                <Text style={styles.declinedText}>{t('Declined')}</Text>
                 <Text style={styles.declinedSubtext}>
-                  The seller has declined this offer.
+                  {isCurrentUserSeller ? 'You declined this offer.' : 'The seller has declined this offer.'}
                 </Text>
               </View>
             )}
 
-            {offer?.status === 'pending' && !isOfferFromCurrentUser && (
+            {/* Show action buttons only for seller on pending offers */}
+            {offer?.status === 'pending' && isCurrentUserSeller && !isOfferFromCurrentUser && (
               <View style={styles.offerActions}>
-                <Text style={styles.offerActionText}>
-                  {advertisementData.seller?.full_name || 'Seller'} will either Accept, Decline or Make a counter offer.
-                </Text>
+                <Text style={styles.offerActionText}>{t('You can Accept, Decline or Make a counter offer.')}</Text>
                 <View style={styles.offerButtonsRow}>
                   <TouchableOpacity
                     style={[styles.declineButton, sending && styles.buttonDisabled]}
-                    onPress={handleDeclineOffer}
+                    onPress={() => handleRespondToOffer(offer.id, 'reject')}
                     disabled={sending}
                   >
-                    <Text style={styles.declineButtonText}>Decline</Text>
+                    <Text style={styles.declineButtonText}>{t('Decline')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.acceptButton, sending && styles.buttonDisabled]}
-                    onPress={handleAcceptOffer}
+                    onPress={() => handleRespondToOffer(offer.id, 'accept')}
                     disabled={sending}
                   >
-                    <Text style={styles.acceptButtonText}>Accept</Text>
+                    <Text style={styles.acceptButtonText}>{t('Accept')}</Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.makeOfferLink}>
-                  <Text style={styles.makeOfferLinkText}>Make a Counter Offer</Text>
-                </TouchableOpacity>
               </View>
             )}
 
@@ -456,7 +501,15 @@ const ProductChatScreen = ({ route, navigation }) => {
       >
         <View style={styles.messageHeader}>
           <View style={styles.avatarContainer}>
-            <FontAwesome name="user-circle" size={24} color="#666" />
+            {item.sender_avatar ? (
+              <Image
+                source={{ uri: getFullImageUrl(item.sender_avatar) }}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <FontAwesome name="user-circle" size={24} color="#666" />
+            )}
           </View>
           <View style={styles.messageContent}>
             <View style={styles.messageTop}>
@@ -464,11 +517,6 @@ const ProductChatScreen = ({ route, navigation }) => {
               <Text style={styles.timestamp}>{timestamp}</Text>
             </View>
             <Text style={styles.messageText}>{item.message || item.text}</Text>
-            {!isCurrentUser && (
-              <View style={styles.reactionContainer}>
-                <Text style={styles.reactionText}>❤️</Text>
-              </View>
-            )}
           </View>
         </View>
       </View>
@@ -493,8 +541,15 @@ const ProductChatScreen = ({ route, navigation }) => {
         {/* Product Info Card */}
         <View style={styles.productCard}>
           <Image
-            source={getFullImageUrl(advertisementData?.images?.[0]) || advertisementData?.image || IMAGES.chair1}
+            source={
+              advertisementData?.images?.[0]
+                ? { uri: getFullImageUrl(advertisementData.images[0]) }
+                : advertisementData?.image
+                  ? { uri: advertisementData.image }
+                  : IMAGES.chair1
+            }
             style={styles.productImage}
+            resizeMode="cover"
           />
           <View style={styles.productInfo}>
             <View style={styles.productHeader}>
@@ -521,16 +576,69 @@ const ProductChatScreen = ({ route, navigation }) => {
                 value={offerAmount}
                 onChangeText={setOfferAmount}
                 keyboardType="decimal-pad"
+                editable={offerStatus !== 'pending'}
               />
             </View>
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.makeOfferButton}
-          onPress={handleMakeOffer}
-        >
-          <Text style={styles.makeOfferButtonText}>Make an offer</Text>
-        </TouchableOpacity>
+
+        {offerStatus === 'pending' ? (
+          <View style={styles.pendingOfferContainer}>
+            <Text style={styles.pendingOfferText}>
+              You have a pending offer of {currencySymbol}{currentOffer?.offered_price}
+            </Text>
+            <Text style={styles.pendingOfferSubtext}>{t("Waiting for seller's response")}</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.makeOfferButton,
+              !offerAmount && styles.makeOfferButtonDisabled
+            ]}
+            onPress={handleMakeOffer}
+            disabled={!offerAmount}
+          >
+            <Text style={styles.makeOfferButtonText}>{t('Make an offer')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Offer History */}
+        {offers.length > 0 && (
+          <View style={styles.offerHistoryContainer}>
+            <Text style={styles.offerHistoryTitle}>{t('Offer History')}</Text>
+            {offers.map((offer, index) => (
+              <View key={offer.id} style={styles.offerHistoryItem}>
+                <View style={styles.offerHistoryHeader}>
+                  <Text style={styles.offerHistoryPrice}>
+                    {currencySymbol}{offer.offered_price}
+                  </Text>
+                  <View style={[
+                    styles.offerStatusBadge,
+                    offer.status === 'accepted' && styles.offerStatusAccepted,
+                    offer.status === 'rejected' && styles.offerStatusRejected,
+                    offer.status === 'pending' && styles.offerStatusPending,
+                  ]}>
+                    <Text style={styles.offerStatusText}>
+                      {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.offerHistoryDate}>
+                  {new Date(offer.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </Text>
+                {offer.message && (
+                  <Text style={styles.offerHistoryMessage}>{offer.message}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
 
         {messages.length > 0 && messages[0]?.created_at && (
           <Text style={styles.dateHeader}>
@@ -546,7 +654,7 @@ const ProductChatScreen = ({ route, navigation }) => {
         {loadingMessages && (
           <View style={styles.loadingMessagesContainer}>
             <ActivityIndicator size="small" color={COLORS.primary} />
-            <Text style={styles.loadingMessagesText}>Loading messages...</Text>
+            <Text style={styles.loadingMessagesText}>{t('Loading messages...')}</Text>
           </View>
         )}
 
@@ -554,7 +662,7 @@ const ProductChatScreen = ({ route, navigation }) => {
         {!loadingMessages && (
           <FlatList
             ref={scrollViewRef}
-            data={messages}
+            data={combinedMessages}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
             contentContainerStyle={styles.messagesContainer}
@@ -562,9 +670,7 @@ const ProductChatScreen = ({ route, navigation }) => {
             ListEmptyComponent={
               !loading ? (
                 <View style={styles.emptyMessagesContainer}>
-                  <Text style={styles.emptyMessagesText}>
-                    No messages yet. Start the conversation!
-                  </Text>
+                  <Text style={styles.emptyMessagesText}>{t('No messages yet. Start the conversation!')}</Text>
                 </View>
               ) : null
             }
@@ -574,8 +680,12 @@ const ProductChatScreen = ({ route, navigation }) => {
         {/* Warning Text */}
         <View style={styles.warningContainer}>
           <Text style={styles.warningText}>
-            Stay safe in RoundBuy: Don't share personal data, click on external
-            links, or scan codes. More safety info
+            🔒 Chat Restrictions: No phone numbers or personal info allowed. {' '}
+            <Text
+              style={styles.warningLink}
+              onPress={() => setChatRestrictionsModalVisible(true)}
+            >
+              {t('Read more')}</Text>
           </Text>
         </View>
 
@@ -594,19 +704,22 @@ const ProductChatScreen = ({ route, navigation }) => {
               style={styles.sendOfferButton}
               onPress={handleMakeOffer}
             >
-              <Text style={styles.sendOfferButtonText}>Send Offer</Text>
+              <Text style={styles.sendOfferButtonText}>{t('Send Offer')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Message Input */}
         <View style={styles.inputContainer}>
+          <TouchableOpacity style={styles.emojiButton}>
+            <Ionicons name="happy-outline" size={24} color="#666" />
+          </TouchableOpacity>
           <TextInput
             style={styles.messageInput}
             placeholder={
               !advertisementData?.id && !advertisement?.id && !product?.id
                 ? "Advertisement data missing..."
-                : "Send a message"
+                : "Type a message..."
             }
             placeholderTextColor="#999"
             value={message}
@@ -627,6 +740,11 @@ const ProductChatScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      <ChatRestrictionsModal
+        visible={chatRestrictionsModalVisible}
+        onClose={() => setChatRestrictionsModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -720,11 +838,101 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  makeOfferButtonDisabled: {
+    opacity: 0.5,
+  },
   makeOfferButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#000',
     textAlign: 'center',
+  },
+  pendingOfferContainer: {
+    backgroundColor: '#FFF9E6',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFA500',
+  },
+  pendingOfferText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  pendingOfferSubtext: {
+    fontSize: 14,
+    color: '#666',
+  },
+  offerHistoryContainer: {
+    backgroundColor: '#f9f9f9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  offerHistoryTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 12,
+  },
+  offerHistoryItem: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  offerHistoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  offerHistoryPrice: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+  },
+  offerStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#e0e0e0',
+  },
+  offerStatusPending: {
+    backgroundColor: '#FFF9E6',
+    borderWidth: 1,
+    borderColor: '#FFA500',
+  },
+  offerStatusAccepted: {
+    backgroundColor: '#E8F5E9',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  offerStatusRejected: {
+    backgroundColor: '#FFEBEE',
+    borderWidth: 1,
+    borderColor: '#F44336',
+  },
+  offerStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000',
+  },
+  offerHistoryDate: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 4,
+  },
+  offerHistoryMessage: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
   },
   dateHeader: {
     textAlign: 'center',
@@ -752,6 +960,11 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginRight: 8,
+  },
+  avatarImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
   messageContent: {
     flex: 1,
@@ -928,6 +1141,12 @@ const styles = StyleSheet.create({
     color: '#856404',
     textAlign: 'center',
   },
+  warningLink: {
+    fontSize: 11,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '600',
+  },
   offerInputContainer: {
     flexDirection: 'row',
     padding: 12,
@@ -963,9 +1182,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
     backgroundColor: '#fff',
+  },
+  emojiButton: {
+    padding: 8,
+    marginRight: 4,
   },
   messageInput: {
     flex: 1,

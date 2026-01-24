@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const PurchaseVisibilityScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -47,7 +49,7 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Purchase Visibility</Text>
+        <Text style={styles.headerTitle}>{t('Purchase Visibility')}</Text>
         <View style={styles.headerRight} />
       </View>
 

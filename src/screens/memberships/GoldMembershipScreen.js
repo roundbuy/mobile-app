@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const GoldMembershipScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleSelectPlan = () => {
     navigation.navigate('Cart', { 
       planType: 'Gold', 
@@ -20,22 +22,22 @@ const GoldMembershipScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Membership plans</Text>
+          <Text style={styles.headerTitle}>{t('Membership plans')}</Text>
           <View style={styles.bestBadge}>
-            <Text style={styles.bestBadgeText}>Best</Text>
+            <Text style={styles.bestBadgeText}>{t('Best')}</Text>
           </View>
         </View>
 
         {/* Plan Card */}
         <View style={styles.planCard}>
           <View style={[styles.planHeader, { backgroundColor: '#FFD700' }]}>
-            <Text style={styles.planTitle}>Gold</Text>
+            <Text style={styles.planTitle}>{t('Gold')}</Text>
           </View>
 
           <View style={styles.planContent}>
-            <Text style={styles.planSubtitle}>Essential features for private users.</Text>
+            <Text style={styles.planSubtitle}>{t('Essential features for private users.')}</Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.priceText}>Price £4 now for £2 / year</Text>
+              <Text style={styles.priceText}>{t('Price £4 now for £2 / year')}</Text>
               <TouchableOpacity style={styles.infoIcon}>
                 <Text style={styles.infoIconText}>ⓘ</Text>
               </TouchableOpacity>
@@ -45,18 +47,18 @@ const GoldMembershipScreen = ({ navigation }) => {
               style={styles.selectButton}
               onPress={handleSelectPlan}
             >
-              <Text style={styles.selectButtonText}>Select plan</Text>
+              <Text style={styles.selectButtonText}>{t('Select plan')}</Text>
             </TouchableOpacity>
 
-            <Text style={styles.featuresTitle}>Green plan includes everything in Green, and:</Text>
-            <Text style={styles.featureItem}>• 1 x centre-point (changeable spot to search)</Text>
-            <Text style={styles.featureItem}>• 3 x product location (spots to sell)</Text>
-            <Text style={styles.featureItem}>  Search notifications</Text>
-            <Text style={styles.featureItem}>• Instant renewal of an old Ad with a click</Text>
-            <Text style={styles.featureItem}>• Clicks statistics</Text>
-            <Text style={styles.featureItem}>• Fast Ads</Text>
-            <Text style={styles.featureItem}>• Targeted Ads</Text>
-            <Text style={styles.featureItem}>• Pick & Transaction fee £0.30 for all Ads</Text>
+            <Text style={styles.featuresTitle}>{t('Green plan includes everything in Green, and:')}</Text>
+            <Text style={styles.featureItem}>{t('• 1 x centre-point (changeable spot to search)')}</Text>
+            <Text style={styles.featureItem}>{t('• 3 x product location (spots to sell)')}</Text>
+            <Text style={styles.featureItem}>{t('Search notifications')}</Text>
+            <Text style={styles.featureItem}>{t('• Instant renewal of an old Ad with a click')}</Text>
+            <Text style={styles.featureItem}>{t('• Clicks statistics')}</Text>
+            <Text style={styles.featureItem}>{t('• Fast Ads')}</Text>
+            <Text style={styles.featureItem}>{t('• Targeted Ads')}</Text>
+            <Text style={styles.featureItem}>{t('• Pick & Transaction fee £0.30 for all Ads')}</Text>
           </View>
         </View>
       </ScrollView>

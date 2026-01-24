@@ -3,30 +3,51 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const CartScreen = ({ navigation, route }) => {
-  const { planType = 'Gold', planName = 'Gold membership plan', price = 2.00 } = route.params || {};
-  
-  const subtotal = price;
-  const taxes = (price * 0.135).toFixed(2); // 13.5% tax
-  const total = (parseFloat(price) + parseFloat(taxes)).toFixed(2);
+    const { t } = useTranslation();
+  const {
+    planId,
+    planType = 'Gold',
+    planName = 'Gold membership plan',
+    planSlug,
+    planColor,
+    price = 2.00,
+    originalPrice,
+    taxAmount = 0,
+    taxRate = 0,
+    currency = 'GBP',
+    currencySymbol = '£',
+    renewalPrice,
+    isDifferentRenewal = false,
+    durationDays = 365,
+    requiresPlan = false,
+    userEmail
+  } = route.params || {};
+
+  const subtotal = parseFloat(originalPrice || price);
+  const taxes = parseFloat(taxAmount || (subtotal * (taxRate / 100)));
+  const total = parseFloat(price);
 
   const handlePayNow = () => {
-    navigation.navigate('PaymentMethod', { total, planType, planName });
-  };
-
-  const handleTestPaddlePayment = () => {
-    navigation.navigate('PaddlePayment', {
-      total,
+    navigation.navigate('PaymentMethod', {
+      planId,
       planType,
       planName,
-      planId: 1, // Test plan ID
-      currencyCode: 'USD'
+      planSlug,
+      total,
+      subtotal,
+      taxes,
+      currency,
+      currencySymbol,
+      requiresPlan,
+      userEmail
     });
   };
 
   const getPlanColor = () => {
-    switch(planType) {
+    switch (planType) {
       case 'Green': return '#7FD957';
       case 'Gold': return '#FFD700';
       case 'Violet': return '#9B59B6';
@@ -54,7 +75,7 @@ const CartScreen = ({ navigation, route }) => {
         </View>
 
         {/* Your Cart */}
-        <Text style={styles.cartTitle}>Your cart</Text>
+        <Text style={styles.cartTitle}>{t('Your cart')}</Text>
 
         {/* Cart Item */}
         <View style={styles.cartItem}>
@@ -63,30 +84,30 @@ const CartScreen = ({ navigation, route }) => {
             <Text style={styles.planTypeText}>{planType}</Text>
             <Text style={styles.planDescText}>1 x {planName}</Text>
           </View>
-          <Text style={styles.priceText}>£{price.toFixed(2)}</Text>
+          <Text style={styles.priceText}>{currencySymbol}{price.toFixed(2)}</Text>
         </View>
 
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Subtotal</Text>
-            <Text style={styles.pricingValue}>£{subtotal.toFixed(2)}</Text>
+            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
+            <Text style={styles.pricingValue}>{currencySymbol}{subtotal.toFixed(2)}</Text>
           </View>
-          
+
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Taxes</Text>
-            <Text style={styles.pricingValue}>£{taxes}</Text>
+            <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
+            <Text style={styles.pricingValue}>{currencySymbol}{taxes.toFixed(2)}</Text>
           </View>
-          
+
           <View style={[styles.pricingRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>£{total}</Text>
+            <Text style={styles.totalLabel}>{t('Total')}</Text>
+            <Text style={styles.totalValue}>{currencySymbol}{total.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Payment Method Section */}
         <View style={styles.paymentMethodSection}>
-          <Text style={styles.paymentMethodTitle}>Payment method</Text>
+          <Text style={styles.paymentMethodTitle}>{t('Payment method')}</Text>
         </View>
 
         {/* Pay Now Button */}
@@ -94,16 +115,10 @@ const CartScreen = ({ navigation, route }) => {
           style={styles.payButton}
           onPress={handlePayNow}
         >
-          <Text style={styles.payButtonText}>Pay now</Text>
+          <Text style={styles.payButtonText}>{t('Pay now')}</Text>
         </TouchableOpacity>
 
-        {/* Test Paddle Payment Button */}
-        <TouchableOpacity
-          style={styles.testPaddleButton}
-          onPress={handleTestPaddlePayment}
-        >
-          <Text style={styles.testPaddleButtonText}>🧪 Test Paddle Payment</Text>
-        </TouchableOpacity>
+
       </ScrollView>
     </SafeScreenContainer>
   );
@@ -235,21 +250,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  testPaddleButton: {
-    backgroundColor: '#6C5CE7',
-    marginHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 28,
-    alignItems: 'center',
-    marginBottom: 30,
-    borderWidth: 2,
-    borderColor: '#5B4CD3',
-  },
-  testPaddleButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
+
 });
 
 export default CartScreen;

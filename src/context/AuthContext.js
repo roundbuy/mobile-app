@@ -25,11 +25,14 @@ export const AuthProvider = ({ children }) => {
    */
   const loadUserData = async () => {
     try {
+      console.log('🔄 AuthContext: Loading user data...');
       setIsLoading(true);
       const authenticated = await authService.isAuthenticated();
-      
+      console.log('🔐 AuthContext: Is authenticated?', authenticated);
+
       if (authenticated) {
         const userData = await authService.getCurrentUser();
+        console.log('👤 AuthContext: User data loaded:', userData ? 'Yes' : 'No');
         if (userData) {
           setUser(userData);
           setIsAuthenticated(true);
@@ -40,9 +43,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('❌ AuthContext: Error loading user data:', error);
       setIsAuthenticated(false);
     } finally {
+      console.log('✅ AuthContext: Loading complete. isLoading set to false');
       setIsLoading(false);
     }
   };
@@ -56,12 +60,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      
+
       if (response.success && response.data && response.data.user) {
         setUser(response.data.user);
         setIsAuthenticated(true);
       }
-      
+
       return response;
     } catch (error) {
       setUser(null);
@@ -168,23 +172,23 @@ export const AuthProvider = ({ children }) => {
    */
   const hasActiveSubscription = () => {
     if (!user) return false;
-    
+
     // First check if the user object has explicit subscription status
     if (user.has_active_subscription !== undefined) {
       return user.has_active_subscription;
     }
-    
+
     // Check if subscription_end_date exists and is in the future
     if (user.subscription_end_date) {
       const endDate = new Date(user.subscription_end_date);
       return endDate > new Date();
     }
-    
+
     // Check if user doesn't require subscription (meaning they have one)
     if (user.requires_subscription === false) {
       return true;
     }
-    
+
     return false;
   };
 
@@ -194,7 +198,7 @@ export const AuthProvider = ({ children }) => {
    */
   const getSubscriptionDetails = () => {
     if (!user) return null;
-    
+
     return {
       plan_name: user.subscription_plan_name,
       plan_slug: user.subscription_plan_slug,
@@ -231,11 +235,11 @@ export const AuthProvider = ({ children }) => {
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 };
 

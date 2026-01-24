@@ -3,17 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
+import { useTranslation } from '../../context/TranslationContext';
 
 const AccountVerifiedScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { email } = route.params || {};
-  
+
   const handleDone = () => {
     // After email verification, user must select a subscription plan
     navigation.replace('AllMemberships', { requiresPlan: true, userEmail: email });
   };
 
   const handlePatentInfo = () => {
-    console.log('Navigate to Patent Information');
+    navigation.navigate('PatentPending');
   };
 
   return (
@@ -25,11 +27,11 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.patentText}>Patent Pending</Text>
+        <Text style={styles.patentText}>{t('Patent Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
             for more information{' '}
-            <Text style={styles.clickHere}>click here</Text>
+            <Text style={styles.clickHere}>{t('click here')}</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -41,7 +43,7 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
           <Text style={styles.checkmark}>✓</Text>
         </View>
 
-        <Text style={styles.title}>Account verified</Text>
+        <Text style={styles.title}>{t('Account verified')}</Text>
         <Text style={styles.subtitle}>
           Congrats, now you're a verified{'\n'}member of RoundBuy
         </Text>
@@ -53,12 +55,10 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
           style={styles.doneButton}
           onPress={handleDone}
         >
-          <Text style={styles.doneButtonText}>Done</Text>
+          <Text style={styles.doneButtonText}>{t('Done')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.copyright}>
-          © 2020-2025 RoundBuy Inc ®
-        </Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </View>
     </SafeScreenContainer>
   );

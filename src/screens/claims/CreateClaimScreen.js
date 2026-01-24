@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -15,6 +16,7 @@ import { COLORS } from '../../constants/theme';
 import claimService from '../../services/claimService';
 
 const CreateClaimScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
     const { dispute } = route.params;
     const [claimReason, setClaimReason] = useState('');
     const [additionalEvidence, setAdditionalEvidence] = useState('');
@@ -23,7 +25,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
 
     const handleSubmit = async () => {
         if (!claimReason.trim()) {
-            Alert.alert('Error', 'Please enter a reason for escalating to claim');
+            Alert.alert(t('Error'), t('Please enter a reason for escalating to claim'));
             return;
         }
 
@@ -37,11 +39,11 @@ const CreateClaimScreen = ({ route, navigation }) => {
 
             if (response.success) {
                 Alert.alert(
-                    'Success',
-                    'Claim created successfully. An admin will review your case.',
+                    t('Success'),
+                    t('Claim created successfully. An admin will review your case.'),
                     [
                         {
-                            text: 'OK',
+                            text: t('OK'),
                             onPress: () => {
                                 navigation.navigate('ClaimDetail', { claimId: response.data.id });
                             }
@@ -51,7 +53,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
             }
         } catch (error) {
             console.error('Create claim error:', error);
-            Alert.alert('Error', error.response?.data?.message || 'Failed to create claim');
+            Alert.alert(t('Error'), error.response?.data?.message || t('Failed to create claim'));
         } finally {
             setLoading(false);
         }
@@ -64,7 +66,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Escalate to Claim</Text>
+                <Text style={styles.headerTitle}>{t('Escalate to Claim')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
@@ -72,45 +74,41 @@ const CreateClaimScreen = ({ route, navigation }) => {
                 {/* Info Banner */}
                 <View style={styles.infoBanner}>
                     <Ionicons name="information-circle" size={24} color={COLORS.primary} />
-                    <Text style={styles.infoBannerText}>
-                        Escalating to a claim will involve admin review. Please provide detailed information.
-                    </Text>
+                    <Text style={styles.infoBannerText}>{t('Escalating to a claim will involve admin review. Please provide detailed information.')}</Text>
                 </View>
 
                 {/* Dispute Summary */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Dispute Summary</Text>
+                    <Text style={styles.sectionTitle}>{t('Dispute Summary')}</Text>
                     <View style={styles.disputeSummary}>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Dispute Number:</Text>
+                            <Text style={styles.summaryLabel}>{t('Dispute Number:')}</Text>
                             <Text style={styles.summaryValue}>{dispute.dispute_number}</Text>
                         </View>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Product:</Text>
+                            <Text style={styles.summaryLabel}>{t('Product:')}</Text>
                             <Text style={styles.summaryValue}>{dispute.ad_title}</Text>
                         </View>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Seller:</Text>
+                            <Text style={styles.summaryLabel}>{t('Seller:')}</Text>
                             <Text style={styles.summaryValue}>{dispute.seller_name}</Text>
                         </View>
                         <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>Seller Decision:</Text>
-                            <Text style={[styles.summaryValue, styles.declinedText]}>Declined</Text>
+                            <Text style={styles.summaryLabel}>{t('Seller Decision:')}</Text>
+                            <Text style={[styles.summaryValue, styles.declinedText]}>{t('Declined')}</Text>
                         </View>
                     </View>
                 </View>
 
                 {/* Claim Reason */}
                 <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>Claim Reason *</Text>
-                    <Text style={styles.fieldHint}>
-                        Explain why you are escalating this dispute to a claim
-                    </Text>
+                    <Text style={styles.fieldLabel}>{t('Claim Reason *')}</Text>
+                    <Text style={styles.fieldHint}>{t('Explain why you are escalating this dispute to a claim')}</Text>
                     <TextInput
                         style={styles.textArea}
                         multiline
                         numberOfLines={6}
-                        placeholder="Enter detailed reason for claim..."
+                        placeholder={t('Enter detailed reason for claim...')}
                         value={claimReason}
                         onChangeText={setClaimReason}
                         textAlignVertical="top"
@@ -119,15 +117,13 @@ const CreateClaimScreen = ({ route, navigation }) => {
 
                 {/* Additional Evidence */}
                 <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>Additional Evidence (Optional)</Text>
-                    <Text style={styles.fieldHint}>
-                        Provide any additional information or evidence
-                    </Text>
+                    <Text style={styles.fieldLabel}>{t('Additional Evidence (Optional)')}</Text>
+                    <Text style={styles.fieldHint}>{t('Provide any additional information or evidence')}</Text>
                     <TextInput
                         style={styles.textArea}
                         multiline
                         numberOfLines={4}
-                        placeholder="Enter additional evidence..."
+                        placeholder={t('Enter additional evidence...')}
                         value={additionalEvidence}
                         onChangeText={setAdditionalEvidence}
                         textAlignVertical="top"
@@ -136,7 +132,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
 
                 {/* Priority */}
                 <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>Priority</Text>
+                    <Text style={styles.fieldLabel}>{t('Priority')}</Text>
                     <View style={styles.priorityContainer}>
                         <TouchableOpacity
                             style={[
@@ -150,9 +146,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                             <Text style={[
                                 styles.priorityText,
                                 priority === 'low' && styles.priorityTextActive
-                            ]}>
-                                Low
-                            </Text>
+                            ]}>{t('Low')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -167,9 +161,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                             <Text style={[
                                 styles.priorityText,
                                 priority === 'medium' && styles.priorityTextActive
-                            ]}>
-                                Medium
-                            </Text>
+                            ]}>{t('Medium')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -184,9 +176,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                             <Text style={[
                                 styles.priorityText,
                                 priority === 'high' && styles.priorityTextActive
-                            ]}>
-                                High
-                            </Text>
+                            ]}>{t('High')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -201,9 +191,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                             <Text style={[
                                 styles.priorityText,
                                 priority === 'urgent' && styles.priorityTextActive
-                            ]}>
-                                Urgent
-                            </Text>
+                            ]}>{t('Urgent')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -211,9 +199,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                 {/* Warning */}
                 <View style={styles.warningBox}>
                     <Ionicons name="warning" size={20} color="#FF9800" />
-                    <Text style={styles.warningText}>
-                        Once submitted, this claim will be reviewed by an admin. The decision will be final.
-                    </Text>
+                    <Text style={styles.warningText}>{t('Once submitted, this claim will be reviewed by an admin. The decision will be final.')}</Text>
                 </View>
             </ScrollView>
 
@@ -227,7 +213,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
                     {loading ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.submitButtonText}>Submit Claim</Text>
+                        <Text style={styles.submitButtonText}>{t('Submit Claim')}</Text>
                     )}
                 </TouchableOpacity>
             </View>

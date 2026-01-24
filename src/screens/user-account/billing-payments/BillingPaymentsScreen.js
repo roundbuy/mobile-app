@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import { COLORS } from '../../../constants/theme';
 import GlobalHeader from '../../../components/GlobalHeader';
 
 const BillingPaymentsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [savedCards, setSavedCards] = useState([
     {
       id: 1,
@@ -77,10 +79,10 @@ const BillingPaymentsScreen = ({ navigation }) => {
 
   const renderSavedCard = (card) => (
     <View key={card.id} style={styles.savedCardContainer}>
-      <Text style={styles.sectionTitle}>My Payment method</Text>
+      <Text style={styles.sectionTitle}>{t('My Payment method')}</Text>
 
       <View style={styles.cardInfo}>
-        <Text style={styles.label}>Card information</Text>
+        <Text style={styles.label}>{t('Card information')}</Text>
         <View style={styles.cardNumberRow}>
           <Text style={styles.cardNumber}>xxx xxxx xxxx {card.lastFour}</Text>
           <FontAwesome name="credit-card" size={20} color="#666" />
@@ -88,106 +90,92 @@ const BillingPaymentsScreen = ({ navigation }) => {
 
         <View style={styles.expiryRow}>
           <View style={styles.expiryField}>
-            <Text style={styles.fieldLabel}>Expiry date</Text>
+            <Text style={styles.fieldLabel}>{t('Expiry date')}</Text>
             <Text style={styles.fieldValue}>{card.expiryMonth}/{card.expiryYear}</Text>
           </View>
           <View style={styles.cvcField}>
-            <Text style={styles.fieldLabel}>CVC</Text>
-            <Text style={styles.fieldValue}>xxx</Text>
+            <Text style={styles.fieldLabel}>{t('CVC')}</Text>
+            <Text style={styles.fieldValue}>{t('xxx')}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.countrySection}>
-        <Text style={styles.label}>Country or region</Text>
+        <Text style={styles.label}>{t('Country or region')}</Text>
         <Text style={styles.countryValue}>{card.country}</Text>
       </View>
 
       <View style={styles.zipSection}>
-        <Text style={styles.label}>ZIP</Text>
+        <Text style={styles.label}>{t('ZIP')}</Text>
         <TextInput
           style={styles.zipInput}
           value={card.zip}
-          placeholder="Enter ZIP"
+          placeholder={t('Enter ZIP')}
           placeholderTextColor="#999"
           editable={false}
         />
       </View>
 
-      <Text style={styles.savedNotice}>
-        This card has been saved for future RoundBuy payments
-      </Text>
+      <Text style={styles.savedNotice}>{t('This card has been saved for future RoundBuy payments')}</Text>
 
       <TouchableOpacity
         style={styles.removeButton}
         onPress={() => handleRemoveCard(card.id)}
       >
-        <Text style={styles.removeButtonText}>Remove Card</Text>
+        <Text style={styles.removeButtonText}>{t('Remove Card')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.addNewButton}
         onPress={handleAddNewCard}
       >
-        <Text style={styles.addNewButtonText}>+ Add New Card</Text>
+        <Text style={styles.addNewButtonText}>{t('+ Add New Card')}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderNoCards = () => (
     <View style={styles.noCardsContainer}>
-      <Text style={styles.sectionTitle}>My Payment method</Text>
+      <Text style={styles.sectionTitle}>{t('My Payment method')}</Text>
 
       <View style={styles.cardInfo}>
-        <Text style={styles.label}>Card information</Text>
+        <Text style={styles.label}>{t('Card information')}</Text>
         <View style={styles.noneSelected}>
-          <Text style={styles.noneSelectedText}>None selected!</Text>
+          <Text style={styles.noneSelectedText}>{t('None selected!')}</Text>
         </View>
       </View>
 
       <View style={styles.countrySection}>
-        <Text style={styles.label}>Country or region</Text>
-        <Text style={styles.countryValue}>United Kingdom</Text>
+        <Text style={styles.label}>{t('Country or region')}</Text>
+        <Text style={styles.countryValue}>{t('United Kingdom')}</Text>
       </View>
 
       <View style={styles.zipSection}>
-        <Text style={styles.label}>ZIP</Text>
+        <Text style={styles.label}>{t('ZIP')}</Text>
         <TextInput
           style={styles.zipInput}
-          placeholder="Enter ZIP"
+          placeholder={t('Enter ZIP')}
           placeholderTextColor="#999"
           editable={false}
         />
       </View>
 
-      <Text style={styles.noCardsNotice}>
-        You don't have any cards saved
-      </Text>
+      <Text style={styles.noCardsNotice}>{t("You don't have any cards saved")}</Text>
 
       <TouchableOpacity
         style={styles.addNewButtonPrimary}
         onPress={handleAddNewCard}
       >
-        <Text style={styles.addNewButtonPrimaryText}>+ Add New Card</Text>
+        <Text style={styles.addNewButtonPrimaryText}>{t('+ Add New Card')}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderAddCard = () => (
     <View style={styles.addCardContainer}>
-      <Text style={styles.sectionTitle}>Choose a payment method</Text>
+      <Text style={styles.sectionTitle}>{t('Choose a payment method')}</Text>
 
-      {/* Google Pay */}
-      <TouchableOpacity style={styles.googlePayButton}>
-        <Image
-          source={{ uri: 'https://www.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_74x24dp.png' }}
-          style={styles.googlePayIcon}
-          resizeMode="contain"
-        />
-        <Text style={styles.googlePayText}>Pay</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.orPayText}>Or pay using</Text>
+      <Text style={styles.orPayText}>{t('Pay using')}</Text>
 
       {/* Payment Icons */}
       <View style={styles.paymentIcons}>
@@ -205,11 +193,11 @@ const BillingPaymentsScreen = ({ navigation }) => {
 
       {/* Card Form */}
       <View style={styles.cardInfo}>
-        <Text style={styles.label}>Card information</Text>
+        <Text style={styles.label}>{t('Card information')}</Text>
         <View style={styles.cardNumberRow}>
           <TextInput
             style={styles.cardInput}
-            placeholder="Card number"
+            placeholder={t('Card number')}
             placeholderTextColor="#999"
             value={newCard.cardNumber}
             onChangeText={(text) => setNewCard({ ...newCard, cardNumber: text })}
@@ -222,7 +210,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
         <View style={styles.expiryRow}>
           <TextInput
             style={[styles.cardInput, styles.expiryInput]}
-            placeholder="MM/YY"
+            placeholder={t('MM/YY')}
             placeholderTextColor="#999"
             value={newCard.expiryDate}
             onChangeText={(text) => setNewCard({ ...newCard, expiryDate: text })}
@@ -230,7 +218,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
           />
           <TextInput
             style={[styles.cardInput, styles.cvcInput]}
-            placeholder="CVC"
+            placeholder={t('CVC')}
             placeholderTextColor="#999"
             value={newCard.cvc}
             onChangeText={(text) => setNewCard({ ...newCard, cvc: text })}
@@ -241,17 +229,17 @@ const BillingPaymentsScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.countrySection}>
-        <Text style={styles.label}>Country or region</Text>
+        <Text style={styles.label}>{t('Country or region')}</Text>
         <Text style={styles.countryValue}>{newCard.country}</Text>
       </View>
 
       <View style={styles.zipSection}>
-        <Text style={styles.label}>ZIP</Text>
+        <Text style={styles.label}>{t('ZIP')}</Text>
         <TextInput
           style={styles.zipInput}
           value={newCard.zip}
           onChangeText={(text) => setNewCard({ ...newCard, zip: text })}
-          placeholder="Enter ZIP"
+          placeholder={t('Enter ZIP')}
           placeholderTextColor="#999"
         />
       </View>
@@ -263,16 +251,14 @@ const BillingPaymentsScreen = ({ navigation }) => {
         <View style={[styles.checkbox, saveCard && styles.checkboxChecked]}>
           {saveCard && <Ionicons name="checkmark" size={16} color="#fff" />}
         </View>
-        <Text style={styles.checkboxLabel}>
-          Save for future RoundBuy payments
-        </Text>
+        <Text style={styles.checkboxLabel}>{t('Save for future RoundBuy payments')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.continueButton}
         onPress={handleContinue}
       >
-        <Text style={styles.continueButtonText}>Continue</Text>
+        <Text style={styles.continueButtonText}>{t('Continue')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -472,26 +458,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#999',
   },
-  googlePayButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginBottom: 16,
-  },
-  googlePayIcon: {
-    width: 50,
-    height: 20,
-    marginRight: 4,
-  },
-  googlePayText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
-  },
+
   orPayText: {
     fontSize: 14,
     color: '#666',

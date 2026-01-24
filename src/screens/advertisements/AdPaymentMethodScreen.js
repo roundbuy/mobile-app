@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
+import WalletPaymentOption from '../../components/WalletPaymentOption';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const AdPaymentMethodScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -11,9 +14,13 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
   const [zipCode, setZipCode] = useState('');
   const [saveForFuture, setSaveForFuture] = useState(false);
 
+  // Get amount from route params if available
+  const amount = route.params?.amount || 0;
+
   const handleContinue = () => {
     navigation.navigate('AdCart', {
       ...route.params,
+      paymentMethod: selectedPayment,
     });
   };
 
@@ -25,27 +32,33 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Choose a payment method</Text>
+          <Text style={styles.headerTitle}>{t('Choose a payment method')}</Text>
           <Text style={styles.stepIndicator}>5/8</Text>
         </View>
 
-        {/* Google Pay */}
-        <TouchableOpacity 
-          style={styles.paymentOption}
-          onPress={() => setSelectedPayment('googlepay')}
-        >
-          <View style={styles.googlePayIcon}>
-            <Text style={styles.googleText}>G</Text>
-          </View>
-          <Text style={styles.paymentText}>Pay</Text>
-        </TouchableOpacity>
+        {/* Wallet Payment Option */}
+        <View style={styles.walletSection}>
+          <WalletPaymentOption
+            selected={selectedPayment === 'wallet'}
+            onSelect={() => setSelectedPayment('wallet')}
+            amount={amount}
+            showBalance={true}
+          />
+        </View>
 
-        {/* Or pay using */}
-        <Text style={styles.orText}>Or pay using</Text>
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>{t('OR')}</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Pay using */}
+        <Text style={styles.orText}>{t('Pay using card')}</Text>
 
         {/* Payment Method Icons */}
         <View style={styles.paymentIcons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.iconButton,
               selectedPayment === 'card' && styles.iconButtonSelected
@@ -56,123 +69,92 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
               <View style={styles.cardStripe} />
             </View>
           </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'klarna' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('klarna')}
-          >
-            <View style={styles.klarnaIcon}>
-              <Text style={styles.klarnaText}>K</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'paypal' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('paypal')}
-          >
-            <View style={styles.paypalIcon}>
-              <Text style={styles.paypalText}>P</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'bank' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('bank')}
-          >
-            <View style={styles.bankIcon} />
-          </TouchableOpacity>
         </View>
 
-        {/* Card Information */}
-        <View style={styles.cardInfoSection}>
-          <Text style={styles.sectionTitle}>Card information</Text>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Card number"
-              placeholderTextColor="#999"
-              value={cardNumber}
-              onChangeText={setCardNumber}
-              keyboardType="numeric"
-            />
-            <View style={styles.cardIconSmall} />
-          </View>
+        {/* Card Information - Only show when card is selected */}
+        {selectedPayment === 'card' && (
+          <>
+            <View style={styles.cardInfoSection}>
+              <Text style={styles.sectionTitle}>{t('Card information')}</Text>
 
-          <View style={styles.inputRow}>
-            <View style={[styles.inputContainer, { flex: 1, marginRight: 12 }]}>
-              <TextInput
-                style={styles.input}
-                placeholder="Expiry date"
-                placeholderTextColor="#999"
-                value={expiryDate}
-                onChangeText={setExpiryDate}
-                keyboardType="numeric"
-              />
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('Card number')}
+                  placeholderTextColor="#999"
+                  value={cardNumber}
+                  onChangeText={setCardNumber}
+                  keyboardType="numeric"
+                />
+                <View style={styles.cardIconSmall} />
+              </View>
+
+              <View style={styles.inputRow}>
+                <View style={[styles.inputContainer, { flex: 1, marginRight: 12 }]}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('Expiry date')}
+                    placeholderTextColor="#999"
+                    value={expiryDate}
+                    onChangeText={setExpiryDate}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View style={[styles.inputContainer, { width: 100 }]}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('CVC')}
+                    placeholderTextColor="#999"
+                    value={cvc}
+                    onChangeText={setCvc}
+                    keyboardType="numeric"
+                    maxLength={3}
+                  />
+                  <View style={styles.cvcIcon} />
+                </View>
+              </View>
             </View>
-            <View style={[styles.inputContainer, { width: 100 }]}>
-              <TextInput
-                style={styles.input}
-                placeholder="CVC"
-                placeholderTextColor="#999"
-                value={cvc}
-                onChangeText={setCvc}
-                keyboardType="numeric"
-                maxLength={3}
-              />
-              <View style={styles.cvcIcon} />
+
+            {/* Country or Region */}
+            <View style={styles.countrySection}>
+              <Text style={styles.sectionTitle}>{t('Country or region')}</Text>
+
+              <View style={styles.countryInput}>
+                <Text style={styles.countryText}>{t('United Kingdom')}</Text>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('ZIP')}
+                  placeholderTextColor="#999"
+                  value={zipCode}
+                  onChangeText={setZipCode}
+                  keyboardType="numeric"
+                />
+              </View>
             </View>
-          </View>
-        </View>
 
-        {/* Country or Region */}
-        <View style={styles.countrySection}>
-          <Text style={styles.sectionTitle}>Country or region</Text>
-          
-          <View style={styles.countryInput}>
-            <Text style={styles.countryText}>United Kingdom</Text>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="ZIP"
-              placeholderTextColor="#999"
-              value={zipCode}
-              onChangeText={setZipCode}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        {/* Save for Future */}
-        <TouchableOpacity 
-          style={styles.saveForFutureContainer}
-          onPress={() => setSaveForFuture(!saveForFuture)}
-        >
-          <Text style={styles.saveForFutureText}>
-            Save for future RoundBuy payments
-          </Text>
-          <View style={[styles.checkbox, saveForFuture && styles.checkboxChecked]}>
-            {saveForFuture && <Text style={styles.checkmark}>✕</Text>}
-          </View>
-        </TouchableOpacity>
+            {/* Save for Future */}
+            <TouchableOpacity
+              style={styles.saveForFutureContainer}
+              onPress={() => setSaveForFuture(!saveForFuture)}
+            >
+              <Text style={styles.saveForFutureText}>{t('Save for future RoundBuy payments')}</Text>
+              <View style={[styles.checkbox, saveForFuture && styles.checkboxChecked]}>
+                {saveForFuture && <Text style={styles.checkmark}>✕</Text>}
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
 
         {/* Continue Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueButton}
           onPress={handleContinue}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />
@@ -209,6 +191,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  walletSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    fontSize: 14,
+    color: '#999',
+    marginHorizontal: 16,
+    fontWeight: '500',
+  },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -219,25 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 24,
   },
-  googlePayIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#4285F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  googleText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  paymentText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
+
   orText: {
     fontSize: 14,
     color: '#666',
@@ -277,38 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
     borderRadius: 2,
   },
-  klarnaIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFB3C7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  klarnaText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
-  },
-  paypalIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#B4E96D',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paypalText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  bankIcon: {
-    width: 32,
-    height: 24,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-  },
+
   cardInfoSection: {
     paddingHorizontal: 20,
     marginBottom: 24,

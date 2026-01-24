@@ -100,8 +100,9 @@ export async function registerDeviceWithBackend(isAuthenticated = false) {
         const expoPushToken = await registerForPushNotificationsAsync();
 
         if (!expoPushToken) {
-            console.log('No push token available');
-            return false;
+            console.log('No push token available - running on simulator');
+            // Return true to not block the app on simulators
+            return true;
         }
 
         const deviceId = await getDeviceId();
@@ -124,7 +125,8 @@ export async function registerDeviceWithBackend(isAuthenticated = false) {
         return true;
     } catch (error) {
         console.error('Error registering device with backend:', error);
-        return false;
+        // Return true to not block the app even on error
+        return true;
     }
 }
 

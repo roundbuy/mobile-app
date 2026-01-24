@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,31 +14,32 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const UploadEvidenceScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, order, problem, formData } = route.params;
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   const pickImage = async () => {
     Alert.alert(
-      'Feature Coming Soon',
-      'Image upload functionality requires expo-image-picker package. You can proceed without uploading evidence for now.',
-      [{ text: 'OK' }]
+      t('Feature Coming Soon'),
+      t('Image upload functionality requires expo-image-picker package. You can proceed without uploading evidence for now.'),
+      [{ text: t('OK') }]
     );
   };
 
   const takePhoto = async () => {
     Alert.alert(
-      'Feature Coming Soon',
-      'Camera functionality requires expo-image-picker package. You can proceed without uploading evidence for now.',
-      [{ text: 'OK' }]
+      t('Feature Coming Soon'),
+      t('Camera functionality requires expo-image-picker package. You can proceed without uploading evidence for now.'),
+      [{ text: t('OK') }]
     );
   };
 
   const pickDocument = async () => {
     Alert.alert(
-      'Feature Coming Soon',
-      'Document upload functionality requires expo-document-picker package. You can proceed without uploading evidence for now.',
-      [{ text: 'OK' }]
+      t('Feature Coming Soon'),
+      t('Document upload functionality requires expo-document-picker package. You can proceed without uploading evidence for now.'),
+      [{ text: t('OK') }]
     );
   };
 
@@ -48,12 +50,12 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
   const handleContinue = () => {
     if (files.length === 0) {
       Alert.alert(
-        'No Evidence',
-        'Would you like to continue without uploading evidence? Adding evidence strengthens your case.',
+        t('No Evidence'),
+        t('Would you like to continue without uploading evidence? Adding evidence strengthens your case.'),
         [
-          { text: 'Go Back', style: 'cancel' },
+          { text: t('Go Back'), style: t('cancel') },
           { 
-            text: 'Continue Anyway', 
+            text: t('Continue Anyway'), 
             onPress: () => proceedToReview(),
           },
         ]
@@ -77,14 +79,12 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Upload Evidence</Text>
-          <Text style={styles.subtitle}>
-            Add photos or documents to support your claim
-          </Text>
+          <Text style={styles.title}>{t('Upload Evidence')}</Text>
+          <Text style={styles.subtitle}>{t('Add photos or documents to support your claim')}</Text>
         </View>
 
         <View style={styles.uploadSection}>
-          <Text style={styles.sectionTitle}>Add Evidence (Optional)</Text>
+          <Text style={styles.sectionTitle}>{t('Add Evidence (Optional)')}</Text>
           
           <View style={styles.uploadButtons}>
             <TouchableOpacity
@@ -92,7 +92,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
               onPress={takePhoto}
             >
               <Feather name="camera" size={32} color="#4169E1" />
-              <Text style={styles.uploadButtonText}>Take Photo</Text>
+              <Text style={styles.uploadButtonText}>{t('Take Photo')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -100,7 +100,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
               onPress={pickImage}
             >
               <Feather name="image" size={32} color="#4169E1" />
-              <Text style={styles.uploadButtonText}>Choose Photos</Text>
+              <Text style={styles.uploadButtonText}>{t('Choose Photos')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -108,13 +108,11 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
               onPress={pickDocument}
             >
               <Feather name="file" size={32} color="#4169E1" />
-              <Text style={styles.uploadButtonText}>Upload Document</Text>
+              <Text style={styles.uploadButtonText}>{t('Upload Document')}</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.hint}>
-            Accepted: JPEG, PNG, PDF • Max 5 files • 10MB each
-          </Text>
+          <Text style={styles.hint}>{t('Accepted: JPEG, PNG, PDF • Max 5 files • 10MB each')}</Text>
         </View>
 
         {files.length > 0 && (
@@ -154,7 +152,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#FFA500" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Note</Text>
+            <Text style={styles.infoTitle}>{t('Note')}</Text>
             <Text style={styles.infoText}>
               File upload requires additional packages (expo-image-picker & expo-document-picker).{'\n\n'}
               You can proceed without evidence for now, or install the packages:{'\n'}
@@ -169,7 +167,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             style={styles.skipButton}
             onPress={proceedToReview}
           >
-            <Text style={styles.skipButtonText}>Skip for Now</Text>
+            <Text style={styles.skipButtonText}>{t('Skip for Now')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -180,7 +178,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             {uploading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.continueButtonText}>Review & Submit</Text>
+              <Text style={styles.continueButtonText}>{t('Review & Submit')}</Text>
             )}
           </TouchableOpacity>
         </View>

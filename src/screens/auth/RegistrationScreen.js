@@ -3,8 +3,12 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const RegistrationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+  console.log('📱 RegistrationScreen: Rendering...');
+
   const handleSignIn = () => {
     console.log('Navigate to Sign In');
     navigation.navigate('SocialLogin');
@@ -17,7 +21,7 @@ const RegistrationScreen = ({ navigation }) => {
 
   const handlePatentInfo = () => {
     console.log('Navigate to Patent Information');
-    // Navigate to patent info page or open link
+    navigation.navigate('PatentPending');
   };
 
   const handleTestDemo = () => {
@@ -25,63 +29,82 @@ const RegistrationScreen = ({ navigation }) => {
     navigation.navigate('Demo');
   };
 
-  return (
-    <SafeScreenContainer>
-      {/* Header with Logo and Patent Info */}
-      <View style={styles.header}>
-        <Image
-          source={IMAGES.logoMain}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.patentText}>Patent Pending</Text>
-        <TouchableOpacity onPress={handlePatentInfo}>
-          <Text style={styles.infoLink}>
-            for more information{' '}
-            <Text style={styles.clickHere}>click here</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
 
-      {/* Center Content */}
-      <View style={styles.content}>
-        <Text style={styles.tagline}>Sell and Buy around you</Text>
-        <Text style={styles.subtitle}>
-          Buy and Sell products and services just around you!
-        </Text>
-
-        <TouchableOpacity
-          style={styles.demoButton}
-          onPress={handleTestDemo}
-        >
-          <Text style={styles.demoButtonText}>Test RoundBuy Demo</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Footer with Buttons */}
-      <View style={styles.footer}>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.signInButton}
-            onPress={handleSignIn}
-          >
-            <Text style={styles.signInButtonText}>Sign in</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.registerButton}
-            onPress={handleRegister}
-          >
-            <Text style={styles.registerButtonText}>Register</Text>
+  try {
+    return (
+      <SafeScreenContainer>
+        {/* Header with Logo and Patent Info */}
+        <View style={styles.header}>
+          <Image
+            source={IMAGES.logoMain}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <TouchableOpacity onPress={handlePatentInfo}>
+            <Text style={styles.infoLink}>
+              for more information{' '}
+              <Text style={styles.clickHere}>{t('click here')}</Text>
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.copyright}>
-          © 2020-2025 RoundBuy Inc ®
-        </Text>
+        {/* Center Content */}
+        <View style={styles.content}>
+          <Text style={styles.tagline}>{t('Sell and Buy around you')}</Text>
+          <Text style={styles.subtitle}>{t('Buy and Sell products and services just around you!')}</Text>
+
+          <TouchableOpacity
+            style={styles.demoButton}
+            onPress={handleTestDemo}
+          >
+            <Text style={styles.demoButtonText}>{t('Test RoundBuy Demo')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer with Buttons */}
+        <View style={styles.footer}>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={handleSignIn}
+            >
+              <Text style={styles.signInButtonText}>{t('Sign in')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.registerButton}
+              onPress={handleRegister}
+            >
+              <Text style={styles.registerButtonText}>{t('Register')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
+        </View>
+      </SafeScreenContainer>
+    );
+  } catch (error) {
+    console.error('❌ RegistrationScreen: Render error:', error);
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#000' }}>{t('Registration Screen')}</Text>
+        <Text style={{ fontSize: 16, marginBottom: 20, color: '#666', textAlign: 'center' }}>{t('Error loading screen. Check console for details.')}</Text>
+        <TouchableOpacity
+          style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8 }}
+          onPress={handleSignIn}
+        >
+          <Text style={{ color: '#fff', fontSize: 16 }}>{t('Sign In')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ backgroundColor: '#34C759', padding: 15, borderRadius: 8, marginTop: 10 }}
+          onPress={handleRegister}
+        >
+          <Text style={{ color: '#fff', fontSize: 16 }}>{t('Register')}</Text>
+        </TouchableOpacity>
       </View>
-    </SafeScreenContainer>
-  );
+    );
+  }
 };
 
 const styles = StyleSheet.create({

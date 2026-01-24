@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -18,6 +19,7 @@ import { favoritesService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
 
 const FavouritesScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,15 +63,15 @@ const FavouritesScreen = ({ navigation }) => {
       // Check if it's an authentication error
       if (error.message?.includes('token') || error.message?.includes('auth')) {
         Alert.alert(
-          'Authentication Required',
-          'Please login to view your favorites.',
+          t('Authentication Required'),
+          t('Please login to view your favorites.'),
           [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Login', onPress: () => navigation.navigate('SocialLogin') }
+            { text: t('Cancel'), style: t('cancel') },
+            { text: t('Login'), onPress: () => navigation.navigate('SocialLogin') }
           ]
         );
       } else {
-        Alert.alert('Error', 'Failed to load favorites. Please try again.');
+        Alert.alert(t('Error'), t('Failed to load favorites. Please try again.'));
       }
 
       setFavorites([]);
@@ -87,13 +89,13 @@ const FavouritesScreen = ({ navigation }) => {
   const handleRemoveFavorite = async (advertisementId) => {
     try {
       Alert.alert(
-        'Remove from Favorites',
-        'Are you sure you want to remove this item from your favorites?',
+        t('Remove from Favorites'),
+        t('Are you sure you want to remove this item from your favorites?'),
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('Cancel'), style: t('cancel') },
           {
-            text: 'Remove',
-            style: 'destructive',
+            text: t('Remove'),
+            style: t('destructive'),
             onPress: async () => {
               try {
                 // Remove from API
@@ -102,20 +104,20 @@ const FavouritesScreen = ({ navigation }) => {
                 if (response.success) {
                   // Remove from local state
                   setFavorites(prev => prev.filter(item => item.id !== advertisementId));
-                  Alert.alert('Success', 'Removed from favorites');
+                  Alert.alert(t('Success'), t('Removed from favorites'));
                 } else {
-                  Alert.alert('Error', response.message || 'Failed to remove from favorites');
+                  Alert.alert(t('Error'), response.message || t('Failed to remove from favorites'));
                 }
               } catch (error) {
                 console.error('Error removing favorite:', error);
-                Alert.alert('Error', 'Failed to remove from favorites. Please try again.');
+                Alert.alert(t('Error'), t('Failed to remove from favorites. Please try again.'));
               }
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to remove from favorites');
+      Alert.alert(t('Error'), t('Failed to remove from favorites'));
     }
   };
 
@@ -165,7 +167,7 @@ const FavouritesScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title="My Favorites"
+        title={t('My Favorites')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -175,7 +177,7 @@ const FavouritesScreen = ({ navigation }) => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading favorites...</Text>
+          <Text style={styles.loadingText}>{t('Loading favorites...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -189,8 +191,8 @@ const FavouritesScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="heart-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No favorites yet</Text>
-              <Text style={styles.emptySubtext}>Items you favorite will appear here</Text>
+              <Text style={styles.emptyText}>{t('No favorites yet')}</Text>
+              <Text style={styles.emptySubtext}>{t('Items you favorite will appear here')}</Text>
             </View>
           }
         />

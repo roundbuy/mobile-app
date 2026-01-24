@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -17,6 +18,7 @@ import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
 const IssueDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId } = route.params;
 
     const [issue, setIssue] = useState(null);
@@ -66,7 +68,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Load issue details error:', error);
-            Alert.alert('Error', 'Failed to load issue details');
+            Alert.alert(t('Error'), t('Failed to load issue details'));
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -81,7 +83,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
     // Seller sends response
     const handleSendResponse = async () => {
         if (!sellerDecision || !sellerResponseText.trim()) {
-            Alert.alert('Error', 'Please select a decision and provide a response');
+            Alert.alert(t('Error'), t('Please select a decision and provide a response'));
             return;
         }
 
@@ -94,15 +96,15 @@ const IssueDetailScreen = ({ navigation, route }) => {
 
             if (response.success) {
                 Alert.alert(
-                    'Response Sent',
-                    'Your response has been sent to the buyer.',
-                    [{ text: 'OK', onPress: () => loadIssueDetails() }]
+                    t('Response Sent'),
+                    t('Your response has been sent to the buyer.'),
+                    [{ text: t('OK'), onPress: () => loadIssueDetails() }]
                 );
                 setSellerDecision(null);
                 setSellerResponseText('');
             }
         } catch (error) {
-            Alert.alert('Error', error.message || 'Failed to send response');
+            Alert.alert(t('Error'), error.message || t('Failed to send response'));
         } finally {
             setActionLoading(false);
         }
@@ -111,25 +113,25 @@ const IssueDetailScreen = ({ navigation, route }) => {
     // Buyer closes issue
     const handleCloseIssue = () => {
         Alert.alert(
-            'Close Issue',
-            'Are you sure you want to close this issue? This action cannot be undone.',
+            t('Close Issue'),
+            t('Are you sure you want to close this issue? This action cannot be undone.'),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('Cancel'), style: t('cancel') },
                 {
-                    text: 'Close',
+                    text: t('Close'),
                     onPress: async () => {
                         setActionLoading(true);
                         try {
                             const response = await disputeService.closeIssue(issueId);
                             if (response.success) {
                                 Alert.alert(
-                                    'Issue Closed',
-                                    'This issue has been closed.',
-                                    [{ text: 'OK', onPress: () => navigation.goBack() }]
+                                    t('Issue Closed'),
+                                    t('This issue has been closed.'),
+                                    [{ text: t('OK'), onPress: () => navigation.goBack() }]
                                 );
                             }
                         } catch (error) {
-                            Alert.alert('Error', error.message || 'Failed to close issue');
+                            Alert.alert(t('Error'), error.message || t('Failed to close issue'));
                         } finally {
                             setActionLoading(false);
                         }
@@ -159,7 +161,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                 loadIssueDetails();
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to send message');
+            Alert.alert(t('Error'), t('Failed to send message'));
         } finally {
             setSendingMessage(false);
         }
@@ -224,7 +226,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
             <SafeAreaView style={styles.container} edges={['top']}>
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Loading issue details...</Text>
+                    <Text style={styles.loadingText}>{t('Loading issue details...')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -235,12 +237,12 @@ const IssueDetailScreen = ({ navigation, route }) => {
             <SafeAreaView style={styles.container} edges={['top']}>
                 <View style={styles.errorContainer}>
                     <Ionicons name="alert-circle-outline" size={64} color="#CCC" />
-                    <Text style={styles.errorText}>Issue not found</Text>
+                    <Text style={styles.errorText}>{t('Issue not found')}</Text>
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => navigation.goBack()}
                     >
-                        <Text style={styles.backButtonText}>Go Back</Text>
+                        <Text style={styles.backButtonText}>{t('Go Back')}</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -296,22 +298,22 @@ const IssueDetailScreen = ({ navigation, route }) => {
                 <View style={styles.statusCard}>
                     {/* Product Info */}
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Product:</Text>
+                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
                         <Text style={styles.infoValue}>{issue.product_name || issue.ad_title}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issuer:</Text>
+                        <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
                         <Text style={styles.infoValue}>{isBuyer ? 'You' : issue.other_party_name}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issued to:</Text>
+                        <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
                         <Text style={styles.infoValue}>{isSeller ? 'You' : issue.other_party_name}</Text>
                     </View>
 
                     {/* For Seller: Show link to view buyer's issue */}
                     {isSeller ? (
                         <>
-                            <Text style={styles.sectionTitle}>Buyer's Issue</Text>
+                            <Text style={styles.sectionTitle}>{t("Buyer's Issue")}</Text>
                             <TouchableOpacity
                                 style={styles.viewIssueLink}
                                 onPress={() => navigation.navigate('AttachEvidence', {
@@ -323,20 +325,20 @@ const IssueDetailScreen = ({ navigation, route }) => {
                             >
                                 <Text style={styles.viewIssueLinkText}>
                                     To view Buyer's Issue & Request click{' '}
-                                    <Text style={styles.viewIssueLinkHighlight}>here</Text>
+                                    <Text style={styles.viewIssueLinkHighlight}>{t('here')}</Text>
                                 </Text>
                             </TouchableOpacity>
                         </>
                     ) : (
                         <>
                             {/* For Buyer: Show full issue details */}
-                            <Text style={styles.sectionTitle}>Buyer's Issue:</Text>
-                            <Text style={styles.fieldLabel}>The issue with the product:</Text>
+                            <Text style={styles.sectionTitle}>{t("Buyer's Issue:")}</Text>
+                            <Text style={styles.fieldLabel}>{t('The issue with the product:')}</Text>
                             <Text style={styles.issueDescription}>{issue.issue_description}</Text>
 
                             {issue.buyer_request && (
                                 <>
-                                    <Text style={styles.fieldLabel}>Issuers Requests:</Text>
+                                    <Text style={styles.fieldLabel}>{t('Issuers Requests:')}</Text>
                                     <Text style={styles.issueDescription}>{issue.buyer_request}</Text>
                                 </>
                             )}
@@ -351,7 +353,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                                 })}
                             >
                                 <Ionicons name="attach" size={18} color={COLORS.primary} />
-                                <Text style={styles.attachEvidenceText}>Attach Evidence</Text>
+                                <Text style={styles.attachEvidenceText}>{t('Attach Evidence')}</Text>
                             </TouchableOpacity>
                         </>
                     )}
@@ -364,13 +366,13 @@ const IssueDetailScreen = ({ navigation, route }) => {
                 {/* Seller Response Section (for seller to respond) */}
                 {canRespond && !actionLoading && (
                     <View style={styles.sellerResponseSection}>
-                        <Text style={styles.sectionTitle}>Seller's Response</Text>
-                        <Text style={styles.sectionSubtitle}>Response to the issue:</Text>
+                        <Text style={styles.sectionTitle}>{t("Seller's Response")}</Text>
+                        <Text style={styles.sectionSubtitle}>{t('Response to the issue:')}</Text>
 
                         {/* Response text */}
                         <TextInput
                             style={styles.responseTextArea}
-                            placeholder="Explain your decision..."
+                            placeholder={t('Explain your decision...')}
                             placeholderTextColor="#999"
                             multiline
                             numberOfLines={4}
@@ -380,7 +382,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                         />
 
                         {/* Decision checkboxes */}
-                        <Text style={styles.sectionSubtitle}>Seller's Decision:</Text>
+                        <Text style={styles.sectionSubtitle}>{t("Seller's Decision:")}</Text>
                         <TouchableOpacity
                             style={styles.checkboxRow}
                             onPress={() => setSellerDecision('accept')}
@@ -393,9 +395,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                                     <Ionicons name="checkmark" size={16} color="#FFF" />
                                 )}
                             </View>
-                            <Text style={styles.checkboxLabel}>
-                                I Accept the Request and Cancel the deal!
-                            </Text>
+                            <Text style={styles.checkboxLabel}>{t('I Accept the Request and Cancel the deal!')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -407,19 +407,17 @@ const IssueDetailScreen = ({ navigation, route }) => {
                                 sellerDecision === 'decline' && styles.checkboxChecked
                             ]}>
                                 {sellerDecision === 'decline' && (
-                                    <Text style={styles.checkboxX}>X</Text>
+                                    <Text style={styles.checkboxX}>{t('X')}</Text>
                                 )}
                             </View>
-                            <Text style={styles.checkboxLabel}>
-                                I decline the Request and keep to the Agreement!
-                            </Text>
+                            <Text style={styles.checkboxLabel}>{t('I decline the Request and keep to the Agreement!')}</Text>
                         </TouchableOpacity>
 
                         {/* Info Link */}
                         <View style={styles.infoLinkContainer}>
                             <Text style={styles.infoLinkText}>
                                 More information on Issues & Disputes,{' '}
-                                <Text style={styles.infoLinkHighlight}>click here</Text>
+                                <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                             </Text>
                             <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                         </View>
@@ -433,9 +431,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                             onPress={handleSendResponse}
                             disabled={!sellerDecision || !sellerResponseText.trim()}
                         >
-                            <Text style={styles.sendResponseButtonText}>
-                                Send Response to
-                            </Text>
+                            <Text style={styles.sendResponseButtonText}>{t('Send Response to')}</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -443,11 +439,11 @@ const IssueDetailScreen = ({ navigation, route }) => {
                 {/* Display Seller's Response (for buyer to see) */}
                 {sellerHasResponded && issue.seller_response_text && (
                     <View style={styles.sellerResponseDisplay}>
-                        <Text style={styles.sectionTitle}>Seller's Response</Text>
+                        <Text style={styles.sectionTitle}>{t("Seller's Response")}</Text>
                         <Text style={styles.responseText}>{issue.seller_response_text}</Text>
 
                         <View style={styles.decisionDisplay}>
-                            <Text style={styles.decisionLabel}>Seller's Decision:</Text>
+                            <Text style={styles.decisionLabel}>{t("Seller's Decision:")}</Text>
                             <View style={styles.decisionBadge}>
                                 <Ionicons
                                     name={issue.seller_decision === 'accept' ? 'checkmark-circle' : 'close-circle'}
@@ -474,7 +470,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                                 onPress={handleDisputeIssue}
                             >
                                 <Ionicons name="alert-circle" size={20} color="#FFF" />
-                                <Text style={styles.actionButtonText}>Dispute the Issue</Text>
+                                <Text style={styles.actionButtonText}>{t('Dispute the Issue')}</Text>
                             </TouchableOpacity>
                         )}
 
@@ -483,7 +479,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                             onPress={handleCloseIssue}
                         >
                             <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-                            <Text style={styles.actionButtonText}>Close the Issue</Text>
+                            <Text style={styles.actionButtonText}>{t('Close the Issue')}</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -491,17 +487,17 @@ const IssueDetailScreen = ({ navigation, route }) => {
                 {actionLoading && (
                     <View style={styles.actionLoadingContainer}>
                         <ActivityIndicator size="small" color={COLORS.primary} />
-                        <Text style={styles.actionLoadingText}>Processing...</Text>
+                        <Text style={styles.actionLoadingText}>{t('Processing...')}</Text>
                     </View>
                 )}
 
                 {/* Messages Section */}
                 <View style={styles.messagesSection}>
-                    <Text style={styles.sectionTitle}>Messages</Text>
+                    <Text style={styles.sectionTitle}>{t('Messages')}</Text>
                     {messages.length === 0 ? (
                         <View style={styles.noMessages}>
                             <Ionicons name="chatbubbles-outline" size={48} color="#CCC" />
-                            <Text style={styles.noMessagesText}>No messages yet</Text>
+                            <Text style={styles.noMessagesText}>{t('No messages yet')}</Text>
                         </View>
                     ) : (
                         messages.map((message) => (
@@ -531,7 +527,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                     <View style={styles.messageInputContainer}>
                         <TextInput
                             style={styles.messageInput}
-                            placeholder="Type a message..."
+                            placeholder={t('Type a message...')}
                             placeholderTextColor="#999"
                             value={newMessage}
                             onChangeText={setNewMessage}

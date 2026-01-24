@@ -3,8 +3,10 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, Image, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const CookieSettingsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [necessary, setNecessary] = useState(true); // Always on
   const [functional, setFunctional] = useState(false);
   const [performance, setPerformance] = useState(false);
@@ -18,6 +20,10 @@ const CookieSettingsScreen = ({ navigation }) => {
       advertising,
     });
     navigation.goBack();
+  };
+
+  const handlePatentInfo = () => {
+    navigation.navigate('PatentPending');
   };
 
   const CookieOption = ({ title, description, value, onValueChange, disabled }) => (
@@ -48,47 +54,52 @@ const CookieSettingsScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with Logo */}
+        {/* Header with Logo and Patent Info */}
         <View style={styles.header}>
           <Image
             source={IMAGES.logoMain}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <TouchableOpacity onPress={handlePatentInfo}>
+            <Text style={styles.infoLink}>
+              for more information{' '}
+              <Text style={styles.clickHere}>{t('click here')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Cookies settings</Text>
+        <Text style={styles.title}>{t('Cookies settings')}</Text>
 
         {/* Description */}
-        <Text style={styles.description}>
-          We would like your permission to use your data for the following purposes:
-        </Text>
+        <Text style={styles.description}>{t('We would like your permission to use your data for the following purposes:')}</Text>
 
         {/* Cookie Options */}
         <CookieOption
-          title="Necessary"
+          title={t('Necessary')}
           description="These cookies are required for good functionality of our service and can't be switched off in our system."
           value={necessary}
           disabled={true}
         />
 
         <CookieOption
-          title="Performance"
+          title={t('Performance')}
           description="We use these cookies to provide statistical information about our website - they are used for performance measurement and improvement."
           value={performance}
           onValueChange={setPerformance}
         />
 
         <CookieOption
-          title="Functional"
+          title={t('Functional')}
           description="We use these cookies to enhance functionality and allow for personalisation, such as live chats, videos and the use of social media."
           value={functional}
           onValueChange={setFunctional}
         />
 
         <CookieOption
-          title="Advertising"
+          title={t('Advertising')}
           description="These cookies are set through our site by our advertising partners."
           value={advertising}
           onValueChange={setAdvertising}
@@ -96,7 +107,7 @@ const CookieSettingsScreen = ({ navigation }) => {
 
         {/* View All Partners */}
         <TouchableOpacity style={styles.viewPartnersButton}>
-          <Text style={styles.viewPartnersText}>View All Partners</Text>
+          <Text style={styles.viewPartnersText}>{t('View All Partners')}</Text>
         </TouchableOpacity>
 
       </ScrollView>
@@ -107,7 +118,7 @@ const CookieSettingsScreen = ({ navigation }) => {
           style={styles.saveButton}
           onPress={handleSaveChoices}
         >
-          <Text style={styles.saveButtonText}>Save my Choices</Text>
+          <Text style={styles.saveButtonText}>{t('Save my Choices')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>
@@ -129,6 +140,25 @@ const styles = StyleSheet.create({
   logo: {
     width: 140,
     height: 60,
+  },
+  patentText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginTop: 12,
+    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  infoLink: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#6a6a6a',
+    letterSpacing: -0.1,
+  },
+  clickHere: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   title: {
     fontSize: 20,

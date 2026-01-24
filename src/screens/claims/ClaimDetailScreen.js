@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -15,6 +16,7 @@ import { COLORS } from '../../constants/theme';
 import claimService from '../../services/claimService';
 
 const ClaimDetailScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
     const { claimId } = route.params;
     const [claim, setClaim] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
             }
         } catch (error) {
             console.error('Load claim error:', error);
-            Alert.alert('Error', 'Failed to load claim details');
+            Alert.alert(t('Error'), t('Failed to load claim details'));
         } finally {
             setLoading(false);
         }
@@ -131,7 +133,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
         return (
             <SafeAreaView style={styles.container} edges={['top']}>
                 <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>Claim not found</Text>
+                    <Text style={styles.errorText}>{t('Claim not found')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -147,7 +149,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Claim Details</Text>
+                <Text style={styles.headerTitle}>{t('Claim Details')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
@@ -171,7 +173,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
 
                 {/* Advertisement Info */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Advertisement</Text>
+                    <Text style={styles.sectionTitle}>{t('Advertisement')}</Text>
                     <View style={styles.adInfo}>
                         <Text style={styles.adTitle}>{claim.ad_title}</Text>
                         <Text style={styles.adPrice}>${claim.ad_price}</Text>
@@ -180,7 +182,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
 
                 {/* Original Dispute */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Original Dispute</Text>
+                    <Text style={styles.sectionTitle}>{t('Original Dispute')}</Text>
                     <TouchableOpacity style={styles.disputeLink} onPress={handleViewDispute}>
                         <Text style={styles.disputeNumber}>{claim.dispute_number}</Text>
                         <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
@@ -194,24 +196,24 @@ const ClaimDetailScreen = ({ route, navigation }) => {
 
                 {/* Parties */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Parties Involved</Text>
+                    <Text style={styles.sectionTitle}>{t('Parties Involved')}</Text>
                     <View style={styles.partiesContainer}>
                         <View style={styles.party}>
-                            <Text style={styles.partyLabel}>Claimant (Buyer)</Text>
+                            <Text style={styles.partyLabel}>{t('Claimant (Buyer)')}</Text>
                             <Text style={styles.partyName}>{claim.buyer_name}</Text>
-                            {isBuyer && <Text style={styles.youLabel}>(You)</Text>}
+                            {isBuyer && <Text style={styles.youLabel}>{t('(You)')}</Text>}
                         </View>
                         <View style={styles.party}>
-                            <Text style={styles.partyLabel}>Respondent (Seller)</Text>
+                            <Text style={styles.partyLabel}>{t('Respondent (Seller)')}</Text>
                             <Text style={styles.partyName}>{claim.seller_name}</Text>
-                            {isSeller && <Text style={styles.youLabel}>(You)</Text>}
+                            {isSeller && <Text style={styles.youLabel}>{t('(You)')}</Text>}
                         </View>
                     </View>
                 </View>
 
                 {/* Claim Reason */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Claim Reason</Text>
+                    <Text style={styles.sectionTitle}>{t('Claim Reason')}</Text>
                     <View style={styles.textBox}>
                         <Text style={styles.textBoxContent}>{claim.claim_reason}</Text>
                     </View>
@@ -220,7 +222,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                 {/* Additional Evidence */}
                 {claim.buyer_additional_evidence && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Additional Evidence</Text>
+                        <Text style={styles.sectionTitle}>{t('Additional Evidence')}</Text>
                         <View style={styles.textBox}>
                             <Text style={styles.textBoxContent}>{claim.buyer_additional_evidence}</Text>
                         </View>
@@ -230,7 +232,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                 {/* Admin Decision */}
                 {claim.admin_decision && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Admin Decision</Text>
+                        <Text style={styles.sectionTitle}>{t('Admin Decision')}</Text>
                         <View style={[styles.decisionBox, {
                             backgroundColor: claim.admin_decision === 'favor_buyer' ? '#E8F5E9' :
                                 claim.admin_decision === 'favor_seller' ? '#FFEBEE' : '#FFF3E0'
@@ -266,7 +268,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                 {/* Assigned Admin */}
                 {claim.admin_name && !claim.admin_decision && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Assigned To</Text>
+                        <Text style={styles.sectionTitle}>{t('Assigned To')}</Text>
                         <View style={styles.adminInfo}>
                             <Ionicons name="person-circle" size={24} color={COLORS.primary} />
                             <Text style={styles.adminInfoText}>{claim.admin_name}</Text>
@@ -276,12 +278,12 @@ const ClaimDetailScreen = ({ route, navigation }) => {
 
                 {/* Timeline */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Timeline</Text>
+                    <Text style={styles.sectionTitle}>{t('Timeline')}</Text>
                     <View style={styles.timeline}>
                         <View style={styles.timelineItem}>
                             <View style={styles.timelineDot} />
                             <View style={styles.timelineContent}>
-                                <Text style={styles.timelineTitle}>Claim Created</Text>
+                                <Text style={styles.timelineTitle}>{t('Claim Created')}</Text>
                                 <Text style={styles.timelineDate}>{formatDate(claim.created_at)}</Text>
                             </View>
                         </View>
@@ -289,7 +291,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                             <View style={styles.timelineItem}>
                                 <View style={styles.timelineDot} />
                                 <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>Assigned to Admin</Text>
+                                    <Text style={styles.timelineTitle}>{t('Assigned to Admin')}</Text>
                                     <Text style={styles.timelineDate}>{formatDate(claim.assigned_at)}</Text>
                                 </View>
                             </View>
@@ -298,7 +300,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                             <View style={styles.timelineItem}>
                                 <View style={styles.timelineDot} />
                                 <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>Resolved</Text>
+                                    <Text style={styles.timelineTitle}>{t('Resolved')}</Text>
                                     <Text style={styles.timelineDate}>{formatDate(claim.resolved_at)}</Text>
                                 </View>
                             </View>
@@ -307,7 +309,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                             <View style={styles.timelineItem}>
                                 <View style={[styles.timelineDot, styles.timelineDotLast]} />
                                 <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>Closed</Text>
+                                    <Text style={styles.timelineTitle}>{t('Closed')}</Text>
                                     <Text style={styles.timelineDate}>{formatDate(claim.closed_at)}</Text>
                                 </View>
                             </View>
@@ -319,7 +321,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Claims,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>

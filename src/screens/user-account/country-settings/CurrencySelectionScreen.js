@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { settingsService } from '../../../services';
 
 const CurrencySelectionScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { currentCurrency, onCurrencySelected } = route?.params || {};
   const [currencies, setCurrencies] = useState([]);
   const [selected, setSelected] = useState(currentCurrency || '');
@@ -33,7 +35,7 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching currencies:', error);
-      Alert.alert('Error', 'Failed to load currencies. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load currencies. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +67,7 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
       }
     } catch (error) {
       console.error('Error updating currency:', error);
-      Alert.alert('Error', error.message || 'Failed to update your currency preference. Please try again.');
+      Alert.alert(t('Error'), error.message || t('Failed to update your currency preference. Please try again.'));
     }
   };
 
@@ -76,7 +78,7 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Currency</Text>
+        <Text style={styles.headerTitle}>{t('Currency')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -84,7 +86,7 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#000" />
-            <Text style={styles.loadingText}>Loading currencies...</Text>
+            <Text style={styles.loadingText}>{t('Loading currencies...')}</Text>
           </View>
         ) : (
           currencies.map((currency, index) => (
@@ -107,7 +109,7 @@ const CurrencySelectionScreen = ({ route, navigation }) => {
         )}
 
         {/* Copyright */}
-        <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

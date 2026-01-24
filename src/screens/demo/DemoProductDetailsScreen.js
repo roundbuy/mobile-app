@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../assets/images';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -20,6 +21,7 @@ import { demoService } from '../../services/demo.service';
 const { width } = Dimensions.get('window');
 
 const DemoProductDetailsScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { advertisementId, advertisement } = route?.params || {};
 
   // State management
@@ -109,33 +111,33 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
 
   const handleFavorite = () => {
     Alert.alert(
-      'Demo Mode',
-      'Favorites feature is available in the full version after registration.',
-      [{ text: 'OK' }]
+      t('Demo Mode'),
+      t('Favorites feature is available in the full version after registration.'),
+      [{ text: t('OK') }]
     );
   };
 
   const handleBuy = () => {
     Alert.alert(
-      'Demo Mode',
-      'Purchase feature is available in the full version after registration.',
-      [{ text: 'OK' }]
+      t('Demo Mode'),
+      t('Purchase feature is available in the full version after registration.'),
+      [{ text: t('OK') }]
     );
   };
 
   const handleMakeOffer = () => {
     Alert.alert(
-      'Demo Mode',
-      'Make offer feature is available in the full version after registration.',
-      [{ text: 'OK' }]
+      t('Demo Mode'),
+      t('Make offer feature is available in the full version after registration.'),
+      [{ text: t('OK') }]
     );
   };
 
   const handleChatWithSeller = () => {
     Alert.alert(
-      'Demo Mode',
-      'Chat feature is available in the full version after registration.',
-      [{ text: 'OK' }]
+      t('Demo Mode'),
+      t('Chat feature is available in the full version after registration.'),
+      [{ text: t('OK') }]
     );
   };
 
@@ -163,7 +165,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading advertisement...</Text>
+          <Text style={styles.loadingText}>{t('Loading advertisement...')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -196,7 +198,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Demo Product</Text>
+        <Text style={styles.headerTitle}>{t('Demo Product')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -242,20 +244,20 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('Description')}</Text>
           <Text style={styles.descriptionText}>{productData.description}</Text>
         </View>
 
         {/* Product Details */}
         <View style={styles.section}>
-          <DetailRow label="Category" value={productData.category} />
-          <DetailRow label="Distance" value={productData.distanceMeters} />
-          <DetailRow label="Price" value={productData.price} />
-          <DetailRow label="Condition" value={productData.condition} />
-          <DetailRow label="Gender" value={productData.gender} />
-          <DetailRow label="Age" value={productData.age} />
-          <DetailRow label="Size" value={productData.size} />
-          <DetailRow label="Colour" value={productData.colour} />
+          <DetailRow label={t('Category')} value={productData.category} />
+          <DetailRow label={t('Distance')} value={productData.distanceMeters} />
+          <DetailRow label={t('Price')} value={productData.price} />
+          <DetailRow label={t('Condition')} value={productData.condition} />
+          <DetailRow label={t('Gender')} value={productData.gender} />
+          <DetailRow label={t('Age')} value={productData.age} />
+          <DetailRow label={t('Size')} value={productData.size} />
+          <DetailRow label={t('Colour')} value={productData.colour} />
         </View>
 
         {/* Seller Info */}
@@ -285,28 +287,24 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
               style={styles.chatButton}
               onPress={handleChatWithSeller}
             >
-              <Text style={styles.chatButtonText}>Chat with</Text>
+              <Text style={styles.chatButtonText}>{t('Chat with')}</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.negotiateText}>
-            Agree details! Negotiate price!
-          </Text>
+          <Text style={styles.negotiateText}>{t('Agree details! Negotiate price!')}</Text>
         </View>
 
         {/* Legal Notice */}
         <View style={styles.legalSection}>
           <Text style={styles.legalTitle}>
             Legal notice{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
+          </Text>
+          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
+          <Text style={styles.legalText}>
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
           <Text style={styles.legalText}>
-            This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
         </View>
 
@@ -314,20 +312,18 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.reportSection}>
           <Text style={styles.reportText}>
             Report content{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
           </Text>
           <View style={styles.moderateTag}>
-            <Text style={styles.moderateText}>Moderate</Text>
+            <Text style={styles.moderateText}>{t('Moderate')}</Text>
           </View>
         </View>
 
         {/* Additional Legal Info */}
         <View style={styles.legalSection}>
+          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
           <Text style={styles.legalText}>
-            This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, but items must still be "as described," and buyers have ten days to report an issue through RoundBuy's system.
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, but items must still be "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
         </View>
 
@@ -336,7 +332,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
           <View style={styles.offerInputContainer}>
             <TextInput
               style={styles.offerInput}
-              placeholder="Enter offer amount"
+              placeholder={t('Enter offer amount')}
               placeholderTextColor="#999"
               value={offerAmount}
               onChangeText={setOfferAmount}
@@ -351,10 +347,10 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
             style={styles.makeOfferButton}
             onPress={handleMakeOffer}
           >
-            <Text style={styles.makeOfferButtonText}>Make offer</Text>
+            <Text style={styles.makeOfferButtonText}>{t('Make offer')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.buyNowButton} onPress={handleBuy}>
-            <Text style={styles.buyNowButtonText}>Buy</Text>
+            <Text style={styles.buyNowButtonText}>{t('Buy')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -362,25 +358,17 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.offerHistorySection}>
           <Text style={styles.offerHistoryTitle}>
             Offer History{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
           </Text>
-          <Text style={styles.offerReceivedText}>
-            You received an Offer for £100
-          </Text>
-          <Text style={styles.offerDeclinedText}>
-            You Declined the offer £100
-          </Text>
-          <Text style={styles.offerReceivedText}>
-            You received an offer for £220
-          </Text>
-          <Text style={styles.offerAcceptedText}>
-            You Accepted the offer for £200
-          </Text>
+          <Text style={styles.offerReceivedText}>{t('You received an Offer for £100')}</Text>
+          <Text style={styles.offerDeclinedText}>{t('You Declined the offer £100')}</Text>
+          <Text style={styles.offerReceivedText}>{t('You received an offer for £220')}</Text>
+          <Text style={styles.offerAcceptedText}>{t('You Accepted the offer for £200')}</Text>
         </View>
 
         {/* Manage Offers */}
         <TouchableOpacity style={styles.manageOffersButton}>
-          <Text style={styles.manageOffersText}>Manage offers</Text>
+          <Text style={styles.manageOffersText}>{t('Manage offers')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

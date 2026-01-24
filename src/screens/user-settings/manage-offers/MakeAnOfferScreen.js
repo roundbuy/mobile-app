@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const MakeAnOfferScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { product } = route?.params || {};
   const [offerPrice, setOfferPrice] = useState('');
   const [message, setMessage] = useState('');
@@ -41,7 +43,7 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Make an Offer</Text>
+        <Text style={styles.headerTitle}>{t('Make an Offer')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -60,7 +62,7 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
 
         {/* Offer Price */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Offer price:</Text>
+          <Text style={styles.label}>{t('Offer price:')}</Text>
           <TextInput
             style={styles.priceInput}
             value={offerPrice}
@@ -73,12 +75,12 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
 
         {/* Message to User */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Message to the user:</Text>
+          <Text style={styles.label}>{t('Message to the user:')}</Text>
           <TextInput
             style={styles.messageInput}
             value={message}
             onChangeText={setMessage}
-            placeholder="Type your message here..."
+            placeholder={t('Type your message here...')}
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
@@ -91,7 +93,7 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
           style={styles.offerButton}
           onPress={handleMakeOffer}
         >
-          <Text style={styles.offerButtonText}>Make offer</Text>
+          <Text style={styles.offerButtonText}>{t('Make offer')}</Text>
         </TouchableOpacity>
       </ScrollView>
 

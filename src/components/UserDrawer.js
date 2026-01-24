@@ -151,7 +151,7 @@ const UserDrawer = ({ visible, onClose, navigation }) => {
 
                         {/* Footer */}
                         <View style={styles.footer}>
-                            <Text style={styles.footerText}>© 2020-2025 RoundBuy Inc ®</Text>
+                            <Text style={styles.footerText}>© 2020-2026 RoundBuy Inc ®</Text>
                             <Text style={styles.versionText}>Version 1.7</Text>
                         </View>
                     </SafeAreaView>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -20,6 +21,7 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import Constants from 'expo-constants';
 
 const SetLocationMapScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { locationType = 'centrePoint', onSave, existingLocation } = route.params || {};
 
   const [selectedAddress, setSelectedAddress] = useState('');
@@ -172,7 +174,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
 
   const handleSaveLocation = () => {
     if (!markerCoordinate) {
-      Alert.alert('Error', 'Please select a location on the map');
+      Alert.alert(t('Error'), t('Please select a location on the map'));
       return;
     }
 
@@ -195,9 +197,9 @@ const SetLocationMapScreen = ({ navigation, route }) => {
       onSave(locationData);
     } else {
       Alert.alert(
-        'Success',
-        'Location saved successfully!',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        t('Success'),
+        t('Location saved successfully!'),
+        [{ text: t('OK'), onPress: () => navigation.goBack() }]
       );
     }
   };
@@ -246,7 +248,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
           <View style={styles.content}>
             {/* Location Title */}
             <View style={styles.titleSection}>
-              <Text style={styles.locationTitle}>Your default location:</Text>
+              <Text style={styles.locationTitle}>{t('Your default location:')}</Text>
               <Text style={styles.locationSubtitle}>{getLocationTitle()}</Text>
             </View>
 
@@ -254,7 +256,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
             <View style={styles.searchWrapper}>
               <GooglePlacesAutocomplete
                 ref={autocompleteRef}
-                placeholder="Search for a location"
+                placeholder={t('Search for a location')}
                 onPress={(data, details = null) => {
                   if (details) {
                     const { lat, lng } = details.geometry.location;
@@ -362,7 +364,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
               {loading ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color={COLORS.primary} />
-                  <Text style={styles.loadingText}>Loading map...</Text>
+                  <Text style={styles.loadingText}>{t('Loading map...')}</Text>
                 </View>
               ) : mapError ? (
                 <View style={styles.errorContainer}>
@@ -371,7 +373,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
                     style={styles.retryButton}
                     onPress={() => setMapError(null)}
                   >
-                    <Text style={styles.retryButtonText}>Retry</Text>
+                    <Text style={styles.retryButtonText}>{t('Retry')}</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -429,18 +431,14 @@ const SetLocationMapScreen = ({ navigation, route }) => {
                     onPress={() => setMapType('standard')}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.mapTypeText, mapType === 'standard' && styles.mapTypeTextActive]}>
-                      Map
-                    </Text>
+                    <Text style={[styles.mapTypeText, mapType === 'standard' && styles.mapTypeTextActive]}>{t('Map')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.mapTypeButton, mapType === 'satellite' && styles.mapTypeButtonActive]}
                     onPress={() => setMapType('satellite')}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.mapTypeText, mapType === 'satellite' && styles.mapTypeTextActive]}>
-                      Satellite
-                    </Text>
+                    <Text style={[styles.mapTypeText, mapType === 'satellite' && styles.mapTypeTextActive]}>{t('Satellite')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -459,7 +457,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
               {/* Drag Instruction */}
               {isDragging && (
                 <View style={styles.dragInstruction}>
-                  <Text style={styles.dragInstructionText}>Drag marker to adjust location</Text>
+                  <Text style={styles.dragInstructionText}>{t('Drag marker to adjust location')}</Text>
                 </View>
               )}
             </View>
@@ -474,10 +472,10 @@ const SetLocationMapScreen = ({ navigation, route }) => {
 
             {/* Safety Info */}
             <View style={styles.safetyInfo}>
-              <Text style={styles.safetyText}>For more information on </Text>
-              <Text style={styles.safetyTextBold}>Safety</Text>
-              <Text style={styles.safetyText}>, click </Text>
-              <Text style={[styles.safetyText, styles.safetyLink]}>here</Text>
+              <Text style={styles.safetyText}>{t('For more information on')}</Text>
+              <Text style={styles.safetyTextBold}>{t('Safety')}</Text>
+              <Text style={styles.safetyText}>{t(', click')}</Text>
+              <Text style={[styles.safetyText, styles.safetyLink]}>{t('here')}</Text>
               <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.safetyIcon} />
             </View>
 

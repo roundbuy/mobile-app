@@ -1,11 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import MapView, { Circle, Marker, PROVIDER_GOOGLE } from '../components/MapView';
+import * as Location from 'expo-location';
 import { COLORS, SLIDER_CONFIG } from '../constants/theme';
 
-const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius }) => {
+const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius, userLocation }) => {
   const [tempRadius, setTempRadius] = useState(selectedRadius || SLIDER_CONFIG.defaultValue);
+  const [location, setLocation] = useState(userLocation || null);
+  const [region, setRegion] = useState({
+    latitude: userLocation?.latitude || 26.77777,
+    longitude: userLocation?.longitude || 81.0817,
+    latitudeDelta: 0.1,
+    longitudeDelta: 0.1,
+  });
 
+  const mapRef = useRef(null);
   const SLIDER_MAX = SLIDER_CONFIG.max;
   const SLIDER_MIN = SLIDER_CONFIG.min;
   const SLIDER_DECIMAL_PRECISION = SLIDER_CONFIG.decimalPrecision;
@@ -16,8 +26,62 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius 
   useEffect(() => {
     if (visible) {
       setTempRadius(selectedRadius || SLIDER_CONFIG.defaultValue);
+      getLocationAsync();
     }
   }, [visible, selectedRadius]);
+
+  // Update map zoom when radius changes
+  useEffect(() => {
+    if (mapRef.current && location) {
+      const radiusInKm = tempRadius;
+      const radiusInDegrees = radiusInKm / 111; // Approximate conversion
+      const newDelta = radiusInDegrees * 2.5; // Add padding around circle
+
+      mapRef.current.animateToRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: newDelta,
+        longitudeDelta: newDelta,
+      }, 300);
+    }
+  }, [tempRadius]);
+
+  const getLocationAsync = async () => {
+    try {
+      if (userLocation) {
+        setLocation(userLocation);
+        setRegion({
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        });
+        return;
+      }
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Location permission denied');
+        return;
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = currentLocation.coords;
+      const newLocation = { latitude, longitude };
+      setLocation(newLocation);
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      });
+    } catch (error) {
+      console.error('Error getting location:', error);
+    }
+  };
 
   const updateSliderValue = (pageX) => {
     const { x, width } = sliderLayout.current;
@@ -40,7 +104,7 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius 
       onPanResponderMove: (evt) => {
         updateSliderValue(evt.nativeEvent.pageX);
       },
-      onPanResponderRelease: () => {},
+      onPanResponderRelease: () => { },
     })
   ).current;
 
@@ -73,12 +137,53 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius 
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
-            {/* Distance Preview */}
-            <View style={styles.mapPreview}>
-              <View style={styles.mapCircle}>
-                <FontAwesome name="map-marker" size={32} color={COLORS.primary} />
+            {/* Map Preview with Radius Circle */}
+            <View style={styles.mapContainer}>
+              {location ? (
+                <MapView
+                  ref={mapRef}
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  initialRegion={region}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  showsUserLocation={false}
+                  showsMyLocationButton={false}
+                  showsCompass={false}
+                  toolbarEnabled={false}
+                >
+                  {/* Radius Circle */}
+                  <Circle
+                    center={location}
+                    radius={tempRadius * 1000} // Convert km to meters
+                    strokeWidth={2}
+                    strokeColor={COLORS.primary}
+                    fillColor={`${COLORS.primary}20`} // 20% opacity
+                  />
+
+                  {/* Center Marker */}
+                  <Marker
+                    coordinate={location}
+                    anchor={{ x: 0.5, y: 0.5 }}
+                  >
+                    <View style={styles.centerMarker}>
+                      <FontAwesome name="map-marker" size={24} color={COLORS.primary} />
+                    </View>
+                  </Marker>
+                </MapView>
+              ) : (
+                <View style={styles.mapPlaceholder}>
+                  <FontAwesome name="map-marker" size={32} color={COLORS.primary} />
+                  <Text style={styles.placeholderText}>Loading location...</Text>
+                </View>
+              )}
+
+              {/* Distance Overlay */}
+              <View style={styles.distanceOverlay}>
+                <Text style={styles.distanceText}>{tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
               </View>
-              <Text style={styles.distanceText}>{tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
             </View>
 
             {/* Slider */}
@@ -106,11 +211,14 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius 
                   ]}
                 />
               </View>
-              <Text style={styles.sliderValue}>{tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
+              <View style={styles.sliderLabels}>
+                <Text style={styles.sliderLabelText}>0 km</Text>
+                <Text style={styles.sliderLabelText}>{SLIDER_MAX} km</Text>
+              </View>
             </View>
 
             <Text style={styles.description}>
-              Adjust the slider to set your search radius from your current location.
+              Drag the slider to adjust your search radius. The map shows the area that will be searched.
             </Text>
           </View>
         </ScrollView>
@@ -174,25 +282,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  mapPreview: {
-    alignItems: 'center',
-    paddingVertical: 30,
+  mapContainer: {
+    height: 250,
+    borderRadius: 12,
+    overflow: 'hidden',
     marginBottom: 30,
+    backgroundColor: '#f0f0f0',
+    position: 'relative',
   },
-  mapCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: COLORS.primary,
+  map: {
+    flex: 1,
+  },
+  mapPlaceholder: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    backgroundColor: '#f8f9fa',
+  },
+  placeholderText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#303234',
+  },
+  centerMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  distanceOverlay: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   distanceText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   sliderSection: {
     marginBottom: 30,
@@ -236,15 +369,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-  sliderValue: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666666',
-    textAlign: 'center',
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  sliderLabelText: {
+    fontSize: 12,
+    color: '#888888',
   },
   description: {
     fontSize: 14,
-    color: '#666666',
+    color: '#303234',
     textAlign: 'center',
     lineHeight: 20,
   },

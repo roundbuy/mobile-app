@@ -13,56 +13,56 @@ export const COLORS = {
   primary: '#001C64',
   primaryDark: '#001447',
   primaryLight: '#1A3A8A',
-  
+
   // Neutral Colors
   white: '#FFFFFF',
   black: '#000000',
-  
+
   // Gray Scale
-  gray: '#666666',
+  gray: '#303234',
   grayDark: '#333333',
-  grayMedium: '#999999',
+  grayMedium: '#505050',
   grayLight: '#CCCCCC',
   grayLighter: '#E0E0E0',
   grayLightest: '#F5F5F5',
-  
+
   // Background Colors
   background: '#FFFFFF',
   backgroundSecondary: '#F5F5F5',
   backgroundDark: '#333333',
-  
+
   // Text Colors
   textPrimary: '#000000',
-  textSecondary: '#666666',
-  textTertiary: '#999999',
+  textSecondary: '#303234',
+  textTertiary: '#505050',
   textLight: '#CCCCCC',
   textOnPrimary: '#FFFFFF',
   textOnDark: '#FFFFFF',
-  
+
   // Semantic Colors
   success: '#4CAF50',
   error: '#F44336',
   warning: '#FF9800',
   info: '#2196F3',
-  
+
   // Border Colors
   border: '#E0E0E0',
   borderLight: '#F5F5F5',
   borderDark: '#CCCCCC',
-  
+
   // Overlay Colors
   overlay: 'rgba(0, 0, 0, 0.5)',
   overlayLight: 'rgba(0, 0, 0, 0.3)',
   overlayDark: 'rgba(0, 0, 0, 0.7)',
-  
+
   // Social Media Colors
   facebook: '#1877F2',
   google: '#DB4437',
   apple: '#000000',
   instagram: '#E4405F',
   twitter: '#1DA1F2',
-  slider:'#616161',
-  blue:"#285AB1"
+  slider: '#616161',
+  blue: "#285AB1"
 };
 
 // ============================================================================
@@ -78,41 +78,41 @@ export const SPACING = {
   xl: 32,    // Extra large spacing: separating major sections
   xxl: 48,   // Extra extra large: creating clear visual breaks
   xxxl: 64,  // Maximum spacing: major page divisions
-  
+
   // Specific Use Cases
   tightPair: 8,           // Icon and text pairs
   relatedContent: 16,     // Between related content
   majorSections: 24,      // Between major sections  
   visualBreak: 48,        // Clear visual separation
-  
+
   // Content Spacing
   paragraphSpacing: 16,   // Between paragraphs
   sectionSpacing: 32,     // Between different sections
-  
+
   // List & Card Spacing
   listItemPadding: 16,    // Padding inside list items
   listItemGap: 8,         // Gap between list items
   cardGap: 16,            // Gap between cards
   cardGapLarge: 24,       // Gap between information-rich cards
-  
+
   // Button & Interactive Element Spacing
   buttonPadding: 16,      // Internal button padding
   buttonSpacing: 24,      // Space around primary action buttons
   touchTargetPadding: 12, // Minimum padding around touch targets
   relatedButtons: 12,     // Space between related interactive elements
   unrelatedButtons: 24,   // Space between unrelated button groups
-  
+
   // Form Spacing
   formFieldPadding: 16,   // Internal padding for form inputs
   formFieldSpacing: 16,   // Space between form fields
-  
+
   // Headline Spacing
   headlineTop: 32,        // Space above headlines (24-32px)
   headlineBottom: 16,     // Space below headlines (12-16px)
-  
+
   // CTA Spacing
   ctaSpacing: 24,         // Space around call-to-action buttons (20-24px)
-  
+
 };
 
 // ============================================================================
@@ -126,30 +126,30 @@ export const TYPOGRAPHY = {
     medium: 'Roboto_500Medium',
     bold: 'Roboto_700Bold',
   },
-  
+
   // Font Sizes (Hierarchy)
   fontSize: {
     // Headings
     h1: 36,           // Main titles, screen titles (32-36px)
     h2: 28,           // Section headers, major UI elements (24-28px)
     h3: 22,           // Subheaders, card titles (20-22px)
-    
+
     // Body Text
     bodyLarge: 18,    // Main readable content, important text
     bodyMedium: 16,   // Standard readable content
     bodySmall: 14,    // Descriptions, notes, meta information
-    
+
     // Small Text
     caption: 12,      // Labels, tooltips, helper text
     tiny: 10,         // Rare: disclaimers, legal information
-    
+
     // Interactive Elements
     button: 18,       // Button text (16-18px, never smaller than 16px)
     input: 16,        // Input fields (16-18px, prevents zoom on iOS)
     tab: 14,          // Tabs & navigation labels (12-14px)
     cta: 24,          // CTA headlines (24px+)
   },
-  
+
   // Line Heights (1.4-1.6x multiplier)
   lineHeight: {
     h1: 50,           // 36 * 1.4 = 50.4
@@ -165,14 +165,14 @@ export const TYPOGRAPHY = {
     tab: 20,          // 14 * 1.4 = 19.6
     cta: 34,          // 24 * 1.4 = 33.6
   },
-  
+
   // Font Weights
   fontWeight: {
     regular: '400',
     medium: '500',
     bold: '700',
   },
-  
+
   // Text Styles (Pre-configured combinations)
   styles: {
     h1: {
@@ -246,23 +246,23 @@ export const TOUCH_TARGETS = {
   // Minimum Sizes
   minHeight: 44,              // Minimum 44px height for all tappable elements
   minWidth: 44,               // Minimum 44px width for square touch targets
-  
+
   // Button Sizes
   buttonHeight: {
     small: 44,
     medium: 50,
     large: 56,
   },
-  
+
   // Touch Target Spacing
   relatedSpacing: 12,         // 8-12px spacing between related interactive elements
   unrelatedSpacing: 24,       // 16-24px spacing between unrelated groups of buttons
   primaryButtonSpacing: 24,   // 24px minimum spacing around primary action buttons
-  
+
   // Form Input Spacing
   inputPadding: 16,           // 12-16px internal padding for form inputs
   inputHeight: 50,            // Standard input field height
-  
+
   // Specific Element Sizes
   checkbox: 24,               // Checkbox/radio button size
   switch: {
@@ -288,7 +288,7 @@ export const BORDER_RADIUS = {
   xl: 24,
   xxl: 32,
   full: 999,      // For circular elements
-  
+
   // Component-specific
   button: 25,
   card: 12,
@@ -353,7 +353,7 @@ export const LAYOUT = {
   screenPadding: 16,          // Standard screen padding
   containerMaxWidth: 1200,    // Maximum content width
   gridColumns: 12,            // Grid system columns
-  
+
   // Platform-specific safe area padding
   safeArea: {
     // Android and Web

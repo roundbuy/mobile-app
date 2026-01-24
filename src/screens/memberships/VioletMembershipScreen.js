@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const VioletMembershipScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleSelectPlan = () => {
     navigation.navigate('Cart', { 
       planType: 'Violet', 
@@ -20,19 +22,19 @@ const VioletMembershipScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Membership plans</Text>
+          <Text style={styles.headerTitle}>{t('Membership plans')}</Text>
         </View>
 
         {/* Plan Card */}
         <View style={styles.planCard}>
           <View style={[styles.planHeader, { backgroundColor: '#9B59B6' }]}>
-            <Text style={styles.planTitle}>Violet</Text>
+            <Text style={styles.planTitle}>{t('Violet')}</Text>
           </View>
 
           <View style={styles.planContent}>
-            <Text style={styles.planSubtitle}>Essential features for private users.</Text>
+            <Text style={styles.planSubtitle}>{t('Essential features for private users.')}</Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.priceText}>Price £2 no for £5 / year</Text>
+              <Text style={styles.priceText}>{t('Price £2 no for £5 / year')}</Text>
               <TouchableOpacity style={styles.infoIcon}>
                 <Text style={styles.infoIconText}>ⓘ</Text>
               </TouchableOpacity>
@@ -42,14 +44,14 @@ const VioletMembershipScreen = ({ navigation }) => {
               style={styles.selectButton}
               onPress={handleSelectPlan}
             >
-              <Text style={styles.selectButtonText}>Select plan</Text>
+              <Text style={styles.selectButtonText}>{t('Select plan')}</Text>
             </TouchableOpacity>
 
-            <Text style={styles.featuresTitle}>Green plan includes</Text>
-            <Text style={styles.featureItem}>• 1 x centre-point (for business location ads)</Text>
-            <Text style={styles.featureItem}>• Company Ads purchaseable for product gallery</Text>
-            <Text style={styles.featureItem}>• Display time for ads 7-30 days</Text>
-            <Text style={styles.featureItem}>• Brand Ads purchaseable (logo with slogan)</Text>
+            <Text style={styles.featuresTitle}>{t('Green plan includes')}</Text>
+            <Text style={styles.featureItem}>{t('• 1 x centre-point (for business location ads)')}</Text>
+            <Text style={styles.featureItem}>{t('• Company Ads purchaseable for product gallery')}</Text>
+            <Text style={styles.featureItem}>{t('• Display time for ads 7-30 days')}</Text>
+            <Text style={styles.featureItem}>{t('• Brand Ads purchaseable (logo with slogan)')}</Text>
             <Text style={styles.featureItem}>•</Text>
           </View>
         </View>

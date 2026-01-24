@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -18,6 +19,7 @@ import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
 const AttachEvidenceScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId, issueNumber, userRole } = route.params || {}; // userRole: 'buyer' or 'seller'
 
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -28,7 +30,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
             if (status !== 'granted') {
-                Alert.alert('Permission Required', 'Please grant camera roll permissions');
+                Alert.alert(t('Permission Required'), t('Please grant camera roll permissions'));
                 return;
             }
 
@@ -50,7 +52,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Image picker error:', error);
-            Alert.alert('Error', 'Failed to pick image');
+            Alert.alert(t('Error'), t('Failed to pick image'));
         }
     };
 
@@ -72,7 +74,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Document picker error:', error);
-            Alert.alert('Error', 'Failed to pick document');
+            Alert.alert(t('Error'), t('Failed to pick document'));
         }
     };
 
@@ -83,7 +85,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
 
     const handleUpload = async () => {
         if (selectedFiles.length === 0) {
-            Alert.alert('No Files', 'Please select at least one file to upload');
+            Alert.alert(t('No Files'), t('Please select at least one file to upload'));
             return;
         }
 
@@ -96,18 +98,18 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             }
 
             Alert.alert(
-                'Success',
-                'Evidence uploaded successfully',
+                t('Success'),
+                t('Evidence uploaded successfully'),
                 [
                     {
-                        text: 'OK',
+                        text: t('OK'),
                         onPress: () => navigation.goBack(),
                     },
                 ]
             );
         } catch (error) {
             console.error('Upload error:', error);
-            Alert.alert('Error', 'Failed to upload evidence. Please try again.');
+            Alert.alert(t('Error'), t('Failed to upload evidence. Please try again.'));
         } finally {
             setUploading(false);
         }
@@ -129,7 +131,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
                 >
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Attach Evidence</Text>
+                <Text style={styles.headerTitle}>{t('Attach Evidence')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
@@ -151,14 +153,14 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
 
                 {/* Upload Buttons */}
                 <View style={styles.uploadSection}>
-                    <Text style={styles.sectionTitle}>SELECT FILES</Text>
+                    <Text style={styles.sectionTitle}>{t('SELECT FILES')}</Text>
 
                     <TouchableOpacity
                         style={styles.uploadButton}
                         onPress={pickImage}
                     >
                         <Ionicons name="image-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.uploadButtonText}>Choose from Gallery</Text>
+                        <Text style={styles.uploadButtonText}>{t('Choose from Gallery')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -166,7 +168,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
                         onPress={pickDocument}
                     >
                         <Ionicons name="document-outline" size={24} color={COLORS.primary} />
-                        <Text style={styles.uploadButtonText}>Choose PDF Document</Text>
+                        <Text style={styles.uploadButtonText}>{t('Choose PDF Document')}</Text>
                     </TouchableOpacity>
 
                     <Text style={styles.uploadHint}>
@@ -218,9 +220,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
                 {/* Info Link */}
                 <View style={styles.infoLinkContainer}>
                     <Ionicons name="information-circle-outline" size={16} color={COLORS.primary} />
-                    <Text style={styles.infoLinkText}>
-                        More information on Issues & Disputes, click here
-                    </Text>
+                    <Text style={styles.infoLinkText}>{t('More information on Issues & Disputes, click here')}</Text>
                 </View>
 
                 {/* Upload Button */}
@@ -235,7 +235,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
                     {uploading ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.submitButtonText}>Upload Evidence</Text>
+                        <Text style={styles.submitButtonText}>{t('Upload Evidence')}</Text>
                     )}
                 </TouchableOpacity>
             </ScrollView>

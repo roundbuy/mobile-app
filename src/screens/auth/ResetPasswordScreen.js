@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ResetPasswordScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -26,7 +28,7 @@ const ResetPasswordScreen = ({ navigation }) => {
           style={styles.backButton}
         >
           <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backText}>Reset password</Text>
+          <Text style={styles.backText}>{t('Reset password')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -34,12 +36,12 @@ const ResetPasswordScreen = ({ navigation }) => {
       <View style={styles.content}>
         {/* New Password Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>New Password</Text>
+          <Text style={styles.label}>{t('New Password')}</Text>
           <View style={styles.passwordContainer}>
             <FontAwesome name="lock" size={16} color="#6a6a6a" style={styles.inputIcon} />
             <TextInput
               style={styles.passwordInput}
-              placeholder="Enter your new password"
+              placeholder={t('Enter your new password')}
               placeholderTextColor="#c7c7cc"
               value={newPassword}
               onChangeText={setNewPassword}
@@ -58,12 +60,12 @@ const ResetPasswordScreen = ({ navigation }) => {
 
         {/* Confirm New Password Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Confirm New Password</Text>
+          <Text style={styles.label}>{t('Confirm New Password')}</Text>
           <View style={styles.passwordContainer}>
             <FontAwesome name="lock" size={16} color="#6a6a6a" style={styles.inputIcon} />
             <TextInput
               style={styles.passwordInput}
-              placeholder="Enter your new password"
+              placeholder={t('Enter your new password')}
               placeholderTextColor="#c7c7cc"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
@@ -85,7 +87,7 @@ const ResetPasswordScreen = ({ navigation }) => {
           style={styles.resetButton}
           onPress={handleResetPassword}
         >
-          <Text style={styles.resetButtonText}>Reset password</Text>
+          <Text style={styles.resetButtonText}>{t('Reset password')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

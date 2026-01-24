@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,10 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const NotificationSettingsScreen = ({ navigation }) => {
-  const [searchNotifications, setSearchNotifications] = useState(true);
-  const [fastAds, setFastAds] = useState(false);
-  const [targetedAds, setTargetedAds] = useState(false);
-  const [recommendations, setRecommendations] = useState(false);
+    const { t } = useTranslation();
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [marketingNotifications, setMarketingNotifications] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
@@ -25,16 +25,10 @@ const NotificationSettingsScreen = ({ navigation }) => {
 
   const handleSaveChoices = () => {
     console.log('Saving notification preferences:', {
-      searchNotifications,
-      fastAds,
-      targetedAds,
-      recommendations,
+      pushNotifications,
+      marketingNotifications,
     });
     navigation.goBack();
-  };
-
-  const handleViewPartners = () => {
-    console.log('View partners');
   };
 
   return (
@@ -55,93 +49,63 @@ const NotificationSettingsScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.logoText}>RoundBuy</Text>
+          <Text style={styles.logoText}>{t('RoundBuy')}</Text>
         </View>
 
-        <Text style={styles.title}>Notifications settings</Text>
-        <Text style={styles.subtitle}>
-          We would like your permission to use your data for the following purposes:
-        </Text>
+        <Text style={styles.title}>{t('Notifications settings')}</Text>
+        <Text style={styles.subtitle}>{t('We would like your permission to use your data for the following purposes:')}</Text>
 
-        {/* Search Notifications */}
+        {/* Push Notifications */}
         <View style={styles.settingItem}>
           <View style={styles.settingLeft}>
-            <Text style={styles.settingTitle}>Search Notifications</Text>
+            <Text style={styles.settingTitle}>{t('Push Notifications')}</Text>
             <Switch
-              value={searchNotifications}
-              onValueChange={setSearchNotifications}
+              value={pushNotifications}
+              onValueChange={setPushNotifications}
               trackColor={{ false: '#d0d0d0', true: COLORS.primary }}
               thumbColor="#fff"
             />
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </View>
-        <Text style={styles.settingDescription}>
-          Set this on if you wish to receive notifications for the created search notifications.
-        </Text>
+        <Text style={styles.settingDescription}>{t('Allow or disable push notifications. You can control whether you receive notifications on your device.')}</Text>
 
-        {/* Fast Ads */}
+        {/* In-App Notifications */}
         <View style={styles.settingItem}>
           <View style={styles.settingLeft}>
-            <Text style={styles.settingTitle}>Fast Ads</Text>
+            <Text style={styles.settingTitle}>{t('In-App Notifications')}</Text>
+            <View style={styles.alwaysOnBadge}>
+              <Text style={styles.alwaysOnText}>{t('Always On')}</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#999" />
+        </View>
+        <Text style={styles.settingDescription}>{t('In-app notifications are always enabled to ensure you receive important updates and messages while using the app.')}</Text>
+
+        {/* Marketing Notifications */}
+        <View style={styles.settingItem}>
+          <View style={styles.settingLeft}>
+            <Text style={styles.settingTitle}>{t('Marketing Notifications')}</Text>
             <Switch
-              value={fastAds}
-              onValueChange={setFastAds}
+              value={marketingNotifications}
+              onValueChange={setMarketingNotifications}
               trackColor={{ false: '#d0d0d0', true: COLORS.primary }}
               thumbColor="#fff"
             />
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </View>
-        <Text style={styles.settingDescription}>
-          Set this on if you wish to send and receive Fast ads. Please note, this is only possible if it is on.
-        </Text>
+        <Text style={styles.settingDescription}>{t('Receive marketing communications including push notifications, in-app notifications, and emails about promotions, recommendations, and special offers. We need your permission to send you marketing content.')}</Text>
 
-        {/* Targeted Ads */}
-        <View style={styles.settingItem}>
-          <View style={styles.settingLeft}>
-            <Text style={styles.settingTitle}>Targeted Ads</Text>
-            <Switch
-              value={targetedAds}
-              onValueChange={setTargetedAds}
-              trackColor={{ false: '#d0d0d0', true: COLORS.primary }}
-              thumbColor="#fff"
-            />
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+        {/* Info Box */}
+        <View style={styles.infoBox}>
+          <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+          <Text style={styles.infoText}>{t('Marketing notifications include push notifications, in-app messages, and emails about our latest offers and recommendations.')}</Text>
         </View>
-        <Text style={styles.settingDescription}>
-          Set this on if you wish to send and receive Fast ads. Please note, this is only possible if it is on.
-        </Text>
-
-        {/* Recommendations & Promos */}
-        <View style={styles.settingItem}>
-          <View style={styles.settingLeft}>
-            <Text style={styles.settingTitle}>Recommendations & Promos</Text>
-            <Switch
-              value={recommendations}
-              onValueChange={setRecommendations}
-              trackColor={{ false: '#d0d0d0', true: COLORS.primary }}
-              thumbColor="#fff"
-            />
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
-        </View>
-        <Text style={styles.settingDescription}>
-          Receive the best recommendations and promotions from us, to improve sales.
-        </Text>
-
-        {/* View Partners */}
-        <TouchableOpacity 
-          style={styles.partnersLink}
-          onPress={handleViewPartners}
-        >
-          <Text style={styles.partnersLinkText}>View All Partners.</Text>
-        </TouchableOpacity>
 
         {/* Save Button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveChoices}>
-          <Text style={styles.saveButtonText}>Save my Choices</Text>
+          <Text style={styles.saveButtonText}>{t('Save my Choices')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -230,14 +194,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
   },
-  partnersLink: {
-    alignItems: 'center',
-    paddingVertical: 16,
+  alwaysOnBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  partnersLinkText: {
-    fontSize: 14,
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+  alwaysOnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2E7D32',
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: '#F5F5F5',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 24,
+    gap: 12,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 20,
   },
   saveButton: {
     backgroundColor: COLORS.primary,

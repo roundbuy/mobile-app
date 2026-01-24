@@ -1,5 +1,6 @@
 import React from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { type } = route.params;
   
   // Map type to display title
@@ -78,7 +80,7 @@ const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
           onPress={() => handlePurchaseNow(item)}
           activeOpacity={0.7}
         >
-          <Text style={styles.purchaseButtonText}>Buy Now</Text>
+          <Text style={styles.purchaseButtonText}>{t('Buy Now')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -97,9 +99,7 @@ const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Text style={styles.infoBannerText}>
-          Upgrade your best Ad Buy & Sell now!
-        </Text>
+        <Text style={styles.infoBannerText}>{t('Upgrade your best Ad Buy & Sell now!')}</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

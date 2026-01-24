@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -14,6 +15,7 @@ import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
 const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId, issueNumber } = route.params || {};
     const [loading, setLoading] = useState(false);
 
@@ -24,11 +26,11 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
 
             if (response.success) {
                 Alert.alert(
-                    'Dispute Created',
-                    'Your dispute has been sent to the seller.',
+                    t('Dispute Created'),
+                    t('Your dispute has been sent to the seller.'),
                     [
                         {
-                            text: 'OK',
+                            text: t('OK'),
                             onPress: () => {
                                 // Navigate back to issue list or home
                                 navigation.navigate('SupportResolution');
@@ -39,7 +41,7 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Escalate error:', error);
-            Alert.alert('Error', error.message || 'Failed to create dispute');
+            Alert.alert(t('Error'), error.message || t('Failed to create dispute'));
         } finally {
             setLoading(false);
         }
@@ -69,63 +71,43 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>
-                    Seller's Refund Eligibility criteria Return to Buyer (Disputes)
-                </Text>
+                <Text style={styles.title}>{t("Seller's Refund Eligibility criteria Return to Buyer (Disputes)")}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.sectionHeader}>
-                        Reason for Seller Disputes:
-                    </Text>
+                    <Text style={styles.sectionHeader}>{t('Reason for Seller Disputes:')}</Text>
 
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The seller has not responded to the exchange request within the specified timeframe (e.g., 3 days).
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The seller has not responded to the exchange request within the specified timeframe (e.g., 3 days).')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Significantly different: The item is not as what was described in the exchange listing.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Significantly different: The item is not as what was described in the exchange listing.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The seller's response does not address the buyer's concerns or is not satisfactory. However, in some cases you can claim a full or partial refund, or a replacement.
-                        </Text>
+                        <Text style={styles.bulletText}>{t("The seller's response does not address the buyer's concerns or is not satisfactory. However, in some cases you can claim a full or partial refund, or a replacement.")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Condition Mismatched: Received an item that is in a significantly worse condition than it was described in the exchange listing.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Condition Mismatched: Received an item that is in a significantly worse condition than it was described in the exchange listing.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Communication breakdown: The seller is unresponsive or unwilling to cooperate in resolving the issue.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Communication breakdown: The seller is unresponsive or unwilling to cooperate in resolving the issue.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Evidence of fraud or misrepresentation by the seller.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Evidence of fraud or misrepresentation by the seller.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            The buyer has provided all necessary evidence and documentation to support their claim.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('The buyer has provided all necessary evidence and documentation to support their claim.')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>
-                            Escalate Delayed & Incorrect product: Allegations where the buyer did not receive the item or received an item that was not as described.
-                        </Text>
+                        <Text style={styles.bulletText}>{t('Escalate Delayed & Incorrect product: Allegations where the buyer did not receive the item or received an item that was not as described.')}</Text>
                     </View>
                 </View>
 
@@ -133,7 +115,7 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
@@ -155,14 +137,12 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
                     {loading ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.sendButtonText}>Continue</Text>
+                        <Text style={styles.sendButtonText}>{t('Continue')}</Text>
                     )}
                 </TouchableOpacity>
 
                 {/* Note */}
-                <Text style={styles.note}>
-                    Only one is shown for dispute escalation shown in the
-                </Text>
+                <Text style={styles.note}>{t('Only one is shown for dispute escalation shown in the')}</Text>
             </ScrollView>
         </SafeAreaView>
     );

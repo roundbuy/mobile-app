@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ReviewScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -55,7 +57,7 @@ const ReviewScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Review</Text>
+        <Text style={styles.headerTitle}>{t('Review')}</Text>
         <View style={styles.headerRight} />
       </View>
 

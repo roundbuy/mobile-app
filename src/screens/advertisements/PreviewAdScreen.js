@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIn
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { advertisementService } from '../../services';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PreviewAdScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
 
   // Extract advertisement data from route params
@@ -19,15 +21,15 @@ const PreviewAdScreen = ({ navigation, route }) => {
     age_id,
     size_id,
     color_id,
-    min_price,
-    max_price,
+    gender_id,
+    price,
     location_id,
     displayTime = '60days'
   } = route.params || {};
 
   const handleSave = async () => {
     if (!title || !description) {
-      Alert.alert('Error', 'Title and description are required');
+      Alert.alert(t('Error'), t('Title and description are required'));
       return;
     }
 
@@ -43,12 +45,11 @@ const PreviewAdScreen = ({ navigation, route }) => {
         subcategory_id,
         activity_id,
         condition_id,
+        gender_id,
         age_id,
         size_id,
         color_id,
-        price: min_price || 0, // Use min_price as the main price
-        min_price,
-        max_price,
+        price: price || 0,
         location_id,
         display_duration_days: displayTime === '60days' ? 60 : null, // null for continuous
       };
@@ -62,11 +63,11 @@ const PreviewAdScreen = ({ navigation, route }) => {
           advertisement: response.data.advertisement,
         });
       } else {
-        Alert.alert('Error', response.message || 'Failed to create advertisement');
+        Alert.alert(t('Error'), response.message || t('Failed to create advertisement'));
       }
     } catch (error) {
       console.error('Save advertisement error:', error);
-      Alert.alert('Error', error.message || 'Failed to save advertisement');
+      Alert.alert(t('Error'), error.message || t('Failed to save advertisement'));
     } finally {
       setIsSaving(false);
     }
@@ -86,8 +87,8 @@ const PreviewAdScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Preview and Check</Text>
-          <Text style={styles.stepIndicator}>4/8</Text>
+          <Text style={styles.headerTitle}>{t('Preview and Check')}</Text>
+          {/* <Text style={styles.stepIndicator}>4/8</Text> */}
         </View>
 
         {/* Product Image */}
@@ -103,7 +104,7 @@ const PreviewAdScreen = ({ navigation, route }) => {
           ) : (
             <View style={styles.imagePlaceholder}>
               <View style={[styles.imageBox, styles.placeholderBox]}>
-                <Text style={styles.placeholderText}>No Image</Text>
+                <Text style={styles.placeholderText}>{t('No Image')}</Text>
               </View>
             </View>
           )}
@@ -132,27 +133,121 @@ const PreviewAdScreen = ({ navigation, route }) => {
                 Display Time: {displayTime === '60days' ? '60 days' : 'Continuous'}
               </Text>
             </View>
-            {min_price && (
+            {price && (
               <View style={styles.priceContainer}>
-                <Text style={styles.priceText}>
-                  {max_price && max_price !== min_price
-                    ? `£${min_price} - £${max_price}`
-                    : `£${min_price}`
-                  }
-                </Text>
+                <Text style={styles.priceText}>£{price}</Text>
               </View>
             )}
           </View>
 
           {/* Description */}
           <View style={styles.descriptionSection}>
-            <Text style={styles.descriptionTitle}>Description</Text>
+            <Text style={styles.descriptionTitle}>{t('Description')}</Text>
             <Text style={styles.descriptionText}>
               {description || 'No description provided.'}
               {description && description.length > 100 && (
-                <Text style={styles.readMore}> Read more...</Text>
+                <Text style={styles.readMore}>{t('Read more...')}</Text>
               )}
             </Text>
+          </View>
+
+          {/* Filter Information */}
+          <View style={styles.filterSection}>
+            <Text style={styles.filterTitle}>{t('Advertisement Details')}</Text>
+
+            <View style={styles.filterGrid}>
+              {/* Category */}
+              {route.params?.categoryName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Category:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.categoryName}</Text>
+                </View>
+              )}
+
+              {/* Subcategory */}
+              {route.params?.subcategoryName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Subcategory:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.subcategoryName}</Text>
+                </View>
+              )}
+
+              {/* Activity */}
+              {route.params?.activityName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Activity:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.activityName}</Text>
+                </View>
+              )}
+
+              {/* Price */}
+              {route.params?.price && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Price:')}</Text>
+                  <Text style={styles.filterValue}>£{route.params.price}</Text>
+                </View>
+              )}
+
+              {/* Condition */}
+              {route.params?.conditionName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Condition:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.conditionName}</Text>
+                </View>
+              )}
+
+              {/* Gender */}
+              {route.params?.genderName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Gender:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.genderName}</Text>
+                </View>
+              )}
+
+              {/* Age */}
+              {route.params?.ageName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Age:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.ageName}</Text>
+                </View>
+              )}
+
+              {/* Size */}
+              {route.params?.sizeName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Size:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.sizeName}</Text>
+                </View>
+              )}
+
+              {/* Color */}
+              {route.params?.colorName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Color:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.colorName}</Text>
+                </View>
+              )}
+
+              {/* Location */}
+              {route.params?.location && (
+                <View style={[styles.filterItem, styles.filterItemFull]}>
+                  <Text style={styles.filterLabel}>{t('Location:')}</Text>
+                  <Text style={styles.filterValue}>
+                    {route.params.location.name}
+                    {'\n'}
+                    <Text style={styles.filterSubValue}>
+                      {[
+                        route.params.location.street,
+                        route.params.location.city,
+                        route.params.location.region,
+                        route.params.location.country,
+                        route.params.location.zip_code
+                      ].filter(Boolean).join(', ')}
+                    </Text>
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
 
@@ -166,19 +261,19 @@ const PreviewAdScreen = ({ navigation, route }) => {
             {isSaving ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text style={styles.saveButtonText}>Saving...</Text>
+                <Text style={styles.saveButtonText}>{t('Saving...')}</Text>
               </View>
             ) : (
-              <Text style={styles.saveButtonText}>Save Ad</Text>
+              <Text style={styles.saveButtonText}>{t('Save The Ad')}</Text>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.actionButton, styles.continueButton]}
             onPress={handleContinue}
           >
-            <Text style={styles.continueButtonText}>Continue to Payment</Text>
-          </TouchableOpacity>
+            <Text style={styles.continueButtonText}>{t('Continue to Payment')}</Text>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.bottomSpace} />
@@ -339,6 +434,47 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  filterSection: {
+    marginTop: 24,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  filterTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 16,
+  },
+  filterGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -6,
+  },
+  filterItem: {
+    width: '50%',
+    paddingHorizontal: 6,
+    marginBottom: 12,
+  },
+  filterItemFull: {
+    width: '100%',
+  },
+  filterLabel: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+  },
+  filterValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+  filterSubValue: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#666',
+    lineHeight: 18,
   },
   bottomSpace: {
     height: 30,

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -16,10 +18,14 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import { offersService } from '../../../services';
 
-const ReceivedOffersScreen = ({ navigation }) => {
+const ReceivedOffersScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Get type from route params (buyer or seller)
+  const type = route?.params?.type || 'seller'; // Default to seller (received offers)
 
   useEffect(() => {
     fetchReceivedOffers();
@@ -28,13 +34,21 @@ const ReceivedOffersScreen = ({ navigation }) => {
   const fetchReceivedOffers = async () => {
     try {
       setLoading(true);
-      const response = await offersService.getReceivedOffers();
+
+      // Get ALL pending offers where user is either buyer or seller
+      const response = await offersService.getUserOffers({
+        type: 'all',  // Get offers where user is buyer OR seller
+        status: 'pending'
+      });
+
+      // console.log('All pending offers response:', response);
       if (response && response.data) {
+        // API returns { success, offers, pagination }
         setOffers(response.data.offers || []);
       }
     } catch (error) {
       console.error('Error fetching offers:', error);
-      Alert.alert('Error', 'Failed to load offers. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load offers. Please try again.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -53,107 +67,142 @@ const ReceivedOffersScreen = ({ navigation }) => {
   const handleAccept = async (offer) => {
     try {
       Alert.alert(
-        'Accept Offer',
-        `Are you sure you want to accept the offer of ${offer.currency_code || '₹'}${offer.offered_price} for "${offer.ad_title}"?`,
+        t('Accept Offer'),
+        `Are you sure you want to accept the offer of ${offer.currency_code || t('₹')}${offer.offered_price} for t('${offer.ad_title}')?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('Cancel'), style: t('cancel') },
           {
-            text: 'Accept',
+            text: t('Accept'),
             onPress: async () => {
               try {
                 const response = await offersService.acceptOffer(offer.id);
                 if (response && response.success) {
-                  Alert.alert('Success', 'Offer accepted successfully!');
+                  Alert.alert(t('Success'), t('Offer accepted successfully!'));
                   // Remove the offer from the list
                   setOffers(prevOffers => prevOffers.filter(o => o.id !== offer.id));
                 } else {
-                  Alert.alert('Error', response?.message || 'Failed to accept offer.');
+                  Alert.alert(t('Error'), response?.message || t('Failed to accept offer.'));
                 }
               } catch (error) {
                 console.error('Accept offer error:', error);
-                Alert.alert('Error', error.message || 'Failed to accept offer. Please try again.');
+                Alert.alert(t('Error'), error.message || t('Failed to accept offer. Please try again.'));
               }
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to accept offer. Please try again.');
+      Alert.alert(t('Error'), t('Failed to accept offer. Please try again.'));
     }
   };
 
   const handleDecline = async (offer) => {
     try {
       Alert.alert(
-        'Decline Offer',
-        `Are you sure you want to decline the offer of ${offer.currency_code || '₹'}${offer.offered_price} for "${offer.ad_title}"?`,
+        t('Decline Offer'),
+        `Are you sure you want to decline the offer of ${offer.currency_code || t('₹')}${offer.offered_price} for t('${offer.ad_title}')?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('Cancel'), style: t('cancel') },
           {
-            text: 'Decline',
-            style: 'destructive',
+            text: t('Decline'),
+            style: t('destructive'),
             onPress: async () => {
               try {
                 const response = await offersService.declineOffer(offer.id);
                 if (response && response.success) {
-                  Alert.alert('Success', 'Offer declined successfully!');
+                  Alert.alert(t('Success'), t('Offer declined successfully!'));
                   // Remove the offer from the list
                   setOffers(prevOffers => prevOffers.filter(o => o.id !== offer.id));
                 } else {
-                  Alert.alert('Error', response?.message || 'Failed to decline offer.');
+                  Alert.alert(t('Error'), response?.message || t('Failed to decline offer.'));
                 }
               } catch (error) {
                 console.error('Decline offer error:', error);
-                Alert.alert('Error', error.message || 'Failed to decline offer. Please try again.');
+                Alert.alert(t('Error'), error.message || t('Failed to decline offer. Please try again.'));
               }
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to decline offer. Please try again.');
+      Alert.alert(t('Error'), t('Failed to decline offer. Please try again.'));
     }
   };
 
-  const renderOffer = ({ item }) => (
-    <View style={styles.offerCard}>
-      <View style={styles.offerHeader}>
-        <Image
-          source={item.ad_images && item.ad_images.length > 0 ? { uri: item.ad_images[0] } : IMAGES.chair1}
-          style={styles.productImage}
-        />
-        <View style={styles.productInfo}>
-          <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{item.ad_title}</Text>
-            <View style={styles.typeBadge}>
-              <Text style={styles.typeText}>{item.activity_name || 'BUY'}</Text>
-            </View>
-          </View>
-          <Text style={styles.offerText}>
-            {item.buyer_name} offered {item.currency_code || '₹'}{item.offered_price}
-          </Text>
-          <Text style={styles.dateText}>
-            {new Date(item.created_at).toLocaleDateString()}
-          </Text>
-        </View>
-      </View>
+  const renderOffer = ({ item }) => {
+    // user_role comes from backend: 'buyer' or 'seller'
+    const isSeller = item.user_role === 'seller';
 
-      <View style={styles.offerActions}>
-        <TouchableOpacity
-          style={styles.declineButton}
-          onPress={() => handleDecline(item)}
-        >
-          <Text style={styles.declineButtonText}>Decline</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={() => handleAccept(item)}
-        >
-          <Text style={styles.acceptButtonText}>Accept</Text>
-        </TouchableOpacity>
+    // Parse advertisement images
+    let imageSource = IMAGES.chair1;
+    if (item.advertisement_images) {
+      try {
+        const images = item.advertisement_images
+          ? JSON.parse(item.advertisement_images)
+          : [];
+        if (images.length > 0) {
+          imageSource = getFullImageUrl(images[1]);
+          console.log('Images:', imageSource);
+        }
+      } catch (e) {
+        console.log('Error parsing images:', e);
+      }
+    }
+
+    return (
+      <View style={styles.offerCard}>
+        <View style={styles.offerHeader}>
+          <Image
+            source={imageSource}
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+          <View style={styles.productInfo}>
+            <View style={styles.titleRow}>
+              <Text style={styles.productTitle}>{item.advertisement_title}</Text>
+              <View style={styles.typeBadge}>
+                <Text style={styles.typeText}>{item.activity_name || 'BUY'}</Text>
+              </View>
+            </View>
+            <Text style={styles.offerText}>
+              {isSeller
+                ? `${item.buyer_name} offered £${item.offered_price}`
+                : `You offered £${item.offered_price}`
+              }
+            </Text>
+            <Text style={styles.dateText}>
+              {new Date(item.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+        </View>
+
+        {/* Only show action buttons if user is seller */}
+        {isSeller && (
+          <View style={styles.offerActions}>
+            <TouchableOpacity
+              style={styles.declineButton}
+              onPress={() => handleDecline(item)}
+            >
+              <Text style={styles.declineButtonText}>{t('Decline')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.acceptButton}
+              onPress={() => handleAccept(item)}
+            >
+              <Text style={styles.acceptButtonText}>{t('Accept')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Show status if user is buyer */}
+        {!isSeller && (
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>{t("Waiting for seller's response...")}</Text>
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -162,14 +211,14 @@ const ReceivedOffersScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>First offers</Text>
+        <Text style={styles.headerTitle}>{t('First offers')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading offers...</Text>
+          <Text style={styles.loadingText}>{t('Loading offers...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -183,30 +232,11 @@ const ReceivedOffersScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="megaphone-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No offers received yet</Text>
+              <Text style={styles.emptyText}>{t('No pending offers')}</Text>
             </View>
           }
         />
       )}
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="home" size={26} color={COLORS.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="bell" size={26} color={COLORS.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, styles.addButton]}>
-          <FontAwesome name="plus" size={26} color="#ffffff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="envelope" size={26} color={COLORS.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <FontAwesome name="user" size={26} color={COLORS.primary} />
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -322,6 +352,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+  },
+  statusContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFF9E6',
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  statusText: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   bottomNav: {
     position: 'absolute',

@@ -4,8 +4,10 @@ import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 
 const CreateAccountScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const { register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -71,7 +73,7 @@ const CreateAccountScreen = ({ navigation }) => {
   const handleSignUp = async () => {
     // Validate inputs
     if (!fullName || !email || !password) {
-      Alert.alert('Error', 'Please fill all required fields');
+      Alert.alert(t('Error'), t('Please fill all required fields'));
       return;
     }
     
@@ -83,7 +85,7 @@ const CreateAccountScreen = ({ navigation }) => {
     }
 
     if (passwordInfo.strength === 'weak') {
-      Alert.alert('Weak Password', 'Please create a stronger password');
+      Alert.alert(t('Weak Password'), t('Please create a stronger password'));
       return;
     }
     
@@ -101,11 +103,11 @@ const CreateAccountScreen = ({ navigation }) => {
       if (response.success) {
         // Registration successful, navigate to email verification
         Alert.alert(
-          'Success',
-          'Registration successful! Please check your email for verification code.',
+          t('Success'),
+          t('Registration successful! Please check your email for verification code.'),
           [
             {
-              text: 'OK',
+              text: t('OK'),
               onPress: () => navigation.navigate('EmailVerification', { email })
             }
           ]
@@ -114,8 +116,8 @@ const CreateAccountScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Registration error:', error);
       Alert.alert(
-        'Registration Failed',
-        error.message || 'An error occurred during registration. Please try again.'
+        t('Registration Failed'),
+        error.message || t('An error occurred during registration. Please try again.')
       );
     } finally {
       setLoading(false);
@@ -167,17 +169,15 @@ const CreateAccountScreen = ({ navigation }) => {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>
-          Create a profile, buy & sell safely
-        </Text>
+        <Text style={styles.title}>{t('Create Account')}</Text>
+        <Text style={styles.subtitle}>{t('Create a profile, buy & sell safely')}</Text>
 
         {/* Full Name Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Your full name</Text>
+          <Text style={styles.label}>{t('Your full name')}</Text>
           <TextInput
             style={[styles.input, fullNameError ? styles.inputError : null]}
-            placeholder="Example: John Round"
+            placeholder={t('Example: John Round')}
             placeholderTextColor="#c7c7cc"
             value={fullName}
             onChangeText={handleFullNameChange}
@@ -188,10 +188,10 @@ const CreateAccountScreen = ({ navigation }) => {
 
         {/* Email Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Enter your email</Text>
+          <Text style={styles.label}>{t('Enter your email')}</Text>
           <TextInput
             style={[styles.input, emailError ? styles.inputError : null]}
-            placeholder="example@gmail.com"
+            placeholder={t('example@gmail.com')}
             placeholderTextColor="#c7c7cc"
             value={email}
             onChangeText={handleEmailChange}
@@ -204,7 +204,7 @@ const CreateAccountScreen = ({ navigation }) => {
 
         {/* Password Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
+          <Text style={styles.label}>{t('Password')}</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
@@ -251,7 +251,7 @@ const CreateAccountScreen = ({ navigation }) => {
           {/* Password Guideline Link */}
           <View style={styles.passwordHelp}>
             <TouchableOpacity onPress={handlePasswordGuideline}>
-              <Text style={styles.passwordGuidelineLink}>Password guideline</Text>
+              <Text style={styles.passwordGuidelineLink}>{t('Password guideline')}</Text>
             </TouchableOpacity>
             <Text style={styles.checkMark}>✓</Text>
           </View>
@@ -266,22 +266,22 @@ const CreateAccountScreen = ({ navigation }) => {
           {loading ? (
             <ActivityIndicator color="#1a1a1a" />
           ) : (
-            <Text style={styles.signUpButtonText}>Sign up</Text>
+            <Text style={styles.signUpButtonText}>{t('Sign up')}</Text>
           )}
         </TouchableOpacity>
 
         {/* Already have account */}
         <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Have an account? </Text>
+          <Text style={styles.loginText}>{t('Have an account?')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('SocialLogin')}>
-            <Text style={styles.loginLink}>Login</Text>
+            <Text style={styles.loginLink}>{t('Login')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Divider */}
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Or</Text>
+          <Text style={styles.dividerText}>{t('Or')}</Text>
           <View style={styles.dividerLine} />
         </View>
 
@@ -292,7 +292,7 @@ const CreateAccountScreen = ({ navigation }) => {
         >
           <View style={styles.socialButtonContent}>
             <FontAwesome name="google" size={22} color="#DB4437" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with google</Text>
+            <Text style={styles.socialButtonText}>{t('Sign up with google')}</Text>
           </View>
         </TouchableOpacity>
 
@@ -302,7 +302,7 @@ const CreateAccountScreen = ({ navigation }) => {
         >
           <View style={styles.socialButtonContent}>
             <FontAwesome name="apple" size={22} color="#000000" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with apple</Text>
+            <Text style={styles.socialButtonText}>{t('Sign up with apple')}</Text>
           </View>
         </TouchableOpacity>
 
@@ -312,21 +312,19 @@ const CreateAccountScreen = ({ navigation }) => {
         >
           <View style={styles.socialButtonContent}>
             <FontAwesome name="instagram" size={22} color="#E4405F" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>Sign up with instagram</Text>
+            <Text style={styles.socialButtonText}>{t('Sign up with instagram')}</Text>
           </View>
         </TouchableOpacity>
 
         {/* Terms */}
         <Text style={styles.termsText}>
           By continuing, you agree to our{' '}
-          <Text style={styles.termsLink}>Terms of service</Text> and{' '}
-          <Text style={styles.termsLink}>Privacy Policy</Text>.
+          <Text style={styles.termsLink}>{t('Terms of service')}</Text> and{' '}
+          <Text style={styles.termsLink}>{t('Privacy Policy')}</Text>.
         </Text>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>
-          © 2020-2025 RoundBuy Inc ®
-        </Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeScreenContainer>
   );

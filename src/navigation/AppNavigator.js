@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
@@ -12,12 +13,16 @@ import ATTPromptScreen from '../screens/onboarding/ATTPromptScreen';
 import CookiesConsentScreen from '../screens/onboarding/CookiesConsentScreen';
 import CookieSettingsScreen from '../screens/onboarding/CookieSettingsScreen';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
+import RoundBuyInfoScreen from '../screens/onboarding/RoundBuyInfoScreen';
+import OnboardingDemoScreen from '../screens/onboarding/DemoScreen';
 
 // Legal screens
 import LicenseAgreementScreen from '../screens/legal/LicenseAgreementScreen';
 import LegalAgreementsScreen from '../screens/legal/LegalAgreementsScreen';
 import PolicySelectionScreen from '../screens/legal/PolicySelectionScreen';
 import PolicyDetailScreen from '../screens/legal/PolicyDetailScreen';
+import PatentPendingScreen from '../screens/legal/PatentPendingScreen';
+import PolicyUpdatesScreen from '../screens/legal/PolicyUpdatesScreen';
 
 // Auth screens
 import RegistrationScreen from '../screens/auth/RegistrationScreen';
@@ -70,33 +75,63 @@ import PublishAdScreen from '../screens/advertisements/PublishAdScreen';
 // Product screens
 import ProductDetailsScreen from '../screens/products/ProductDetailsScreen';
 import ProductChatScreen from '../screens/products/ProductChatScreen';
+import UserListingsScreen from '../screens/products/UserListingsScreen';
+import UserFeedbacksScreen from '../screens/products/UserFeedbacksScreen';
+
+// Messages screens
+import ConversationsListScreen from '../screens/messages/ConversationsListScreen';
 
 // User Account screens
 import UserAccountScreen from '../screens/user-account/UserAccountScreen';
 import PersonalInformationScreen from '../screens/user-account/personal-information/PersonalInformationScreen';
 import PrivacyAccountScreen from '../screens/user-account/privacy-account/PrivacyAccountScreen';
+import ATTTrackingSettingsScreen from '../screens/user-account/privacy-account/ATTTrackingSettingsScreen';
+import ConfirmAccessRightsScreen from '../screens/user-account/privacy-account/ConfirmAccessRightsScreen';
+import PrivacyEmailVerificationScreen from '../screens/user-account/privacy-account/PrivacyEmailVerificationScreen';
+import AccessRightsConfirmationScreen from '../screens/user-account/privacy-account/AccessRightsConfirmationScreen';
+import DataRequestFormScreen from '../screens/user-account/privacy-account/DataRequestFormScreen';
 import LoginSecurityScreen from '../screens/user-account/login-security/LoginSecurityScreen';
 import ChangePasswordScreen from '../screens/user-account/login-security/ChangePasswordScreen';
+import EditUsernameScreen from '../screens/user-account/login-security/EditUsernameScreen';
 import BillingPaymentsScreen from '../screens/user-account/billing-payments/BillingPaymentsScreen';
+import WalletScreen from '../screens/wallet/WalletScreen';
+import WalletTopupScreen from '../screens/wallet/WalletTopupScreen';
+import WalletTransactionsScreen from '../screens/wallet/WalletTransactionsScreen';
+import WalletWithdrawalScreen from '../screens/wallet/WalletWithdrawalScreen';
 import LegalInfoScreen from '../screens/user-account/legal-info/LegalInfoScreen';
 import CountrySettingsScreen from '../screens/user-account/country-settings/CountrySettingsScreen';
+import MeasurementSettingsScreen from '../screens/user-account/MeasurementSettingsScreen';
 import CurrencySelectionScreen from '../screens/user-account/country-settings/CurrencySelectionScreen';
 import LanguageSelectionScreen from '../screens/user-account/country-settings/LanguageSelectionScreen';
 import CustomerSupportScreen from '../screens/user-account/customer-support/CustomerSupportScreen';
 import HelpFAQScreen from '../screens/user-account/customer-support/HelpFAQScreen';
+import FAQSubCategoriesScreen from '../screens/user-account/customer-support/FAQSubCategoriesScreen';
+import FAQListScreen from '../screens/user-account/customer-support/FAQListScreen';
 import ContactSupportScreen from '../screens/user-account/customer-support/ContactSupportScreen';
 import NotificationsScreen from '../screens/user-account/notifications/NotificationsScreen';
 import NotificationsListScreen from '../screens/user-account/notifications/NotificationsListScreen';
 import CreateSearchNotificationScreen from '../screens/user-account/notifications/CreateSearchNotificationScreen';
 import NotificationSettingsScreen from '../screens/user-account/notifications/NotificationSettingsScreen';
+import NotificationCenterScreen from '../screens/notifications/NotificationCenterScreen';
 
 // User Settings screens
 import ManageOffersScreen from '../screens/user-settings/manage-offers/ManageOffersScreen';
+import OfferHistoryScreen from '../screens/user-settings/manage-offers/OfferHistoryScreen';
 import ReceivedOffersScreen from '../screens/user-settings/manage-offers/ReceivedOffersScreen';
 import AcceptedOffersScreen from '../screens/user-settings/manage-offers/AcceptedOffersScreen';
 import DeclinedOffersScreen from '../screens/user-settings/manage-offers/DeclinedOffersScreen';
 import MakeCounterofferScreen from '../screens/user-settings/manage-offers/MakeCounterofferScreen';
 import MakeAnOfferScreen from '../screens/user-settings/manage-offers/MakeAnOfferScreen';
+
+// Pickup screens
+import SchedulePickUpScreen from '../screens/pickups/SchedulePickUpScreen';
+import PickUpExchangeScreen from '../screens/pickups/PickUpExchangeScreen';
+import PickUpStatusScreen from '../screens/pickups/PickUpStatusScreen';
+import UnpaidPickUpFeesScreen from '../screens/pickups/UnpaidPickUpFeesScreen';
+import PaidPickUpFeesScreen from '../screens/pickups/PaidPickUpFeesScreen';
+import ScheduledPickUpDetailScreen from '../screens/pickups/ScheduledPickUpDetailScreen';
+import PickUpPaymentScreen from '../screens/pickups/PickUpPaymentScreen';
+import ReschedulePickUpScreen from '../screens/pickups/ReschedulePickUpScreen';
 import MyAdsScreen from '../screens/user-settings/my-ads/MyAdsScreen';
 import MyAdsDetailScreen from '../screens/user-settings/my-ads/MyAdsDetailScreen';
 import PurchaseVisibilityScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityScreen';
@@ -186,18 +221,29 @@ const AppNavigator = () => {
 
   // Determine initial route based on authentication status
   const getInitialRouteName = () => {
+    console.log('🧭 AppNavigator: Determining initial route...');
+    console.log('   isLoading:', isLoading);
+    console.log('   isAuthenticated:', isAuthenticated);
+
     if (isLoading) {
+      console.log('   → Showing Splash (loading)');
       return 'Splash';
     }
 
     if (!isAuthenticated) {
+      console.log('   → Showing Registration (not authenticated)');
       return 'Registration';
     }
 
-    if (!hasActiveSubscription()) {
+    const hasSubscription = hasActiveSubscription();
+    console.log('   hasActiveSubscription:', hasSubscription);
+
+    if (!hasSubscription) {
+      console.log('   → Showing AllMemberships (no subscription)');
       return 'AllMemberships';
     }
 
+    console.log('   → Showing SearchScreen (authenticated + subscription)');
     return 'SearchScreen';
   };
 
@@ -213,7 +259,7 @@ const AppNavigator = () => {
         {/* Onboarding Flow */}
         <Stack.Screen
           name="Splash"
-          component={SplashScreen}
+          component={SplashAlternative3Screen}
           options={{
             animationEnabled: false,
           }}
@@ -261,6 +307,20 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="PatentPending"
+          component={PatentPendingScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PolicyUpdates"
+          component={PolicyUpdatesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="ATTPrompt"
           component={ATTPromptScreen}
           options={{
@@ -279,6 +339,20 @@ const AppNavigator = () => {
         <Stack.Screen
           name="CookieSettings"
           component={CookieSettingsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RoundBuyInfo"
+          component={RoundBuyInfoScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="OnboardingDemo"
+          component={OnboardingDemoScreen}
           options={{
             animationEnabled: true,
           }}
@@ -572,6 +646,28 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="UserListings"
+          component={UserListingsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="UserFeedbacks"
+          component={UserFeedbacksScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ConversationsList"
+          component={ConversationsListScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="UserAccount"
           component={UserAccountScreen}
           options={{
@@ -593,6 +689,41 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="ATTTrackingSettings"
+          component={ATTTrackingSettingsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ConfirmAccessRights"
+          component={ConfirmAccessRightsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PrivacyEmailVerification"
+          component={PrivacyEmailVerificationScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="AccessRightsConfirmation"
+          component={AccessRightsConfirmationScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="DataRequestForm"
+          component={DataRequestFormScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="LoginSecurity"
           component={LoginSecurityScreen}
           options={{
@@ -607,8 +738,43 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="EditUsername"
+          component={EditUsernameScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="BillingPayments"
           component={BillingPaymentsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="Wallet"
+          component={WalletScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="WalletTopup"
+          component={WalletTopupScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="WalletTransactions"
+          component={WalletTransactionsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="WalletWithdrawal"
+          component={WalletWithdrawalScreen}
           options={{
             animationEnabled: true,
           }}
@@ -623,6 +789,27 @@ const AppNavigator = () => {
         <Stack.Screen
           name="CountrySettings"
           component={CountrySettingsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="FAQSubCategories"
+          component={FAQSubCategoriesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="FAQList"
+          component={FAQListScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="MeasurementSettings"
+          component={MeasurementSettingsScreen}
           options={{
             animationEnabled: true,
           }}
@@ -691,8 +878,79 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="NotificationCenter"
+          component={NotificationCenterScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="ManageOffers"
           component={ManageOffersScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="OfferHistory"
+          component={OfferHistoryScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="SchedulePickUp"
+          component={SchedulePickUpScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PickUpExchange"
+          component={PickUpExchangeScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PickUpStatus"
+          component={PickUpStatusScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="UnpaidPickUpFees"
+          component={UnpaidPickUpFeesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PaidPickUpFees"
+          component={PaidPickUpFeesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ScheduledPickUpDetail"
+          component={ScheduledPickUpDetailScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PickUpPayment"
+          component={PickUpPaymentScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ReschedulePickUp"
+          component={ReschedulePickUpScreen}
           options={{
             animationEnabled: true,
           }}

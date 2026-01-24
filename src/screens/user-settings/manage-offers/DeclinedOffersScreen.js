@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -17,6 +19,7 @@ import { COLORS } from '../../../constants/theme';
 import { offersService } from '../../../services';
 
 const DeclinedOffersScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,7 +37,7 @@ const DeclinedOffersScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching offers:', error);
-      Alert.alert('Error', 'Failed to load offers. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load offers. Please try again.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -46,43 +49,59 @@ const DeclinedOffersScreen = ({ navigation }) => {
     fetchDeclinedOffers();
   };
 
-  const renderOffer = ({ item }) => (
-    <View style={styles.offerCard}>
-      <View style={styles.offerHeader}>
-        <Image
-          source={item.ad_images && item.ad_images.length > 0 ? item.ad_images[0] : IMAGES.chair1}
-          style={styles.productImage}
-        />
-        <View style={styles.productInfo}>
-          <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{item.ad_title}</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>Declined</Text>
+  const renderOffer = ({ item }) => {
+    // Parse advertisement images
+    let imageSource = IMAGES.chair1;
+    if (item.advertisement_images) {
+      try {
+        const images = JSON.parse(item.advertisement_images);
+        if (images && images.length > 0) {
+          imageSource = getFullImageUrl(images[0]);
+        }
+      } catch (e) {
+        console.log('Error parsing images:', e);
+      }
+    }
+
+    return (
+      <View style={styles.offerCard}>
+        <View style={styles.offerHeader}>
+          <Image
+            source={imageSource}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+          <View style={styles.productInfo}>
+            <View style={styles.titleRow}>
+              <Text style={styles.productTitle}>{item.ad_title}</Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>{t('Declined')}</Text>
+              </View>
             </View>
+            <Text style={styles.offerText}>
+              {item.is_buyer ? `Your offer of ${item.currency_code || '₹'}${item.offered_price} was declined by ${item.seller_name}` :
+                `You declined ${item.buyer_name}'s offer of ${item.currency_code || '₹'}${item.offered_price}`}
+            </Text>
+            <Text style={styles.dateText}>
+              {new Date(item.created_at).toLocaleDateString()}
+            </Text>
           </View>
-          <Text style={styles.offerText}>
-            {item.is_buyer ? `Your offer of ${item.currency_code || '₹'}${item.offered_price} was declined by ${item.seller_name}` :
-             `You declined ${item.buyer_name}'s offer of ${item.currency_code || '₹'}${item.offered_price}`}
-          </Text>
-          <Text style={styles.dateText}>
-            {new Date(item.created_at).toLocaleDateString()}
-          </Text>
+        </View>
+
+        <View style={styles.offerActions}>
+          <TouchableOpacity
+            style={styles.contactButton}
+            onPress={() => {
+              // Navigate to chat or contact
+              console.log('Contact:', item.is_buyer ? item.seller_name : item.buyer_name);
+            }}
+          >
+            <Text style={styles.contactButtonText}>{t('Contact')}</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      <View style={styles.offerActions}>
-        <TouchableOpacity
-          style={styles.contactButton}
-          onPress={() => {
-            // Navigate to chat or contact
-            console.log('Contact:', item.is_buyer ? item.seller_name : item.buyer_name);
-          }}
-        >
-          <Text style={styles.contactButtonText}>Contact</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -91,7 +110,7 @@ const DeclinedOffersScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Declined Offers</Text>
+        <Text style={styles.headerTitle}>{t('Declined Offers')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -99,7 +118,7 @@ const DeclinedOffersScreen = ({ navigation }) => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading offers...</Text>
+          <Text style={styles.loadingText}>{t('Loading offers...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -113,7 +132,7 @@ const DeclinedOffersScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="close-circle-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>No declined offers yet</Text>
+              <Text style={styles.emptyText}>{t('No declined offers yet')}</Text>
             </View>
           }
         />

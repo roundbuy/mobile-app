@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PasswordGuidelinesScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { email, password } = route.params || {};
   
   const [checks, setChecks] = useState({
@@ -55,7 +57,7 @@ const PasswordGuidelinesScreen = ({ route, navigation }) => {
         >
           <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Password Guidelines</Text>
+        <Text style={styles.headerTitle}>{t('Password Guidelines')}</Text>
       </View>
 
       {/* Content */}
@@ -66,10 +68,8 @@ const PasswordGuidelinesScreen = ({ route, navigation }) => {
           </View>
         </View>
 
-        <Text style={styles.title}>Create a strong password</Text>
-        <Text style={styles.subtitle}>
-          Your password must meet the following requirements:
-        </Text>
+        <Text style={styles.title}>{t('Create a strong password')}</Text>
+        <Text style={styles.subtitle}>{t('Your password must meet the following requirements:')}</Text>
 
         {/* Password Requirements */}
         <View style={styles.checklistContainer}>
@@ -97,10 +97,10 @@ const PasswordGuidelinesScreen = ({ route, navigation }) => {
 
         {/* Security Tips */}
         <View style={styles.tipsContainer}>
-          <Text style={styles.tipsTitle}>Password Tips:</Text>
-          <Text style={styles.tipText}>• Use a unique password for each account</Text>
-          <Text style={styles.tipText}>• Avoid common words or phrases</Text>
-          <Text style={styles.tipText}>• Consider using a password manager</Text>
+          <Text style={styles.tipsTitle}>{t('Password Tips:')}</Text>
+          <Text style={styles.tipText}>{t('• Use a unique password for each account')}</Text>
+          <Text style={styles.tipText}>{t('• Avoid common words or phrases')}</Text>
+          <Text style={styles.tipText}>{t('• Consider using a password manager')}</Text>
         </View>
       </>
 
@@ -111,9 +111,7 @@ const PasswordGuidelinesScreen = ({ route, navigation }) => {
           onPress={handleContinue}
           disabled={!allChecked}
         >
-          <Text style={[styles.continueButtonText, !allChecked && styles.continueButtonTextDisabled]}>
-            Continue
-          </Text>
+          <Text style={[styles.continueButtonText, !allChecked && styles.continueButtonTextDisabled]}>{t('Continue')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

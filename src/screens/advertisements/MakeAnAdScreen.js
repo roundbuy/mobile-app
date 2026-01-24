@@ -4,14 +4,18 @@ import * as ImagePicker from 'expo-image-picker';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { uploadImages } from '../../services/advertisementService';
+import { checkMultipleFields, formatModerationError } from '../../services/moderationService';
+import { useTranslation } from '../../context/TranslationContext';
 
 const MakeAnAdScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [displayTime, setDisplayTime] = useState('60days');
   const [selectedImages, setSelectedImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [moderationError, setModerationError] = useState('');
 
   // Request camera/gallery permissions
   const requestPermissions = async () => {
@@ -20,9 +24,9 @@ const MakeAnAdScreen = ({ navigation }) => {
 
     if (cameraStatus !== 'granted' || mediaStatus !== 'granted') {
       Alert.alert(
-        'Permissions Required',
-        'Camera and media library permissions are required to select images.',
-        [{ text: 'OK' }]
+        t('Permissions Required'),
+        t('Camera and media library permissions are required to select images.'),
+        [{ text: t('OK') }]
       );
       return false;
     }
@@ -49,7 +53,7 @@ const MakeAnAdScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Camera error:', error);
-      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      Alert.alert(t('Error'), t('Failed to take photo. Please try again.'));
     }
   };
 
@@ -73,7 +77,7 @@ const MakeAnAdScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Gallery error:', error);
-      Alert.alert('Error', 'Failed to select images. Please try again.');
+      Alert.alert(t('Error'), t('Failed to select images. Please try again.'));
     }
   };
 
@@ -82,13 +86,13 @@ const MakeAnAdScreen = ({ navigation }) => {
     // Check file size (300KB limit)
     const fileSizeKB = image.fileSize ? image.fileSize / 1024 : 0;
     if (fileSizeKB > 300) {
-      Alert.alert('File Too Large', 'Please select an image smaller than 300KB.');
+      Alert.alert(t('File Too Large'), t('Please select an image smaller than 300KB.'));
       return;
     }
 
     // Check total count
     if (selectedImages.length >= 3) {
-      Alert.alert('Maximum Images', 'You can only select up to 3 images.');
+      Alert.alert(t('Maximum Images'), t('You can only select up to 3 images.'));
       return;
     }
 
@@ -101,16 +105,47 @@ const MakeAnAdScreen = ({ navigation }) => {
   };
 
   const handleContinue = async () => {
+    // Validate images
     if (selectedImages.length === 0) {
-      Alert.alert('Error', 'Please select at least one image for your advertisement.');
+      Alert.alert(t('Error'), t('Please select at least one image for your advertisement.'));
+      return;
+    }
+
+    // Validate title and description
+    if (!title.trim()) {
+      Alert.alert(t('Error'), t('Please enter a title for your advertisement.'));
+      return;
+    }
+
+    if (!description.trim()) {
+      Alert.alert(t('Error'), t('Please enter a description for your advertisement.'));
       return;
     }
 
     setIsUploading(true);
     setUploadError('');
+    setModerationError('');
 
     try {
-      // Upload images first
+      // Check for moderation violations
+      const moderationResult = await checkMultipleFields({
+        title: title.trim(),
+        description: description.trim()
+      });
+
+      if (!moderationResult.isClean) {
+        const errorMessage = formatModerationError(moderationResult.violations);
+        setModerationError(errorMessage);
+        Alert.alert(
+          t('Content Moderation'),
+          t('Your content contains inappropriate words. Please remove them and try again.\n\n') + errorMessage,
+          [{ text: t('OK') }]
+        );
+        setIsUploading(false);
+        return;
+      }
+
+      // Upload images
       const uploadResponse = await uploadImages(selectedImages);
       const uploadedImageUrls = uploadResponse.data.images;
 
@@ -122,9 +157,16 @@ const MakeAnAdScreen = ({ navigation }) => {
         images: uploadedImageUrls,
       });
     } catch (error) {
-      console.error('Image upload error:', error);
-      setUploadError(error.message || 'Failed to upload images. Please try again.');
-      Alert.alert('Upload Error', error.message || 'Failed to upload images. Please try again.');
+      console.error('Error:', error);
+
+      // Check if it's a moderation error
+      if (error.response && error.response.data && error.response.data.message) {
+        setModerationError(error.response.data.message);
+        Alert.alert(t('Error'), error.response.data.message);
+      } else {
+        setUploadError(error.message || 'Failed to process your request. Please try again.');
+        Alert.alert(t('Error'), error.message || t('Failed to process your request. Please try again.'));
+      }
     } finally {
       setIsUploading(false);
     }
@@ -138,22 +180,22 @@ const MakeAnAdScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Make an Ad</Text>
-          <Text style={styles.stepIndicator}>1/8</Text>
+          <Text style={styles.headerTitle}>{t('Make an Ad')}</Text>
+          {/* <Text style={styles.stepIndicator}>1/8</Text> */}
         </View>
 
         {/* Choose Images Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose images:</Text>
-          <Text style={styles.uploadText}>Add max 3 x images with max picture size 300 kb</Text>
+          <Text style={styles.sectionTitle}>{t('Choose images:')}</Text>
+          <Text style={styles.uploadText}>{t('Add max 3 x images with max picture size 300 kb')}</Text>
 
           {/* Image Selection Buttons */}
           <View style={styles.selectionButtons}>
             <TouchableOpacity style={styles.selectionButton} onPress={pickFromCamera}>
-              <Text style={styles.selectionButtonText}>📷 Camera</Text>
+              <Text style={styles.selectionButtonText}>{t('📷 Camera')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.selectionButton} onPress={pickFromGallery}>
-              <Text style={styles.selectionButtonText}>🖼️ Gallery</Text>
+              <Text style={styles.selectionButtonText}>{t('🖼️ Gallery')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -179,7 +221,7 @@ const MakeAnAdScreen = ({ navigation }) => {
             ))}
           </View>
 
-          <Text style={styles.allowedFiles}>Allowed file types: .jpg, .jpeg, .png, .gif, .bmp, .webp</Text>
+          <Text style={styles.allowedFiles}>{t('Allowed file types: .jpg, .jpeg, .png, .gif, .bmp, .webp')}</Text>
 
           {/* Upload Error */}
           {uploadError ? (
@@ -189,27 +231,32 @@ const MakeAnAdScreen = ({ navigation }) => {
 
         {/* Title and Description Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose a title and description:</Text>
+          <Text style={styles.sectionTitle}>{t('Choose a title and description:')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ad title"
+            placeholder={t('Ad title')}
             placeholderTextColor="#999"
             value={title}
             onChangeText={setTitle}
           />
           <TextInput
             style={styles.input}
-            placeholder="Description"
+            placeholder={t('Description')}
             placeholderTextColor="#999"
             value={description}
             onChangeText={setDescription}
           />
-          <Text style={styles.charLimit}>Enter description max 300 words</Text>
+          <Text style={styles.charLimit}>{t('Enter description max 300 words')}</Text>
+
+          {/* Moderation Error */}
+          {moderationError ? (
+            <Text style={styles.errorText}>{moderationError}</Text>
+          ) : null}
         </View>
 
         {/* Display Time Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose display time:</Text>
+          <Text style={styles.sectionTitle}>{t('Choose display time:')}</Text>
           <View style={styles.displayTimeButtons}>
             <TouchableOpacity
               style={[
@@ -223,9 +270,7 @@ const MakeAnAdScreen = ({ navigation }) => {
                   styles.timeButtonText,
                   displayTime === '60days' && styles.timeButtonTextActive,
                 ]}
-              >
-                60 days
-              </Text>
+              >{t('60 days')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -239,9 +284,7 @@ const MakeAnAdScreen = ({ navigation }) => {
                   styles.timeButtonText,
                   displayTime === 'continuous' && styles.timeButtonTextActive,
                 ]}
-              >
-                Continuous
-              </Text>
+              >{t('Continuous')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -255,10 +298,10 @@ const MakeAnAdScreen = ({ navigation }) => {
           {isUploading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={styles.continueButtonText}>Uploading...</Text>
+              <Text style={styles.continueButtonText}>{t('Uploading...')}</Text>
             </View>
           ) : (
-            <Text style={styles.continueButtonText}>Continue</Text>
+            <Text style={styles.continueButtonText}>{t('Continue')}</Text>
           )}
         </TouchableOpacity>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const SelectProblemScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, order } = route.params;
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,16 +55,14 @@ const SelectProblemScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Select Problem</Text>
-          <Text style={styles.subtitle}>
-            Choose the specific issue you're experiencing
-          </Text>
+          <Text style={styles.title}>{t('Select Problem')}</Text>
+          <Text style={styles.subtitle}>{t("Choose the specific issue you're experiencing")}</Text>
         </View>
 
         <View style={styles.selectedInfo}>
-          <Text style={styles.selectedLabel}>Category:</Text>
+          <Text style={styles.selectedLabel}>{t('Category:')}</Text>
           <Text style={styles.selectedValue}>{category.name}</Text>
-          <Text style={styles.selectedLabel}>Product:</Text>
+          <Text style={styles.selectedLabel}>{t('Product:')}</Text>
           <Text style={styles.selectedValue} numberOfLines={2}>
             {order.product_name}
           </Text>
@@ -96,10 +96,8 @@ const SelectProblemScreen = ({ navigation, route }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#FFA500" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Important</Text>
-            <Text style={styles.infoText}>
-              Choose the problem that best describes your situation. This helps us route your dispute to the right team for faster resolution.
-            </Text>
+            <Text style={styles.infoTitle}>{t('Important')}</Text>
+            <Text style={styles.infoText}>{t('Choose the problem that best describes your situation. This helps us route your dispute to the right team for faster resolution.')}</Text>
           </View>
         </View>
       </ScrollView>

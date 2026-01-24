@@ -11,6 +11,10 @@ import {
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/constants/theme';
 import { AuthProvider } from './src/context/AuthContext';
+import { NotificationProvider } from './src/context/NotificationContext';
+import { TranslationProvider } from './src/context/TranslationContext';
+import { WalletProvider } from './src/contexts/WalletContext';
+import NotificationPopup from './src/components/NotificationPopup';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -44,12 +48,19 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <StatusBar style="auto" />
-        {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
-        <AppNavigator />
-        {/* </SafeAreaView> */}
-      </AuthProvider>
+      <TranslationProvider>
+        <AuthProvider>
+          <WalletProvider>
+            <NotificationProvider>
+              <StatusBar style="auto" />
+              {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
+              <AppNavigator />
+              {/* </SafeAreaView> */}
+              <NotificationPopup />
+            </NotificationProvider>
+          </WalletProvider>
+        </AuthProvider>
+      </TranslationProvider>
     </SafeAreaProvider>
   );
 }

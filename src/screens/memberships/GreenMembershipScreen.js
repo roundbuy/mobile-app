@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const GreenMembershipScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   return (
     <SafeScreenContainer>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -12,37 +14,37 @@ const GreenMembershipScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Membership plans</Text>
+          <Text style={styles.headerTitle}>{t('Membership plans')}</Text>
         </View>
 
         {/* Plan Card */}
         <View style={styles.planCard}>
           <View style={[styles.planHeader, { backgroundColor: '#7FD957' }]}>
-            <Text style={styles.planTitle}>Green</Text>
+            <Text style={styles.planTitle}>{t('Green')}</Text>
           </View>
 
           <View style={styles.planContent}>
-            <Text style={styles.planSubtitle}>Essential features for private users.</Text>
+            <Text style={styles.planSubtitle}>{t('Essential features for private users.')}</Text>
             <View style={styles.priceContainer}>
-              <Text style={styles.priceText}>Price £2 now for free £0 / year</Text>
+              <Text style={styles.priceText}>{t('Price £2 now for free £0 / year')}</Text>
               <TouchableOpacity style={styles.infoIcon}>
                 <Text style={styles.infoIconText}>ⓘ</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.currentPlanBadge}>
-              <Text style={styles.currentPlanText}>Current plan</Text>
+              <Text style={styles.currentPlanText}>{t('Current plan')}</Text>
             </View>
 
-            <Text style={styles.featuresTitle}>Green plan includes</Text>
-            <Text style={styles.featureItem}>• 1 x centre-point (changeable spot to search)</Text>
-            <Text style={styles.featureItem}>• 1 x product location (a spot to sell)</Text>
-            <Text style={styles.featureItem}>• Unlimited standard ads</Text>
-            <Text style={styles.featureItem}>• Display time for ads 60 days</Text>
-            <Text style={styles.featureItem}>• Highlighted ads for normal price</Text>
-            <Text style={styles.featureItem}>• Chat service between private users</Text>
-            <Text style={styles.featureItem}>• Pick & Transaction fee £0.00 for 10 Ads</Text>
-            <Text style={styles.featureItem}>• Pick & Transaction fee £0.70 for +10 Ads</Text>
+            <Text style={styles.featuresTitle}>{t('Green plan includes')}</Text>
+            <Text style={styles.featureItem}>{t('• 1 x centre-point (changeable spot to search)')}</Text>
+            <Text style={styles.featureItem}>{t('• 1 x product location (a spot to sell)')}</Text>
+            <Text style={styles.featureItem}>{t('• Unlimited standard ads')}</Text>
+            <Text style={styles.featureItem}>{t('• Display time for ads 60 days')}</Text>
+            <Text style={styles.featureItem}>{t('• Highlighted ads for normal price')}</Text>
+            <Text style={styles.featureItem}>{t('• Chat service between private users')}</Text>
+            <Text style={styles.featureItem}>{t('• Pick & Transaction fee £0.00 for 10 Ads')}</Text>
+            <Text style={styles.featureItem}>{t('• Pick & Transaction fee £0.70 for +10 Ads')}</Text>
           </View>
         </View>
       </ScrollView>

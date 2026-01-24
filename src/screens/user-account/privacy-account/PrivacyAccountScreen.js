@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -9,8 +10,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
+import { COLORS } from '../../../constants/theme';
 
 const PrivacyAccountScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -27,7 +31,44 @@ const PrivacyAccountScreen = ({ navigation }) => {
 
   const handleMenuPress = (item) => {
     console.log('Selected:', item.title);
-    // Navigation logic for each menu item will be added here
+
+    switch (item.id) {
+      case 1: // Privacy policy
+        navigation.navigate('PolicyDetail', { policyType: 'privacy' });
+        break;
+      case 2: // ATT tracking preferences
+        navigation.navigate('ATTTrackingSettings');
+        break;
+      case 3: // Cookies preferences
+        navigation.navigate('CookieSettings');
+        break;
+      case 4: // Request Deletion of User Data
+        navigation.navigate('ConfirmAccessRights', {
+          requestType: 'deletion',
+          title: 'Request Deletion of User Data'
+        });
+        break;
+      case 5: // Download your Personal Data as PDF
+        navigation.navigate('ConfirmAccessRights', {
+          requestType: 'download',
+          title: 'Download Personal Data'
+        });
+        break;
+      case 6: // Delete personal data
+        navigation.navigate('ConfirmAccessRights', {
+          requestType: 'delete_data',
+          title: 'Delete Personal Data'
+        });
+        break;
+      case 7: // Delete Account
+        navigation.navigate('ConfirmAccessRights', {
+          requestType: 'delete_account',
+          title: 'Delete Account'
+        });
+        break;
+      default:
+        break;
+    }
   };
 
   const renderMenuItem = (item, index, isLastInSection) => (
@@ -53,7 +94,7 @@ const PrivacyAccountScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <GlobalHeader
-        title="Privacy & Account"
+        title={t('Privacy & Account')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}

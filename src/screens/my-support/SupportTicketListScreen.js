@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const SupportTicketListScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -141,9 +143,7 @@ const SupportTicketListScreen = ({ navigation }) => {
                 styles.filterTabText,
                 filter === 'all' && styles.filterTabTextActive,
               ]}
-            >
-              All
-            </Text>
+            >{t('All')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -155,9 +155,7 @@ const SupportTicketListScreen = ({ navigation }) => {
                 styles.filterTabText,
                 filter === 'open' && styles.filterTabTextActive,
               ]}
-            >
-              Open
-            </Text>
+            >{t('Open')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -169,9 +167,7 @@ const SupportTicketListScreen = ({ navigation }) => {
                 styles.filterTabText,
                 filter === 'closed' && styles.filterTabTextActive,
               ]}
-            >
-              Closed
-            </Text>
+            >{t('Closed')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -186,10 +182,8 @@ const SupportTicketListScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="inbox" size={64} color="#CCC" />
-              <Text style={styles.emptyTitle}>No Tickets</Text>
-              <Text style={styles.emptyText}>
-                You don't have any support tickets yet
-              </Text>
+              <Text style={styles.emptyTitle}>{t('No Tickets')}</Text>
+              <Text style={styles.emptyText}>{t("You don't have any support tickets yet")}</Text>
             </View>
           }
         />

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityPaymentScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ad, type, duration, distance, total } = route.params;
 
   const [selectedPayment, setSelectedPayment] = useState('card');
@@ -44,28 +46,16 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack}>
           <Text style={styles.closeButton}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Choose a payment method</Text>
+        <Text style={styles.headerTitle}>{t('Choose a payment method')}</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Google Pay */}
-        <TouchableOpacity 
-          style={styles.paymentOption}
-          onPress={() => setSelectedPayment('googlepay')}
-          activeOpacity={0.7}
-        >
-          <View style={styles.googlePayIcon}>
-            <Text style={styles.googleText}>G</Text>
-          </View>
-          <Text style={styles.paymentText}>Pay</Text>
-        </TouchableOpacity>
-
-        {/* Or pay using */}
-        <Text style={styles.orText}>Or pay using</Text>
+        {/* Pay using */}
+        <Text style={styles.orText}>{t('Pay using')}</Text>
 
         {/* Payment Method Icons */}
         <View style={styles.paymentIcons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.iconButton,
               selectedPayment === 'card' && styles.iconButtonSelected
@@ -77,55 +67,18 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
               <View style={styles.cardStripe} />
             </View>
           </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'klarna' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('klarna')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.klarnaIcon}>
-              <Text style={styles.klarnaText}>K</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'paypal' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('paypal')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.paypalIcon}>
-              <Text style={styles.paypalText}>P</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.iconButton,
-              selectedPayment === 'bank' && styles.iconButtonSelected
-            ]}
-            onPress={() => setSelectedPayment('bank')}
-            activeOpacity={0.7}
-          >
-            <View style={styles.bankIcon} />
-          </TouchableOpacity>
         </View>
 
         {/* Card Information */}
         {selectedPayment === 'card' && (
           <>
             <View style={styles.cardInfoSection}>
-              <Text style={styles.sectionTitle}>Card information</Text>
+              <Text style={styles.sectionTitle}>{t('Card information')}</Text>
 
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.input}
-                  placeholder="Card number"
+                  placeholder={t('Card number')}
                   placeholderTextColor="#999"
                   value={cardNumber}
                   onChangeText={setCardNumber}
@@ -138,7 +91,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                 <View style={[styles.inputContainer, { flex: 1, marginRight: 12 }]}>
                   <TextInput
                     style={styles.input}
-                    placeholder="MM / YY"
+                    placeholder={t('MM / YY')}
                     placeholderTextColor="#999"
                     value={cardNumber}
                     onChangeText={setCardNumber}
@@ -148,7 +101,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                 <View style={[styles.inputContainer, { width: 100 }]}>
                   <TextInput
                     style={styles.input}
-                    placeholder="CVC"
+                    placeholder={t('CVC')}
                     placeholderTextColor="#999"
                     value={cvc}
                     onChangeText={setCvc}
@@ -162,16 +115,16 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
 
             {/* Country or Region */}
             <View style={styles.countrySection}>
-              <Text style={styles.sectionTitle}>Country or region</Text>
-              
+              <Text style={styles.sectionTitle}>{t('Country or region')}</Text>
+
               <View style={styles.countryInput}>
-                <Text style={styles.countryText}>United Kingdom</Text>
+                <Text style={styles.countryText}>{t('United Kingdom')}</Text>
               </View>
 
               <View style={styles.inputContainer}>
                 <TextInput
                   style={styles.input}
-                  placeholder="ZIP"
+                  placeholder={t('ZIP')}
                   placeholderTextColor="#999"
                   value={zipCode}
                   onChangeText={setZipCode}
@@ -181,14 +134,12 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
             </View>
 
             {/* Save for Future */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.saveForFutureContainer}
               onPress={() => setSaveForFuture(!saveForFuture)}
               activeOpacity={0.7}
             >
-              <Text style={styles.saveForFutureText}>
-                Save for future RoundBuy payments
-              </Text>
+              <Text style={styles.saveForFutureText}>{t('Save for future RoundBuy payments')}</Text>
               <View style={[styles.checkbox, saveForFuture && styles.checkboxChecked]}>
                 {saveForFuture && <Text style={styles.checkmark}>✓</Text>}
               </View>
@@ -197,12 +148,12 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
         )}
 
         {/* Continue Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.continueButton}
           onPress={handleContinue}
           activeOpacity={0.7}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />
@@ -247,25 +198,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 24,
   },
-  googlePayIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#4285F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  googleText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  paymentText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
+
   orText: {
     fontSize: 14,
     color: '#666',
@@ -305,38 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
     borderRadius: 2,
   },
-  klarnaIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFB3C7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  klarnaText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#000',
-  },
-  paypalIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#B4E96D',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paypalText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  bankIcon: {
-    width: 32,
-    height: 24,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4,
-  },
+
   cardInfoSection: {
     paddingHorizontal: 20,
     marginBottom: 24,

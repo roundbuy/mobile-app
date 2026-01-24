@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PublishAdScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const handlePublish = () => {
     // Navigate to search or home after publishing
     navigation.navigate('SearchScreen');
@@ -17,8 +19,8 @@ const PublishAdScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Publish Ad</Text>
-          <Text style={styles.stepIndicator}>8/8</Text>
+          <Text style={styles.headerTitle}>{t('Publish Ad')}</Text>
+          {/* <Text style={styles.stepIndicator}>8/8</Text> */}
         </View>
 
         {/* Product Image */}
@@ -39,27 +41,27 @@ const PublishAdScreen = ({ navigation, route }) => {
         <View style={styles.productInfo}>
           <View style={styles.productHeader}>
             <View style={styles.productLeft}>
-              <Text style={styles.productTitle}>Armchair</Text>
-              <Text style={styles.productDistance}>Distance 1000 m / 25 min walk</Text>
+              <Text style={styles.productTitle}>{t('Armchair')}</Text>
+              <Text style={styles.productDistance}>{t('Distance 1000 m / 25 min walk')}</Text>
             </View>
             <TouchableOpacity style={styles.buyButton}>
-              <Text style={styles.buyButtonText}>BUY £300</Text>
+              <Text style={styles.buyButtonText}>{t('BUY £300')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Description */}
           <View style={styles.descriptionSection}>
-            <Text style={styles.descriptionTitle}>Description</Text>
+            <Text style={styles.descriptionTitle}>{t('Description')}</Text>
             <Text style={styles.descriptionText}>
               A wonderful armchair with brown covering and black legs. Hardly used. Massive wood.{' '}
-              <Text style={styles.readMore}>Read more...</Text>
+              <Text style={styles.readMore}>{t('Read more...')}</Text>
             </Text>
           </View>
         </View>
 
         {/* Publish Button */}
         <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
-          <Text style={styles.publishButtonText}>Publish</Text>
+          <Text style={styles.publishButtonText}>{t('Publish')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />

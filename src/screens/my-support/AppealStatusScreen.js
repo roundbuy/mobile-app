@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const AppealStatusScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { appealId } = route.params;
   const [appeal, setAppeal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.errorContainer}>
           <Feather name="alert-circle" size={48} color="#FF4444" />
-          <Text style={styles.errorText}>Appeal not found</Text>
+          <Text style={styles.errorText}>{t('Appeal not found')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -111,12 +113,12 @@ const AppealStatusScreen = ({ navigation, route }) => {
         <View style={styles.timelineCard}>
           <Feather name="clock" size={20} color="#4169E1" />
           <View style={styles.timelineContent}>
-            <Text style={styles.timelineTitle}>Review Timeline</Text>
+            <Text style={styles.timelineTitle}>{t('Review Timeline')}</Text>
             <Text style={styles.timelineText}>
               {appeal.status === 'pending' || appeal.status === 'under_review'
                 ? `Expected response within ${supportService.getAppealTimeRemaining(
-                    appeal.created_at
-                  )}`
+                  appeal.created_at
+                )}`
                 : `Reviewed on ${new Date(appeal.reviewed_at).toLocaleDateString()}`}
             </Text>
           </View>
@@ -124,7 +126,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
 
         {/* Ad Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ad Information</Text>
+          <Text style={styles.sectionTitle}>{t('Ad Information')}</Text>
           <View style={styles.card}>
             <View style={styles.adHeader}>
               {appeal.ad_image && (
@@ -150,16 +152,16 @@ const AppealStatusScreen = ({ navigation, route }) => {
 
         {/* Appeal Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Appeal Details</Text>
+          <Text style={styles.sectionTitle}>{t('Appeal Details')}</Text>
           <View style={styles.card}>
-            <InfoRow label="Submitted" value={new Date(appeal.created_at).toLocaleString()} />
-            <InfoRow label="Status" value={supportService.formatAppealStatus(appeal.status)} />
+            <InfoRow label={t('Submitted')} value={new Date(appeal.created_at).toLocaleString()} />
+            <InfoRow label={t('Status')} value={supportService.formatAppealStatus(appeal.status)} />
           </View>
         </View>
 
         {/* Your Reason */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Reason</Text>
+          <Text style={styles.sectionTitle}>{t('Your Reason')}</Text>
           <View style={styles.card}>
             <Text style={styles.reasonText}>{appeal.reason}</Text>
           </View>
@@ -167,7 +169,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
 
         {/* Your Explanation */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Explanation</Text>
+          <Text style={styles.sectionTitle}>{t('Your Explanation')}</Text>
           <View style={styles.card}>
             <Text style={styles.explanationText}>{appeal.explanation}</Text>
           </View>
@@ -176,7 +178,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
         {/* Evidence */}
         {appeal.evidence && appeal.evidence.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Evidence Submitted</Text>
+            <Text style={styles.sectionTitle}>{t('Evidence Submitted')}</Text>
             <View style={styles.card}>
               <Text style={styles.evidenceCount}>
                 {appeal.evidence.length} file{appeal.evidence.length > 1 ? 's' : ''}{' '}
@@ -198,7 +200,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
         {/* Admin Decision */}
         {(appeal.status === 'approved' || appeal.status === 'rejected') && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Decision</Text>
+            <Text style={styles.sectionTitle}>{t('Decision')}</Text>
             <View
               style={[
                 styles.card,
@@ -237,19 +239,14 @@ const AppealStatusScreen = ({ navigation, route }) => {
               {appeal.status === 'approved' && (
                 <View style={styles.approvedNotice}>
                   <Feather name="info" size={16} color="#32CD32" />
-                  <Text style={styles.approvedNoticeText}>
-                    Your ad has been restored and is now live again.
-                  </Text>
+                  <Text style={styles.approvedNoticeText}>{t('Your ad has been restored and is now live again.')}</Text>
                 </View>
               )}
 
               {appeal.status === 'rejected' && (
                 <View style={styles.rejectedNotice}>
                   <Feather name="info" size={16} color="#FF4444" />
-                  <Text style={styles.rejectedNoticeText}>
-                    The original decision stands. Please review our policies to avoid
-                    future violations.
-                  </Text>
+                  <Text style={styles.rejectedNoticeText}>{t("The original decision stands. Please review our policies to avoid future violations.")}</Text>
                 </View>
               )}
             </View>
@@ -261,7 +258,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
           <View style={styles.infoCard}>
             <Feather name="info" size={20} color="#4169E1" />
             <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>What's Next?</Text>
+              <Text style={styles.infoTitle}>{t("What's Next?")}</Text>
               <Text style={styles.infoText}>
                 • Our team is reviewing your appeal{'\n'}
                 • This usually takes 48-72 hours{'\n'}
@@ -279,7 +276,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
               style={styles.viewAdButton}
               onPress={() => navigation.navigate('MyAds')}
             >
-              <Text style={styles.viewAdButtonText}>View My Ads</Text>
+              <Text style={styles.viewAdButtonText}>{t('View My Ads')}</Text>
             </TouchableOpacity>
           )}
 
@@ -288,7 +285,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
               style={styles.policiesButton}
               onPress={() => navigation.navigate('PolicySelection')}
             >
-              <Text style={styles.policiesButtonText}>Review Community Guidelines</Text>
+              <Text style={styles.policiesButtonText}>{t('Review Community Guidelines')}</Text>
             </TouchableOpacity>
           )}
         </View>

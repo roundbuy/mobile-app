@@ -2,9 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PolicyDetailScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { policyType, title } = route.params;
+
+  // Redirect to PolicyUpdatesScreen if policy_updates is selected
+  React.useEffect(() => {
+    if (policyType === 'policy_updates') {
+      navigation.replace('PolicyUpdates');
+    }
+  }, [policyType, navigation]);
 
   const getPolicyContent = () => {
     const policies = {
@@ -45,7 +54,7 @@ You must not:
 
 This Agreement shall begin on the date hereof.
 
-© 2025 All Rights Reserved. RoundBuy Private Ltd.`,
+© 2026 All Rights Reserved. RoundBuy Private Ltd.`,
       },
       license: {
         title: title || 'End User License Agreement',
@@ -72,7 +81,7 @@ The Application, including without limitation all copyrights, patents, trademark
 4. YOUR SUGGESTIONS
 Any feedback, comments, ideas, improvements or suggestions provided by you to the Company with respect to the Application shall remain the sole and exclusive property of the Company.
 
-© 2025 RoundBuy Private Ltd. All rights reserved.`,
+© 2026 RoundBuy Private Ltd. All rights reserved.`,
       },
       privacy: {
         title: title || 'Privacy Policy',
@@ -124,7 +133,7 @@ CONTACT US
 If you have questions or comments about this Privacy Policy, please contact us at:
 support@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       cookies: {
         title: title || 'Cookies Policy',
@@ -158,7 +167,82 @@ You can control and manage cookies through your browser settings or through our 
 
 For more information, email: support@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
+      },
+      att: {
+        title: title || 'App Tracking Transparency (ATT)',
+        content: `APP TRACKING TRANSPARENCY (ATT) POLICY
+
+What is App Tracking Transparency?
+App Tracking Transparency (ATT) is a privacy feature that requires apps to get your permission before tracking your activity across other companies' apps and websites.
+
+Why We Request Tracking Permission:
+RoundBuy may request permission to track you across apps and websites owned by other companies to:
+
+1. Personalized Advertising
+- Show you relevant ads based on your interests
+- Measure ad effectiveness
+- Improve ad targeting
+
+2. Analytics and Insights
+- Understand how you use our app
+- Improve app performance
+- Enhance user experience
+
+3. Attribution
+- Measure marketing campaign effectiveness
+- Understand which channels bring users to RoundBuy
+- Optimize our marketing spend
+
+Your Choices:
+You have full control over tracking permissions:
+
+Allow Tracking:
+- Receive personalized ads
+- Help us improve our services
+- Support free features through ad revenue
+
+Ask App Not to Track:
+- Limit data sharing with third parties
+- Receive less personalized ads
+- Maintain maximum privacy
+
+How to Change Your Choice:
+1. Go to Settings on your device
+2. Select Privacy & Security
+3. Select Tracking
+4. Find RoundBuy and toggle your preference
+
+What Data We Track:
+When you allow tracking, we may collect:
+- Device identifiers (IDFA)
+- App usage patterns
+- Purchase history
+- Location data (with permission)
+- Browsing behavior
+
+Third-Party Partners:
+We may share tracking data with:
+- Advertising networks
+- Analytics providers
+- Marketing platforms
+- Attribution services
+
+Your Privacy Matters:
+Whether you allow or deny tracking, we:
+- Protect your personal information
+- Follow all privacy laws and regulations
+- Give you control over your data
+- Maintain transparency about data usage
+
+Questions About ATT?
+Contact us at: privacy@roundbuy.in
+
+Learn More:
+Visit Apple's ATT documentation:
+https://developer.apple.com/app-store/user-privacy-and-data-use/
+
+© 2026 RoundBuy Private Ltd.`,
       },
       prohibited_items: {
         title: title || 'Prohibited & Restricted Items Policy',
@@ -193,7 +277,7 @@ Report Violations:
 If you encounter prohibited items, please report them to:
 support@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       seller_terms: {
         title: title || 'Seller Business Terms',
@@ -237,7 +321,7 @@ RoundBuy reserves the right to terminate seller accounts for violations of these
 For seller support:
 sellers@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       content_moderation: {
         title: title || 'Content & Moderation Policy',
@@ -274,7 +358,7 @@ Report Content:
 If you encounter inappropriate content:
 moderation@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       subscriptions: {
         title: title || 'Subscriptions & Billing Policy',
@@ -295,8 +379,6 @@ Billing Cycle:
 
 Payment Methods:
 - Credit/Debit cards
-- PayPal
-- Apple Pay / Google Pay
 - Bank transfer
 
 Cancellation:
@@ -316,7 +398,7 @@ Price Changes:
 For billing support:
 billing@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       referral: {
         title: title || 'Referral & Credits Policy',
@@ -358,7 +440,7 @@ RoundBuy reserves the right to:
 Questions?
 referrals@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       register_record: {
         title: title || 'Register and Record Statement',
@@ -399,7 +481,7 @@ Records may be disclosed:
 - Law enforcement requests
 - Regulatory requirements
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       ip_notice: {
         title: title || 'Intellectual Property & Notice Policy',
@@ -440,7 +522,7 @@ If you believe content was removed in error:
 2. Include required information
 3. Allow 10-14 business days
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       ip_register: {
         title: title || 'IP Register & Rights Management',
@@ -487,7 +569,7 @@ Licensing Inquiries:
 For licensing our IP:
 licensing@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       patents: {
         title: title || 'RoundBuy Patents',
@@ -536,7 +618,7 @@ Licensing:
 For patent licensing inquiries:
 patents@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
       infringement: {
         title: title || 'Infringement Report Policy',
@@ -587,13 +669,13 @@ False infringement claims may result in:
 Questions?
 legal@roundbuy.in
 
-© 2025 RoundBuy Private Ltd.`,
+© 2026 RoundBuy Private Ltd.`,
       },
     };
 
-    return policies[policyType] || { 
-      title: title || 'Policy', 
-      content: 'Policy content not found.' 
+    return policies[policyType] || {
+      title: title || 'Policy',
+      content: 'Policy content not found.'
     };
   };
 
@@ -603,8 +685,8 @@ legal@roundbuy.in
     <SafeScreenContainer>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()} 
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
           <Text style={styles.backArrow}>←</Text>
@@ -620,11 +702,11 @@ legal@roundbuy.in
 
       {/* Action Button */}
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.downloadButton}
           onPress={() => console.log('Download PDF')}
         >
-          <Text style={styles.downloadButtonText}>Download PDF</Text>
+          <Text style={styles.downloadButtonText}>{t('Download PDF')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

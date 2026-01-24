@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -10,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const FeedbacksScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -17,12 +19,12 @@ const FeedbacksScreen = ({ navigation }) => {
   const menuItems = [
     {
       id: 1,
-      title: 'My Feedbacks',
+      title: t('My Feedbacks'),
       route: 'MyFeedbacks',
     },
     {
       id: 2,
-      title: 'Give Feedback',
+      title: t('Give Feedback'),
       route: 'GiveFeedbackList',
     },
   ];
@@ -38,7 +40,7 @@ const FeedbacksScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Feedbacks</Text>
+        <Text style={styles.headerTitle}>{t('Feedbacks')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -57,7 +59,7 @@ const FeedbacksScreen = ({ navigation }) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
         </View>
       </View>
     </SafeAreaView>

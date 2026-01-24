@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
+import { useTranslation } from '../../context/TranslationContext';
 
 const SplashScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   useEffect(() => {
     // Navigate to Alternative 2 after 2 seconds
     const timer = setTimeout(() => {
@@ -23,8 +25,8 @@ const SplashScreen = ({ navigation }) => {
       />
 
       {/* Brand Text */}
-      <Text style={styles.brandText}>Round Buy</Text>
-      <Text style={styles.tagline}>Shop Round The Corner</Text>
+      <Text style={styles.brandText}>{t('Round Buy')}</Text>
+      <Text style={styles.tagline}>{t('Shop Round The Corner')}</Text>
     </View>
   );
 };

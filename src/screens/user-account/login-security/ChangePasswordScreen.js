@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ChangePasswordScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,20 +47,20 @@ const ChangePasswordScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Change Password</Text>
+        <Text style={styles.headerTitle}>{t('Change Password')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Old Password */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Old Password</Text>
+          <Text style={styles.label}>{t('Old Password')}</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
               value={oldPassword}
               onChangeText={setOldPassword}
-              placeholder="Enter old password"
+              placeholder={t('Enter old password')}
               placeholderTextColor="#999"
               secureTextEntry={!showOldPassword}
               autoCapitalize="none"
@@ -78,13 +80,13 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* New Password */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>New Password</Text>
+          <Text style={styles.label}>{t('New Password')}</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
               value={newPassword}
               onChangeText={setNewPassword}
-              placeholder="Enter new password"
+              placeholder={t('Enter new password')}
               placeholderTextColor="#999"
               secureTextEntry={!showNewPassword}
               autoCapitalize="none"
@@ -104,13 +106,13 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* Confirm Password */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Confirm Password</Text>
+          <Text style={styles.label}>{t('Confirm Password')}</Text>
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="Confirm new password"
+              placeholder={t('Confirm new password')}
               placeholderTextColor="#999"
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
@@ -130,7 +132,7 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* Save Button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Password</Text>
+          <Text style={styles.saveButtonText}>{t('Save Password')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotifications } from '../context/NotificationContext';
+import { COLORS } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -36,12 +37,7 @@ const NotificationPopup = ({ navigation }) => {
                 })
             ]).start();
 
-            // Auto-hide after 5 seconds
-            const timer = setTimeout(() => {
-                hidePopup();
-            }, 5000);
-
-            return () => clearTimeout(timer);
+            // No auto-hide - user must manually close or tap
         }
     }, [popupNotification]);
 
@@ -72,7 +68,7 @@ const NotificationPopup = ({ navigation }) => {
                 : popupNotification.actionData;
 
             if (popupNotification.actionType === 'open_screen' && actionData.screen) {
-                navigation.navigate(actionData.screen);
+                navigation?.navigate(actionData.screen);
             } else if (popupNotification.actionType === 'open_url' && actionData.url) {
                 // Open URL
                 console.log('Open URL:', actionData.url);
@@ -111,7 +107,7 @@ const NotificationPopup = ({ navigation }) => {
                     <View style={styles.textContainer}>
                         <View style={styles.header}>
                             <View style={styles.iconContainer}>
-                                <Ionicons name="notifications" size={20} color="#3B82F6" />
+                                <Ionicons name="notifications" size={20} color={COLORS.primary} />
                             </View>
                             <Text style={styles.title} numberOfLines={1}>
                                 {popupNotification.title}
@@ -120,7 +116,7 @@ const NotificationPopup = ({ navigation }) => {
                                 style={styles.closeButton}
                                 onPress={hidePopup}
                             >
-                                <Ionicons name="close" size={20} color="#6B7280" />
+                                <Ionicons name="close" size={20} color="#666" />
                             </TouchableOpacity>
                         </View>
 
@@ -145,16 +141,18 @@ const styles = StyleSheet.create({
     },
     popup: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
         shadowRadius: 12,
-        elevation: 8
+        elevation: 8,
+        borderWidth: 1,
+        borderColor: '#e0e0e0'
     },
     content: {
         overflow: 'hidden',
-        borderRadius: 16
+        borderRadius: 12
     },
     image: {
         width: '100%',
@@ -172,16 +170,16 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: '#EFF6FF',
+        backgroundColor: '#f5f5f5',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 8
     },
     title: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
-        color: '#111827'
+        color: '#000'
     },
     closeButton: {
         padding: 4,
@@ -189,7 +187,7 @@ const styles = StyleSheet.create({
     },
     message: {
         fontSize: 14,
-        color: '#6B7280',
+        color: '#666',
         lineHeight: 20,
         marginLeft: 40
     }

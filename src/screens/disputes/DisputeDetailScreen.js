@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -16,6 +17,7 @@ import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
 const DisputeDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { disputeId } = route.params || {};
     const [loading, setLoading] = useState(true);
     const [dispute, setDispute] = useState(null);
@@ -98,7 +100,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Load dispute error:', error);
-            Alert.alert('Error', 'Failed to load dispute details');
+            Alert.alert(t('Error'), t('Failed to load dispute details'));
         } finally {
             setLoading(false);
         }
@@ -118,11 +120,11 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
     const handleSendResponse = async () => {
         if (!sellerResponse.trim()) {
-            Alert.alert('Error', 'Please enter your response');
+            Alert.alert(t('Error'), t('Please enter your response'));
             return;
         }
         if (!sellerDecision) {
-            Alert.alert('Error', 'Please select your decision');
+            Alert.alert(t('Error'), t('Please select your decision'));
             return;
         }
 
@@ -132,10 +134,10 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                 response: sellerResponse,
                 decision: sellerDecision,
             });
-            Alert.alert('Success', 'Response sent to buyer');
+            Alert.alert(t('Success'), t('Response sent to buyer'));
             loadDisputeDetails(); // Reload to show updated state
         } catch (error) {
-            Alert.alert('Error', 'Failed to send response');
+            Alert.alert(t('Error'), t('Failed to send response'));
         } finally {
             setActionLoading(false);
         }
@@ -143,21 +145,21 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
     const handleCloseDispute = () => {
         Alert.alert(
-            'Close Dispute',
-            'Are you sure you want to close this dispute?',
+            t('Close Dispute'),
+            t('Are you sure you want to close this dispute?'),
             [
-                { text: 'Cancel', style: 'cancel' },
+                { text: t('Cancel'), style: t('cancel') },
                 {
-                    text: 'Close',
-                    style: 'destructive',
+                    text: t('Close'),
+                    style: t('destructive'),
                     onPress: async () => {
                         setActionLoading(true);
                         try {
                             await disputeService.closeDispute(disputeId);
-                            Alert.alert('Success', 'Dispute closed successfully');
+                            Alert.alert(t('Success'), t('Dispute closed successfully'));
                             navigation.goBack();
                         } catch (error) {
-                            Alert.alert('Error', 'Failed to close dispute');
+                            Alert.alert(t('Error'), t('Failed to close dispute'));
                         } finally {
                             setActionLoading(false);
                         }
@@ -182,7 +184,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
     if (!dispute) {
         return (
             <SafeAreaView style={styles.container}>
-                <Text style={styles.errorText}>Dispute not found</Text>
+                <Text style={styles.errorText}>{t('Dispute not found')}</Text>
             </SafeAreaView>
         );
     }
@@ -236,15 +238,15 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                 {/* Product Info */}
                 <View style={styles.infoSection}>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Product:</Text>
+                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
                         <Text style={styles.infoValue}>{dispute.ad_title || 'N/A'}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issuer:</Text>
+                        <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
                         <Text style={styles.infoValue}>{dispute.user_name || 'N/A'}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issued to:</Text>
+                        <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
                         <Text style={styles.infoValue}>{dispute.respondent_name || 'Seller'}</Text>
                     </View>
                 </View>
@@ -253,23 +255,23 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                 <TouchableOpacity style={styles.linkButton}>
                     <Text style={styles.linkText}>
                         To view Buyer's Issue & Request click{' '}
-                        <Text style={styles.linkHighlight}>here</Text>
+                        <Text style={styles.linkHighlight}>{t('here')}</Text>
                     </Text>
                 </TouchableOpacity>
 
                 {/* Buyer's Issue */}
                 <View style={styles.issueSection}>
                     <View style={styles.issueSectionHeader}>
-                        <Text style={styles.sectionTitle}>BUYER'S ISSUE</Text>
+                        <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
                         <Text style={styles.sectionTime}>{formatDate(dispute.created_at)}</Text>
                     </View>
 
-                    <Text style={styles.fieldLabel}>The Disputed Issue with the product:</Text>
+                    <Text style={styles.fieldLabel}>{t('The Disputed Issue with the product:')}</Text>
                     <View style={styles.textBox}>
                         <Text style={styles.textBoxContent}>{dispute.problem_description}</Text>
                     </View>
 
-                    <Text style={styles.fieldLabel}>Issuers Demand:</Text>
+                    <Text style={styles.fieldLabel}>{t('Issuers Demand:')}</Text>
                     <View style={styles.textBox}>
                         <Text style={styles.textBoxContent}>{dispute.dispute_category || dispute.buyer_demand || 'Full refund requested'}</Text>
                     </View>
@@ -278,7 +280,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                     <TouchableOpacity style={styles.evidenceLink}>
                         <Text style={styles.linkText}>
                             Buyer's Upload evidence in PDF format{' '}
-                            <Text style={styles.linkHighlight}>Chat history.pdf (uploaded) click to view</Text>
+                            <Text style={styles.linkHighlight}>{t('Chat history.pdf (uploaded) click to view')}</Text>
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -288,22 +290,22 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                     // SELLER VIEW - Pending Response (Image 1)
                     <View style={styles.responseSection}>
                         <View style={styles.issueSectionHeader}>
-                            <Text style={styles.sectionTitle}>SELLER'S RESPONSE</Text>
+                            <Text style={styles.sectionTitle}>{t("SELLER'S RESPONSE")}</Text>
                             <Text style={styles.sectionTime}>{formatDate(new Date())}</Text>
                         </View>
 
-                        <Text style={styles.fieldLabel}>Response to the Disputed Issue:</Text>
+                        <Text style={styles.fieldLabel}>{t('Response to the Disputed Issue:')}</Text>
                         <TextInput
                             style={styles.textInput}
                             multiline
                             numberOfLines={6}
-                            placeholder="Enter your response to the buyer's issue..."
+                            placeholder={t("Enter your response to the buyer's issue...")}
                             value={sellerResponse}
                             onChangeText={setSellerResponse}
                             textAlignVertical="top"
                         />
 
-                        <Text style={styles.fieldLabel}>SELLER' DECISION</Text>
+                        <Text style={styles.fieldLabel}>{t("SELLER'S DECISION")}</Text>
                         <View style={styles.decisionContainer}>
                             <TouchableOpacity
                                 style={styles.decisionTextRow}
@@ -319,9 +321,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                     <Text style={[
                                         styles.decisionRowText,
                                         sellerDecision === 'accept' && styles.decisionRowTextSelected
-                                    ]}>
-                                        I accept the Demand and Cancel the deal!
-                                    </Text>
+                                    ]}>{t('I accept the Demand and Cancel the deal!')}</Text>
                                 </View>
                             </TouchableOpacity>
 
@@ -339,9 +339,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                     <Text style={[
                                         styles.decisionRowText,
                                         sellerDecision === 'decline' && styles.decisionRowTextSelected
-                                    ]}>
-                                        I decline the Demand and keep to the Agreement!
-                                    </Text>
+                                    ]}>{t('I decline the Demand and keep to the Agreement!')}</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -350,13 +348,13 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                         <TouchableOpacity style={styles.evidenceLink}>
                             <Text style={styles.linkText}>
                                 Seller Upload evidence in PDF format click{' '}
-                                <Text style={styles.linkHighlight}>here</Text>
+                                <Text style={styles.linkHighlight}>{t('here')}</Text>
                             </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.evidenceLink}>
                             <Text style={styles.linkText}>
-                                <Text style={styles.linkHighlight}>My Chat history.pdf (uploaded)</Text> click to view
+                                <Text style={styles.linkHighlight}>{t('My Chat history.pdf (uploaded)')}</Text> click to view
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -364,16 +362,16 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                     // SELLER HAS RESPONDED - Show response (Image 2)
                     <View style={styles.responseSection}>
                         <View style={styles.issueSectionHeader}>
-                            <Text style={styles.sectionTitle}>SELLER'S RESPONSE</Text>
+                            <Text style={styles.sectionTitle}>{t("SELLER'S RESPONSE")}</Text>
                             <Text style={styles.sectionTime}>{formatDate(dispute.updated_at)}</Text>
                         </View>
 
-                        <Text style={styles.fieldLabel}>Response to the Issue:</Text>
+                        <Text style={styles.fieldLabel}>{t('Response to the Issue:')}</Text>
                         <View style={styles.textBox}>
                             <Text style={styles.textBoxContent}>{dispute.seller_response}</Text>
                         </View>
 
-                        <Text style={styles.fieldLabel}>SELLER'S DECISION</Text>
+                        <Text style={styles.fieldLabel}>{t("SELLER'S DECISION")}</Text>
                         <View style={styles.decisionBox}>
                             <Text style={styles.decisionText}>
                                 {dispute.seller_decision === 'accept'
@@ -386,7 +384,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                         <TouchableOpacity style={styles.evidenceLink}>
                             <Text style={styles.linkText}>
                                 Seller's Uploaded evidence in PDF format{' '}
-                                <Text style={styles.linkHighlight}>My Chat history.pdf (uploaded) click to view</Text>
+                                <Text style={styles.linkHighlight}>{t('My Chat history.pdf (uploaded) click to view')}</Text>
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -396,7 +394,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
@@ -416,9 +414,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                         </TouchableOpacity>
                     ) : isSeller && hasSellerResponded ? (
                         // Seller has responded - Show confirmation message
-                        <Text style={styles.waitingText}>
-                            Your response has been sent to the buyer. Waiting for buyer's action...
-                        </Text>
+                        <Text style={styles.waitingText}>{t("Your response has been sent to the buyer. Waiting for buyer's action...")}</Text>
                     ) : !isSeller && hasSellerResponded && dispute.seller_decision === 'decline' ? (
                         // BUYER view - Seller declined - Show Escalate and Close buttons
                         <>
@@ -427,7 +423,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                 onPress={handleEscalateToClaim}
                                 disabled={actionLoading}
                             >
-                                <Text style={styles.escalateButtonText}>Escalate to Claim</Text>
+                                <Text style={styles.escalateButtonText}>{t('Escalate to Claim')}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -435,7 +431,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                 onPress={handleCloseDispute}
                                 disabled={actionLoading}
                             >
-                                <Text style={styles.closeButtonText}>Close the Dispute</Text>
+                                <Text style={styles.closeButtonText}>{t('Close the Dispute')}</Text>
                             </TouchableOpacity>
                         </>
                     ) : !isSeller && hasSellerResponded && dispute.seller_decision === 'accept' ? (
@@ -445,11 +441,11 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                             onPress={handleCloseDispute}
                             disabled={actionLoading}
                         >
-                            <Text style={styles.closeButtonText}>Close the Dispute</Text>
+                            <Text style={styles.closeButtonText}>{t('Close the Dispute')}</Text>
                         </TouchableOpacity>
                     ) : !isSeller && !hasSellerResponded ? (
                         // BUYER view - waiting for seller response
-                        <Text style={styles.waitingText}>Waiting for seller's response...</Text>
+                        <Text style={styles.waitingText}>{t("Waiting for seller's response...")}</Text>
                     ) : null}
                 </View>
             </ScrollView>

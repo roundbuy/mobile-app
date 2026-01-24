@@ -3,22 +3,25 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const LicenseAgreementScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const handleAccept = () => {
     navigation.replace('ATTPrompt');
   };
 
   const handleCancel = () => {
-    console.log('License declined');
+    navigation.navigate('RoundBuyInfo', { from: 'license' });
   };
 
-  const handleLegalPress = () => {
-    navigation.navigate('LegalAgreements');
-  };
 
   const handlePolicyPress = (policyType) => {
     navigation.navigate('PolicyDetail', { policyType });
+  };
+
+  const handlePatentInfo = () => {
+    navigation.navigate('PatentPending');
   };
 
   return (
@@ -28,13 +31,20 @@ const LicenseAgreementScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with Logo */}
+        {/* Header with Logo and Patent Info */}
         <View style={styles.header}>
           <Image
             source={IMAGES.logoMain}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <TouchableOpacity onPress={handlePatentInfo}>
+            <Text style={styles.infoLink}>
+              for more information{' '}
+              <Text style={styles.clickHere}>{t('click here')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Content */}
@@ -42,32 +52,28 @@ const LicenseAgreementScreen = ({ navigation }) => {
           <Text style={styles.title}>
             License Agreement, Terms &{'\n'}Conditions, and Privacy Policy
           </Text>
-          
-          <Text style={styles.description}>
-            You must agree to license agreement (EULA), Terms & Conditions and Privacy Policy below in order to complete the installation and use RoundBuy app or services. By clicking "I accept", you are agreeing to the terms of these agreements.
-          </Text>
+
+          <Text style={styles.description}>{t('You must agree to license agreement (EULA), Terms & Conditions and Privacy Policy below in order to complete the installation and use RoundBuy app or services. By clicking "I accept", you are agreeing to the terms of these agreements.')}</Text>
 
           {/* Policy Links */}
           <View style={styles.linksContainer}>
             <Text style={styles.linkText}>
-              Read the License Agreement PDF{' '}
+              {t('Read the License Agreement PDF')}{' '}
               <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('license')}>
-                here
+                {t('here')}
               </Text>
-              {'\n'}Terms & Conditions PDF{' '}
+              {'\n'}{t('Terms & Conditions PDF')}{' '}
               <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('terms')}>
-                here
+                {t('here')}
               </Text>
-              {'\n'}and Privacy Policy{' '}
-              <Text style={styles.linkHighlight} onPress={handleLegalPress}>
-                here
+              {'\n'}{t('and Privacy Policy')}{' '}
+              <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('privacy')}>
+                {t('here')}
               </Text>
             </Text>
           </View>
 
-          <Text style={styles.emailNote}>
-            A copy of the License will be sent to you by email. It is also posted at https://roundbuy.com/legal/
-          </Text>
+          <Text style={styles.emailNote}>{t('A copy of the License will be sent to you by email. It is also posted at https://roundbuy.com/legal/')}</Text>
         </View>
 
         {/* Footer Buttons */}
@@ -77,20 +83,18 @@ const LicenseAgreementScreen = ({ navigation }) => {
               style={styles.acceptButton}
               onPress={handleAccept}
             >
-              <Text style={styles.acceptButtonText}>I accept</Text>
+              <Text style={styles.acceptButtonText}>{t('I accept')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleCancel}
               style={styles.cancelButton}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t('Cancel')}</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.copyright}>
-            © 2020-2025 RoundBuy Inc ®
-          </Text>
+          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
         </View>
       </ScrollView>
     </SafeScreenContainer>
@@ -113,6 +117,25 @@ const styles = StyleSheet.create({
   logo: {
     width: 140,
     height: 60,
+  },
+  patentText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginTop: 12,
+    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  infoLink: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#6a6a6a',
+    letterSpacing: -0.1,
+  },
+  clickHere: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   content: {
     flex: 1,

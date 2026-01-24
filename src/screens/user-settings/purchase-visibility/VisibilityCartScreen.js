@@ -1,5 +1,6 @@
 import React from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityCartScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ad, type, duration, distance } = route.params;
 
   const handleBack = () => {
@@ -55,7 +57,7 @@ const VisibilityCartScreen = ({ navigation, route }) => {
         </View>
 
         {/* Your cart */}
-        <Text style={styles.cartTitle}>Your cart</Text>
+        <Text style={styles.cartTitle}>{t('Your cart')}</Text>
 
         {/* Cart Item */}
         <View style={styles.cartItem}>
@@ -63,7 +65,7 @@ const VisibilityCartScreen = ({ navigation, route }) => {
             <Ionicons name="eye" size={24} color={COLORS.primary} />
           </View>
           <View style={styles.cartItemDetails}>
-            <Text style={styles.itemTitle}>Visibility Ad</Text>
+            <Text style={styles.itemTitle}>{t('Visibility Ad')}</Text>
             <Text style={styles.itemDesc}>{ad.title} - {type} ad</Text>
             <Text style={styles.itemDesc}>{duration.label} • {distance.label}</Text>
           </View>
@@ -73,24 +75,24 @@ const VisibilityCartScreen = ({ navigation, route }) => {
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Subtotal</Text>
+            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
             <Text style={styles.pricingValue}>£{subtotal.toFixed(2)}</Text>
           </View>
           
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Taxes</Text>
+            <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
             <Text style={styles.pricingValue}>£{taxes}</Text>
           </View>
           
           <View style={[styles.pricingRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalLabel}>{t('Total')}</Text>
             <Text style={styles.totalValue}>£{total}</Text>
           </View>
         </View>
 
         {/* Payment Method Section */}
         <View style={styles.paymentMethodSection}>
-          <Text style={styles.paymentMethodTitle}>Payment method</Text>
+          <Text style={styles.paymentMethodTitle}>{t('Payment method')}</Text>
         </View>
 
         {/* Pay Now Button */}
@@ -99,7 +101,7 @@ const VisibilityCartScreen = ({ navigation, route }) => {
           onPress={handlePayNow}
           activeOpacity={0.7}
         >
-          <Text style={styles.payButtonText}>Pay now</Text>
+          <Text style={styles.payButtonText}>{t('Pay now')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

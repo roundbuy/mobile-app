@@ -3,7 +3,7 @@ export default {
     expo: {
         name: "RoundBuy",
         slug: "roundbuy",
-        version: "1.0.0",
+        version: "2.0.0",
         orientation: "portrait",
         icon: "./assets/logo-crop.png",
         userInterfaceStyle: "light",
@@ -17,10 +17,11 @@ export default {
         ],
         ios: {
             supportsTablet: true,
-            bundleIdentifier: "com.roundbuy.app",
-            buildNumber: "1.0.0",
+            bundleIdentifier: "com.buyaround.roundbuy",
+            buildNumber: "2.0.0",
             deploymentTarget: "13.4",
             infoPlist: {
+                ITSAppUsesNonExemptEncryption: false,
                 NSUserTrackingUsageDescription: "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
                 NSLocationWhenInUseUsageDescription: "RoundBuy needs your location to show nearby search results on the map.",
                 NSLocationAlwaysAndWhenInUseUsageDescription: "RoundBuy needs your location to show nearby search results on the map.",
@@ -36,8 +37,10 @@ export default {
                 }
             },
             config: {
-                // Old API key: AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0
+                // Testing with old API key
                 googleMapsApiKey: "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
+                // googleMapsApiKey: "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
+                // Current key (might have restrictions): AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE
             }
         },
         android: {
@@ -45,7 +48,7 @@ export default {
                 foregroundImage: "./assets/logo-crop.png",
                 backgroundColor: "#1E6FD6"
             },
-            package: "com.roundbuy.app",
+            package: "com.buyaround.roundbuy",
             versionCode: 1,
             permissions: [
                 "ACCESS_FINE_LOCATION",
@@ -67,11 +70,18 @@ export default {
         },
         plugins: [
             "expo-font",
+            "expo-localization",
             [
                 "react-native-maps",
                 {
                     "provider": "google",
                     "useGoogleMaps": true
+                }
+            ],
+            [
+                "./plugins/withGoogleMapsIOS",
+                {
+                    "apiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
                 }
             ]
         ],

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RewardCategoryDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category } = route.params;
 
   const handleBack = () => {
@@ -63,7 +65,7 @@ const RewardCategoryDetailScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Referral Get Gold Plan</Text>
+        <Text style={styles.headerTitle}>{t('Referral Get Gold Plan')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -89,7 +91,7 @@ const RewardCategoryDetailScreen = ({ navigation, route }) => {
 
         {/* Menu Options */}
         <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Actions</Text>
+          <Text style={styles.sectionTitle}>{t('Actions')}</Text>
           {menuOptions.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -113,7 +115,7 @@ const RewardCategoryDetailScreen = ({ navigation, route }) => {
         <View style={styles.infoSection}>
           <View style={styles.infoHeader}>
             <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-            <Text style={styles.infoHeaderText}>How it works</Text>
+            <Text style={styles.infoHeaderText}>{t('How it works')}</Text>
           </View>
           <Text style={styles.infoText}>
             1. Share your unique referral code with friends{'\n'}

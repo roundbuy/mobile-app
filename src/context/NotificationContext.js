@@ -39,17 +39,21 @@ export const NotificationProvider = ({ children }) => {
 
     // Initialize on mount
     useEffect(() => {
-        initializeNotifications();
+        // Initialize notifications asynchronously without blocking
+        initializeNotifications().catch(err => {
+            console.error('Failed to initialize notifications:', err);
+        });
+
         setupNotificationListeners();
         startHeartbeat();
 
         return () => {
             stopHeartbeat();
             if (notificationListener.current) {
-                Notifications.removeNotificationSubscription(notificationListener.current);
+                notificationListener.current.remove();
             }
             if (responseListener.current) {
-                Notifications.removeNotificationSubscription(responseListener.current);
+                responseListener.current.remove();
             }
         };
     }, []);
@@ -139,6 +143,13 @@ export const NotificationProvider = ({ children }) => {
     const checkHeartbeat = async () => {
         try {
             const deviceId = await getDeviceId();
+
+            // Skip heartbeat if no device ID (simulator)
+            if (!deviceId) {
+                console.log('Skipping heartbeat - no device ID available');
+                return;
+            }
+
             const lastCheck = lastCheckTime.current;
 
             const result = await notificationService.heartbeat(deviceId, lastCheck);

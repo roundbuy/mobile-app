@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -15,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import disputeService from '../../services/disputeService';
 
 const CreateTicketScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({
         category: '',
@@ -56,22 +58,22 @@ const CreateTicketScreen = ({ navigation }) => {
     const handleSubmit = async () => {
         // Validation
         if (!formData.category) {
-            Alert.alert('Error', 'Please select a category');
+            Alert.alert(t('Error'), t('Please select a category'));
             return;
         }
 
         if (!formData.subject.trim()) {
-            Alert.alert('Error', 'Please enter a subject');
+            Alert.alert(t('Error'), t('Please enter a subject'));
             return;
         }
 
         if (!formData.description.trim()) {
-            Alert.alert('Error', 'Please describe your issue');
+            Alert.alert(t('Error'), t('Please describe your issue'));
             return;
         }
 
         if (formData.description.trim().length < 20) {
-            Alert.alert('Error', 'Please provide more details (at least 20 characters)');
+            Alert.alert(t('Error'), 'Please provide more details (at least 20 characters)');
             return;
         }
 
@@ -84,11 +86,11 @@ const CreateTicketScreen = ({ navigation }) => {
             });
 
             Alert.alert(
-                'Success',
-                'Your support ticket has been created successfully. Our team will respond soon.',
+                t('Success'),
+                t('Your support ticket has been created successfully. Our team will respond soon.'),
                 [
                     {
-                        text: 'View Ticket',
+                        text: t('View Ticket'),
                         onPress: () => {
                             navigation.replace('TicketDetail', { ticketId: response.data.id });
                         },
@@ -102,8 +104,8 @@ const CreateTicketScreen = ({ navigation }) => {
         } catch (error) {
             console.error('Create ticket error:', error);
             Alert.alert(
-                'Error',
-                error.response?.data?.message || 'Failed to create ticket. Please try again.'
+                t('Error'),
+                error.response?.data?.message || t('Failed to create ticket. Please try again.')
             );
         } finally {
             setLoading(false);
@@ -131,16 +133,14 @@ const CreateTicketScreen = ({ navigation }) => {
                     >
                         <Ionicons name="chevron-back" size={28} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Create Support Ticket</Text>
+                    <Text style={styles.headerTitle}>{t('Create Support Ticket')}</Text>
                     <View style={{ width: 28 }} />
                 </View>
 
                 {/* Info Banner */}
                 <View style={styles.infoBanner}>
                     <Ionicons name="information-circle" size={24} color="#4169E1" />
-                    <Text style={styles.infoText}>
-                        Our support team typically responds within 24 hours
-                    </Text>
+                    <Text style={styles.infoText}>{t('Our support team typically responds within 24 hours')}</Text>
                 </View>
 
                 {/* Form */}
@@ -176,7 +176,7 @@ const CreateTicketScreen = ({ navigation }) => {
                         </Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Brief summary of your issue"
+                            placeholder={t('Brief summary of your issue')}
                             value={formData.subject}
                             onChangeText={(text) =>
                                 setFormData({ ...formData, subject: text })
@@ -195,7 +195,7 @@ const CreateTicketScreen = ({ navigation }) => {
                         </Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Please describe your issue in detail..."
+                            placeholder={t('Please describe your issue in detail...')}
                             value={formData.description}
                             onChangeText={(text) =>
                                 setFormData({ ...formData, description: text })
@@ -212,24 +212,18 @@ const CreateTicketScreen = ({ navigation }) => {
 
                     {/* Tips */}
                     <View style={styles.tipsContainer}>
-                        <Text style={styles.tipsTitle}>Tips for faster resolution:</Text>
+                        <Text style={styles.tipsTitle}>{t('Tips for faster resolution:')}</Text>
                         <View style={styles.tip}>
                             <Ionicons name="checkmark-circle" size={16} color="#32CD32" />
-                            <Text style={styles.tipText}>
-                                Be specific about the issue you're experiencing
-                            </Text>
+                            <Text style={styles.tipText}>{t("Be specific about the issue you're experiencing")}</Text>
                         </View>
                         <View style={styles.tip}>
                             <Ionicons name="checkmark-circle" size={16} color="#32CD32" />
-                            <Text style={styles.tipText}>
-                                Include any error messages you see
-                            </Text>
+                            <Text style={styles.tipText}>{t('Include any error messages you see')}</Text>
                         </View>
                         <View style={styles.tip}>
                             <Ionicons name="checkmark-circle" size={16} color="#32CD32" />
-                            <Text style={styles.tipText}>
-                                Mention steps to reproduce the problem
-                            </Text>
+                            <Text style={styles.tipText}>{t('Mention steps to reproduce the problem')}</Text>
                         </View>
                     </View>
 
@@ -244,7 +238,7 @@ const CreateTicketScreen = ({ navigation }) => {
                         ) : (
                             <>
                                 <Ionicons name="send" size={20} color="#FFF" />
-                                <Text style={styles.submitButtonText}>Submit Ticket</Text>
+                                <Text style={styles.submitButtonText}>{t('Submit Ticket')}</Text>
                             </>
                         )}
                     </TouchableOpacity>

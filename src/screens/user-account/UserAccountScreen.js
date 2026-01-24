@@ -8,14 +8,17 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import offerIcon from '../../../assets/Offer.png';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 import GlobalHeader from '../../components/GlobalHeader';
 
 const UserAccountScreen = ({ navigation }) => {
   const { logout, user } = useAuth();
+  const { t, currentLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState('account'); // 'account' or 'settings'
 
   // Use real user data from AuthContext
@@ -34,15 +37,15 @@ const UserAccountScreen = ({ navigation }) => {
 
   const handleLogout = async () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t(t('auth.logout'), t('Logout')),
+      t('account.logout_confirm', 'Are you sure you want to logout?'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel', 'Cancel'),
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: t('auth.logout', 'Logout'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -54,7 +57,10 @@ const UserAccountScreen = ({ navigation }) => {
               });
             } catch (error) {
               console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+              Alert.alert(
+                t(t('common.error'), t('Error')),
+                t('account.logout_failed', 'Failed to logout. Please try again.')
+              );
             }
           },
         },
@@ -64,31 +70,32 @@ const UserAccountScreen = ({ navigation }) => {
 
   const menuItems = {
     account: [
-      { id: 1, title: 'Personal information', icon: 'person-outline' },
-      { id: 2, title: 'Privacy & Account', icon: 'shield-checkmark-outline' },
-      { id: 3, title: 'Login & security', icon: 'lock-closed-outline' },
-      { id: 4, title: 'Billing & payments', icon: 'card-outline' },
-      { id: 5, title: 'Password & Account', icon: 'key-outline' },
-      { id: 6, title: 'Customer support', icon: 'help-circle-outline' },
-      { id: 7, title: 'Country settings', icon: 'globe-outline' },
-      { id: 8, title: 'Notifications', icon: 'notifications-outline' },
-      { id: 9, title: 'Report content', icon: 'flag-outline' },
-      { id: 10, title: 'Legal info', icon: 'document-text-outline' },
-      { id: 11, title: 'Log out', icon: 'log-out-outline', isLogout: true },
+      { id: 1, route: 'PersonalInformation', title: t('account.personal_info', 'Personal information'), icon: 'person-outline' },
+      { id: 2, route: 'PrivacyAccount', title: t('account.privacy', 'Privacy & Account'), icon: 'shield-checkmark-outline' },
+      { id: 3, route: 'LoginSecurity', title: t('account.login_security', 'Login & security'), icon: 'lock-closed-outline' },
+      { id: 4, route: 'BillingPayments', title: t('account.billing', 'Billing & payments'), icon: 'card-outline' },
+      { id: 5, route: 'Wallet', title: t('account.wallet', 'My Wallet'), icon: 'wallet-outline' },
+      { id: 6, route: 'CustomerSupport', title: t('account.support', 'Customer support'), icon: 'help-circle-outline' },
+      { id: 7, route: 'CountrySettings', title: t('account.country_settings', 'Country settings'), icon: 'globe-outline' },
+      { id: 13, route: 'MeasurementSettings', title: t('account.measurement', 'Measurement Unit'), icon: 'resize-outline' },
+      { id: 8, route: 'Notifications', title: t('profile.notifications', 'Notifications'), icon: 'notifications-outline' },
+      { id: 9, route: 'ContactSupport', title: t('account.report_content', 'Report content'), icon: 'flag-outline' },
+      { id: 10, route: 'LegalInfo', title: t('account.legal_info', 'Legal info'), icon: 'document-text-outline' },
+      { id: 11, route: 'logout', title: t('auth.logout', 'Log out'), icon: 'log-out-outline', isLogout: true },
     ],
     settings: [
-      { id: 1, title: 'Manage offers', icon: 'pricetag-outline' },
-      { id: 2, title: 'My Ads', icon: 'megaphone-outline' },
-      { id: 3, title: 'Support & Resolution', icon: 'help-circle-outline', badge: 0 },
-      { id: 4, title: 'Purchase Visibility', icon: 'eye-outline' },
-      { id: 5, title: 'Default location & Product locations', icon: 'location-outline' },
-      { id: 6, title: 'Membership', icon: 'card-outline' },
-      { id: 7, title: 'Feedbacks', icon: 'chatbubble-outline' },
-      { id: 8, title: 'Favourites', icon: 'heart-outline' },
-      { id: 9, title: 'Rewards', icon: 'gift-outline' },
-      { id: 10, title: 'Review', icon: 'star-outline' },
-      { id: 11, title: 'Share', icon: 'share-social-outline' },
-      { id: 12, title: 'Follow', icon: 'person-add-outline' },
+      { id: 1, route: 'ManageOffers', title: t('account.manage_offers', 'Manage offers'), icon: 'pricetag-outline' },
+      { id: 12, route: 'PickUpExchange', title: t('account.pickups', 'Pick Ups & Exchanges'), icon: 'calendar-outline' },
+      { id: 2, route: 'MyAds', title: 'My Ads', icon: 'megaphone-outline' },
+      { id: 3, route: 'SupportResolution', title: t('account.support_resolution', 'Support & Resolution'), icon: 'help-circle-outline', badge: 0 },
+      { id: 4, route: 'PurchaseVisibility', title: t('account.purchase_visibility', 'Purchase Visibility'), icon: 'eye-outline' },
+      { id: 5, route: 'DefaultLocation', title: t('account.locations', 'Default location & Product locations'), icon: 'location-outline' },
+      { id: 6, route: 'AllMemberships', title: t('account.membership', 'Membership'), icon: 'card-outline' },
+      { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
+      { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
+      { id: 9, route: 'Rewards', title: t('account.rewards', 'Rewards'), icon: 'gift-outline' },
+      { id: 10, route: 'Review', title: t('account.review', 'Review'), icon: 'star-outline' },
+      { id: 11, route: 'Share', title: t('account.share', 'Share'), icon: 'share-social-outline' },
     ],
   };
 
@@ -96,46 +103,8 @@ const UserAccountScreen = ({ navigation }) => {
     const handlePress = () => {
       if (item.isLogout) {
         handleLogout();
-      } else if (item.title === 'Personal information') {
-        navigation.navigate('PersonalInformation');
-      } else if (item.title === 'Privacy & Account') {
-        navigation.navigate('PrivacyAccount');
-      } else if (item.title === 'Login & security') {
-        navigation.navigate('LoginSecurity');
-      } else if (item.title === 'Billing & payments') {
-        navigation.navigate('BillingPayments');
-      } else if (item.title === 'Legal info') {
-        navigation.navigate('LegalInfo');
-      } else if (item.title === 'Country settings') {
-        navigation.navigate('CountrySettings');
-      } else if (item.title === 'Customer support') {
-        navigation.navigate('CustomerSupport');
-      } else if (item.title === 'Notifications') {
-        navigation.navigate('Notifications');
-      } else if (item.title === 'Report content') {
-        navigation.navigate('ContactSupport');
-      } else if (item.title === 'Manage offers') {
-        navigation.navigate('ManageOffers');
-      } else if (item.title === 'My Ads') {
-        navigation.navigate('MyAds');
-      } else if (item.title === 'Support & Resolution') {
-        navigation.navigate('SupportResolution');
-      } else if (item.title === 'Purchase Visibility') {
-        navigation.navigate('PurchaseVisibility');
-      } else if (item.title === 'Default location & Product locations') {
-        navigation.navigate('DefaultLocation');
-      } else if (item.title === 'Membership') {
-        navigation.navigate('AllMemberships');
-      } else if (item.title === 'Feedbacks') {
-        navigation.navigate('Feedbacks');
-      } else if (item.title === 'Favourites') {
-        navigation.navigate('Favourites');
-      } else if (item.title === 'Rewards') {
-        navigation.navigate('Rewards');
-      } else if (item.title === 'Review') {
-        navigation.navigate('Review');
-      } else if (item.title === 'Share') {
-        navigation.navigate('Share');
+      } else if (item.route) {
+        navigation.navigate(item.route);
       } else {
         console.log('Navigate to:', item.title);
       }
@@ -149,7 +118,11 @@ const UserAccountScreen = ({ navigation }) => {
         activeOpacity={0.7}
       >
         <View style={styles.menuItemContent}>
-          <Ionicons name={item.icon} size={24} color="#666" style={styles.menuIcon} />
+          {item.route === 'ManageOffers' ? (
+            <Image source={offerIcon} style={styles.customMenuIcon} />
+          ) : (
+            <Ionicons name={item.icon} size={24} color="#666" style={styles.menuIcon} />
+          )}
           <Text style={[styles.menuItemText, item.isLogout && styles.logoutText]}>
             {item.title}
           </Text>
@@ -168,7 +141,7 @@ const UserAccountScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title="User account"
+        title={t('account.title', 'User account')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -204,7 +177,7 @@ const UserAccountScreen = ({ navigation }) => {
           onPress={() => setActiveTab('account')}
         >
           <Text style={[styles.tabText, activeTab === 'account' && styles.activeTabText]}>
-            User account
+            {t('account.tab_account', 'User account')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -212,7 +185,7 @@ const UserAccountScreen = ({ navigation }) => {
           onPress={() => setActiveTab('settings')}
         >
           <Text style={[styles.tabText, activeTab === 'settings' && styles.activeTabText]}>
-            User settings
+            {t('account.tab_settings', 'User settings')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -224,18 +197,23 @@ const UserAccountScreen = ({ navigation }) => {
         {/* Footer Information (only on account tab) */}
         {activeTab === 'account' && (
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Member ID</Text>
+            <Text style={styles.footerText}>{t('account.member_id', 'Member ID')}</Text>
             <Text style={styles.footerValue}>{userData.memberId}</Text>
-            <Text style={styles.footerText}>RoundBuy App</Text>
+            <Text style={styles.footerText}>{t('account.app_name', 'RoundBuy App')}</Text>
             <Text style={styles.footerValue}>{userData.appVersion}</Text>
-            <Text style={styles.copyright}>© 2020-2025, RoundBuy Inc ®</Text>
+            <View style={styles.languageIndicator}>
+              <Text style={styles.languageText}>
+                {t('settings.language', 'Language')}: {currentLanguage.toUpperCase()}
+              </Text>
+            </View>
+            <Text style={styles.copyright}>{t('© 2020-2026, RoundBuy Inc ®')}</Text>
           </View>
         )}
 
         {/* Footer for settings tab */}
         {activeTab === 'settings' && (
           <View style={styles.footer}>
-            <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+            <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
           </View>
         )}
       </ScrollView>
@@ -332,6 +310,13 @@ const styles = StyleSheet.create({
   menuIcon: {
     marginRight: 16,
   },
+  customMenuIcon: {
+    width: 17,
+    height: 23,
+    tintColor: '#666',
+    marginRight: 20,
+    marginLeft: 5,
+  },
   menuItemText: {
     fontSize: 16,
     color: '#000',
@@ -362,6 +347,19 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
     width: '100%',
+  },
+  languageIndicator: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 16,
+    alignSelf: 'flex-start',
+  },
+  languageText: {
+    fontSize: 13,
+    color: '#000',
+    fontWeight: '600',
   },
   badge: {
     backgroundColor: '#FF4444',

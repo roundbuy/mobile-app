@@ -3,16 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import FilterDropdown from '../../components/FilterDropdown';
-import PriceRangeInput from '../../components/PriceRangeInput';
+import PriceInput from '../../components/PriceInput';
+import LocationSelectionModal from '../../components/LocationSelectionModal';
 import { advertisementService } from '../../services';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ChooseFiltersScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const [filters, setFilters] = useState({
     category_id: null,
     subcategory_id: null,
     activity_id: null,
-    min_price: '',
-    max_price: '',
+    price: '',
     condition_id: null,
     gender_id: null,
   });
@@ -28,8 +30,9 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
   const [error, setError] = useState(null);
 
   // Location selection state
-  const [selectedLocation, setSelectedLocation] = useState(1); // Default to location 1
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [userLocations, setUserLocations] = useState([]);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
     loadFilterOptions();
@@ -57,7 +60,16 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
     try {
       const response = await advertisementService.getUserLocations();
       if (response.success) {
-        setUserLocations(response.data.locations || []);
+        const locations = response.data.locations || [];
+        setUserLocations(locations);
+
+        // Auto-select default location or first location
+        const defaultLocation = locations.find(loc => loc.is_default);
+        if (defaultLocation) {
+          setSelectedLocation(defaultLocation.id);
+        } else if (locations.length > 0) {
+          setSelectedLocation(locations[0].id);
+        }
       }
     } catch (err) {
       console.error('Error loading user locations:', err);
@@ -79,16 +91,87 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
     return selectedCategory?.subcategories || [];
   };
 
+  const validateFilters = () => {
+    // Check required fields
+    if (!filters.category_id) {
+      Alert.alert(t('Validation Error'), t('Please select a category'));
+      return false;
+    }
+
+    // if (!filters.subcategory_id) {
+    //   Alert.alert(t('Validation Error'), t('Please select a subcategory'));
+    //   return false;
+    // }
+
+    if (!filters.activity_id) {
+      Alert.alert(t('Validation Error'), t('Please select an activity'));
+      return false;
+    }
+
+    if (!filters.price || filters.price === '0') {
+      Alert.alert(t('Validation Error'), t('Please enter a valid price'));
+      return false;
+    }
+
+    if (!filters.condition_id) {
+      Alert.alert(t('Validation Error'), t('Please select a condition'));
+      return false;
+    }
+
+    if (!filters.gender_id) {
+      Alert.alert(t('Validation Error'), t('Please select a gender'));
+      return false;
+    }
+
+    if (!selectedLocation) {
+      Alert.alert(t('Validation Error'), t('Please select a location'));
+      return false;
+    }
+
+    return true;
+  };
+
   const handleContinue = () => {
+    // Validate before continuing
+    if (!validateFilters()) {
+      return;
+    }
+
     // Get selected location data
     const selectedLocationData = userLocations.find(loc => loc.id === selectedLocation);
+
+    // Get filter names for display
+    const categoryName = filterOptions.categories.find(c => c.id === filters.category_id)?.name;
+    const subcategoryName = filters.subcategory_id
+      ? getSubcategories().find(s => s.id === filters.subcategory_id)?.name
+      : null;
+    const activityName = filterOptions.activities.find(a => a.id === filters.activity_id)?.name;
+    const conditionName = filters.condition_id
+      ? filterOptions.conditions.find(c => c.id === filters.condition_id)?.name
+      : null;
+    const genderName = filters.gender_id
+      ? filterOptions.genders.find(g => g.id === filters.gender_id)?.name
+      : null;
 
     navigation.navigate('ChooseRestFilters', {
       ...route.params,
       ...filters,
       location_id: selectedLocation,
       location: selectedLocationData,
+      // Add filter names for preview
+      categoryName,
+      subcategoryName,
+      activityName,
+      conditionName,
+      genderName,
     });
+  };
+
+  const getSelectedLocationDisplay = () => {
+    const location = userLocations.find(loc => loc.id === selectedLocation);
+    if (!location) return 'No location selected';
+
+    return `${location.name} - ${location.city}, ${location.country}`;
   };
 
   return (
@@ -99,17 +182,16 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>2/8</Text>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Choose filters:</Text>
+        <Text style={styles.title}>{t('Choose filters:')}</Text>
 
         {/* Loading State */}
         {loading && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading filter options...</Text>
+            <Text style={styles.loadingText}>{t('Loading filter options...')}</Text>
           </View>
         )}
 
@@ -118,7 +200,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadFilterOptions}>
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('Retry')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -127,108 +209,125 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
         {!loading && !error && (
           <View style={styles.filtersContainer}>
             <FilterDropdown
-              label="Category"
+              label={t('Category *')}
               value={filters.category_id}
               options={filterOptions.categories}
               onSelect={(value) => handleFilterChange('category_id', value)}
-              placeholder="Select a category"
+              placeholder={t('Select a category')}
             />
 
             <FilterDropdown
-              label="Subcategory"
+              label={t('Subcategory *')}
               value={filters.subcategory_id}
               options={getSubcategories()}
               onSelect={(value) => handleFilterChange('subcategory_id', value)}
-              placeholder="Select a subcategory"
+              placeholder={t('Select a subcategory')}
               disabled={!filters.category_id}
             />
 
             <FilterDropdown
-              label="Activity"
+              label={t('Activity *')}
               value={filters.activity_id}
               options={filterOptions.activities}
               onSelect={(value) => handleFilterChange('activity_id', value)}
-              placeholder="Select activity type"
+              placeholder={t('Select activity type')}
             />
 
-            <PriceRangeInput
-              minPrice={filters.min_price}
-              maxPrice={filters.max_price}
-              onMinPriceChange={(value) => handleFilterChange('min_price', value)}
-              onMaxPriceChange={(value) => handleFilterChange('max_price', value)}
+            <PriceInput
+              label={t('Price *')}
+              price={filters.price}
+              onPriceChange={(value) => handleFilterChange('price', value)}
             />
 
             <FilterDropdown
-              label="Condition"
+              label={t('Condition *')}
               value={filters.condition_id}
               options={filterOptions.conditions}
               onSelect={(value) => handleFilterChange('condition_id', value)}
-              placeholder="Select condition"
+              placeholder={t('Select condition')}
             />
 
             <FilterDropdown
-              label="Gender"
+              label={t('Gender *')}
               value={filters.gender_id}
               options={filterOptions.genders}
               onSelect={(value) => handleFilterChange('gender_id', value)}
-              placeholder="Select gender"
+              placeholder={t('Select gender')}
             />
 
             {/* Location Selection */}
             <View style={styles.locationContainer}>
-              <Text style={styles.locationLabel}>Choose location:</Text>
-              <View style={styles.locationOptions}>
-                {[1, 2, 3].map((locationId) => {
-                  const location = userLocations.find(loc => loc.id === locationId);
-                  return (
-                    <TouchableOpacity
-                      key={locationId}
-                      style={[
-                        styles.locationOption,
-                        selectedLocation === locationId && styles.locationOptionSelected
-                      ]}
-                      onPress={() => setSelectedLocation(locationId)}
-                    >
-                      <Text style={[
-                        styles.locationNumber,
-                        selectedLocation === locationId && styles.locationNumberSelected
-                      ]}>
-                        {locationId}
+              <Text style={styles.locationLabel}>{t('Choose location: *')}</Text>
+
+              {userLocations.length > 0 ? (
+                <>
+                  {/* Show selected location */}
+                  <TouchableOpacity
+                    style={styles.selectedLocationCard}
+                    onPress={() => setShowLocationModal(true)}
+                  >
+                    <View style={styles.locationInfo}>
+                      <Text style={styles.selectedLocationName}>
+                        {userLocations.find(loc => loc.id === selectedLocation)?.name || 'Select location'}
                       </Text>
-                      {location && (
-                        <Text style={[
-                          styles.locationName,
-                          selectedLocation === locationId && styles.locationNameSelected
-                        ]} numberOfLines={1}>
-                          {location.name}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                      <Text style={styles.selectedLocationAddress} numberOfLines={2}>
+                        {selectedLocation && userLocations.find(l => l.id === selectedLocation)
+                          ? [
+                            userLocations.find(l => l.id === selectedLocation)?.street,
+                            userLocations.find(l => l.id === selectedLocation)?.street2,
+                            userLocations.find(l => l.id === selectedLocation)?.city,
+                            userLocations.find(l => l.id === selectedLocation)?.region,
+                            userLocations.find(l => l.id === selectedLocation)?.country,
+                            userLocations.find(l => l.id === selectedLocation)?.zip_code
+                          ].filter(Boolean).join(', ')
+                          : 'No location selected'}
+                      </Text>
+                    </View>
+                    <Text style={styles.changeText}>{t('Change')}</Text>
+                  </TouchableOpacity>
+
+                  {/* Show more info link */}
+                  <TouchableOpacity
+                    style={styles.showMoreButton}
+                    onPress={() => setShowLocationModal(true)}
+                  >
+                    <Text style={styles.showMoreText}>Show all locations ({userLocations.length})</Text>
+                    <Text style={styles.showMoreIcon}>→</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View style={styles.noLocationContainer}>
+                  <Text style={styles.noLocationText}>{t('No locations found')}</Text>
+                  <TouchableOpacity style={styles.addLocationButton}>
+                    <Text style={styles.addLocationButtonText}>{t('Add Location')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </View>
         )}
 
-        {/* Info Link */}
+        {/* Info Text */}
         <View style={styles.infoContainer}>
-          <Text style={styles.infoText}>For more information, </Text>
-          <TouchableOpacity>
-            <Text style={styles.infoLink}>click here</Text>
-          </TouchableOpacity>
-          <View style={styles.infoIcon}>
-            <Text style={styles.infoIconText}>ⓘ</Text>
-          </View>
+          <Text style={styles.infoText}>{t('* All fields are required')}</Text>
         </View>
 
         {/* Continue Button */}
         <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />
       </ScrollView>
+
+      {/* Location Selection Modal */}
+      <LocationSelectionModal
+        visible={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        locations={userLocations}
+        selectedLocation={selectedLocation}
+        onSelectLocation={setSelectedLocation}
+      />
     </SafeScreenContainer>
   );
 };
@@ -250,10 +349,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#000',
     fontWeight: '300',
-  },
-  stepIndicator: {
-    fontSize: 16,
-    color: '#666',
   },
   title: {
     fontSize: 20,
@@ -310,72 +405,82 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#000',
     marginBottom: 12,
+    fontWeight: '500',
   },
-  locationOptions: {
+  selectedLocationCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  locationOption: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
-    marginHorizontal: 4,
+    backgroundColor: '#F9F9F9',
     borderRadius: 8,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
   },
-  locationOptionSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#F0F8FF',
+  locationInfo: {
+    flex: 1,
+    marginRight: 12,
   },
-  locationNumber: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#666',
+  selectedLocationName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
     marginBottom: 4,
   },
-  locationNumberSelected: {
-    color: COLORS.primary,
-  },
-  locationName: {
-    fontSize: 12,
+  selectedLocationAddress: {
+    fontSize: 13,
     color: '#666',
-    textAlign: 'center',
+    lineHeight: 18,
   },
-  locationNameSelected: {
+  changeText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  showMoreButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  showMoreText: {
+    fontSize: 14,
     color: COLORS.primary,
     fontWeight: '500',
   },
-  infoContainer: {
-    flexDirection: 'row',
+  showMoreIcon: {
+    fontSize: 16,
+    color: COLORS.primary,
+  },
+  noLocationContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  noLocationText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+  },
+  addLocationButton: {
+    backgroundColor: COLORS.primary,
     paddingHorizontal: 20,
-    marginBottom: 32,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  addLocationButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  infoContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   infoText: {
     fontSize: 13,
-    color: '#666',
-  },
-  infoLink: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  infoIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: '#999',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 6,
-  },
-  infoIconText: {
-    fontSize: 12,
     color: '#999',
+    fontStyle: 'italic',
   },
   continueButton: {
     backgroundColor: COLORS.primary,

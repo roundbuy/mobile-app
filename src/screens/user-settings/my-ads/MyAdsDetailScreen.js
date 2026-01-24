@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 import { advertisementService } from '../../../services';
 
 const MyAdsDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ad } = route.params;
   const [adStatus, setAdStatus] = useState(ad.status);
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
@@ -56,13 +58,13 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
 
               if (response.success) {
                 setAdStatus(newStatus);
-                Alert.alert('Success', `Ad ${action.toLowerCase()}d successfully`);
+                Alert.alert(t('Success'), `Ad ${action.toLowerCase()}d successfully`);
               } else {
                 throw new Error(response.message || 'Failed to update ad status');
               }
             } catch (error) {
               console.error('Error updating ad status:', error);
-              Alert.alert('Error', error.message || 'Failed to update ad status. Please try again.');
+              Alert.alert(t('Error'), error.message || t('Failed to update ad status. Please try again.'));
             } finally {
               setIsLoadingStatus(false);
             }
@@ -114,7 +116,7 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
         <View style={styles.infoSection}>
           <View style={styles.titleRow}>
             <Text style={styles.productTitle}>{ad.title}</Text>
-            <Text style={styles.priceText}>BUY £300</Text>
+            <Text style={styles.priceText}>{t('BUY £300')}</Text>
           </View>
           
           <Text style={styles.distanceText}>Distance: {ad.distance}</Text>
@@ -122,10 +124,10 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
 
         {/* Description */}
         <View style={styles.descriptionSection}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('Description')}</Text>
           <Text style={styles.descriptionText}>
             A wonderful armchair with brown covering and black legs. Hardly used. Massive wood.{' '}
-            <Text style={styles.readMoreText}>Read more...</Text>
+            <Text style={styles.readMoreText}>{t('Read more...')}</Text>
           </Text>
         </View>
 
@@ -136,7 +138,7 @@ const MyAdsDetailScreen = ({ navigation, route }) => {
             onPress={handleModify}
             activeOpacity={0.7}
           >
-            <Text style={styles.modifyButtonText}>Modify</Text>
+            <Text style={styles.modifyButtonText}>{t('Modify')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

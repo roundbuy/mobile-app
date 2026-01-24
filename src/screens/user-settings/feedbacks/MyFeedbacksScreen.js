@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -6,50 +7,61 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { feedbackService } from '../../../services';
 
 const MyFeedbacksScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchMyFeedbacks();
+  }, []);
+
+  const fetchMyFeedbacks = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await feedbackService.getMyFeedbacks(50, 0);
+
+      if (response.success) {
+        setFeedbacks(response.data.feedbacks || []);
+        setStats(response.data.stats || {
+          totalFeedbacks: 0,
+          averageRating: 0,
+          positivePercentage: 0,
+          negativePercentage: 0,
+          neutralPercentage: 0
+        });
+      } else {
+        setError(response.message || 'Failed to load feedbacks');
+      }
+    } catch (err) {
+      console.error('Error fetching my feedbacks:', err);
+      setError(err.message || 'Failed to load feedbacks');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchMyFeedbacks();
+  };
+
   const handleBack = () => {
     navigation.goBack();
   };
-
-  // Sample data - replace with actual API data
-  const feedbackStats = {
-    positive: 80,
-    negative: 10,
-    neutral: 10,
-    rating: 5.0,
-  };
-
-  const feedbacks = [
-    {
-      id: '1',
-      rating: 5,
-      comment: 'A true gentleman, nice to do business with!',
-      username: 'SteveM',
-      productCode: 'XE192843234',
-      avatar: null,
-    },
-    {
-      id: '2',
-      rating: 5,
-      comment: 'This is a good seller. I Recommend.',
-      username: 'jonnie12',
-      productCode: 'XE188845663',
-      avatar: null,
-    },
-    {
-      id: '3',
-      rating: 5,
-      comment: 'Rather decent chap to work with.',
-      username: 'ChuckieC',
-      productCode: 'XE192843234',
-      avatar: null,
-    },
-  ];
 
   const renderStars = (rating) => {
     return (
@@ -66,6 +78,108 @@ const MyFeedbacksScreen = ({ navigation }) => {
     );
   };
 
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>{t('Loading feedbacks...')}</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={64} color="#999" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchMyFeedbacks}>
+            <Text style={styles.retryButtonText}>{t('Retry')}</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Description */}
+        <Text style={styles.description}>{t('Feedbacks you have received from other users.')}</Text>
+
+        {/* Stats Section */}
+        {stats && stats.totalFeedbacks > 0 && (
+          <>
+            <View style={styles.statsSection}>
+              <Text style={styles.statsTitle}>{t('Feedbacks by type:')}</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>{t('Positive')}</Text>
+                  <Text style={styles.statValue}>{stats.positivePercentage}%</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>{t('Negative')}</Text>
+                  <Text style={styles.statValue}>{stats.negativePercentage}%</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>{t('Neutral')}</Text>
+                  <Text style={styles.statValue}>{stats.neutralPercentage}%</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Rating Section */}
+            <View style={styles.ratingSection}>
+              <Text style={styles.ratingText}>Rating {parseFloat(stats.averageRating).toFixed(1)}</Text>
+              {renderStars(Math.round(parseFloat(stats.averageRating)))}
+            </View>
+          </>
+        )}
+
+        {/* Feedbacks List */}
+        {feedbacks.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="chatbubbles-outline" size={64} color="#999" />
+            <Text style={styles.emptyTitle}>{t('No Feedbacks Yet')}</Text>
+            <Text style={styles.emptyText}>{t("You haven't received any feedbacks from other users yet.")}</Text>
+          </View>
+        ) : (
+          feedbacks.map((feedback) => (
+            <View key={feedback.id} style={styles.feedbackCard}>
+              {renderStars(feedback.rating)}
+              <Text style={styles.commentText}>{feedback.comment}</Text>
+              <View style={styles.userInfo}>
+                <View style={styles.userLeft}>
+                  <View style={styles.avatar}>
+                    <FontAwesome name="user-circle" size={40} color="#666" />
+                  </View>
+                  <View>
+                    <Text style={styles.username}>{feedback.reviewer.name}</Text>
+                    <Text style={styles.dateText}>
+                      {new Date(feedback.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.productInfo}>
+                  <Text style={styles.productLabel}>{t('Product')}</Text>
+                  <Text style={styles.productCode} numberOfLines={1}>
+                    {feedback.advertisement.title}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))
+        )}
+
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -73,63 +187,11 @@ const MyFeedbacksScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Feedbacks</Text>
+        <Text style={styles.headerTitle}>{t('My Feedbacks')}</Text>
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Description */}
-        <Text style={styles.description}>
-          Feedbacks you have received from other users.
-        </Text>
-
-        {/* Stats Section */}
-        <View style={styles.statsSection}>
-          <Text style={styles.statsTitle}>Feedbacks by type:</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Positive</Text>
-              <Text style={styles.statValue}>{feedbackStats.positive}%</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Negative</Text>
-              <Text style={styles.statValue}>{feedbackStats.negative}%</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Neutral</Text>
-              <Text style={styles.statValue}>{feedbackStats.neutral}%</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Rating Section */}
-        <View style={styles.ratingSection}>
-          <Text style={styles.ratingText}>Rating {feedbackStats.rating.toFixed(1)}</Text>
-          {renderStars(Math.round(feedbackStats.rating))}
-        </View>
-
-        {/* Feedbacks List */}
-        {feedbacks.map((feedback) => (
-          <View key={feedback.id} style={styles.feedbackCard}>
-            {renderStars(feedback.rating)}
-            <Text style={styles.commentText}>{feedback.comment}</Text>
-            <View style={styles.userInfo}>
-              <View style={styles.userLeft}>
-                <View style={styles.avatar}>
-                  <FontAwesome name="user-circle" size={40} color="#666" />
-                </View>
-                <Text style={styles.username}>{feedback.username}</Text>
-              </View>
-              <View style={styles.productInfo}>
-                <Text style={styles.productLabel}>Product code</Text>
-                <Text style={styles.productCode}>{feedback.productCode}</Text>
-              </View>
-            </View>
-          </View>
-        ))}
-
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
+      {renderContent()}
     </SafeAreaView>
   );
 };
@@ -161,6 +223,51 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#666',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    backgroundColor: COLORS.primary,
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyTitle: {
+    marginTop: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+  },
+  emptyText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
   },
   description: {
     fontSize: 14,
@@ -246,6 +353,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
   },
+  dateText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
   productInfo: {
     alignItems: 'flex-end',
   },
@@ -258,6 +370,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#000',
+    maxWidth: 120,
   },
   bottomSpacer: {
     height: 40,

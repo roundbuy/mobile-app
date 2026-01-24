@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ReviewRoundBuyScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -55,7 +57,7 @@ const ReviewRoundBuyScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Review RoundBuy</Text>
+        <Text style={styles.headerTitle}>{t('Review RoundBuy')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -67,14 +69,12 @@ const ReviewRoundBuyScreen = ({ navigation }) => {
         {/* Info Banner */}
         <View style={styles.infoBanner}>
           <Ionicons name="star" size={32} color={COLORS.primary} />
-          <Text style={styles.infoBannerTitle}>Rate RoundBuy</Text>
+          <Text style={styles.infoBannerTitle}>{t('Rate RoundBuy')}</Text>
           <Text style={styles.infoBannerText}>
             We're interested in what you think.{'\n'}
             Please provide us feedback, your experiences, or suggestions of improvement.
           </Text>
-          <Text style={styles.infoNote}>
-            Tell us what can be improved, choose below:
-          </Text>
+          <Text style={styles.infoNote}>{t('Tell us what can be improved, choose below:')}</Text>
         </View>
 
         {/* Review Options */}

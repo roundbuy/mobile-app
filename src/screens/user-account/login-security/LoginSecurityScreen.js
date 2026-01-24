@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,13 +12,13 @@ import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
 
 const LoginSecurityScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleUsername = () => {
-    console.log('Navigate to Username');
-    // Future: Navigate to username change screen
+    navigation.navigate('EditUsername');
   };
 
   const handlePassword = () => {
@@ -27,7 +28,7 @@ const LoginSecurityScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <GlobalHeader
-        title="Login and security"
+        title={t('Login and security')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -40,7 +41,7 @@ const LoginSecurityScreen = ({ navigation }) => {
           onPress={handleUsername}
           activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Username</Text>
+          <Text style={styles.menuItemText}>{t('Username')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
@@ -50,7 +51,7 @@ const LoginSecurityScreen = ({ navigation }) => {
           onPress={handlePassword}
           activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Password</Text>
+          <Text style={styles.menuItemText}>{t('Password')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
       </ScrollView>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeMessagingScreen = ({ route }) => {
+    const { t } = useTranslation();
   const { disputeId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -136,9 +138,7 @@ const DisputeMessagingScreen = ({ route }) => {
         {/* Info Banner */}
         <View style={styles.infoBanner}>
           <Feather name="info" size={16} color="#4169E1" />
-          <Text style={styles.infoBannerText}>
-            Communicate with the seller to resolve your dispute
-          </Text>
+          <Text style={styles.infoBannerText}>{t('Communicate with the seller to resolve your dispute')}</Text>
         </View>
 
         {/* Messages List */}
@@ -154,10 +154,8 @@ const DisputeMessagingScreen = ({ route }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="message-circle" size={48} color="#CCC" />
-              <Text style={styles.emptyText}>No messages yet</Text>
-              <Text style={styles.emptySubtext}>
-                Start the conversation to resolve this dispute
-              </Text>
+              <Text style={styles.emptyText}>{t('No messages yet')}</Text>
+              <Text style={styles.emptySubtext}>{t('Start the conversation to resolve this dispute')}</Text>
             </View>
           }
         />
@@ -166,7 +164,7 @@ const DisputeMessagingScreen = ({ route }) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Type your message..."
+            placeholder={t('Type your message...')}
             value={newMessage}
             onChangeText={setNewMessage}
             multiline

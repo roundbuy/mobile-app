@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { COLORS, TYPOGRAPHY, SPACING } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
+import { useTranslation } from '../../context/TranslationContext';
 
 const SplashAlternative3Screen = ({ navigation }) => {
+    const { t } = useTranslation();
   useEffect(() => {
     // Navigate to License Agreement after 2 seconds
     const timer = setTimeout(() => {
@@ -15,24 +17,30 @@ const SplashAlternative3Screen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
-      <Image
-        source={IMAGES.logoCrop}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      {/* Spacer for top */}
+      <View style={styles.spacer} />
 
-      {/* Tagline */}
-      <Text style={styles.tagline}>SHOP AROUND YOU</Text>
-      <Text style={styles.description}>
-        Buy and Sell products and services
-      </Text>
-      <Text style={styles.description}>
-        just around you!
-      </Text>
+      {/* Main Content Row */}
+      <View style={styles.mainContent}>
+        {/* Logo */}
+        <Image
+          source={IMAGES.whiteLogo}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
+        {/* Round Buy Text */}
+        <View style={styles.textContainer}>
+          <Text style={styles.roundText}>{t('Round')}</Text>
+          <Text style={styles.buyText}>{t('Buy')}</Text>
+        </View>
+      </View>
+
+      {/* Spacer for bottom */}
+      <View style={styles.spacer} />
 
       {/* Patent Pending */}
-      <Text style={styles.patent}>Patent Pending</Text>
+      <Text style={styles.patents}>{t('Patent Pending')}</Text>
     </View>
   );
 };
@@ -42,14 +50,42 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+  },
+  spacer: {
+    flex: 1,
+  },
+  mainContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+    width: '100%',
+    marginLeft: 60,
+    paddingRight: SPACING.lg,
   },
   logo: {
-    width: 200,
-    height: 200,
-    marginBottom: SPACING.xl,
+    width: 170,
+    height: 170,
     tintColor: COLORS.white, // Makes the logo white on blue background
+  },
+  textContainer: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  roundText: {
+    ...TYPOGRAPHY.styles.h2,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.white,
+    letterSpacing: 1,
+  },
+  buyText: {
+    ...TYPOGRAPHY.styles.h2,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.white,
+    letterSpacing: 1,
   },
   tagline: {
     ...TYPOGRAPHY.styles.h3,
@@ -64,11 +100,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
-  patent: {
-    ...TYPOGRAPHY.styles.bodySmall,
+  patents: {
+    fontFamily: 'Roboto_700Bold',
+    fontSize: 16,
+    lineHeight: 25,
     color: COLORS.white,
-    marginTop: SPACING.xxl,
-    fontWeight: TYPOGRAPHY.fontWeight.medium,
+    fontWeight: 700,
+    marginBottom: SPACING.md,
   },
 });
 

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const PriceFilterScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
 
@@ -18,7 +20,7 @@ const PriceFilterScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Price</Text>
+          <Text style={styles.headerTitle}>{t('Price')}</Text>
         </View>
 
         <View style={styles.content}>
@@ -26,7 +28,7 @@ const PriceFilterScreen = ({ navigation }) => {
 
           <View style={styles.inputRow}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Minimum</Text>
+              <Text style={styles.label}>{t('Minimum')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="£150"
@@ -38,7 +40,7 @@ const PriceFilterScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Maximum</Text>
+              <Text style={styles.label}>{t('Maximum')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="£2700"
@@ -50,16 +52,16 @@ const PriceFilterScreen = ({ navigation }) => {
             </View>
           </View>
 
-          <Text style={styles.useText}>Use</Text>
+          <Text style={styles.useText}>{t('Use')}</Text>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.showResultsButton} onPress={handleShowResults}>
-          <Text style={styles.showResultsButtonText}>Show results</Text>
+          <Text style={styles.showResultsButtonText}>{t('Show results')}</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
-          <Text style={styles.footerLink}>Terms of service</Text>
+          <Text style={styles.footerLink}>{t('Terms of service')}</Text>
         </Text>
       </View>
     </SafeScreenContainer>

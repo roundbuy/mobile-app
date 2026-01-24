@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeListScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -145,7 +147,7 @@ const DisputeListScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="inbox" size={64} color="#CCC" />
-              <Text style={styles.emptyTitle}>No Disputes Found</Text>
+              <Text style={styles.emptyTitle}>{t('No Disputes Found')}</Text>
               <Text style={styles.emptyText}>
                 {filter === 'all'
                   ? "You haven't created any disputes yet"
@@ -156,7 +158,7 @@ const DisputeListScreen = ({ navigation }) => {
                   style={styles.createButton}
                   onPress={() => navigation.navigate('DisputeCategory')}
                 >
-                  <Text style={styles.createButtonText}>Create New Dispute</Text>
+                  <Text style={styles.createButtonText}>{t('Create New Dispute')}</Text>
                 </TouchableOpacity>
               )}
             </View>

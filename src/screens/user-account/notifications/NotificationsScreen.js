@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
 
 const NotificationsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -29,7 +31,7 @@ const NotificationsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title="Notifications"
+        title={t('Notifications')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}

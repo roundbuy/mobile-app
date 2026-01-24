@@ -11,6 +11,7 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 let MapView = null;
 let Marker = null;
 let Circle = null;
+let Callout = null;
 let PROVIDER_GOOGLE = null;
 
 try {
@@ -19,6 +20,7 @@ try {
     MapView = Maps.default;
     Marker = Maps.Marker;
     Circle = Maps.Circle;
+    Callout = Maps.Callout;
     PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
 } catch (error) {
     console.warn('react-native-maps not available. Using fallback component.');
@@ -76,6 +78,16 @@ const SafeCircle = (props) => {
     return null;
 };
 
+/**
+ * Safe Callout Component
+ */
+const SafeCallout = (props) => {
+    if (Callout) {
+        return <Callout {...props} />;
+    }
+    return null;
+};
+
 const styles = StyleSheet.create({
     fallbackContainer: {
         backgroundColor: '#f5f5f5',
@@ -129,5 +141,5 @@ const styles = StyleSheet.create({
 
 // Export the safe components
 export default SafeMapView;
-export { SafeMarker as Marker, SafeCircle as Circle, PROVIDER_GOOGLE };
+export { SafeMarker as Marker, SafeCircle as Circle, SafeCallout as Callout, PROVIDER_GOOGLE };
 export const isMapAvailable = MapView !== null;

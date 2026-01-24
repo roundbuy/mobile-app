@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -19,6 +20,7 @@ import GlobalHeader from '../../../components/GlobalHeader';
 import { useAuth } from '../../../context/AuthContext';
 
 const PersonalInformationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +56,7 @@ const PersonalInformationScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      Alert.alert('Error', 'Failed to load user information. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load user information. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +68,7 @@ const PersonalInformationScreen = ({ navigation }) => {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please allow access to your photo library to upload a profile picture.');
+        Alert.alert(t('Permission Required'), t('Please allow access to your photo library to upload a profile picture.'));
         return;
       }
 
@@ -83,7 +85,7 @@ const PersonalInformationScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      Alert.alert(t('Error'), t('Failed to pick image. Please try again.'));
     }
   };
 
@@ -112,13 +114,13 @@ const PersonalInformationScreen = ({ navigation }) => {
         if (updateUser) {
           updateUser({ ...user, profile_image: response.data.profile_image });
         }
-        Alert.alert('Success', 'Profile picture updated successfully!');
+        Alert.alert(t('Success'), t('Profile picture updated successfully!'));
       } else {
         throw new Error(response.message || 'Failed to upload image');
       }
     } catch (error) {
       console.error('Error uploading image:', error);
-      Alert.alert('Error', error.message || 'Failed to upload profile picture. Please try again.');
+      Alert.alert(t('Error'), error.message || t('Failed to upload profile picture. Please try again.'));
     } finally {
       setIsUploadingImage(false);
     }
@@ -145,14 +147,14 @@ const PersonalInformationScreen = ({ navigation }) => {
       const response = await userService.updateUserProfile(updateData);
 
       if (response.success) {
-        Alert.alert('Success', 'Your information has been updated successfully.');
+        Alert.alert(t('Success'), t('Your information has been updated successfully.'));
         setIsEditMode(false);
       } else {
         throw new Error(response.message || 'Failed to update profile');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', error.message || 'Failed to update your information. Please try again.');
+      Alert.alert(t('Error'), error.message || t('Failed to update your information. Please try again.'));
     } finally {
       setIsSaving(false);
     }
@@ -167,7 +169,7 @@ const PersonalInformationScreen = ({ navigation }) => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading your information...</Text>
+          <Text style={styles.loadingText}>{t('Loading your information...')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -210,31 +212,31 @@ const PersonalInformationScreen = ({ navigation }) => {
               )}
             </View>
           </TouchableOpacity>
-          <Text style={styles.profileImageHint}>Tap to change profile picture</Text>
+          <Text style={styles.profileImageHint}>{t('Tap to change profile picture')}</Text>
         </View>
 
         {/* Your Name */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Your Name</Text>
+          <Text style={styles.label}>{t('Your Name')}</Text>
           <TextInput
             style={[styles.input, !isEditMode && styles.inputDisabled]}
             value={formData.name}
             onChangeText={(text) => updateField('name', text)}
             editable={isEditMode}
-            placeholder="Enter your name"
+            placeholder={t('Enter your name')}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Email Address */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={styles.label}>{t('Email address')}</Text>
           <TextInput
             style={[styles.input, !isEditMode && styles.inputDisabled]}
             value={formData.email}
             onChangeText={(text) => updateField('email', text)}
             editable={isEditMode}
-            placeholder="Enter your email"
+            placeholder={t('Enter your email')}
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -243,13 +245,13 @@ const PersonalInformationScreen = ({ navigation }) => {
 
         {/* Phone Number */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Phone number</Text>
+          <Text style={styles.label}>{t('Phone number')}</Text>
           <TextInput
             style={[styles.input, !isEditMode && styles.inputDisabled]}
             value={formData.phone}
             onChangeText={(text) => updateField('phone', text)}
             editable={isEditMode}
-            placeholder="Enter your phone number"
+            placeholder={t('Enter your phone number')}
             placeholderTextColor="#999"
             keyboardType="phone-pad"
           />
@@ -257,13 +259,13 @@ const PersonalInformationScreen = ({ navigation }) => {
 
         {/* Billing Address */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Billing address</Text>
+          <Text style={styles.label}>{t('Billing address')}</Text>
           <TextInput
             style={[styles.input, !isEditMode && styles.inputDisabled]}
             value={formData.billingAddress}
             onChangeText={(text) => updateField('billingAddress', text)}
             editable={isEditMode}
-            placeholder="Enter your billing address"
+            placeholder={t('Enter your billing address')}
             placeholderTextColor="#999"
             multiline
           />
@@ -272,9 +274,7 @@ const PersonalInformationScreen = ({ navigation }) => {
         {/* Info Note */}
         <View style={styles.infoContainer}>
           <Ionicons name="information-circle-outline" size={20} color="#666" />
-          <Text style={styles.infoText}>
-            Please note! The billing address is only used for billing, and it is not shared at the service with other users, and it's neither centre-point nor product location address.
-          </Text>
+          <Text style={styles.infoText}>{t("Please note! The billing address is only used for billing, and it is not shared at the service with other users, and it's neither centre-point nor product location address.")}</Text>
         </View>
 
         {/* Action Button */}

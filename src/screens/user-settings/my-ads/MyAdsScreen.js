@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import clicksIcon from '../../../../assets/clicks.png';
+import offerIcon from '../../../../assets/Offer.png';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -18,6 +22,7 @@ import { advertisementService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
 
 const MyAdsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'active', 'inactive'
   const [ads, setAds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,7 +67,7 @@ const MyAdsScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching ads:', error);
-      Alert.alert('Error', 'Failed to load your advertisements. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load your advertisements. Please try again.'));
       setAds([]);
     } finally {
       setIsLoading(false);
@@ -90,7 +95,7 @@ const MyAdsScreen = ({ navigation }) => {
 
   const renderAdItem = ({ item }) => {
     // Map API data to display format
-    const imageUri = item.images && item.images.length > 0 ? { uri: item.images[0] } : IMAGES.chair1;
+    const imageUri = item.images && item.images.length > 0 ? getFullImageUrl(item.images[0]) : IMAGES.chair1;
     const activityType = item.activity_name || 'SELL'; // Default to SELL if no activity
     const locationText = item.location_name ? `${item.city || ''}, ${item.country || ''}`.trim() : 'Location not set';
     const daysRemaining = item.end_date ? Math.ceil((new Date(item.end_date) - new Date()) / (1000 * 60 * 60 * 24)) : 60;
@@ -128,11 +133,11 @@ const MyAdsScreen = ({ navigation }) => {
               <Text style={styles.statText}>{item.views_count || 0}</Text>
             </View>
             <View style={styles.statItem}>
-              <Ionicons name="chatbubble" size={16} color="#666" />
+              <Image source={clicksIcon} style={styles.clicksIcon} />
               <Text style={styles.statText}>{item.messages_count || 0}</Text>
             </View>
             <View style={styles.statItem}>
-              <Ionicons name="person" size={16} color="#666" />
+              <Image source={offerIcon} style={styles.offerIcon} />
               <Text style={styles.statText}>{item.watchers_count || 0}</Text>
             </View>
           </View>
@@ -155,7 +160,7 @@ const MyAdsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title="Manage My Ads"
+        title={t('Manage My Ads')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -167,25 +172,19 @@ const MyAdsScreen = ({ navigation }) => {
           style={[styles.tab, activeTab === 'all' && styles.activeTab]}
           onPress={() => setActiveTab('all')}
         >
-          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
-            All
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>{t('All')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'active' && styles.activeTab]}
           onPress={() => setActiveTab('active')}
         >
-          <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>
-            Active
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'active' && styles.activeTabText]}>{t('Active')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'inactive' && styles.activeTab]}
           onPress={() => setActiveTab('inactive')}
         >
-          <Text style={[styles.tabText, activeTab === 'inactive' && styles.activeTabText]}>
-            Inactive
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'inactive' && styles.activeTabText]}>{t('Inactive')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -193,7 +192,7 @@ const MyAdsScreen = ({ navigation }) => {
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading your ads...</Text>
+          <Text style={styles.loadingText}>{t('Loading your ads...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -212,7 +211,7 @@ const MyAdsScreen = ({ navigation }) => {
               </Text>
               {!isLoading && (
                 <TouchableOpacity style={styles.retryButton} onPress={() => fetchAds()}>
-                  <Text style={styles.retryText}>Retry</Text>
+                  <Text style={styles.retryText}>{t('Retry')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -325,6 +324,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginLeft: 4,
+  },
+  clicksIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#666',
+  },
+  offerIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#666',
   },
   statusRow: {
     flexDirection: 'row',

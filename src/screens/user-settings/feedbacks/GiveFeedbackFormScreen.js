@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -7,43 +8,76 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { feedbackService } from '../../../services';
 
 const GiveFeedbackFormScreen = ({ navigation, route }) => {
-  const { product } = route.params;
-  
+  const { t } = useTranslation();
+  const { transaction, advertisementId, offerId, reviewedUserId, transactionType } = route.params;
+
   const [experienceType, setExperienceType] = useState('positive'); // 'positive', 'negative', 'neutral'
   const [rating, setRating] = useState(0);
   const [feedbackText, setFeedbackText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (rating === 0) {
-      Alert.alert('Error', 'Please rate the user');
+      Alert.alert(t('Error'), t('Please rate the user'));
       return;
     }
     if (feedbackText.trim().length === 0) {
-      Alert.alert('Error', 'Please write a feedback text');
+      Alert.alert(t('Error'), t('Please write a feedback text'));
       return;
     }
 
-    // Submit feedback
-    Alert.alert(
-      'Success',
-      'Your feedback has been submitted successfully!',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('FeedbackStatus', { product }),
-        },
-      ]
-    );
+    try {
+      setSubmitting(true);
+
+      const feedbackData = {
+        advertisementId,
+        offerId: offerId || null,
+        reviewedUserId,
+        rating,
+        comment: feedbackText.trim(),
+        transactionType: transactionType || 'sell'
+      };
+
+      const response = await feedbackService.createFeedback(feedbackData);
+
+      if (response.success) {
+        Alert.alert(
+          t('Success'),
+          t('Your feedback has been submitted successfully!'),
+          [
+            {
+              text: t('OK'),
+              onPress: () => {
+                // Navigate back to the feedback list screen
+                navigation.navigate('GiveFeedbackList');
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(t('Error'), response.message || t('Failed to submit feedback'));
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      Alert.alert(
+        t('Error'),
+        error.message || t('Failed to submit feedback. Please try again.')
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderStars = () => {
@@ -73,7 +107,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Give Feedback</Text>
+        <Text style={styles.headerTitle}>{t('Give Feedback')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -83,12 +117,12 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
           <View style={styles.avatar}>
             <FontAwesome name="user-circle" size={50} color="#666" />
           </View>
-          <Text style={styles.username}>jonnie12</Text>
+          <Text style={styles.username}>{transaction?.otherParty?.name || t('User')}</Text>
         </View>
 
         {/* Rate the Experience */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Rate the Experience:</Text>
+          <Text style={styles.sectionTitle}>{t('Rate the Experience:')}</Text>
           <View style={styles.experienceButtons}>
             <TouchableOpacity
               style={[
@@ -101,9 +135,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
               <Text style={[
                 styles.experienceButtonText,
                 experienceType === 'positive' && styles.experienceButtonTextSelected
-              ]}>
-                Positive
-              </Text>
+              ]}>{t('Positive')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -116,9 +148,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
               <Text style={[
                 styles.experienceButtonText,
                 experienceType === 'negative' && styles.experienceButtonTextSelected
-              ]}>
-                Negative
-              </Text>
+              ]}>{t('Negative')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -131,25 +161,23 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
               <Text style={[
                 styles.experienceButtonText,
                 experienceType === 'neutral' && styles.experienceButtonTextSelected
-              ]}>
-                Neutral
-              </Text>
+              ]}>{t('Neutral')}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Rate the User */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Rate the User:</Text>
+          <Text style={styles.sectionTitle}>{t('Rate the User:')}</Text>
           {renderStars()}
         </View>
 
         {/* Feedback Text */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Write a short Feedback text:</Text>
+          <Text style={styles.sectionTitle}>{t('Write a short Feedback text:')}</Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Please write a feedback here! Max 50 characters!"
+            placeholder={t('Please write a feedback here! Max 50 characters!')}
             placeholderTextColor="#999"
             multiline
             maxLength={50}
@@ -157,18 +185,21 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
             onChangeText={setFeedbackText}
             textAlignVertical="top"
           />
-          <Text style={styles.warningText}>
-            Please note! Do not give any unfair feedback, it can lead to sanctions!
-          </Text>
+          <Text style={styles.warningText}>{t('Please note! Do not give any unfair feedback, it can lead to sanctions!')}</Text>
         </View>
 
         {/* Submit Button */}
         <TouchableOpacity
-          style={styles.submitButton}
+          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
           onPress={handleSubmitFeedback}
           activeOpacity={0.7}
+          disabled={submitting}
         >
-          <Text style={styles.submitButtonText}>Send your Feedback</Text>
+          {submitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.submitButtonText}>{t('Send your Feedback')}</Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -281,6 +312,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 16,

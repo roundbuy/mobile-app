@@ -1,23 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import GlobalHeader from '../../../components/GlobalHeader';
+import { useTranslation } from '../../../context/TranslationContext';
 
 const LegalInfoScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handlePolicyPress = (policyType, title) => {
-    // Future: Navigate to policy detail screen
-    console.log('Open policy:', title);
-  };
-
-  const handleDownloadPDF = (pdfName) => {
-    const pdfUrl = `https://roundbuy.com/legal/${pdfName}.pdf`;
-    Linking.openURL(pdfUrl).catch(err => console.error('Failed to open PDF:', err));
+    if (policyType === 'policy_updates') {
+      navigation.navigate('PolicyUpdates');
+    } else {
+      navigation.navigate('PolicyDetail', { policyType, title });
+    }
   };
 
   const PolicyLink = ({ title, onPress }) => (
@@ -33,109 +33,105 @@ const LegalInfoScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <GlobalHeader
-        title="Legal"
+        title={t('Legal')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.mainTitle}>Legal Agreements for RoundBuy service</Text>
+        <Text style={styles.mainTitle}>{t('Legal Agreements for RoundBuy service')}</Text>
 
         {/* Policy Updates Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Policy updates</Text>
+          <Text style={styles.sectionTitle}>{t('Policy updates')}</Text>
           <PolicyLink
-            title="View Policy Updates"
+            title={t('View Policy Updates')}
             onPress={() => handlePolicyPress('policy_updates', 'Policy Updates')}
           />
         </View>
 
         {/* All User Agreements Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>All User Agreements</Text>
+          <Text style={styles.sectionTitle}>{t('All User Agreements')}</Text>
           <PolicyLink
-            title="Terms & Conditions PDF"
-            onPress={() => handleDownloadPDF('terms-conditions')}
+            title={t('Terms & Conditions')}
+            onPress={() => handlePolicyPress('terms', 'Terms & Conditions')}
           />
           <PolicyLink
-            title="Privacy Policy PDF"
-            onPress={() => handleDownloadPDF('privacy-policy')}
+            title={t('Privacy Policy')}
+            onPress={() => handlePolicyPress('privacy', 'Privacy Policy')}
           />
           <PolicyLink
-            title="Cookies Policy PDF"
-            onPress={() => handleDownloadPDF('cookies-policy')}
+            title={t('Cookies Policy')}
+            onPress={() => handlePolicyPress('cookies', 'Cookies Policy')}
           />
           <PolicyLink
-            title="Prohibited & Restricted Items Policy PDF"
-            onPress={() => handleDownloadPDF('prohibited-items')}
+            title={t('Prohibited & Restricted Items Policy')}
+            onPress={() => handlePolicyPress('prohibited_items', 'Prohibited & Restricted Items Policy')}
           />
           <PolicyLink
-            title="Seller Business Terms PDF"
-            onPress={() => handleDownloadPDF('seller-terms')}
+            title={t('Seller Business Terms')}
+            onPress={() => handlePolicyPress('seller_terms', 'Seller Business Terms')}
           />
           <PolicyLink
-            title="Content & Moderation Policy"
+            title={t('Content & Moderation Policy')}
             onPress={() => handlePolicyPress('content_moderation', 'Content & Moderation Policy')}
           />
           <PolicyLink
-            title="Subscriptions & Billing Policy"
+            title={t('Subscriptions & Billing Policy')}
             onPress={() => handlePolicyPress('subscriptions', 'Subscriptions & Billing Policy')}
           />
           <PolicyLink
-            title="Referral & Credits Policy PDF"
-            onPress={() => handleDownloadPDF('referral-credits')}
+            title={t('Referral & Credits Policy')}
+            onPress={() => handlePolicyPress('referral', 'Referral & Credits Policy')}
           />
           <PolicyLink
-            title="End User License Agreement (EULA) PDF"
-            onPress={() => handleDownloadPDF('eula')}
+            title={t('End User License Agreement (EULA)')}
+            onPress={() => handlePolicyPress('license', 'End User License Agreement')}
           />
           <PolicyLink
-            title="Register and Record Statement PDF"
-            onPress={() => handleDownloadPDF('register-record')}
+            title={t('Register and Record Statement')}
+            onPress={() => handlePolicyPress('register_record', 'Register and Record Statement')}
           />
         </View>
 
         {/* IP Rights Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>IP Rights</Text>
+          <Text style={styles.sectionTitle}>{t('IP Rights')}</Text>
           <PolicyLink
-            title="Intellectual Property & Notice Policy"
+            title={t('Intellectual Property & Notice Policy')}
             onPress={() => handlePolicyPress('ip_notice', 'Intellectual Property & Notice Policy')}
           />
           <PolicyLink
-            title="Intellectual Property Register & Rights Management Statement"
+            title={t('Intellectual Property Register & Rights Management Statement')}
             onPress={() => handlePolicyPress('ip_register', 'IP Register & Rights Management')}
           />
         </View>
 
         {/* Patents Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Patents</Text>
+          <Text style={styles.sectionTitle}>{t('Patents')}</Text>
           <PolicyLink
-            title="RoundBuy patents and pending patents"
+            title={t('RoundBuy patents and pending patents')}
             onPress={() => handlePolicyPress('patents', 'RoundBuy Patents')}
           />
         </View>
 
         {/* Additional Information Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional information</Text>
+          <Text style={styles.sectionTitle}>{t('Additional information')}</Text>
           <PolicyLink
-            title="Infrigement Report Policy"
+            title={t('Infrigement Report Policy')}
             onPress={() => handlePolicyPress('infringement', 'Infringement Report Policy')}
           />
         </View>
 
         {/* Footer Text */}
-        <Text style={styles.footerText}>
-          These legal agreements and notices provide terms and conditions related to specific RoundBuy services.
-        </Text>
+        <Text style={styles.footerText}>{t('These legal agreements and notices provide terms and conditions related to specific RoundBuy services.')}</Text>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>
-          © 2020-2025 RoundBuy Inc ®
-        </Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

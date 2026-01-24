@@ -4,30 +4,7 @@
  * Handles all notification-related API calls for the mobile app
  */
 
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
-
-// Create axios instance
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-// Add auth token to requests
-api.interceptors.request.use(
-    async (config) => {
-        const token = await AsyncStorage.getItem('accessToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
+import apiClient from './api';
 
 const notificationService = {
     /**
@@ -36,7 +13,7 @@ const notificationService = {
      */
     registerDeviceToken: async (deviceToken, platform, deviceId, deviceName = null) => {
         try {
-            const response = await api.post('/mobile/notifications/device-token', {
+            const response = await apiClient.post('/notifications/device-token', {
                 deviceToken,
                 platform,
                 deviceId,
@@ -54,7 +31,7 @@ const notificationService = {
      */
     removeDeviceToken: async (deviceToken) => {
         try {
-            const response = await api.delete('/mobile/notifications/device-token', {
+            const response = await apiClient.delete('/notifications/device-token', {
                 data: { deviceToken }
             });
             return response.data;
@@ -70,7 +47,7 @@ const notificationService = {
      */
     getMyNotifications: async (limit = 50, offset = 0) => {
         try {
-            const response = await api.get(`/mobile/notifications?limit=${limit}&offset=${offset}`);
+            const response = await apiClient.get(`/notifications?limit=${limit}&offset=${offset}`);
             return response.data;
         } catch (error) {
             console.error('Get notifications error:', error);
@@ -84,7 +61,7 @@ const notificationService = {
      */
     getUnreadCount: async () => {
         try {
-            const response = await api.get('/mobile/notifications/unread-count');
+            const response = await apiClient.get('/notifications/unread-count');
             return response.data;
         } catch (error) {
             console.error('Get unread count error:', error);
@@ -98,7 +75,7 @@ const notificationService = {
      */
     markAsRead: async (notificationId) => {
         try {
-            const response = await api.put(`/mobile/notifications/${notificationId}/read`);
+            const response = await apiClient.put(`/notifications/${notificationId}/read`);
             return response.data;
         } catch (error) {
             console.error('Mark as read error:', error);
@@ -112,7 +89,7 @@ const notificationService = {
      */
     markAsClicked: async (notificationId) => {
         try {
-            const response = await api.put(`/mobile/notifications/${notificationId}/clicked`);
+            const response = await apiClient.put(`/notifications/${notificationId}/clicked`);
             return response.data;
         } catch (error) {
             console.error('Mark as clicked error:', error);
@@ -126,7 +103,7 @@ const notificationService = {
      */
     markAllAsRead: async () => {
         try {
-            const response = await api.put('/mobile/notifications/read-all');
+            const response = await apiClient.put('/notifications/read-all');
             return response.data;
         } catch (error) {
             console.error('Mark all as read error:', error);
@@ -140,7 +117,7 @@ const notificationService = {
      */
     deleteNotification: async (notificationId) => {
         try {
-            const response = await api.delete(`/mobile/notifications/${notificationId}`);
+            const response = await apiClient.delete(`/notifications/${notificationId}`);
             return response.data;
         } catch (error) {
             console.error('Delete notification error:', error);
@@ -154,7 +131,7 @@ const notificationService = {
      */
     heartbeat: async (deviceId, lastCheck = null) => {
         try {
-            let url = '/mobile/notifications/heartbeat';
+            let url = '/notifications/heartbeat';
             const params = [];
 
             if (deviceId) {
@@ -168,7 +145,7 @@ const notificationService = {
                 url += '?' + params.join('&');
             }
 
-            const response = await api.get(url);
+            const response = await apiClient.get(url);
             return response.data;
         } catch (error) {
             console.error('Heartbeat error:', error);

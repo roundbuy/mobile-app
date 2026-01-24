@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-nativ
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ForgotPasswordScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [email, setEmail] = useState('');
 
   const handleSubmit = () => {
@@ -23,7 +25,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
           style={styles.backButton}
         >
           <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backText}>Forgot password</Text>
+          <Text style={styles.backText}>{t('Forgot password')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -31,12 +33,12 @@ const ForgotPasswordScreen = ({ navigation }) => {
       <View style={styles.content}>
         {/* Email Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={styles.label}>{t('Email address')}</Text>
           <View style={styles.emailInputContainer}>
             <FontAwesome name="envelope-o" size={16} color="#6a6a6a" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder={t('Enter your email')}
               placeholderTextColor="#c7c7cc"
               value={email}
               onChangeText={setEmail}
@@ -52,7 +54,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
           style={styles.submitButton}
           onPress={handleSubmit}
         >
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>{t('Submit')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

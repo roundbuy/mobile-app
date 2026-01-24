@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const FeedbackStatusScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { product } = route.params;
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'pending', 'done'
 
@@ -121,7 +123,7 @@ const FeedbackStatusScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Feedback Status</Text>
+        <Text style={styles.headerTitle}>{t('Feedback Status')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -131,25 +133,19 @@ const FeedbackStatusScreen = ({ navigation, route }) => {
           style={[styles.tab, activeTab === 'all' && styles.activeTab]}
           onPress={() => setActiveTab('all')}
         >
-          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
-            All
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>{t('All')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
           onPress={() => setActiveTab('pending')}
         >
-          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>
-            Pending
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>{t('Pending')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'done' && styles.activeTab]}
           onPress={() => setActiveTab('done')}
         >
-          <Text style={[styles.tabText, activeTab === 'done' && styles.activeTabText]}>
-            Done
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'done' && styles.activeTabText]}>{t('Done')}</Text>
         </TouchableOpacity>
       </View>
 

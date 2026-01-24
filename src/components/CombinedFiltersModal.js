@@ -212,6 +212,37 @@ const CombinedFiltersModal = ({
               </View>
               <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
             </TouchableOpacity>
+
+            {/* Measurement Unit */}
+            <View style={styles.measurementSection}>
+              <Text style={styles.measurementTitle}>Measurement Unit</Text>
+              <View style={styles.measurementOptions}>
+                <TouchableOpacity
+                  style={[styles.measurementOption, filters.measurementUnit === 'km' && styles.selectedMeasurement]}
+                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'km' })}
+                >
+                  <Text style={[styles.measurementText, filters.measurementUnit === 'km' && styles.selectedMeasurementText]}>
+                    km
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.measurementOption, filters.measurementUnit === 'mi' && styles.selectedMeasurement]}
+                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'mi' })}
+                >
+                  <Text style={[styles.measurementText, filters.measurementUnit === 'mi' && styles.selectedMeasurementText]}>
+                    mi
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.measurementOption, filters.measurementUnit === 'm' && styles.selectedMeasurement]}
+                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'm' })}
+                >
+                  <Text style={[styles.measurementText, filters.measurementUnit === 'm' && styles.selectedMeasurementText]}>
+                    m
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </ScrollView>
 
@@ -346,6 +377,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
     letterSpacing: 0.3,
+  },
+  measurementSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  measurementTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+  },
+  measurementOptions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  measurementOption: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  selectedMeasurement: {
+    borderColor: COLORS.primary,
+    backgroundColor: '#f5f8ff',
+  },
+  measurementText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+  },
+  selectedMeasurementText: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const ReferralCodeScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category } = route.params;
   const [copied, setCopied] = useState(false);
 
@@ -30,9 +32,9 @@ const ReferralCodeScreen = ({ navigation, route }) => {
       Clipboard.setString(referralCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      Alert.alert('Success', 'Referral code copied to clipboard!');
+      Alert.alert(t('Success'), t('Referral code copied to clipboard!'));
     } catch (error) {
-      Alert.alert('Error', 'Failed to copy code');
+      Alert.alert(t('Error'), t('Failed to copy code'));
     }
   };
 
@@ -44,7 +46,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
         title: 'Join RoundBuy',
       });
     } catch (error) {
-      Alert.alert('Error', 'Failed to share');
+      Alert.alert(t('Error'), t('Failed to share'));
     }
   };
 
@@ -59,7 +61,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Referral code</Text>
+        <Text style={styles.headerTitle}>{t('Referral code')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -73,20 +75,18 @@ const ReferralCodeScreen = ({ navigation, route }) => {
           <View style={styles.logoContainer}>
             <Ionicons name="logo-dropbox" size={48} color={COLORS.primary} />
           </View>
-          <Text style={styles.logoText}>RoundBuy</Text>
+          <Text style={styles.logoText}>{t('RoundBuy')}</Text>
         </View>
 
         {/* Welcome Text */}
         <Text style={styles.welcomeText}>
           Hello, <Text style={styles.usernameText}>"{username}"</Text>
         </Text>
-        <Text style={styles.descriptionText}>
-          Welcome to RoundBuy, Give this referral code to 5 friends to register and receive Gold membership for free of charge.
-        </Text>
+        <Text style={styles.descriptionText}>{t('Welcome to RoundBuy, Give this referral code to 5 friends to register and receive Gold membership for free of charge.')}</Text>
 
         {/* Referral Code Card */}
         <View style={styles.codeCard}>
-          <Text style={styles.codeLabel}>Your unique referral code:</Text>
+          <Text style={styles.codeLabel}>{t('Your unique referral code:')}</Text>
           <View style={styles.codeContainer}>
             <View style={styles.codeDashedBorder}>
               <Ionicons name="cut" size={24} color="#999" style={styles.scissorsIcon} />
@@ -114,7 +114,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
             activeOpacity={0.8}
           >
             <Ionicons name="share-social" size={20} color={COLORS.primary} />
-            <Text style={styles.secondaryButtonText}>Share Code</Text>
+            <Text style={styles.secondaryButtonText}>{t('Share Code')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -124,7 +124,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
           onPress={handleCheckStatus}
           activeOpacity={0.8}
         >
-          <Text style={styles.statusButtonText}>Check status</Text>
+          <Text style={styles.statusButtonText}>{t('Check status')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#fff" />
         </TouchableOpacity>
 
@@ -132,7 +132,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
         <View style={styles.infoSection}>
           <View style={styles.infoHeader}>
             <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-            <Text style={styles.infoHeaderText}>How to use</Text>
+            <Text style={styles.infoHeaderText}>{t('How to use')}</Text>
           </View>
           <Text style={styles.infoText}>
             • Copy your referral code{'\n'}
@@ -143,7 +143,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
         </View>
 
         {/* Footer */}
-        <Text style={styles.footerText}>© 2024-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

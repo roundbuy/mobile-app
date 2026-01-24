@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RewardsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   // Sample reward categories with dummy data
   const [categories] = useState([
     {
@@ -81,7 +83,7 @@ const RewardsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Rewards</Text>
+        <Text style={styles.headerTitle}>{t('Rewards')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -95,16 +97,14 @@ const RewardsScreen = ({ navigation }) => {
         ListHeaderComponent={
           <View style={styles.infoCard}>
             <Ionicons name="gift" size={32} color={COLORS.primary} />
-            <Text style={styles.infoTitle}>Earn Rewards</Text>
-            <Text style={styles.infoText}>
-              Complete tasks and refer friends to unlock exclusive rewards and benefits!
-            </Text>
+            <Text style={styles.infoTitle}>{t('Earn Rewards')}</Text>
+            <Text style={styles.infoText}>{t('Complete tasks and refer friends to unlock exclusive rewards and benefits!')}</Text>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="gift-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>No rewards available</Text>
+            <Text style={styles.emptyText}>{t('No rewards available')}</Text>
           </View>
         }
       />

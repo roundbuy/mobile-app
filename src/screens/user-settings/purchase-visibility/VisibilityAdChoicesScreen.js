@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityAdChoicesScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { ad, type } = route.params;
   
   const [selectedDuration, setSelectedDuration] = useState(null);
@@ -58,14 +60,14 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Visibility Ad Choices</Text>
+        <Text style={styles.headerTitle}>{t('Visibility Ad Choices')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Choose display time */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose display time:</Text>
+          <Text style={styles.sectionTitle}>{t('Choose display time:')}</Text>
           
           <View style={styles.buttonGrid}>
             {durationOptions.map((option) => (
@@ -89,18 +91,16 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
           </View>
 
           <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-            <Text style={styles.infoLinkText}>For more information, </Text>
-            <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+            <Text style={styles.infoLinkText}>{t('For more information,')}</Text>
+            <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
             <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
           </TouchableOpacity>
         </View>
 
         {/* Choose radius (distance) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose radius (distance):</Text>
-          <Text style={styles.sectionSubtitle}>
-            By setting the radius or distance you decide how far your Ad will be displayed.
-          </Text>
+          <Text style={styles.sectionTitle}>{t('Choose radius (distance):')}</Text>
+          <Text style={styles.sectionSubtitle}>{t('By setting the radius or distance you decide how far your Ad will be displayed.')}</Text>
           
           <View style={styles.buttonGrid}>
             {distanceOptions.map((option) => (
@@ -124,8 +124,8 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
           </View>
 
           <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-            <Text style={styles.infoLinkText}>For more information, about prices </Text>
-            <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+            <Text style={styles.infoLinkText}>{t('For more information, about prices')}</Text>
+            <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
             <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
           </TouchableOpacity>
         </View>
@@ -140,7 +140,7 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
           activeOpacity={0.7}
           disabled={!selectedDuration || !selectedDistance}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

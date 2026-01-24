@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -10,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const ReviewEligibility1Screen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { disputeType, problems } = route.params;
 
     const handleContinue = () => {
@@ -29,7 +31,7 @@ const ReviewEligibility1Screen = ({ navigation, route }) => {
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>Dispute</Text>
+                    <Text style={styles.headerTitle}>{t('Dispute')}</Text>
                     <Text style={styles.headerStep}>1/5</Text>
                 </View>
             </View>
@@ -43,40 +45,32 @@ const ReviewEligibility1Screen = ({ navigation, route }) => {
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>Buyer-initiated dispute</Text>
-                <Text style={styles.subtitle}>Review your eligibility</Text>
+                <Text style={styles.title}>{t('Buyer-initiated dispute')}</Text>
+                <Text style={styles.subtitle}>{t('Review your eligibility')}</Text>
 
                 {/* Section 1 */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        Buyer's Refund Eligibility criteria Buyer-to-Buyer (B2B) or Consumer-to-Consumer (C2C)
-                    </Text>
-                    <Text style={styles.sectionText}>
-                        Find out the eligibility reasons for Buyer-to-Buyer disputes.
-                    </Text>
+                    <Text style={styles.sectionTitle}>{t("Buyer's Refund Eligibility criteria Buyer-to-Buyer (B2B) or Consumer-to-Consumer (C2C)")}</Text>
+                    <Text style={styles.sectionText}>{t('Find out the eligibility reasons for Buyer-to-Buyer disputes.')}</Text>
                     <TouchableOpacity style={styles.moreInfoLink}>
-                        <Text style={styles.moreInfoText}>More information: <Text style={styles.linkText}>click here</Text></Text>
+                        <Text style={styles.moreInfoText}>More information: <Text style={styles.linkText}>{t('click here')}</Text></Text>
                         <Ionicons name="information-circle-outline" size={18} color="#666" style={styles.infoIcon} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Section 2 */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        Eligibility Requirements
-                    </Text>
-                    <Text style={styles.sectionText}>
-                        Find out the eligibility requirements for Buyer-to-Buyer disputes.
-                    </Text>
+                    <Text style={styles.sectionTitle}>{t('Eligibility Requirements')}</Text>
+                    <Text style={styles.sectionText}>{t('Find out the eligibility requirements for Buyer-to-Buyer disputes.')}</Text>
                     <TouchableOpacity style={styles.moreInfoLink}>
-                        <Text style={styles.moreInfoText}>More information: <Text style={styles.linkText}>click here</Text></Text>
+                        <Text style={styles.moreInfoText}>More information: <Text style={styles.linkText}>{t('click here')}</Text></Text>
                         <Ionicons name="information-circle-outline" size={18} color="#666" style={styles.infoIcon} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Close Link */}
                 <TouchableOpacity style={styles.closeLink}>
-                    <Text style={styles.closeLinkText}>To close click <Text style={styles.linkText}>here</Text></Text>
+                    <Text style={styles.closeLinkText}>To close click <Text style={styles.linkText}>{t('here')}</Text></Text>
                 </TouchableOpacity>
             </ScrollView>
 
@@ -86,7 +80,7 @@ const ReviewEligibility1Screen = ({ navigation, route }) => {
                     style={styles.continueButton}
                     onPress={handleContinue}
                 >
-                    <Text style={styles.continueButtonText}>Continue</Text>
+                    <Text style={styles.continueButtonText}>{t('Continue')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

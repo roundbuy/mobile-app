@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIn
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 import authService from '../../services/authService';
 
 const EmailVerificationScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { verifyEmail } = useAuth();
   const { email } = route.params || {};
   const [code, setCode] = useState(['', '', '', '']);
@@ -57,12 +59,12 @@ const EmailVerificationScreen = ({ route, navigation }) => {
       
       if (error.message?.includes('expired')) {
         Alert.alert(
-          'Code Expired',
-          'Your verification code has expired. Please request a new one.',
+          t('Code Expired'),
+          t('Your verification code has expired. Please request a new one.'),
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: t('Cancel'), style: t('cancel') },
             {
-              text: 'Resend Code',
+              text: t('Resend Code'),
               onPress: handleResend
             }
           ]
@@ -72,7 +74,7 @@ const EmailVerificationScreen = ({ route, navigation }) => {
         errorMessage = 'Invalid verification code. Please try again.';
       }
       
-      Alert.alert('Verification Failed', errorMessage);
+      Alert.alert(t('Verification Failed'), errorMessage);
     } finally {
       setLoading(false);
     }
@@ -80,7 +82,7 @@ const EmailVerificationScreen = ({ route, navigation }) => {
 
   const handleResend = async () => {
     if (!email) {
-      Alert.alert('Error', 'Email address not found');
+      Alert.alert(t('Error'), t('Email address not found'));
       return;
     }
 
@@ -93,16 +95,16 @@ const EmailVerificationScreen = ({ route, navigation }) => {
       
       if (response.success) {
         Alert.alert(
-          'Code Sent',
-          'A new verification code has been sent to your email.',
-          [{ text: 'OK' }]
+          t('Code Sent'),
+          t('A new verification code has been sent to your email.'),
+          [{ text: t('OK') }]
         );
       }
     } catch (error) {
       console.error('Resend verification error:', error);
       Alert.alert(
-        'Failed to Resend',
-        error.message || 'Could not resend verification code. Please try again.'
+        t('Failed to Resend'),
+        error.message || t('Could not resend verification code. Please try again.')
       );
     } finally {
       setResending(false);
@@ -127,8 +129,8 @@ const EmailVerificationScreen = ({ route, navigation }) => {
       >
         <View style={styles.content}>
           {/* Title */}
-          <Text style={styles.title}>Enter Verification Code</Text>
-          <Text style={styles.subtitle}>We have sent a code to this:</Text>
+          <Text style={styles.title}>{t('Enter Verification Code')}</Text>
+          <Text style={styles.subtitle}>{t('We have sent a code to this:')}</Text>
           <Text style={styles.email}>{email || 'johnround@gmail.com'}</Text>
 
           {/* Verification Code Display */}
@@ -152,18 +154,18 @@ const EmailVerificationScreen = ({ route, navigation }) => {
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.verifyButtonText}>Verify now</Text>
+              <Text style={styles.verifyButtonText}>{t('Verify now')}</Text>
             )}
           </TouchableOpacity>
 
           {/* Resend Code */}
           <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn't receive code? </Text>
+            <Text style={styles.resendText}>{t("Didn't receive code?")}</Text>
             <TouchableOpacity onPress={handleResend} disabled={resending}>
               {resending ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
               ) : (
-                <Text style={styles.resendLink}>Resend code</Text>
+                <Text style={styles.resendLink}>{t('Resend code')}</Text>
               )}
             </TouchableOpacity>
           </View>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -6,161 +7,206 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  RefreshControl,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useNotifications } from '../../../context/NotificationContext';
+import messagingService from '../../../services/messagingService';
 import { COLORS } from '../../../constants/theme';
 
 const NotificationsListScreen = ({ navigation }) => {
+    const { t } = useTranslation();
+  const {
+    notifications,
+    loading,
+    fetchNotifications,
+    markAsRead,
+  } = useNotifications();
+
   const [activeTab, setActiveTab] = useState('notifications'); // 'notifications' or 'chat'
   const [activeFilter, setActiveFilter] = useState('All');
+  const [refreshing, setRefreshing] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [conversationsLoading, setConversationsLoading] = useState(false);
 
   const filters = ['All', 'Buyer', 'Seller', 'Promo', 'Reco'];
 
-  const notificationData = [
-    {
-      id: 1,
-      type: 'Buyer',
-      title: 'Buyer',
-      message: 'Hi! I would be interested of the shoe package. You stil have two pairs?',
-      time: '2h ago',
-      read: false,
-    },
-    {
-      id: 2,
-      type: 'Seller',
-      title: 'Limited offer! Visibility Ads',
-      message: 'Get 5 x new Green users, and earn reward 2 x Visibility Ads to boost your sales.',
-      time: '2h ago',
-      read: false,
-    },
-    {
-      id: 3,
-      type: 'Buyer',
-      title: 'Order Confirmed',
-      message: 'We have processed your order of a new membership upgrade, Gold plan. See the new features available...',
-      time: '3h ago',
-      read: false,
-    },
-    {
-      id: 4,
-      type: 'Seller',
-      title: 'Payment Received',
-      message: 'Great news! We received payment of £3.00 for your order which is succesfully processed. You can now...',
-      time: '4h ago',
-      read: false,
-    },
-    {
-      id: 5,
-      type: 'Seller',
-      title: 'Diligent Seller',
-      message: 'Congratulations! You have now earned the reward, Diligent Seller, for selling 10 products at RoundBy.',
-      time: '5h ago',
-      read: false,
-    },
-    {
-      id: 6,
-      type: 'Promo',
-      title: 'Almost Gone',
-      message: 'Limited-time offer! Enjoy 45% off on selected products. Non\'t miss out! Shop now before it\'s too late',
-      time: '6h ago',
-      read: false,
-    },
-    {
-      id: 7,
-      type: 'Reco',
-      title: 'Locations',
-      message: 'Increase your sales! Go to your user account and check that you are using all 9 product locations to',
-      time: '12h ago',
-      read: false,
-    },
-  ];
+  useEffect(() => {
+    loadNotifications();
+    if (activeTab === 'chat') {
+      loadConversations();
+    }
+  }, [activeTab]);
 
-  const chatData = [
-    {
-      id: 1,
-      username: 'RobMay',
-      message: 'Hi! I would be interested of the shoe package. You stil have two pairs?',
-      time: '2h ago',
-      read: false,
-    },
-    {
-      id: 2,
-      username: 'Evenings',
-      message: 'Tell me a nice. Still have it?',
-      time: '2h ago',
-      read: false,
-    },
-    {
-      id: 3,
-      username: 'TimeLine88',
-      message: 'I get the meal tool for you! Please view the images I send tyo you. You will not think twice...',
-      time: '3h ago',
-      read: false,
-    },
-    {
-      id: 4,
-      username: 'ProveDance1',
-      message: 'Here is my last offer £300, no more no less. Check my',
-      time: '4h ago',
-      read: false,
-    },
-    {
-      id: 5,
-      username: 'Quai11',
-      message: 'Ihave had it for five years now, and hardly ever used it. If you wonder why I am selling it, it is because...',
-      time: '5h ago',
-      read: false,
-    },
-    {
-      id: 6,
-      username: 'MattenRand2',
-      message: 'This size is limited! One down partners.',
-      time: '6h ago',
-      read: false,
-    },
-    {
-      id: 7,
-      username: 'Tomatomator',
-      message: 'Ok, see you tomorrow. Around 12.00 I shall come to the location to exchange the products.',
-      time: '12h ago',
-      read: false,
-    },
-  ];
+  const loadConversations = async () => {
+    try {
+      setConversationsLoading(true);
+      const response = await messagingService.getConversations();
+      setConversations(response.data.conversations || []);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    } finally {
+      setConversationsLoading(false);
+    }
+  };
+
+  const loadNotifications = async () => {
+    await fetchNotifications();
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (activeTab === 'chat') {
+      await loadConversations();
+    } else {
+      await loadNotifications();
+    }
+    setRefreshing(false);
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
+  const handleNotificationPress = async (notification) => {
+    // Mark as read
+    if (!notification.is_read) {
+      await markAsRead(notification.user_notification_id);
+    }
+
+    // Handle navigation based on notification type
+    if (notification.action_type && notification.action_data) {
+      handleAction(notification.action_type, notification.action_data);
+    }
+  };
+
+  const handleAction = (actionType, actionData) => {
+    if (actionType === 'open_screen' && actionData.screen) {
+      navigation.navigate(actionData.screen, actionData.params || {});
+    }
+  };
+
+  const getFilteredNotifications = () => {
+    let filtered = notifications;
+
+    // Filter by tab
+    if (activeTab === 'chat') {
+      // Chat tab - show only chat-related notifications
+      filtered = filtered.filter(n =>
+        ['new_message', 'offer_received', 'offer_accepted', 'offer_rejected', 'offer_counter'].includes(n.type)
+      );
+    } else {
+      // Notifications tab - exclude chat notifications
+      filtered = filtered.filter(n =>
+        !['new_message', 'offer_received', 'offer_accepted', 'offer_rejected', 'offer_counter'].includes(n.type)
+      );
+
+      // Apply sub-filters for notifications tab
+      if (activeFilter !== 'All') {
+        // Map filter to notification types
+        const filterTypeMap = {
+          'Buyer': ['buyer_message', 'buyer_offer', 'order_confirmed'],
+          'Seller': ['seller_message', 'payment_received', 'seller_reward'],
+          'Promo': ['promo', 'limited_offer', 'discount'],
+          'Reco': ['recommendation', 'location_tip', 'feature_tip'],
+        };
+
+        const types = filterTypeMap[activeFilter] || [];
+        if (types.length > 0) {
+          filtered = filtered.filter(n => types.includes(n.type));
+        }
+      }
+    }
+
+    return filtered;
+  };
+
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString();
+  };
+
   const renderNotificationItem = ({ item }) => (
-    <TouchableOpacity style={styles.notificationItem} activeOpacity={0.7}>
-      <View style={styles.notificationDot} />
+    <TouchableOpacity
+      style={styles.notificationItem}
+      activeOpacity={0.7}
+      onPress={() => handleNotificationPress(item)}
+    >
+      {!item.is_read && <View style={styles.notificationDot} />}
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
-          <Text style={styles.notificationTitle}>{item.title}</Text>
-          <Text style={styles.notificationTime}>{item.time}</Text>
+          <Text style={styles.notificationTitle}>{item.title || 'Notification'}</Text>
+          <Text style={styles.notificationTime}>{formatTimestamp(item.created_at)}</Text>
         </View>
         <Text style={styles.notificationMessage} numberOfLines={2}>
-          {item.message}
+          {item.message || ''}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
-  const renderChatItem = ({ item }) => (
-    <TouchableOpacity style={styles.notificationItem} activeOpacity={0.7}>
-      <View style={styles.notificationDot} />
-      <View style={styles.notificationContent}>
-        <View style={styles.notificationHeader}>
-          <Text style={styles.notificationTitle}>{item.username}</Text>
-          <Text style={styles.notificationTime}>{item.time}</Text>
+  const renderConversationItem = ({ item }) => {
+    const otherUser = item.buyer_id === item.current_user_id ? item.seller : item.buyer;
+    const productImage = item.advertisement?.images?.[0] || item.advertisement?.image_url;
+
+    return (
+      <TouchableOpacity
+        style={styles.conversationItem}
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('ProductChat', {
+          advertisement: item.advertisement,
+          conversationId: item.id
+        })}
+      >
+        {productImage && (
+          <Image
+            source={{ uri: productImage }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        )}
+        <View style={styles.conversationContent}>
+          <View style={styles.conversationHeader}>
+            <Text style={styles.productTitle} numberOfLines={1}>
+              {item.advertisement?.title || 'Product'}
+            </Text>
+            <Text style={styles.conversationTime}>
+              {formatTimestamp(item.last_message_at)}
+            </Text>
+          </View>
+          <Text style={styles.otherUserName} numberOfLines={1}>
+            {otherUser?.name || 'User'}
+          </Text>
+          {item.last_message && (
+            <Text style={styles.lastMessage} numberOfLines={1}>
+              {item.last_message}
+            </Text>
+          )}
         </View>
-        <Text style={styles.notificationMessage} numberOfLines={2}>
-          {item.message}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+        {item.unread_count > 0 && (
+          <View style={styles.unreadBadge}>
+            <Text style={styles.unreadBadgeText}>{item.unread_count}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -178,17 +224,13 @@ const NotificationsListScreen = ({ navigation }) => {
           style={[styles.tab, activeTab === 'notifications' && styles.activeTab]}
           onPress={() => setActiveTab('notifications')}
         >
-          <Text style={[styles.tabText, activeTab === 'notifications' && styles.activeTabText]}>
-            Notifications
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'notifications' && styles.activeTabText]}>{t('Notifications')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'chat' && styles.activeTab]}
           onPress={() => setActiveTab('chat')}
         >
-          <Text style={[styles.tabText, activeTab === 'chat' && styles.activeTabText]}>
-            Chat
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'chat' && styles.activeTabText]}>{t('Chat')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -252,13 +294,40 @@ const NotificationsListScreen = ({ navigation }) => {
       )}
 
       {/* Notifications/Chat List */}
-      <FlatList
-        data={activeTab === 'notifications' ? notificationData : chatData}
-        renderItem={activeTab === 'notifications' ? renderNotificationItem : renderChatItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {(activeTab === 'chat' ? conversationsLoading : loading) ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={activeTab === 'chat' ? conversations : getFilteredNotifications()}
+          renderItem={activeTab === 'chat' ? renderConversationItem : renderNotificationItem}
+          keyExtractor={(item) => activeTab === 'chat' ? item.id?.toString() : (item.user_notification_id?.toString() || item.id?.toString())}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name={activeTab === 'chat' ? "chatbubbles-outline" : "notifications-off-outline"}
+                size={64}
+                color="#D1D5DB"
+              />
+              <Text style={styles.emptyText}>
+                {activeTab === 'chat' ? 'No conversations yet' : 'No notifications yet'}
+              </Text>
+              <Text style={styles.emptySubtext}>
+                {activeTab === 'chat'
+                  ? 'Start chatting with buyers and sellers to see your conversations here'
+                  : "You'll see notifications here when you receive them"
+                }
+              </Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -310,18 +379,23 @@ const styles = StyleSheet.create({
   filtersContainer: {
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+    maxHeight: 60,
   },
   filtersContent: {
-    padding: 16,
-    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   filterChip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: '#f5f5f5',
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    marginRight: 8,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterChipActive: {
     backgroundColor: COLORS.primary,
@@ -376,6 +450,91 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 64,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 64,
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  conversationItem: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  productImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: '#f5f5f5',
+  },
+  conversationContent: {
+    flex: 1,
+  },
+  conversationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  productTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+    flex: 1,
+    marginRight: 8,
+  },
+  conversationTime: {
+    fontSize: 12,
+    color: '#999',
+  },
+  otherUserName: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 2,
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#999',
+  },
+  unreadBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    marginLeft: 8,
+  },
+  unreadBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

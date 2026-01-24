@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const CreateTicketScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -75,17 +77,17 @@ const CreateTicketScreen = ({ navigation }) => {
       const ticketId = response.data.id;
 
       Alert.alert(
-        'Ticket Created',
-        'Your support ticket has been created successfully. Our team will respond within 24 hours.',
+        t('Ticket Created'),
+        t('Your support ticket has been created successfully. Our team will respond within 24 hours.'),
         [
           {
-            text: 'OK',
+            text: t('OK'),
             onPress: () => navigation.replace('TicketDetail', { ticketId }),
           },
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to create ticket. Please try again.');
+      Alert.alert(t('Error'), t('Failed to create ticket. Please try again.'));
       console.error('Error creating ticket:', error);
     } finally {
       setSubmitting(false);
@@ -106,10 +108,8 @@ const CreateTicketScreen = ({ navigation }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Create Support Ticket</Text>
-          <Text style={styles.subtitle}>
-            Tell us about your issue and we'll help you resolve it
-          </Text>
+          <Text style={styles.title}>{t('Create Support Ticket')}</Text>
+          <Text style={styles.subtitle}>{t("Tell us about your issue and we'll help you resolve it")}</Text>
         </View>
 
         <View style={styles.formSection}>
@@ -142,7 +142,7 @@ const CreateTicketScreen = ({ navigation }) => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Select Category</Text>
+                <Text style={styles.modalTitle}>{t('Select Category')}</Text>
                 <TouchableOpacity onPress={() => setShowCategoryPicker(false)}>
                   <Feather name="x" size={24} color="#333" />
                 </TouchableOpacity>
@@ -190,7 +190,7 @@ const CreateTicketScreen = ({ navigation }) => {
                   styles.priorityButton,
                   formData.priority === priority && styles.priorityButtonActive,
                   formData.priority === priority &&
-                    styles[`priority_${priority}`],
+                  styles[`priority_${priority}`],
                 ]}
                 onPress={() => setFormData({ ...formData, priority })}
               >
@@ -211,10 +211,10 @@ const CreateTicketScreen = ({ navigation }) => {
           <Text style={styles.label}>
             Subject <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>Brief description (minimum 10 characters)</Text>
+          <Text style={styles.hint}>{t('Brief description (minimum 10 characters)')}</Text>
           <TextInput
             style={[styles.input, errors.subject && styles.inputError]}
-            placeholder="Example: Unable to upload product images"
+            placeholder={t('Example: Unable to upload product images')}
             value={formData.subject}
             onChangeText={(text) => setFormData({ ...formData, subject: text })}
             maxLength={100}
@@ -231,14 +231,12 @@ const CreateTicketScreen = ({ navigation }) => {
           <Text style={styles.label}>
             Description <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>
-            Detailed explanation (minimum 50 characters)
-          </Text>
+          <Text style={styles.hint}>{t('Detailed explanation (minimum 50 characters)')}</Text>
           <TextInput
             style={[styles.textArea, errors.description && styles.inputError]}
             multiline
             numberOfLines={8}
-            placeholder="Please describe your issue in detail. Include any error messages, steps to reproduce the problem, and what you've already tried..."
+            placeholder={t("Please describe your issue in detail. Include any error messages, steps to reproduce the problem, and what you've already tried...")}
             value={formData.description}
             onChangeText={(text) =>
               setFormData({ ...formData, description: text })
@@ -256,7 +254,7 @@ const CreateTicketScreen = ({ navigation }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Response Time</Text>
+            <Text style={styles.infoTitle}>{t('Response Time')}</Text>
             <Text style={styles.infoText}>
               • Low/Medium priority: Within 24-48 hours{'\n'}
               • High priority: Within 12 hours{'\n'}
@@ -273,7 +271,7 @@ const CreateTicketScreen = ({ navigation }) => {
           {submitting ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.submitButtonText}>Create Ticket</Text>
+            <Text style={styles.submitButtonText}>{t('Create Ticket')}</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

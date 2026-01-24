@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const TransactionStatusScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const {
     success = true,
     amount = '2.27',
@@ -54,7 +56,7 @@ const TransactionStatusScreen = ({ navigation, route }) => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Text style={styles.backButton}>←</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Transaction Failed</Text>
+            <Text style={styles.headerTitle}>{t('Transaction Failed')}</Text>
           </View>
 
           {/* Failed Icon */}
@@ -64,13 +66,11 @@ const TransactionStatusScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          <Text style={styles.statusTitle}>Payment Unsuccessful</Text>
+          <Text style={styles.statusTitle}>{t('Payment Unsuccessful')}</Text>
           
           <View style={styles.failedMessageContainer}>
-            <Text style={styles.failedMessage}>
-              We were unable to process your payment. Check that all the payment details were correct.
-            </Text>
-            <Text style={styles.tryAgainText}>Please try again!</Text>
+            <Text style={styles.failedMessage}>{t('We were unable to process your payment. Check that all the payment details were correct.')}</Text>
+            <Text style={styles.tryAgainText}>{t('Please try again!')}</Text>
           </View>
 
           {/* Try Again Button */}
@@ -78,7 +78,7 @@ const TransactionStatusScreen = ({ navigation, route }) => {
             style={styles.actionButton}
             onPress={handleTryAgain}
           >
-            <Text style={styles.actionButtonText}>Try again</Text>
+            <Text style={styles.actionButtonText}>{t('Try again')}</Text>
           </TouchableOpacity>
         </View>
       </SafeScreenContainer>
@@ -93,7 +93,7 @@ const TransactionStatusScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Transaction Details</Text>
+          <Text style={styles.headerTitle}>{t('Transaction Details')}</Text>
         </View>
 
         {/* Success Icon */}
@@ -103,42 +103,40 @@ const TransactionStatusScreen = ({ navigation, route }) => {
           </View>
         </View>
 
-        <Text style={styles.statusTitle}>Payment Successful</Text>
+        <Text style={styles.statusTitle}>{t('Payment Successful')}</Text>
         <Text style={styles.statusSubtitle}>CHG {sessionId}</Text>
 
         {/* Transaction Details */}
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Paid to RoundBuy</Text>
+          <Text style={styles.detailsTitle}>{t('Paid to RoundBuy')}</Text>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Transaction ID</Text>
+            <Text style={styles.detailLabel}>{t('Transaction ID')}</Text>
             <Text style={styles.detailValue}>8678882373</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Card number</Text>
+            <Text style={styles.detailLabel}>{t('Card number')}</Text>
             <Text style={styles.detailValue}>****-****-****-1232</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date & Time</Text>
+            <Text style={styles.detailLabel}>{t('Date & Time')}</Text>
             <Text style={styles.detailValue}>{formattedDate} {formattedTime}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Session ID</Text>
+            <Text style={styles.detailLabel}>{t('Session ID')}</Text>
             <Text style={styles.detailValue}>{sessionId}</Text>
           </View>
 
           <View style={[styles.detailRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalLabel}>{t('Total Amount')}</Text>
             <Text style={styles.totalValue}>£{amount}</Text>
           </View>
 
           <View style={styles.receiptNote}>
-            <Text style={styles.receiptText}>
-              A copy of this receipt has been sent to your email as a PDF
-            </Text>
+            <Text style={styles.receiptText}>{t('A copy of this receipt has been sent to your email as a PDF')}</Text>
           </View>
         </View>
 
@@ -147,11 +145,11 @@ const TransactionStatusScreen = ({ navigation, route }) => {
           style={styles.actionButton}
           onPress={handleDone}
         >
-          <Text style={styles.actionButtonText}>Done</Text>
+          <Text style={styles.actionButtonText}>{t('Done')}</Text>
         </TouchableOpacity>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
 
         <View style={styles.bottomSpace} />
       </ScrollView>

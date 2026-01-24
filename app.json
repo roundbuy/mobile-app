@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.roundbuy.app",
+      "bundleIdentifier": "com.buyaround.roundbuy",
       "buildNumber": "2.0.0",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
@@ -34,7 +34,7 @@
         }
       },
       "config": {
-        "googleMapsApiKey": "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
+        "googleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
       }
     },
     "android": {
@@ -42,7 +42,7 @@
         "foregroundImage": "./assets/logo-crop.png",
         "backgroundColor": "#1E6FD6"
       },
-      "package": "com.roundbuy.app",
+      "package": "com.buyaround.roundbuy",
       "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
@@ -53,7 +53,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
+          "apiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
         }
       }
     },

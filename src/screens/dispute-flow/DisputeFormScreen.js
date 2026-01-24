@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -14,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const DisputeFormScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { disputeType, problems } = route.params;
 
     const [issue, setIssue] = useState('');
@@ -22,12 +24,12 @@ const DisputeFormScreen = ({ navigation, route }) => {
 
     const handleContinue = () => {
         if (!issue.trim()) {
-            Alert.alert('Required Field', 'Please describe the issue');
+            Alert.alert(t('Required Field'), t('Please describe the issue'));
             return;
         }
 
         if (!amount.trim()) {
-            Alert.alert('Required Field', 'Please enter the amount');
+            Alert.alert(t('Required Field'), t('Please enter the amount'));
             return;
         }
 
@@ -56,7 +58,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                         <Ionicons name="chevron-back" size={28} color="#000" />
                     </TouchableOpacity>
                     <View style={styles.headerTitleContainer}>
-                        <Text style={styles.headerTitle}>Dispute</Text>
+                        <Text style={styles.headerTitle}>{t('Dispute')}</Text>
                         <Text style={styles.headerStep}>5/5</Text>
                     </View>
                 </View>
@@ -67,15 +69,15 @@ const DisputeFormScreen = ({ navigation, route }) => {
                     keyboardShouldPersistTaps="handled"
                 >
                     {/* Title */}
-                    <Text style={styles.title}>Give us the details</Text>
-                    <Text style={styles.subtitle}>Tell us about the issue you're having</Text>
+                    <Text style={styles.title}>{t('Give us the details')}</Text>
+                    <Text style={styles.subtitle}>{t("Tell us about the issue you're having")}</Text>
 
                     {/* What's the issue */}
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>What's the issue?</Text>
+                        <Text style={styles.label}>{t("What's the issue?")}</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Fill in!"
+                            placeholder={t('Fill in!')}
                             placeholderTextColor="#999"
                             value={issue}
                             onChangeText={setIssue}
@@ -87,7 +89,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
 
                     {/* What's the amount */}
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>What's the amount?</Text>
+                        <Text style={styles.label}>{t("What's the amount?")}</Text>
                         <View style={styles.amountInputContainer}>
                             <Text style={styles.currencySymbol}>£</Text>
                             <TextInput
@@ -103,10 +105,10 @@ const DisputeFormScreen = ({ navigation, route }) => {
 
                     {/* Additional info */}
                     <View style={styles.formGroup}>
-                        <Text style={styles.label}>Anything else we should know?</Text>
+                        <Text style={styles.label}>{t('Anything else we should know?')}</Text>
                         <TextInput
                             style={[styles.input, styles.textArea]}
-                            placeholder="Fill in!"
+                            placeholder={t('Fill in!')}
                             placeholderTextColor="#999"
                             value={additionalInfo}
                             onChangeText={setAdditionalInfo}
@@ -119,7 +121,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                     {/* Info Link */}
                     <TouchableOpacity style={styles.infoLink}>
                         <Text style={styles.infoLinkText}>
-                            More information on Disputes & Resolution, <Text style={styles.linkText}>click here</Text>
+                            More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                         </Text>
                         <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                     </TouchableOpacity>
@@ -135,7 +137,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                         onPress={handleContinue}
                         disabled={!issue.trim() || !amount.trim()}
                     >
-                        <Text style={styles.continueButtonText}>Continue</Text>
+                        <Text style={styles.continueButtonText}>{t('Continue')}</Text>
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>

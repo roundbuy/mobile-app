@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const ResolutionCenterHomeScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -57,29 +59,27 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Resolution Center</Text>
-          <Text style={styles.subtitle}>
-            Manage disputes and resolve transaction issues
-          </Text>
+          <Text style={styles.title}>{t('Resolution Center')}</Text>
+          <Text style={styles.subtitle}>{t('Manage disputes and resolve transaction issues')}</Text>
         </View>
 
         {/* Statistics Cards */}
         <View style={styles.statsContainer}>
           <StatCard
             icon="clock"
-            label="Pending"
+            label={t('Pending')}
             count={stats?.pending || 0}
             color="#FFA500"
           />
           <StatCard
             icon="eye"
-            label="In Review"
+            label={t('In Review')}
             count={stats?.under_review || 0}
             color="#4169E1"
           />
           <StatCard
             icon="check-circle"
-            label="Resolved"
+            label={t('Resolved')}
             count={stats?.resolved || 0}
             color="#32CD32"
           />
@@ -87,7 +87,7 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
 
         {/* Quick Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={styles.sectionTitle}>{t('Quick Actions')}</Text>
 
           <TouchableOpacity
             style={styles.actionButton}
@@ -97,10 +97,8 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
               <Feather name="alert-circle" size={24} color="#4169E1" />
             </View>
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>Create New Dispute</Text>
-              <Text style={styles.actionSubtitle}>
-                Report an issue with a transaction
-              </Text>
+              <Text style={styles.actionTitle}>{t('Create New Dispute')}</Text>
+              <Text style={styles.actionSubtitle}>{t('Report an issue with a transaction')}</Text>
             </View>
             <Feather name="chevron-right" size={24} color="#999" />
           </TouchableOpacity>
@@ -113,10 +111,8 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
               <Feather name="list" size={24} color="#32CD32" />
             </View>
             <View style={styles.actionContent}>
-              <Text style={styles.actionTitle}>View All Disputes</Text>
-              <Text style={styles.actionSubtitle}>
-                Track your active and closed disputes
-              </Text>
+              <Text style={styles.actionTitle}>{t('View All Disputes')}</Text>
+              <Text style={styles.actionSubtitle}>{t('Track your active and closed disputes')}</Text>
             </View>
             <Feather name="chevron-right" size={24} color="#999" />
           </TouchableOpacity>
@@ -126,7 +122,7 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>How it works</Text>
+            <Text style={styles.infoTitle}>{t('How it works')}</Text>
             <Text style={styles.infoText}>
               • Create a dispute for any transaction issue{'\n'}
               • Upload evidence to support your case{'\n'}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const AppReviewsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -78,7 +80,7 @@ const AppReviewsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ratings and Reviews: App</Text>
+        <Text style={styles.headerTitle}>{t('Ratings and Reviews: App')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -94,15 +96,13 @@ const AppReviewsScreen = ({ navigation }) => {
             <View style={styles.averageStars}>
               {renderStars(Math.round(reviewsData.averageRating))}
             </View>
-            <Text style={styles.totalReviews}>
-              RoundBuy App and service
-            </Text>
+            <Text style={styles.totalReviews}>{t('RoundBuy App and service')}</Text>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubble-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>No reviews yet</Text>
+            <Text style={styles.emptyText}>{t('No reviews yet')}</Text>
           </View>
         }
       />

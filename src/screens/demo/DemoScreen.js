@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList, RefreshControl } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from '../../components/MapView';
+import MapView, { Marker, Circle, Callout, PROVIDER_GOOGLE } from '../../components/MapView';
 import * as Location from 'expo-location';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, SLIDER_CONFIG } from '../../constants/theme';
@@ -15,8 +15,11 @@ import CombinedFiltersModal from '../../components/CombinedFiltersModal';
 import DemoInstructionsModal from '../../components/DemoInstructionsModal';
 import SortDropdown from '../../components/SortDropdown';
 import { DEMO_CITIES, ACTIVITY_COLORS, getDefaultCity } from '../../constants/demoCities';
+import LocationDisclaimerModal from '../../components/LocationDisclaimerModal';
+import { useTranslation } from '../../context/TranslationContext';
 
 const DemoScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
 
   // Search and filter state
   const [searchText, setSearchText] = useState('');
@@ -38,8 +41,9 @@ const DemoScreen = ({ navigation, route }) => {
     min_price: null,
     max_price: null,
     radius: 50, // km
-    sort: 'created_at',
-    order: 'DESC'
+    sort: 'views',
+    order: 'DESC',
+    measurementUnit: 'km' // Default measurement unit
   });
 
   // Location state - Use London as default for demo
@@ -69,9 +73,12 @@ const DemoScreen = ({ navigation, route }) => {
   const [priceModalVisible, setPriceModalVisible] = useState(false);
   const [combinedFiltersModalVisible, setCombinedFiltersModalVisible] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [disclaimerModalVisible, setDisclaimerModalVisible] = useState(false);
 
   // Demo city state
   const [selectedCity, setSelectedCity] = useState(getDefaultCity());
+  const [selectedMarker, setSelectedMarker] = useState(null); // Track selected marker for callout
+  const [favorites, setFavorites] = useState(new Set()); // Track favorited items
 
   // User locations state
   const [userLocations, setUserLocations] = useState([]);
@@ -206,18 +213,18 @@ const DemoScreen = ({ navigation, route }) => {
       // Handle specific errors
       if (err.require_subscription) {
         Alert.alert(
-          'Subscription Required',
-          'You need an active subscription to browse advertisements.',
-          [{ text: 'View Plans', onPress: () => navigation.navigate('AllMemberships') }]
+          t('Subscription Required'),
+          t('You need an active subscription to browse advertisements.'),
+          [{ text: t('View Plans'), onPress: () => navigation.navigate('AllMemberships') }]
         );
       } else if (err.require_login) {
         Alert.alert(
-          'Login Required',
-          'Please login to browse advertisements.',
-          [{ text: 'Login', onPress: () => navigation.navigate('SocialLogin') }]
+          t('Login Required'),
+          t('Please login to browse advertisements.'),
+          [{ text: t('Login'), onPress: () => navigation.navigate('SocialLogin') }]
         );
       } else {
-        Alert.alert('Error', 'Failed to load advertisements. Please try again.');
+        Alert.alert(t('Error'), t('Failed to load advertisements. Please try again.'));
       }
     } finally {
       setLoading(false);
@@ -421,24 +428,50 @@ const DemoScreen = ({ navigation, route }) => {
       onPress={() => handleProductPress(item)}
       activeOpacity={0.7}
     >
-      {item.images && item.images.length > 0 ? (
-        <Image
-          source={{ uri: item.images[0] }}
-          style={styles.image}
-          defaultSource={IMAGES.placeholder}
-        />
-      ) : (
-        <View style={[styles.image, styles.placeholder]}>
-          <Text style={styles.placeholderText}>No Image</Text>
-        </View>
-      )}
-      <View style={styles.itemInfo}>
-        <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.priceText}>₹{item.price}</Text>
-        {item.distance && (
-          <Text style={styles.itemDetails}>Distance: {item.distance} km</Text>
+      <View style={styles.imageContainer}>
+        {item.images && item.images.length > 0 ? (
+          <Image
+            source={{ uri: item.images[0] }}
+            style={styles.image}
+            defaultSource={IMAGES.placeholder}
+          />
+        ) : (
+          <View style={[styles.image, styles.placeholder]}>
+            <Text style={styles.placeholderText}>{t('No Image')}</Text>
+          </View>
         )}
-        <Text style={styles.itemDetails}>{item.city || item.location_name}</Text>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            // Toggle favorite locally
+            setFavorites(prev => {
+              const newFavorites = new Set(prev);
+              if (newFavorites.has(item.id)) {
+                newFavorites.delete(item.id);
+              } else {
+                newFavorites.add(item.id);
+              }
+              return newFavorites;
+            });
+          }}
+        >
+          <FontAwesome
+            name={favorites.has(item.id) ? "heart" : "heart-o"}
+            size={24}
+            color="#333"
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.itemInfo}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+          <Text style={styles.priceText}>£{item.price}</Text>
+        </View>
+        <Text style={styles.distanceText} numberOfLines={1}>
+          Distance: {Math.round((item.distance || 0) * 1000)} m / {Math.round((item.distance || 0) * 20)} min walk
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -453,7 +486,7 @@ const DemoScreen = ({ navigation, route }) => {
           <FontAwesome name="search" size={20} color="#6a6a6a" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search Around You"
+            placeholder={t('Search Around You')}
             placeholderTextColor="#b0b0b0"
             value={searchText}
             onChangeText={setSearchText}
@@ -470,7 +503,7 @@ const DemoScreen = ({ navigation, route }) => {
         >
           <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
             <Ionicons name="options-outline" size={18} color="#1a1a1a" />
-            <Text style={styles.filterButtonText}>Filter</Text>
+            <Text style={styles.filterButtonText}>{t('Filter')}</Text>
             {filters.activity_id && <View style={styles.filterBadge} />}
           </TouchableOpacity>
 
@@ -497,11 +530,17 @@ const DemoScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Search Results Count and Sort */}
+        {/* Search Results Count, Instructions, and Sort */}
         <View style={styles.resultRow}>
           <Text style={styles.resultCount}>
             {loading ? 'Loading...' : `${advertisements.length} results`}
           </Text>
+          <TouchableOpacity
+            style={styles.instructionsButton}
+            onPress={() => setShowInstructions(true)}
+          >
+            <Text style={styles.instructionsText}>{t('Instructions')}</Text>
+          </TouchableOpacity>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}
             onSortChange={(sortOptions) => {
@@ -511,18 +550,8 @@ const DemoScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      {/* Instructions Button Section */}
-      <TouchableOpacity
-        style={styles.instructionsButtonSection}
-        onPress={() => setShowInstructions(true)}
-      >
-        <Ionicons name="information-circle-outline" size={20} color="#1E6FD6" />
-        <Text style={styles.instructionsSectionText}>View Demo Instructions & Change City</Text>
-        <Ionicons name="chevron-forward" size={20} color="#1E6FD6" />
-      </TouchableOpacity>
-
       {/* Main Content */}
-      <View style={{ flex: 1, paddingBottom: 10 }}>
+      <View style={{ flex: 1, paddingBottom: 0 }}>
         {/* List View */}
         {viewMode === 'list' && (
           <FlatList
@@ -545,8 +574,8 @@ const DemoScreen = ({ navigation, route }) => {
               !loading && (
                 <View style={styles.emptyContainer}>
                   <FontAwesome name="search" size={48} color="#ccc" />
-                  <Text style={styles.emptyText}>No advertisements found</Text>
-                  <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+                  <Text style={styles.emptyText}>{t('No advertisements found')}</Text>
+                  <Text style={styles.emptySubtext}>{t('Try adjusting your filters')}</Text>
                 </View>
               )
             }
@@ -681,7 +710,7 @@ const DemoScreen = ({ navigation, route }) => {
                   style={styles.retryButton}
                   onPress={() => setMapError(null)}
                 >
-                  <Text style={styles.retryButtonText}>Retry</Text>
+                  <Text style={styles.retryButtonText}>{t('Retry')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -798,7 +827,7 @@ const DemoScreen = ({ navigation, route }) => {
                 {location && (
                   <Marker
                     coordinate={location}
-                    title="Your Location"
+                    title={t('Your Location')}
                     image={IMAGES.roundbyIcon}
                   />
                 )}
@@ -807,7 +836,7 @@ const DemoScreen = ({ navigation, route }) => {
                 {clickedLocation && (
                   <Marker
                     coordinate={clickedLocation}
-                    title="Selected Location"
+                    title={t('Selected Location')}
                     description={`Radius: ${clickedLocationRadius}km - Tap to clear`}
                     pinColor="orange"
                     onPress={() => setClickedLocation(null)}
@@ -823,6 +852,7 @@ const DemoScreen = ({ navigation, route }) => {
                   const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
                   const markerLabel = activityData.label;
                   const markerColor = activityData.color;
+                  const isSelected = selectedMarker === ad.id;
 
                   return (
                     <Marker
@@ -831,17 +861,86 @@ const DemoScreen = ({ navigation, route }) => {
                         latitude: parseFloat(ad.latitude),
                         longitude: parseFloat(ad.longitude),
                       }}
-                      title={ad.title}
-                      description={`₹${ad.price} - ${activityData.name}`}
-                      onPress={() => handleProductPress(ad)}
+                      onPress={() => {
+                        // Tap marker: callout will show automatically
+                        setSelectedMarker(ad.id);
+
+                        // Animate map to position marker at 20% from bottom
+                        if (mapRef.current) {
+                          const markerCoordinate = {
+                            latitude: parseFloat(ad.latitude),
+                            longitude: parseFloat(ad.longitude),
+                          };
+
+                          // Calculate offset to position marker at 20% from bottom (80% from top)
+                          // This is done by adjusting the latitude
+                          const latitudeDelta = region.latitudeDelta || 0.0922;
+                          const offsetLatitude = markerCoordinate.latitude + (latitudeDelta * 0.3); // Shift up by 30% of delta
+
+                          mapRef.current.animateToRegion({
+                            latitude: offsetLatitude,
+                            longitude: markerCoordinate.longitude,
+                            latitudeDelta: latitudeDelta,
+                            longitudeDelta: region.longitudeDelta || 0.0421,
+                          }, 300);
+                        }
+                      }}
+                      onCalloutPress={() => {
+                        // Tap callout: navigate to product
+                        handleProductPress(ad);
+                      }}
                     >
-                      <View style={[styles.customMarker, { backgroundColor: markerColor }]}>
+                      <View style={[styles.customMarker, { backgroundColor: markerColor }, isSelected && styles.selectedMarker]}>
                         <Text style={styles.markerText}>{markerLabel}</Text>
                       </View>
+
+
+                      {/* Callout - Always present, shows when marker is tapped */}
+                      <Callout tooltip onPress={() => handleProductPress(ad)}>
+                        <TouchableOpacity
+                          style={styles.calloutContainer}
+                          onPress={() => handleProductPress(ad)}
+                          activeOpacity={0.8}
+                        >
+                          <View style={styles.calloutImageContainer}>
+                            {ad.images && ad.images.length > 0 ? (
+                              <Image
+                                source={{ uri: ad.images[0] }}
+                                style={styles.calloutImage}
+                              />
+                            ) : (
+                              <View style={styles.calloutImagePlaceholder}>
+                                <FontAwesome name="image" size={20} color="#ccc" />
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.calloutInfo}>
+                            <Text style={styles.calloutTitle} numberOfLines={2}>
+                              {ad.title}
+                            </Text>
+                            <Text style={styles.calloutPrice}>£{ad.price}</Text>
+                            <Text style={styles.calloutTap}>{t('Tap to view details')}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      </Callout>
                     </Marker>
                   );
                 })}
               </MapView>
+            )}
+
+            {/* Location Disclaimer */}
+            {viewMode === 'map' && (
+              <View style={styles.disclaimerContainer}>
+                <Text style={styles.disclaimerText}>
+                  Locations are approximate. {' '}
+                  <Text
+                    style={styles.disclaimerLink}
+                    onPress={() => setDisclaimerModalVisible(true)}
+                  >
+                    {t('Read more')}</Text>
+                </Text>
+              </View>
             )}
           </View>
         )}
@@ -851,14 +950,18 @@ const DemoScreen = ({ navigation, route }) => {
       <View style={[styles.rowa, { marginBottom: viewMode === 'list' ? 35 : 5 }]}>
         {viewMode === 'map' && (
           <TouchableOpacity style={styles.mapViewToggle}>
-            <Text style={styles.mapViewText}>Distance</Text>
+            <Text style={styles.mapViewText}></Text>
           </TouchableOpacity>
-        )}
+        )} else {
+          <TouchableOpacity style={styles.mapViewToggle}>
+            <Text style={styles.mapViewText}></Text>
+          </TouchableOpacity>
+        }
         <TouchableOpacity
           style={[styles.mapViewToggle, { alignSelf: 'center' }]}
           onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
         >
-          <Text style={styles.mapViewText}>{viewMode === 'map' ? 'Products' : 'Map'}</Text>
+          <Text style={[styles.mapViewText, { marginRight: viewMode === 'list' ? 8 : 0 }]}>{viewMode === 'map' ? 'Products' : 'Map'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -887,23 +990,26 @@ const DemoScreen = ({ navigation, route }) => {
               ]}
             />
           </View>
-          <Text style={styles.sliderLabel}>{sliderValue.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
+          <View style={styles.rowa}>
+            <Text style={[styles.sliderLabel, { alignSelf: 'left' }]}>{t('Distance')}</Text>
+            <Text style={[styles.sliderLabel, { alignSelf: 'right' }]}>{sliderValue.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
+          </View>
         </View>
       )}
 
       {/* Quit Demo Button */}
       <TouchableOpacity
         style={styles.quitButton}
-        onPress={() => navigation.navigate('Registration')}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={styles.quitButtonText}>Quit Demo & Register</Text>
+        <Text style={styles.quitButtonText}>{t('Quit Demo & Register')}</Text>
       </TouchableOpacity>
 
       {/* Loading Overlay */}
       {loading && page === 1 && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading advertisements...</Text>
+          <Text style={styles.loadingText}>{t('Loading advertisements...')}</Text>
         </View>
       )}
 
@@ -958,6 +1064,11 @@ const DemoScreen = ({ navigation, route }) => {
             }, 100);
           }
         }}
+      />
+
+      <LocationDisclaimerModal
+        visible={disclaimerModalVisible}
+        onClose={() => setDisclaimerModalVisible(false)}
       />
     </SafeAreaView>
   );
@@ -1042,6 +1153,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#1a1a1a',
+  },
+  instructionsButton: {
+    paddingHorizontal: 8,
+  },
+  instructionsText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#1a1a1a',
+    textDecorationLine: 'underline',
   },
   instructionsButtonSection: {
     flexDirection: 'row',
@@ -1158,6 +1278,62 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+  selectedMarker: {
+    transform: [{ scale: 1.2 }],
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  calloutContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 12,
+    width: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  calloutImageContainer: {
+    width: '100%',
+    height: 100,
+    marginBottom: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  calloutImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  calloutImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calloutInfo: {
+    gap: 4,
+  },
+  calloutTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  calloutPrice: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
+  },
+  calloutTap: {
+    fontSize: 11,
+    color: '#666',
+    fontStyle: 'italic',
+  },
   bottomNav: {
     position: 'absolute',
     bottom: 0,
@@ -1195,18 +1371,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    paddingTop: 10
+    paddingTop: 0
   },
   sliderContainer: {
     width: '100%',
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 20,
     marginBottom: 30
   },
   sliderLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666666',
+    color: '#303234',
     marginTop: 12,
     textAlign: 'right'
   },
@@ -1274,25 +1450,31 @@ const styles = StyleSheet.create({
     height: 4
   },
   listContainer: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
     paddingBottom: 100
   },
   gridItem: {
     width: '48%',
     marginBottom: 16,
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  imageContainer: {
+    position: 'relative',
   },
   image: {
     width: '100%',
     height: 150,
     backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    margin: 8,
+    width: 'calc(100% - 16px)',
   },
   placeholder: {
     justifyContent: 'center',
@@ -1304,23 +1486,35 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     padding: 8,
+    paddingTop: 0,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
   },
   title: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 4,
+    flex: 1,
+    marginRight: 8,
   },
   priceText: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: 4,
+    color: '#1a1a1a',
   },
-  itemDetails: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 2,
+  distanceText: {
+    fontSize: 11,
+    color: '#303234',
+  },
+  favoriteButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
   },
   emptyContainer: {
     paddingVertical: 60,
@@ -1387,6 +1581,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  disclaimerContainer: {
+    backgroundColor: '#f9f9f9',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    alignItems: 'left',
+    width: '90%',
+  },
+  disclaimerText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'left',
+  },
+  disclaimerLink: {
+    fontSize: 12,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 });
 

@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ForgotPasswordCheckEmailScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { email } = route.params || {};
 
   const handleCheckEmail = () => {
@@ -25,7 +27,7 @@ const ForgotPasswordCheckEmailScreen = ({ route, navigation }) => {
           style={styles.backButton}
         >
           <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backText}>Forgot password</Text>
+          <Text style={styles.backText}>{t('Forgot password')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -33,7 +35,7 @@ const ForgotPasswordCheckEmailScreen = ({ route, navigation }) => {
       <View style={styles.content}>
         {/* Email Display */}
         <View style={styles.emailContainer}>
-          <Text style={styles.label}>Email address</Text>
+          <Text style={styles.label}>{t('Email address')}</Text>
           <Text style={styles.email}>{email || 'johnround@gmail.com'}</Text>
         </View>
 
@@ -43,7 +45,7 @@ const ForgotPasswordCheckEmailScreen = ({ route, navigation }) => {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Check your email</Text>
+        <Text style={styles.title}>{t('Check your email')}</Text>
         
         {/* Description */}
         <Text style={styles.description}>
@@ -55,7 +57,7 @@ const ForgotPasswordCheckEmailScreen = ({ route, navigation }) => {
           style={styles.checkEmailButton}
           onPress={handleCheckEmail}
         >
-          <Text style={styles.checkEmailButtonText}>Check email</Text>
+          <Text style={styles.checkEmailButtonText}>{t('Check email')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

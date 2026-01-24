@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const ActivityFilterScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [selectedActivities, setSelectedActivities] = useState({
     buy: false,
     sell: false,
@@ -43,28 +45,28 @@ const ActivityFilterScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Activity</Text>
+          <Text style={styles.headerTitle}>{t('Activity')}</Text>
         </View>
 
         {/* Options */}
         <View style={styles.optionsList}>
-          <ActivityOption label="Buy" value={selectedActivities.buy} onPress={() => handleToggle('buy')} />
-          <ActivityOption label="Sell" value={selectedActivities.sell} onPress={() => handleToggle('sell')} />
-          <ActivityOption label="Rent" value={selectedActivities.rent} onPress={() => handleToggle('rent')} />
-          <ActivityOption label="Wanted" value={selectedActivities.wanted} onPress={() => handleToggle('wanted')} />
-          <ActivityOption label="Service" value={selectedActivities.service} onPress={() => handleToggle('service')} />
-          <ActivityOption label="Sale" value={selectedActivities.sale} onPress={() => handleToggle('sale')} />
-          <ActivityOption label="Free" value={selectedActivities.free} onPress={() => handleToggle('free')} />
+          <ActivityOption label={t('Buy')} value={selectedActivities.buy} onPress={() => handleToggle('buy')} />
+          <ActivityOption label={t('Sell')} value={selectedActivities.sell} onPress={() => handleToggle('sell')} />
+          <ActivityOption label={t('Rent')} value={selectedActivities.rent} onPress={() => handleToggle('rent')} />
+          <ActivityOption label={t('Wanted')} value={selectedActivities.wanted} onPress={() => handleToggle('wanted')} />
+          <ActivityOption label={t('Service')} value={selectedActivities.service} onPress={() => handleToggle('service')} />
+          <ActivityOption label={t('Sale')} value={selectedActivities.sale} onPress={() => handleToggle('sale')} />
+          <ActivityOption label={t('Free')} value={selectedActivities.free} onPress={() => handleToggle('free')} />
         </View>
       </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity style={styles.showResultsButton} onPress={handleShowResults}>
-          <Text style={styles.showResultsButtonText}>Show results</Text>
+          <Text style={styles.showResultsButtonText}>{t('Show results')}</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
-          <Text style={styles.footerLink}>Terms of service</Text>
+          <Text style={styles.footerLink}>{t('Terms of service')}</Text>
         </Text>
       </View>
     </SafeScreenContainer>

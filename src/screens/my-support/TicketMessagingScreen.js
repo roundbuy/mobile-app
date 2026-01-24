@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const TicketMessagingScreen = ({ route }) => {
+    const { t } = useTranslation();
   const { ticketId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -136,9 +138,7 @@ const TicketMessagingScreen = ({ route }) => {
         {/* Info Banner */}
         <View style={styles.infoBanner}>
           <Feather name="info" size={16} color="#4169E1" />
-          <Text style={styles.infoBannerText}>
-            Our support team typically responds within 24 hours
-          </Text>
+          <Text style={styles.infoBannerText}>{t('Our support team typically responds within 24 hours')}</Text>
         </View>
 
         {/* Messages List */}
@@ -154,10 +154,8 @@ const TicketMessagingScreen = ({ route }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Feather name="message-circle" size={48} color="#CCC" />
-              <Text style={styles.emptyText}>No messages yet</Text>
-              <Text style={styles.emptySubtext}>
-                Start the conversation with our support team
-              </Text>
+              <Text style={styles.emptyText}>{t('No messages yet')}</Text>
+              <Text style={styles.emptySubtext}>{t('Start the conversation with our support team')}</Text>
             </View>
           }
         />
@@ -166,7 +164,7 @@ const TicketMessagingScreen = ({ route }) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Type your message..."
+            placeholder={t('Type your message...')}
             value={newMessage}
             onChangeText={setNewMessage}
             multiline

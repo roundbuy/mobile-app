@@ -17,12 +17,15 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { advertisementService, favoritesService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/TranslationContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 import GlobalHeader from '../../components/GlobalHeader';
+import ProductInfoModal from '../../components/ProductInfoModal';
 
 const { width } = Dimensions.get('window');
 
 const ProductDetailsScreen = ({ route, navigation }) => {
+    const { t } = useTranslation();
   const { advertisementId, advertisement } = route?.params || {};
   const { user, hasActiveSubscription } = useAuth();
 
@@ -34,6 +37,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
+  const [infoModal, setInfoModal] = useState({ visible: false, title: '', content: '' });
 
   // Fetch advertisement details on mount
   useEffect(() => {
@@ -70,15 +74,15 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       // Handle specific errors
       if (err.require_subscription) {
         Alert.alert(
-          'Subscription Required',
-          'You need an active subscription to view advertisement details.',
-          [{ text: 'View Plans', onPress: () => navigation.navigate('AllMemberships') }]
+          t('Subscription Required'),
+          t('You need an active subscription to view advertisement details.'),
+          [{ text: t('View Plans'), onPress: () => navigation.navigate('AllMemberships') }]
         );
       } else if (err.require_login) {
         Alert.alert(
-          'Login Required',
-          'Please login to view advertisement details.',
-          [{ text: 'Login', onPress: () => navigation.navigate('SocialLogin') }]
+          t('Login Required'),
+          t('Please login to view advertisement details.'),
+          [{ text: t('Login'), onPress: () => navigation.navigate('SocialLogin') }]
         );
       }
     } finally {
@@ -92,7 +96,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       title: ad.title,
       distance: ad.distance ? `${ad.distance} km` : 'Distance unknown',
       maxDistance: '150 km', // Default max distance
-      price: `₹${ad.price}`,
+      price: `${ad.price}`,
       description: ad.description,
       category: ad.category_name,
       distanceMeters: ad.distance ? `${(ad.distance * 1000).toFixed(0)} m` : 'Distance unknown',
@@ -125,48 +129,56 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     navigation.goBack();
   };
 
-  const handleFavorite = async () => {
+  const handleFavorite = () => {
     if (!user) {
       Alert.alert(
-        'Login Required',
-        'Please login to add items to favorites.',
+        t('Login Required'),
+        t('Please login to add items to favorites.'),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('SocialLogin') }
+          { text: t('Cancel'), style: t('cancel') },
+          { text: t('Login'), onPress: () => navigation.navigate('SocialLogin') }
         ]
       );
       return;
     }
 
-    try {
-      setFavoriteLoading(true);
-
-      // Toggle favorite status via API
-      const response = await favoritesService.toggleFavorite(productData.id);
-
-      if (response.success) {
-        const newFavoriteStatus = response.data.is_favorited;
-        setIsFavorite(newFavoriteStatus);
-
-        // Show feedback
-        Alert.alert(
-          'Success',
-          newFavoriteStatus ? 'Added to favorites' : 'Removed from favorites'
-        );
-      } else {
-        Alert.alert('Error', response.message || 'Failed to update favorites');
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      Alert.alert('Error', 'Failed to update favorites. Please try again.');
-    } finally {
-      setFavoriteLoading(false);
-    }
+    // Toggle favorite locally (API integration pending backend fix)
+    setIsFavorite(prev => !prev);
   };
 
   const handleBuy = () => {
     // Navigate to purchase flow
     console.log('Buy now clicked');
+  };
+
+  const handleManageOffers = () => {
+    navigation.navigate('ManageOffers', {
+      advertisementId: productData?.id,
+      otherPartyId: productData?.seller?.id || productData?.user_id,
+      adTitle: productData?.title,
+      sellerName: productData?.seller?.username || productData?.seller?.full_name || 'Seller'
+    });
+  };
+
+  // Info content for different fields
+  const infoContent = {
+    Distance: "The distance shown is calculated from your current location or saved address to the seller's location. The walking time is an estimate based on average walking speed.",
+    Condition: "The condition describes the current state of the item:\n\n• New: Brand new, unused item\n• Like New: Barely used, excellent condition\n• Very Good: Gently used, minor wear\n• Good: Used with visible signs of wear\n• Fair: Well-used, functional but worn\n• Poor: Heavy wear, may need repairs",
+    Colour: "The color of the item as described by the seller. Actual color may vary slightly due to lighting and screen settings.",
+  };
+
+  const handleInfoPress = (label) => {
+    if (infoContent[label]) {
+      setInfoModal({
+        visible: true,
+        title: label,
+        content: infoContent[label],
+      });
+    }
+  };
+
+  const closeInfoModal = () => {
+    setInfoModal({ visible: false, title: '', content: '' });
   };
 
   const handleMakeOffer = () => {
@@ -180,6 +192,43 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     navigation.navigate('ProductChat', {
       product: productData,
       mode: 'chat',
+    });
+  };
+
+  const handlePurchaseVisibility = () => {
+    // Navigate to Purchase Visibility screen
+    console.log('Purchase Visibility clicked');
+    // navigation.navigate('PurchaseVisibility', { advertisementId: productData.id });
+  };
+
+  const handleReadFeedbacks = () => {
+    navigation.navigate('UserFeedbacks', {
+      userId: productData.seller.id,
+      userName: productData.seller.username
+    });
+  };
+
+  const handleUserListings = () => {
+    navigation.navigate('UserListings', {
+      sellerId: productData.seller.id,
+      sellerName: productData.seller.username
+    });
+  };
+
+  const handleSchedulePickup = () => {
+    // Check if user has an accepted offer for this product
+    // For now, navigate directly - you may want to add offer validation
+    if (!productData) {
+      Alert.alert(t('Error'), t('Product data not available'));
+      return;
+    }
+
+    // Navigate to schedule pickup screen
+    // Note: You should verify there's an accepted offer before allowing scheduling
+    navigation.navigate('SchedulePickUp', {
+      offerId: null, // TODO: Get actual accepted offer ID
+      advertisementId: productData.id,
+      advertisementTitle: productData.title
     });
   };
 
@@ -207,7 +256,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>Loading advertisement...</Text>
+          <Text style={styles.loadingText}>{t('Loading advertisement...')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -237,7 +286,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title="Product"
+        title={t('Product')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -253,19 +302,14 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             defaultSource={IMAGES.placeholder}
           />
           <TouchableOpacity
-            style={[styles.favoriteButton, favoriteLoading && styles.favoriteButtonDisabled]}
+            style={styles.favoriteButton}
             onPress={handleFavorite}
-            disabled={favoriteLoading}
           >
-            {favoriteLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <FontAwesome
-                name={isFavorite ? 'heart' : 'heart-o'}
-                size={24}
-                color={isFavorite ? COLORS.primary : '#fff'}
-              />
-            )}
+            <FontAwesome
+              name={isFavorite ? 'heart' : 'heart-o'}
+              size={24}
+              color="#333"
+            />
           </TouchableOpacity>
           {renderImageDots()}
         </View>
@@ -285,20 +329,19 @@ const ProductDetailsScreen = ({ route, navigation }) => {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('Description')}</Text>
           <Text style={styles.descriptionText}>{productData.description}</Text>
         </View>
 
         {/* Product Details */}
         <View style={styles.section}>
-          <DetailRow label="Category" value={productData.category} />
-          <DetailRow label="Distance" value={productData.distanceMeters} />
-          <DetailRow label="Price" value={productData.price} />
-          <DetailRow label="Condition" value={productData.condition} />
-          <DetailRow label="Gender" value={productData.gender} />
-          <DetailRow label="Age" value={productData.age} />
-          <DetailRow label="Size" value={productData.size} />
-          <DetailRow label="Colour" value={productData.colour} />
+          <DetailRow label={t('Category')} value={productData.category} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Distance')} value={productData.distanceMeters} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Condition')} value={productData.condition} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Gender')} value={productData.gender} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Age')} value={productData.age} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Size')} value={productData.size} onInfoPress={handleInfoPress} />
+          <DetailRow label={t('Colour')} value={productData.colour} onInfoPress={handleInfoPress} />
         </View>
 
         {/* Seller Info */}
@@ -317,39 +360,59 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             </View>
             <View style={styles.sellerInfo}>
               <Text style={styles.sellerName}>{productData.seller.username}</Text>
-              {productData.seller.rating > 0 && (
-                <View style={styles.ratingRow}>
-                  <FontAwesome name="star" size={12} color="#FFD700" />
-                  <Text style={styles.ratingText}>{productData.seller.rating.toFixed(1)}</Text>
+              {productData.seller.rating >= 0 && (
+                <View style={styles.ratingStars}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <FontAwesome
+                      key={star}
+                      name={star <= 4.5 ? "star" : "star-o"}
+                      size={14}
+                      color="#FFD700"
+                      style={{ marginRight: 2 }}
+                    />
+                  ))}
                 </View>
               )}
             </View>
-            <TouchableOpacity
-              style={styles.chatButton}
-              onPress={handleChatWithSeller}
-            >
-              <Text style={styles.chatButtonText}>Chat with</Text>
-            </TouchableOpacity>
+            <View style={styles.sellerLinksRight}>
+              <TouchableOpacity
+                style={styles.sellerLinkButton}
+                onPress={handleReadFeedbacks}
+              >
+                <Ionicons name="chatbubbles-outline" size={16} color="#000" style={{ marginRight: 6 }} />
+                <Text style={styles.sellerLinkButtonText}>{t('Read Feedbacks')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.sellerLinkButton, { marginTop: 8 }]}
+                onPress={handleUserListings}
+              >
+                <Ionicons name="list-outline" size={16} color="#000" style={{ marginRight: 6 }} />
+                <Text style={styles.sellerLinkButtonText}>{t("User's Listings")}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.negotiateText}>
-            Agree details! Negotiate price!
-          </Text>
+
+          {/* Chat with seller button */}
+          <TouchableOpacity
+            style={styles.chatWithSellerButton}
+            onPress={handleChatWithSeller}
+          >
+            <Text style={styles.chatWithSellerButtonText}>{t('Chat with seller')}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Legal Notice */}
         <View style={styles.legalSection}>
           <Text style={styles.legalTitle}>
             Legal notice{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
+          </Text>
+          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
+          <Text style={styles.legalText}>
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
           <Text style={styles.legalText}>
-            This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
         </View>
 
@@ -357,20 +420,18 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.reportSection}>
           <Text style={styles.reportText}>
             Report content{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
           </Text>
           <View style={styles.moderateTag}>
-            <Text style={styles.moderateText}>Moderate</Text>
+            <Text style={styles.moderateText}>{t('Moderate')}</Text>
           </View>
         </View>
 
         {/* Additional Legal Info */}
         <View style={styles.legalSection}>
+          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
           <Text style={styles.legalText}>
-            This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>Example text:</Text> Private sellers are not subject to the Consumer Rights Act 2015, but items must still be "as described," and buyers have ten days to report an issue through RoundBuy's system.
+            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, but items must still be "as described," and buyers have ten days to report an issue through RoundBuy's system.
           </Text>
         </View>
 
@@ -379,7 +440,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           <View style={styles.offerInputContainer}>
             <TextInput
               style={styles.offerInput}
-              placeholder="Enter offer amount"
+              placeholder={t('Enter offer amount')}
               placeholderTextColor="#999"
               value={offerAmount}
               onChangeText={setOfferAmount}
@@ -394,10 +455,10 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             style={styles.makeOfferButton}
             onPress={handleMakeOffer}
           >
-            <Text style={styles.makeOfferButtonText}>Make offer</Text>
+            <Text style={styles.makeOfferButtonText}>{t('Make offer')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buyNowButton} onPress={handleBuy}>
-            <Text style={styles.buyNowButtonText}>Buy</Text>
+          <TouchableOpacity style={styles.buyNowButton} onPress={handleManageOffers}>
+            <Text style={styles.buyNowButtonText}>{t('Manage Offers')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -405,26 +466,55 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.offerHistorySection}>
           <Text style={styles.offerHistoryTitle}>
             Offer History{' '}
-            <Text style={styles.linkText}>click here</Text>
+            <Text style={styles.linkText}>{t('click here')}</Text>
           </Text>
-          <Text style={styles.offerReceivedText}>
-            You received an Offer for £100
-          </Text>
-          <Text style={styles.offerDeclinedText}>
-            You Declined the offer £100
-          </Text>
-          <Text style={styles.offerReceivedText}>
-            You received an offer for £220
-          </Text>
-          <Text style={styles.offerAcceptedText}>
-            You Accepted the offer for £200
-          </Text>
+          <Text style={styles.offerReceivedText}>{t('You received an Offer for £100')}</Text>
+          <Text style={styles.offerDeclinedText}>{t('You Declined the offer £100')}</Text>
+          <Text style={styles.offerReceivedText}>{t('You received an offer for £220')}</Text>
+          <Text style={styles.offerAcceptedText}>{t('You Accepted the offer for £200')}</Text>
         </View>
 
-        {/* Manage Offers */}
-        <TouchableOpacity style={styles.manageOffersButton}>
-          <Text style={styles.manageOffersText}>Manage offers</Text>
-        </TouchableOpacity>
+        {/* Pick Up & Exchange Section */}
+        <View style={styles.pickupSection}>
+          {/* Buyer's Fee */}
+          <View style={styles.buyerFeeSection}>
+            <Text style={styles.buyerFeeTitle}>{t("Buyer's Fee £1.00")}</Text>
+            <Text style={styles.buyerFeeDescription}>
+              Buyer's Fee consists of Pick Up & Exchange Fee £0.70 and Service Fee £0.30. This fee is only for Buyer's, after successfull inspection and exchange to cover the expenses of the service.{' '}
+              <Text style={styles.linkTextBlue}>{t('Refund policy')}</Text> and{' '}
+              <Text style={styles.linkTextBlue}>{t('Consumer Rights Act 2015')}</Text>.
+            </Text>
+          </View>
+
+          {/* Disclaimer */}
+          <View style={styles.disclaimerSection}>
+            <Text style={styles.disclaimerTitle}>
+              <Text style={styles.linkTextBlue}>{t('Disclaimer & Legal notice')}</Text> click here
+            </Text>
+          </View>
+
+          {/* Pick Up & Exchange Info */}
+          <View style={styles.pickupInfoSection}>
+            <Text style={styles.pickupTitle}>{t('Pick Up & Exchange')}</Text>
+            <Text style={styles.pickupOfferText}>
+              Seller has answered you your offer of £245.00:{' '}
+              <Text style={styles.offerAmount}>£250.00</Text>
+            </Text>
+            <Text style={styles.acceptedText}>{t('Accepted for £245.00')}</Text>
+            <Text style={styles.pickupInstructions}>
+              Now schedule a Pick up & Exchange!{'\n'}
+              Arrange a meet up with the other user to inspect the product, and make an exchange.
+            </Text>
+          </View>
+
+          {/* Schedule Button */}
+          <TouchableOpacity
+            style={styles.schedulePickupButton}
+            onPress={handleSchedulePickup}
+          >
+            <Text style={styles.schedulePickupButtonText}>{t('Schedule a Pick Up')}</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Issue a Dispute Link */}
         <TouchableOpacity
@@ -437,22 +527,45 @@ const ProductDetailsScreen = ({ route, navigation }) => {
           })}
         >
           <Ionicons name="alert-circle-outline" size={20} color="#DC143C" />
-          <Text style={styles.issueDisputeLinkText}>Issue a Dispute</Text>
+          <Text style={styles.issueDisputeLinkText}>{t('Issue a Dispute')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Info Modal */}
+      <ProductInfoModal
+        visible={infoModal.visible}
+        onClose={closeInfoModal}
+        title={infoModal.title}
+        content={infoModal.content}
+      />
     </SafeAreaView>
   );
 };
 
-const DetailRow = ({ label, value }) => (
-  <View style={styles.detailRow}>
-    <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
-  </View>
-);
+const DetailRow = ({ label, value, onInfoPress }) => {
+  const hasInfo = ['Distance', 'Condition', 'Colour'].includes(label);
+
+  return (
+    <View style={styles.detailRow}>
+      <View style={styles.detailLabelContainer}>
+        <Text style={styles.detailLabel}>{label}</Text>
+        {hasInfo && (
+          <TouchableOpacity
+            onPress={() => onInfoPress(label)}
+            style={styles.infoButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="information-circle-outline" size={18} color="#666" />
+          </TouchableOpacity>
+        )}
+      </View>
+      <Text style={styles.detailValue}>{value}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -513,15 +626,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 20,
     padding: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  favoriteButtonDisabled: {
-    opacity: 0.6,
   },
   favoriteCount: {
     color: '#fff',
@@ -604,7 +709,15 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 14,
     color: '#666',
+  },
+  detailLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
+  },
+  infoButton: {
+    marginLeft: 6,
+    padding: 2,
   },
   detailValue: {
     fontSize: 14,
@@ -620,7 +733,7 @@ const styles = StyleSheet.create({
   },
   sellerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'top',
     marginBottom: 8,
   },
   sellerAvatar: {
@@ -644,6 +757,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
+    marginBottom: 4,
+  },
+  ratingStars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sellerLinksRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  sellerLinkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    width: 140,
+    // maxWidth: 160,
+    justifyContent: 'center',
+  },
+  sellerLinkButtonText: {
+    fontSize: 13,
+    color: '#000',
+    fontWeight: '600',
+  },
+  sellerLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  sellerLinkText: {
+    fontSize: 12,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+  sellerLinkSeparator: {
+    fontSize: 12,
+    color: '#666',
+    marginHorizontal: 4,
   },
   ratingRow: {
     flexDirection: 'row',
@@ -665,6 +818,33 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  chatWithSellerButton: {
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  chatWithSellerButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+  purchaseVisibilityButton: {
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  purchaseVisibilityText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
   },
   negotiateText: {
     fontSize: 12,
@@ -799,6 +979,79 @@ const styles = StyleSheet.create({
   },
   manageOffersText: {
     fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+  },
+  pickupSection: {
+    margin: 16,
+    marginTop: 8,
+  },
+  buyerFeeSection: {
+    marginBottom: 12,
+  },
+  buyerFeeTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 6,
+  },
+  buyerFeeDescription: {
+    fontSize: 12,
+    color: '#333',
+    lineHeight: 18,
+  },
+  linkTextBlue: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+  disclaimerSection: {
+    marginBottom: 16,
+  },
+  disclaimerTitle: {
+    fontSize: 13,
+    color: '#333',
+  },
+  pickupInfoSection: {
+    backgroundColor: '#f9f9f9',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  pickupTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 8,
+  },
+  pickupOfferText: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 4,
+  },
+  offerAmount: {
+    fontWeight: '700',
+    color: '#000',
+  },
+  acceptedText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4CAF50',
+    marginBottom: 8,
+  },
+  pickupInstructions: {
+    fontSize: 12,
+    color: '#666',
+    lineHeight: 18,
+  },
+  schedulePickupButton: {
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  schedulePickupButtonText: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
   },

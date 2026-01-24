@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeDetailScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { disputeId } = route.params;
   const [dispute, setDispute] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.errorContainer}>
           <Feather name="alert-circle" size={48} color="#FF4444" />
-          <Text style={styles.errorText}>Dispute not found</Text>
+          <Text style={styles.errorText}>{t('Dispute not found')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -122,7 +124,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
           <View style={styles.timelineCard}>
             <Feather name="clock" size={20} color="#4169E1" />
             <View style={styles.timelineContent}>
-              <Text style={styles.timelineTitle}>Response Deadline</Text>
+              <Text style={styles.timelineTitle}>{t('Response Deadline')}</Text>
               <Text style={styles.timelineText}>
                 {disputeService.getTimeRemaining(dispute.deadline)}
               </Text>
@@ -132,7 +134,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
         {/* Order Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Details</Text>
+          <Text style={styles.sectionTitle}>{t('Order Details')}</Text>
           <View style={styles.card}>
             <View style={styles.orderHeader}>
               {dispute.product_image && (
@@ -158,12 +160,12 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
         {/* Dispute Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Dispute Information</Text>
+          <Text style={styles.sectionTitle}>{t('Dispute Information')}</Text>
           <View style={styles.card}>
-            <InfoRow label="Category" value={dispute.category_name} />
-            <InfoRow label="Problem" value={dispute.problem_name} />
+            <InfoRow label={t('Category')} value={dispute.category_name} />
+            <InfoRow label={t('Problem')} value={dispute.problem_name} />
             <InfoRow 
-              label="Created" 
+              label={t('Created')} 
               value={new Date(dispute.created_at).toLocaleDateString()} 
             />
           </View>
@@ -171,7 +173,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Description</Text>
+          <Text style={styles.sectionTitle}>{t('Your Description')}</Text>
           <View style={styles.card}>
             <Text style={styles.descriptionText}>{dispute.description}</Text>
           </View>
@@ -179,7 +181,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
 
         {/* Expected Resolution */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Expected Resolution</Text>
+          <Text style={styles.sectionTitle}>{t('Expected Resolution')}</Text>
           <View style={styles.card}>
             <Text style={styles.descriptionText}>
               {dispute.expected_resolution}
@@ -190,7 +192,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
         {/* Evidence */}
         {dispute.evidence && dispute.evidence.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Evidence</Text>
+            <Text style={styles.sectionTitle}>{t('Evidence')}</Text>
             <View style={styles.card}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {dispute.evidence.map((file, index) => (
@@ -208,7 +210,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
         {/* Admin Response */}
         {dispute.admin_response && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Admin Response</Text>
+            <Text style={styles.sectionTitle}>{t('Admin Response')}</Text>
             <View style={[styles.card, styles.adminCard]}>
               <Text style={styles.descriptionText}>
                 {dispute.admin_response}
@@ -228,16 +230,14 @@ const DisputeDetailScreen = ({ navigation, route }) => {
               onPress={handleSendMessage}
             >
               <Feather name="message-circle" size={20} color="#FFF" />
-              <Text style={styles.messageButtonText}>Send Message</Text>
+              <Text style={styles.messageButtonText}>{t('Send Message')}</Text>
             </TouchableOpacity>
           )}
 
           {dispute.status === 'resolved' && (
             <View style={styles.resolvedBanner}>
               <Feather name="check-circle" size={24} color="#32CD32" />
-              <Text style={styles.resolvedText}>
-                This dispute has been resolved
-              </Text>
+              <Text style={styles.resolvedText}>{t('This dispute has been resolved')}</Text>
             </View>
           )}
         </View>

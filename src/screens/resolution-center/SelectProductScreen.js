@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const SelectProductScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { category } = route.params;
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,9 +35,9 @@ const SelectProductScreen = ({ navigation, route }) => {
   };
 
   const handleSelectProduct = (order) => {
-    navigation.navigate('SelectProblem', { 
-      category, 
-      order 
+    navigation.navigate('SelectProblem', {
+      category,
+      order
     });
   };
 
@@ -53,19 +55,15 @@ const SelectProductScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Select Product</Text>
-          <Text style={styles.subtitle}>
-            Choose the product you want to dispute
-          </Text>
+          <Text style={styles.title}>{t('Select Product')}</Text>
+          <Text style={styles.subtitle}>{t('Choose the product you want to dispute')}</Text>
         </View>
 
         {orders.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Feather name="inbox" size={64} color="#CCC" />
-            <Text style={styles.emptyTitle}>No Eligible Orders</Text>
-            <Text style={styles.emptyText}>
-              You don't have any orders eligible for disputes at this time.
-            </Text>
+            <Text style={styles.emptyTitle}>{t('No Eligible Orders')}</Text>
+            <Text style={styles.emptyText}>{t("You don't have any orders eligible for disputes at this time.")}</Text>
           </View>
         ) : (
           <View style={styles.ordersContainer}>
@@ -102,10 +100,8 @@ const SelectProductScreen = ({ navigation, route }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Eligibility</Text>
-            <Text style={styles.infoText}>
-              Only orders from the past 30 days are eligible for disputes. If you don't see your order, it may not be eligible.
-            </Text>
+            <Text style={styles.infoTitle}>{t('Eligibility')}</Text>
+            <Text style={styles.infoText}>{t("Only orders from the past 30 days are eligible for disputes. If you don't see your order, it may not be eligible.")}</Text>
           </View>
         </View>
       </ScrollView>

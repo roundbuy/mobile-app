@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { advertisementService } from '../../../services';
 
 const DefaultLocationScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,7 +45,7 @@ const DefaultLocationScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching locations:', error);
-      Alert.alert('Error', 'Failed to load locations');
+      Alert.alert(t('Error'), t('Failed to load locations'));
     } finally {
       setLoading(false);
     }
@@ -87,13 +89,13 @@ const DefaultLocationScreen = ({ navigation }) => {
           if (response.success) {
             // Refresh locations
             await fetchUserLocations();
-            Alert.alert('Success', 'Location saved successfully!');
+            Alert.alert(t('Success'), t('Location saved successfully!'));
           } else {
-            Alert.alert('Error', response.message || 'Failed to save location');
+            Alert.alert(t('Error'), response.message || t('Failed to save location'));
           }
         } catch (error) {
           console.error('Error saving location:', error);
-          Alert.alert('Error', 'Failed to save location');
+          Alert.alert(t('Error'), t('Failed to save location'));
         } finally {
           setSaving(false);
         }
@@ -140,12 +142,10 @@ const DefaultLocationScreen = ({ navigation }) => {
           <>
             <Text style={styles.locationTitle}>{title}</Text>
             <Text style={styles.locationDescription}>{description}</Text>
-            <Text style={styles.locationNote}>
-              Both Centre-point and Product location 1 are located in the same spot!
-            </Text>
+            <Text style={styles.locationNote}>{t('Both Centre-point and Product location 1 are located in the same spot!')}</Text>
             <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-              <Text style={styles.infoLinkText}>For more information </Text>
-              <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+              <Text style={styles.infoLinkText}>{t('For more information')}</Text>
+              <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
               <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
             </TouchableOpacity>
           </>
@@ -163,7 +163,7 @@ const DefaultLocationScreen = ({ navigation }) => {
             </View>
             {existingLocation.is_default && (
               <View style={styles.defaultBadge}>
-                <Text style={styles.defaultBadgeText}>Default</Text>
+                <Text style={styles.defaultBadgeText}>{t('Default')}</Text>
               </View>
             )}
           </View>
@@ -209,26 +209,22 @@ const DefaultLocationScreen = ({ navigation }) => {
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading your locations...</Text>
+            <Text style={styles.loadingText}>{t('Loading your locations...')}</Text>
           </View>
         ) : (
           <>
             {/* Info Section */}
             <View style={styles.infoSection}>
-              <Text style={styles.infoTitle}>Your default location has two functions:</Text>
+              <Text style={styles.infoTitle}>{t('Your default location has two functions:')}</Text>
 
               <View style={styles.infoItem}>
-                <Text style={styles.infoItemTitle}>Centre-point</Text>
-                <Text style={styles.infoItemText}>
-                  For safety, an imprecise home address, and a spot to Buy around.
-                </Text>
+                <Text style={styles.infoItemTitle}>{t('Centre-point')}</Text>
+                <Text style={styles.infoItemText}>{t('For safety, an imprecise home address, and a spot to Buy around.')}</Text>
               </View>
 
               <View style={styles.infoItem}>
-                <Text style={styles.infoItemTitle}>Product location 1</Text>
-                <Text style={styles.infoItemText}>
-                  The spot you advertise and Sell your own products.
-                </Text>
+                <Text style={styles.infoItemTitle}>{t('Product location 1')}</Text>
+                <Text style={styles.infoItemText}>{t('The spot you advertise and Sell your own products.')}</Text>
               </View>
             </View>
 
@@ -243,26 +239,22 @@ const DefaultLocationScreen = ({ navigation }) => {
             {membershipPlan === 'gold' && (
               <>
                 <View style={styles.locationSection}>
-                  <Text style={styles.locationTitle}>Product Location 2</Text>
-                  <Text style={styles.locationDescription}>
-                    Your secondary spot to advertise the products you want to Sell e.g. near to work.
-                  </Text>
+                  <Text style={styles.locationTitle}>{t('Product Location 2')}</Text>
+                  <Text style={styles.locationDescription}>{t('Your secondary spot to advertise the products you want to Sell e.g. near to work.')}</Text>
                   <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                    <Text style={styles.infoLinkText}>For more information </Text>
-                    <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+                    <Text style={styles.infoLinkText}>{t('For more information')}</Text>
+                    <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
                     <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                   </TouchableOpacity>
                   {renderLocationButton('', '', 'productLocation2')}
                 </View>
 
                 <View style={styles.locationSection}>
-                  <Text style={styles.locationTitle}>Product Location 3</Text>
-                  <Text style={styles.locationDescription}>
-                    Your secondary spot to advertise the products you want to Sell e.g. second home.
-                  </Text>
+                  <Text style={styles.locationTitle}>{t('Product Location 3')}</Text>
+                  <Text style={styles.locationDescription}>{t('Your secondary spot to advertise the products you want to Sell e.g. second home.')}</Text>
                   <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                    <Text style={styles.infoLinkText}>For more information </Text>
-                    <Text style={[styles.infoLinkText, styles.clickHereText]}>click here</Text>
+                    <Text style={styles.infoLinkText}>{t('For more information')}</Text>
+                    <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
                     <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
                   </TouchableOpacity>
                   {renderLocationButton('', '', 'productLocation3')}
@@ -275,17 +267,13 @@ const DefaultLocationScreen = ({ navigation }) => {
         {/* Note for Green membership */}
         {membershipPlan === 'green' && (
           <View style={styles.noteSection}>
-            <Text style={styles.noteTitle}>Note:</Text>
-            <Text style={styles.noteText}>
-              With the Green membership you have 1x centre-point, and 1x product locations, while with the Gold membership you have 1x centre-point, and 3x product locations.
-            </Text>
+            <Text style={styles.noteTitle}>{t('Note:')}</Text>
+            <Text style={styles.noteText}>{t('With the Green membership you have 1x centre-point, and 1x product locations, while with the Gold membership you have 1x centre-point, and 3x product locations.')}</Text>
             <TouchableOpacity style={styles.upgradeLink} onPress={handleUpgradeToGold} activeOpacity={0.7}>
-              <Text style={styles.upgradeLinkText}>
-                Upgrade now to Gold membership for discounted prices!
-              </Text>
+              <Text style={styles.upgradeLinkText}>{t('Upgrade now to Gold membership for discounted prices!')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgradeToGold} activeOpacity={0.7}>
-              <Text style={styles.upgradeButtonText}>Upgrade to Gold</Text>
+              <Text style={styles.upgradeButtonText}>{t('Upgrade to Gold')}</Text>
             </TouchableOpacity>
           </View>
         )}

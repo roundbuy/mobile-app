@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const AdAppealScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { adId } = route.params;
   const [ad, setAd] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,17 +45,17 @@ const AdAppealScreen = ({ navigation, route }) => {
 
   const pickImage = async () => {
     Alert.alert(
-      'Feature Coming Soon',
-      'Image upload functionality requires expo-image-picker package. You can proceed without uploading evidence for now.',
-      [{ text: 'OK' }]
+      t('Feature Coming Soon'),
+      t('Image upload functionality requires expo-image-picker package. You can proceed without uploading evidence for now.'),
+      [{ text: t('OK') }]
     );
   };
 
   const pickDocument = async () => {
     Alert.alert(
-      'Feature Coming Soon',
-      'Document upload functionality requires expo-document-picker package. You can proceed without uploading evidence for now.',
-      [{ text: 'OK' }]
+      t('Feature Coming Soon'),
+      t('Document upload functionality requires expo-document-picker package. You can proceed without uploading evidence for now.'),
+      [{ text: t('OK') }]
     );
   };
 
@@ -104,17 +106,17 @@ const AdAppealScreen = ({ navigation, route }) => {
       }
 
       Alert.alert(
-        'Appeal Submitted',
-        'Your appeal has been submitted successfully. We will review it within 48-72 hours.',
+        t('Appeal Submitted'),
+        t('Your appeal has been submitted successfully. We will review it within 48-72 hours.'),
         [
           {
-            text: 'OK',
+            text: t('OK'),
             onPress: () => navigation.replace('AppealStatus', { appealId }),
           },
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit appeal. Please try again.');
+      Alert.alert(t('Error'), t('Failed to submit appeal. Please try again.'));
       console.error('Error submitting appeal:', error);
     } finally {
       setSubmitting(false);
@@ -136,7 +138,7 @@ const AdAppealScreen = ({ navigation, route }) => {
       <SafeScreenContainer>
         <View style={styles.errorContainer}>
           <Feather name="alert-circle" size={48} color="#FF4444" />
-          <Text style={styles.errorText}>Ad not found</Text>
+          <Text style={styles.errorText}>{t('Ad not found')}</Text>
         </View>
       </SafeScreenContainer>
     );
@@ -146,10 +148,8 @@ const AdAppealScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Appeal Ad Deletion</Text>
-          <Text style={styles.subtitle}>
-            Provide evidence to support your appeal
-          </Text>
+          <Text style={styles.title}>{t('Appeal Ad Deletion')}</Text>
+          <Text style={styles.subtitle}>{t('Provide evidence to support your appeal')}</Text>
         </View>
 
         {/* Ad Info */}
@@ -166,7 +166,7 @@ const AdAppealScreen = ({ navigation, route }) => {
             </View>
           </View>
           <View style={styles.reasonBox}>
-            <Text style={styles.reasonLabel}>Reason for Deletion:</Text>
+            <Text style={styles.reasonLabel}>{t('Reason for Deletion:')}</Text>
             <Text style={styles.reasonText}>{ad.reason}</Text>
           </View>
         </View>
@@ -176,10 +176,10 @@ const AdAppealScreen = ({ navigation, route }) => {
           <Text style={styles.label}>
             Reason for Appeal <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>Brief summary (minimum 20 characters)</Text>
+          <Text style={styles.hint}>{t('Brief summary (minimum 20 characters)')}</Text>
           <TextInput
             style={[styles.input, errors.reason && styles.inputError]}
-            placeholder="Example: This was a misunderstanding, the item complies with all policies"
+            placeholder={t('Example: This was a misunderstanding, the item complies with all policies')}
             value={formData.reason}
             onChangeText={(text) => setFormData({ ...formData, reason: text })}
             maxLength={200}
@@ -194,14 +194,12 @@ const AdAppealScreen = ({ navigation, route }) => {
           <Text style={styles.label}>
             Detailed Explanation <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>
-            Explain why this decision should be reversed (minimum 100 characters)
-          </Text>
+          <Text style={styles.hint}>{t('Explain why this decision should be reversed (minimum 100 characters)')}</Text>
           <TextInput
             style={[styles.textArea, errors.explanation && styles.inputError]}
             multiline
             numberOfLines={8}
-            placeholder="Provide detailed information about why you believe this ad should be restored. Include any relevant context, evidence, or clarifications..."
+            placeholder={t('Provide detailed information about why you believe this ad should be restored. Include any relevant context, evidence, or clarifications...')}
             value={formData.explanation}
             onChangeText={(text) =>
               setFormData({ ...formData, explanation: text })
@@ -218,20 +216,18 @@ const AdAppealScreen = ({ navigation, route }) => {
 
         {/* Evidence Upload */}
         <View style={styles.formSection}>
-          <Text style={styles.label}>Supporting Evidence (Optional)</Text>
-          <Text style={styles.hint}>
-            Upload screenshots, documents, or photos that support your case
-          </Text>
+          <Text style={styles.label}>{t('Supporting Evidence (Optional)')}</Text>
+          <Text style={styles.hint}>{t('Upload screenshots, documents, or photos that support your case')}</Text>
 
           <View style={styles.uploadButtons}>
             <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
               <Feather name="image" size={24} color="#4169E1" />
-              <Text style={styles.uploadButtonText}>Add Photos</Text>
+              <Text style={styles.uploadButtonText}>{t('Add Photos')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.uploadButton} onPress={pickDocument}>
               <Feather name="file" size={24} color="#4169E1" />
-              <Text style={styles.uploadButtonText}>Add Documents</Text>
+              <Text style={styles.uploadButtonText}>{t('Add Documents')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -259,7 +255,7 @@ const AdAppealScreen = ({ navigation, route }) => {
         <View style={styles.warningCard}>
           <Feather name="alert-circle" size={20} color="#FFA500" />
           <View style={styles.warningContent}>
-            <Text style={styles.warningTitle}>Important Notice</Text>
+            <Text style={styles.warningTitle}>{t('Important Notice')}</Text>
             <Text style={styles.warningText}>
               • Appeals are reviewed within 48-72 hours{'\n'}
               • False appeals may result in account restrictions{'\n'}
@@ -277,7 +273,7 @@ const AdAppealScreen = ({ navigation, route }) => {
           {submitting ? (
             <ActivityIndicator color="#FFF" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit Appeal</Text>
+            <Text style={styles.submitButtonText}>{t('Submit Appeal')}</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

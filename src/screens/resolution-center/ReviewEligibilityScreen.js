@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const ReviewEligibilityScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, order, problem } = route.params;
   const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,10 +55,8 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Review Eligibility</Text>
-          <Text style={styles.subtitle}>
-            Let's review if you can proceed with this dispute
-          </Text>
+          <Text style={styles.title}>{t('Review Eligibility')}</Text>
+          <Text style={styles.subtitle}>{t("Let's review if you can proceed with this dispute")}</Text>
         </View>
 
         {eligibility?.is_eligible ? (
@@ -64,17 +64,15 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
             <View style={styles.statusIcon}>
               <Feather name="check-circle" size={48} color="#32CD32" />
             </View>
-            <Text style={styles.statusTitle}>You're Eligible!</Text>
-            <Text style={styles.statusText}>
-              Your order meets all requirements to open a dispute.
-            </Text>
+            <Text style={styles.statusTitle}>{t("You're Eligible!")}</Text>
+            <Text style={styles.statusText}>{t('Your order meets all requirements to open a dispute.')}</Text>
           </View>
         ) : (
           <View style={styles.ineligibleCard}>
             <View style={styles.statusIcon}>
               <Feather name="x-circle" size={48} color="#FF4444" />
             </View>
-            <Text style={styles.statusTitle}>Not Eligible</Text>
+            <Text style={styles.statusTitle}>{t('Not Eligible')}</Text>
             <Text style={styles.statusText}>
               {eligibility?.reason || 'This order does not meet the requirements for a dispute.'}
             </Text>
@@ -82,35 +80,35 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
         )}
 
         <View style={styles.detailsCard}>
-          <Text style={styles.detailsTitle}>Order Details</Text>
+          <Text style={styles.detailsTitle}>{t('Order Details')}</Text>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Order Number:</Text>
+            <Text style={styles.detailLabel}>{t('Order Number:')}</Text>
             <Text style={styles.detailValue}>#{order.order_number}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Order Date:</Text>
+            <Text style={styles.detailLabel}>{t('Order Date:')}</Text>
             <Text style={styles.detailValue}>
               {new Date(order.order_date).toLocaleDateString()}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Days Since Order:</Text>
+            <Text style={styles.detailLabel}>{t('Days Since Order:')}</Text>
             <Text style={styles.detailValue}>
               {eligibility?.days_since_order || 0} days
             </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Amount:</Text>
+            <Text style={styles.detailLabel}>{t('Amount:')}</Text>
             <Text style={styles.detailValue}>${order.total_amount}</Text>
           </View>
         </View>
 
         <View style={styles.requirementsCard}>
-          <Text style={styles.requirementsTitle}>Requirements</Text>
+          <Text style={styles.requirementsTitle}>{t('Requirements')}</Text>
           
           <View style={styles.requirementRow}>
             <Feather 
@@ -118,9 +116,7 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
               size={20} 
               color={eligibility?.within_time_limit ? "#32CD32" : "#FF4444"} 
             />
-            <Text style={styles.requirementText}>
-              Order within 30 days
-            </Text>
+            <Text style={styles.requirementText}>{t('Order within 30 days')}</Text>
           </View>
 
           <View style={styles.requirementRow}>
@@ -129,9 +125,7 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
               size={20} 
               color={eligibility?.no_existing_dispute ? "#32CD32" : "#FF4444"} 
             />
-            <Text style={styles.requirementText}>
-              No existing dispute for this order
-            </Text>
+            <Text style={styles.requirementText}>{t('No existing dispute for this order')}</Text>
           </View>
 
           <View style={styles.requirementRow}>
@@ -140,9 +134,7 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
               size={20} 
               color={eligibility?.order_completed ? "#32CD32" : "#FF4444"} 
             />
-            <Text style={styles.requirementText}>
-              Order marked as received
-            </Text>
+            <Text style={styles.requirementText}>{t('Order marked as received')}</Text>
           </View>
         </View>
 
@@ -150,7 +142,7 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
           <View style={styles.infoCard}>
             <Feather name="info" size={20} color="#4169E1" />
             <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>Next Steps</Text>
+              <Text style={styles.infoTitle}>{t('Next Steps')}</Text>
               <Text style={styles.infoText}>
                 • Provide detailed information about your issue{'\n'}
                 • Upload supporting evidence (photos, documents){'\n'}
@@ -166,14 +158,14 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
             style={styles.continueButton}
             onPress={handleContinue}
           >
-            <Text style={styles.continueButtonText}>Continue to Dispute Form</Text>
+            <Text style={styles.continueButtonText}>{t('Continue to Dispute Form')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>{t('Go Back')}</Text>
           </TouchableOpacity>
         )}
       </ScrollView>

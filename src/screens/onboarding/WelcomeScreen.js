@@ -3,8 +3,10 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const WelcomeScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const handleTryDemo = () => {
     console.log('Navigate to Demo');
     navigation.navigate('Demo');
@@ -14,6 +16,10 @@ const WelcomeScreen = ({ navigation }) => {
     navigation.navigate('AllMemberships');
   };
 
+  const handlePatentInfo = () => {
+    navigation.navigate('PatentPending');
+  };
+
   return (
     <SafeScreenContainer>
       <ScrollView
@@ -21,21 +27,28 @@ const WelcomeScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
+        {/* Header with Logo and Patent Info */}
         <View style={styles.logoContainer}>
           <Image
             source={IMAGES.logoMain}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <TouchableOpacity onPress={handlePatentInfo}>
+            <Text style={styles.infoLink}>
+              for more information{' '}
+              <Text style={styles.clickHere}>{t('click here')}</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Welcome Title */}
-        <Text style={styles.title}>Welcome to RoundBuy</Text>
+        <Text style={styles.title}>{t('Welcome to RoundBuy')}</Text>
 
         {/* Test Demo Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Test the Demosite</Text>
+          <Text style={styles.sectionTitle}>{t('Test the Demosite')}</Text>
           <Text style={styles.sectionDescription}>
             Try the service in four test cities: London,{'\n'}Paris, New York and Tokyo
           </Text>
@@ -44,29 +57,25 @@ const WelcomeScreen = ({ navigation }) => {
             style={styles.demoButton}
             onPress={handleTryDemo}
           >
-            <Text style={styles.demoButtonText}>Try the Demo</Text>
+            <Text style={styles.demoButtonText}>{t('Try the Demo')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Membership Plan Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select membership plan</Text>
-          <Text style={styles.sectionDescription}>
-            For safety, you must choose a plan to proceed
-          </Text>
+          <Text style={styles.sectionTitle}>{t('Select membership plan')}</Text>
+          <Text style={styles.sectionDescription}>{t('For safety, you must choose a plan to proceed')}</Text>
 
           <TouchableOpacity
             style={styles.planButton}
             onPress={handleChoosePlan}
           >
-            <Text style={styles.planButtonText}>Choose Your Plan</Text>
+            <Text style={styles.planButtonText}>{t('Choose Your Plan')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>
-          © 2020-2025 RoundBuy Inc ®
-        </Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeScreenContainer>
   );
@@ -88,6 +97,25 @@ const styles = StyleSheet.create({
   logo: {
     width: 160,
     height: 70,
+  },
+  patentText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginTop: 12,
+    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  infoLink: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#6a6a6a',
+    letterSpacing: -0.1,
+  },
+  clickHere: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '500',
   },
   title: {
     fontSize: 24,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { settingsService } from '../../../services';
 
 const CountrySettingsScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [userPreferences, setUserPreferences] = useState({
     currency_name: '',
@@ -40,7 +42,7 @@ const CountrySettingsScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error fetching user preferences:', error);
-      Alert.alert('Error', 'Failed to load your preferences. Please try again.');
+      Alert.alert(t('Error'), t('Failed to load your preferences. Please try again.'));
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +86,7 @@ const CountrySettingsScreen = ({ navigation }) => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#000" />
-          <Text style={styles.loadingText}>Loading your preferences...</Text>
+          <Text style={styles.loadingText}>{t('Loading your preferences...')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -97,7 +99,7 @@ const CountrySettingsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Country settings</Text>
+        <Text style={styles.headerTitle}>{t('Country settings')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -109,7 +111,7 @@ const CountrySettingsScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemText}>Currency</Text>
+            <Text style={styles.menuItemText}>{t('Currency')}</Text>
             <Text style={styles.menuItemValue}>
               {userPreferences.currency_symbol} {userPreferences.currency_name}
             </Text>
@@ -124,14 +126,14 @@ const CountrySettingsScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <View style={styles.menuItemContent}>
-            <Text style={styles.menuItemText}>Language</Text>
+            <Text style={styles.menuItemText}>{t('Language')}</Text>
             <Text style={styles.menuItemValue}>{userPreferences.language_name}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
 
         {/* Copyright */}
-        <Text style={styles.copyright}>© 2020-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

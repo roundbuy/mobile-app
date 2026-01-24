@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeCategoryScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,10 +50,8 @@ const DisputeCategoryScreen = ({ navigation }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Choose Dispute Type</Text>
-          <Text style={styles.subtitle}>
-            Select the category that best describes your issue
-          </Text>
+          <Text style={styles.title}>{t('Choose Dispute Type')}</Text>
+          <Text style={styles.subtitle}>{t('Select the category that best describes your issue')}</Text>
         </View>
 
         <View style={styles.categoriesContainer}>
@@ -82,10 +82,8 @@ const DisputeCategoryScreen = ({ navigation }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Need Help?</Text>
-            <Text style={styles.infoText}>
-              If you're unsure which category to choose, select the one that most closely matches your situation. You can provide more details in the next steps.
-            </Text>
+            <Text style={styles.infoTitle}>{t('Need Help?')}</Text>
+            <Text style={styles.infoText}>{t("If you're unsure which category to choose, select the one that most closely matches your situation. You can provide more details in the next steps.")}</Text>
           </View>
         </View>
       </ScrollView>

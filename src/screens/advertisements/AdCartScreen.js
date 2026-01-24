@@ -3,8 +3,10 @@ import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const AdCartScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const planType = 'Gold';
   const planName = 'membership plan';
   const price = 2.00;
@@ -30,7 +32,7 @@ const AdCartScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>6/8</Text>
+          {/* <Text style={styles.stepIndicator}>6/8</Text> */}
         </View>
 
         {/* Logo */}
@@ -43,7 +45,7 @@ const AdCartScreen = ({ navigation, route }) => {
         </View>
 
         {/* Your Cart */}
-        <Text style={styles.cartTitle}>Your cart</Text>
+        <Text style={styles.cartTitle}>{t('Your cart')}</Text>
 
         {/* Cart Item */}
         <View style={styles.cartItem}>
@@ -61,32 +63,32 @@ const AdCartScreen = ({ navigation, route }) => {
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Subtotal</Text>
+            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
             <Text style={styles.pricingValue}>£{subtotal.toFixed(2)}</Text>
           </View>
-          
+
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>Taxes</Text>
+            <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
             <Text style={styles.pricingValue}>£{taxes}</Text>
           </View>
-          
+
           <View style={[styles.pricingRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
+            <Text style={styles.totalLabel}>{t('Total')}</Text>
             <Text style={styles.totalValue}>£{total}</Text>
           </View>
         </View>
 
         {/* Payment Method Section */}
         <View style={styles.paymentMethodSection}>
-          <Text style={styles.paymentMethodTitle}>Payment method</Text>
+          <Text style={styles.paymentMethodTitle}>{t('Payment method')}</Text>
         </View>
 
         {/* Pay Now Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.payButton}
           onPress={handlePayNow}
         >
-          <Text style={styles.payButtonText}>Pay now</Text>
+          <Text style={styles.payButtonText}>{t('Pay now')}</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpace} />

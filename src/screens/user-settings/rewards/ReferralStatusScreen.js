@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const ReferralStatusScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { category } = route.params;
 
   // Dummy data - replace with actual API data
@@ -80,7 +82,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Referral status</Text>
+        <Text style={styles.headerTitle}>{t('Referral status')}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -99,7 +101,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
         {/* Progress Bar */}
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBarBackground}>
-            <View 
+            <View
               style={[
                 styles.progressBarFill,
                 { width: `${progress}%` }
@@ -115,17 +117,14 @@ const ReferralStatusScreen = ({ navigation, route }) => {
             <View style={styles.successIconContainer}>
               <Ionicons name="checkmark-circle" size={48} color="#4CAF50" />
             </View>
-            <Text style={styles.successTitle}>Gold membership earned!</Text>
-            <Text style={styles.successMessage}>
-              Congratulations! You've completed all required referrals. 
-              Click the button below to redeem your reward.
-            </Text>
+            <Text style={styles.successTitle}>{t('Gold membership earned!')}</Text>
+            <Text style={styles.successMessage}>{t("Congratulations! You've completed all required referrals. Click the button below to redeem your reward.")}</Text>
           </View>
         )}
 
         {/* Referrals List */}
         <View style={styles.referralsList}>
-          {Array.from({ length: referralData.required }).map((_, index) => 
+          {Array.from({ length: referralData.required }).map((_, index) =>
             renderReferralItem(index)
           )}
         </View>
@@ -137,7 +136,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
             onPress={handleRedeem}
             activeOpacity={0.8}
           >
-            <Text style={styles.redeemButtonText}>Redeem your Reward</Text>
+            <Text style={styles.redeemButtonText}>{t('Redeem your Reward')}</Text>
             <Ionicons name="gift" size={20} color="#fff" />
           </TouchableOpacity>
         )}
@@ -147,18 +146,18 @@ const ReferralStatusScreen = ({ navigation, route }) => {
           <View style={styles.infoSection}>
             <View style={styles.infoHeader}>
               <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-              <Text style={styles.infoHeaderText}>Keep going!</Text>
+              <Text style={styles.infoHeaderText}>{t('Keep going!')}</Text>
             </View>
             <Text style={styles.infoText}>
               You need {referralData.required - referralData.completed} more referral
-              {referralData.required - referralData.completed > 1 ? 's' : ''} to 
+              {referralData.required - referralData.completed > 1 ? 's' : ''} to
               unlock your Gold membership reward. Share your code with friends!
             </Text>
           </View>
         )}
 
         {/* Footer */}
-        <Text style={styles.footerText}>© 2024-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

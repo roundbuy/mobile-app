@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const DistanceFilterScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [selectedDistance, setSelectedDistance] = useState('unlimited');
 
   const distances = [
@@ -28,7 +30,7 @@ const DistanceFilterScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Distance from you + unlimited</Text>
+          <Text style={styles.headerTitle}>{t('Distance from you + unlimited')}</Text>
         </View>
 
         {/* Distance Map Preview */}
@@ -36,7 +38,7 @@ const DistanceFilterScreen = ({ navigation }) => {
           <View style={styles.mapCircle}>
             <FontAwesome name="map-marker" size={32} color={COLORS.primary} />
           </View>
-          <Text style={styles.distanceText}>100 km</Text>
+          <Text style={styles.distanceText}>{t('100 km')}</Text>
         </View>
 
         {/* Distance Options */}
@@ -55,15 +57,15 @@ const DistanceFilterScreen = ({ navigation }) => {
           ))}
         </View>
 
-        <Text style={styles.useText}>Use</Text>
+        <Text style={styles.useText}>{t('Use')}</Text>
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.showResultsButton} onPress={handleShowResults}>
-          <Text style={styles.showResultsButtonText}>Show results</Text>
+          <Text style={styles.showResultsButtonText}>{t('Show results')}</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
-          <Text style={styles.footerLink}>Terms of service</Text>
+          <Text style={styles.footerLink}>{t('Terms of service')}</Text>
         </Text>
       </View>
     </SafeScreenContainer>

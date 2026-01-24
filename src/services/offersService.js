@@ -1,71 +1,129 @@
-import api from './api';
+/**
+ * Offers Service
+ * Handles all offers-related API calls for managing price offers
+ */
 
-const offersService = {
-  // Get offers received for user's advertisements
-  getReceivedOffers: async (page = 1, limit = 20) => {
-    try {
-      const response = await api.get(`/offers/received?page=${page}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching received offers:', error);
-      throw error;
-    }
-  },
+import apiClient from './api';
 
-  // Accept an offer
-  acceptOffer: async (offerId) => {
-    try {
-      const response = await api.put(`/offers/${offerId}/accept`);
-      return response.data;
-    } catch (error) {
-      console.error('Error accepting offer:', error);
-      throw error;
-    }
-  },
-
-  // Decline an offer
-  declineOffer: async (offerId) => {
-    try {
-      const response = await api.put(`/offers/${offerId}/decline`);
-      return response.data;
-    } catch (error) {
-      console.error('Error declining offer:', error);
-      throw error;
-    }
-  },
-
-  // Get accepted offers
-  getAcceptedOffers: async (page = 1, limit = 20) => {
-    try {
-      const response = await api.get(`/offers/accepted?page=${page}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching accepted offers:', error);
-      throw error;
-    }
-  },
-
-  // Get declined offers
-  getDeclinedOffers: async (page = 1, limit = 20) => {
-    try {
-      const response = await api.get(`/offers/declined?page=${page}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching declined offers:', error);
-      throw error;
-    }
-  },
-
-  // Get offers made by user
-  getMadeOffers: async (page = 1, limit = 20) => {
-    try {
-      const response = await api.get(`/offers/made?page=${page}&limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching made offers:', error);
-      throw error;
-    }
-  },
+/**
+ * Get all offers for the current user
+ * @param {Object} params - Query parameters
+ * @param {string} params.type - 'buyer', 'seller', or 'all' (default: 'all')
+ * @param {string} params.status - Filter by status: 'pending', 'accepted', 'rejected', 'counter_offered'
+ * @param {number} params.page - Page number (default: 1)
+ * @param {number} params.limit - Items per page (default: 20)
+ * @returns {Promise} API response with offers and pagination
+ */
+const getUserOffers = async (params = {}) => {
+  const { type = 'all', status, page = 1, limit = 20 } = params;
+  return apiClient.get('/offers', {
+    params: { type, status, page, limit }
+  });
 };
 
-export default offersService;
+/**
+ * Get offers for a specific advertisement
+ * @param {number} advertisementId - Advertisement ID
+ * @returns {Promise} API response with offers
+ */
+const getAdvertisementOffers = async (advertisementId) => {
+  return apiClient.get(`/offers/advertisement/${advertisementId}`);
+};
+
+/**
+ * Get offer statistics for the current user
+ * @returns {Promise} API response with statistics
+ */
+const getOfferStats = async () => {
+  return apiClient.get('/offers/stats');
+};
+
+/**
+ * Get offers made by the user (as buyer)
+ * @param {Object} params - Query parameters
+ * @param {string} params.status - Filter by status
+ * @param {number} params.page - Page number
+ * @param {number} params.limit - Items per page
+ * @returns {Promise} API response
+ */
+const getOffersMade = async (params = {}) => {
+  return getUserOffers({ ...params, type: 'buyer' });
+};
+
+/**
+ * Get offers received by the user (as seller)
+ * @param {Object} params - Query parameters
+ * @param {string} params.status - Filter by status
+ * @param {number} params.page - Page number
+ * @param {number} params.limit - Items per page
+ * @returns {Promise} API response
+ */
+const getOffersReceived = async (params = {}) => {
+  return getUserOffers({ ...params, type: 'seller' });
+};
+
+/**
+ * Get received offers (alias for getOffersReceived)
+ */
+const getReceivedOffers = async (params = {}) => {
+  return getUserOffers({ ...params, type: 'seller' });
+};
+
+/**
+ * Get accepted offers
+ * @param {Object} params - Query parameters
+ * @returns {Promise} API response
+ */
+const getAcceptedOffers = async (params = {}) => {
+  return getUserOffers({ ...params, status: 'accepted' });
+};
+
+/**
+ * Get declined/rejected offers
+ * @param {Object} params - Query parameters
+ * @returns {Promise} API response
+ */
+const getDeclinedOffers = async (params = {}) => {
+  return getUserOffers({ ...params, status: 'rejected' });
+};
+
+/**
+ * Get pending offers
+ * @param {Object} params - Query parameters
+ * @returns {Promise} API response
+ */
+const getPendingOffers = async (params = {}) => {
+  return getUserOffers({ ...params, status: 'pending' });
+};
+
+/**
+ * Accept an offer
+ * @param {number} offerId - Offer ID
+ * @returns {Promise} API response
+ */
+const acceptOffer = async (offerId) => {
+  return apiClient.post(`/offers/${offerId}/accept`);
+};
+
+/**
+ * Decline/Reject an offer
+ * @param {number} offerId - Offer ID
+ * @returns {Promise} API response
+ */
+const declineOffer = async (offerId) => {
+  return apiClient.post(`/offers/${offerId}/reject`);
+};
+
+export default {
+  getUserOffers,
+  getAdvertisementOffers,
+  getOfferStats,
+  getOffersMade,
+  getOffersReceived,
+  getReceivedOffers,
+  getAcceptedOffers,
+  getDeclinedOffers,
+  getPendingOffers,
+  acceptOffer,
+  declineOffer
+};

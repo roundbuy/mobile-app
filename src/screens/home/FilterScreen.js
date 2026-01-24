@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 're
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { useTranslation } from '../../context/TranslationContext';
 
 const FilterScreen = ({ navigation }) => {
+    const { t } = useTranslation();
   const [selectedFilters, setSelectedFilters] = useState({
     buy: false,
     sell: false,
@@ -64,22 +66,22 @@ const FilterScreen = ({ navigation }) => {
           >
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>FILTERS menu</Text>
+          <Text style={styles.headerTitle}>{t('FILTERS menu')}</Text>
         </View>
 
         {/* Clear All */}
         <TouchableOpacity onPress={handleClearAll} style={styles.clearButton}>
-          <Text style={styles.clearButtonText}>Clear all</Text>
+          <Text style={styles.clearButtonText}>{t('Clear all')}</Text>
         </TouchableOpacity>
 
         {/* Filter Options */}
         <View style={styles.filterList}>
-          <FilterOption label="Buy" value={selectedFilters.buy} onToggle={() => handleFilterToggle('buy')} />
-          <FilterOption label="Sell" value={selectedFilters.sell} onToggle={() => handleFilterToggle('sell')} />
-          <FilterOption label="Wanted" value={selectedFilters.wanted} onToggle={() => handleFilterToggle('wanted')} />
-          <FilterOption label="Service" value={selectedFilters.service} onToggle={() => handleFilterToggle('service')} />
-          <FilterOption label="Community" value={selectedFilters.community} onToggle={() => handleFilterToggle('community')} />
-          <FilterOption label="Giveaway" value={selectedFilters.giveaway} onToggle={() => handleFilterToggle('giveaway')} />
+          <FilterOption label={t('Buy')} value={selectedFilters.buy} onToggle={() => handleFilterToggle('buy')} />
+          <FilterOption label={t('Sell')} value={selectedFilters.sell} onToggle={() => handleFilterToggle('sell')} />
+          <FilterOption label={t('Wanted')} value={selectedFilters.wanted} onToggle={() => handleFilterToggle('wanted')} />
+          <FilterOption label={t('Service')} value={selectedFilters.service} onToggle={() => handleFilterToggle('service')} />
+          <FilterOption label={t('Community')} value={selectedFilters.community} onToggle={() => handleFilterToggle('community')} />
+          <FilterOption label={t('Giveaway')} value={selectedFilters.giveaway} onToggle={() => handleFilterToggle('giveaway')} />
         </View>
 
         {/* Additional Filter Options */}
@@ -87,7 +89,7 @@ const FilterScreen = ({ navigation }) => {
           style={styles.additionalFilter}
           onPress={() => navigation.navigate('ActivityFilter')}
         >
-          <Text style={styles.additionalFilterText}>Activity</Text>
+          <Text style={styles.additionalFilterText}>{t('Activity')}</Text>
           <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
         </TouchableOpacity>
 
@@ -95,7 +97,7 @@ const FilterScreen = ({ navigation }) => {
           style={styles.additionalFilter}
           onPress={() => navigation.navigate('CategoryFilter')}
         >
-          <Text style={styles.additionalFilterText}>Category</Text>
+          <Text style={styles.additionalFilterText}>{t('Category')}</Text>
           <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
         </TouchableOpacity>
 
@@ -103,7 +105,7 @@ const FilterScreen = ({ navigation }) => {
           style={styles.additionalFilter}
           onPress={() => navigation.navigate('DistanceFilter')}
         >
-          <Text style={styles.additionalFilterText}>Distance</Text>
+          <Text style={styles.additionalFilterText}>{t('Distance')}</Text>
           <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
         </TouchableOpacity>
 
@@ -111,7 +113,7 @@ const FilterScreen = ({ navigation }) => {
           style={styles.additionalFilter}
           onPress={() => navigation.navigate('PriceFilter')}
         >
-          <Text style={styles.additionalFilterText}>Price</Text>
+          <Text style={styles.additionalFilterText}>{t('Price')}</Text>
           <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
         </TouchableOpacity>
       </ScrollView>
@@ -122,10 +124,10 @@ const FilterScreen = ({ navigation }) => {
           style={styles.showResultsButton}
           onPress={handleShowResults}
         >
-          <Text style={styles.showResultsButtonText}>Show results</Text>
+          <Text style={styles.showResultsButtonText}>{t('Show results')}</Text>
         </TouchableOpacity>
         <Text style={styles.footerText}>
-          <Text style={styles.footerLink}>Terms of service</Text>
+          <Text style={styles.footerLink}>{t('Terms of service')}</Text>
         </Text>
       </View>
     </SafeScreenContainer>

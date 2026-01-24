@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
@@ -14,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RedeemRewardScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
   const { category, referralData } = route.params;
 
   // State for selected items
@@ -79,7 +81,7 @@ const RedeemRewardScreen = ({ navigation, route }) => {
       if (selectedProducts.length < maxSelection) {
         setSelectedProducts([...selectedProducts, productId]);
       } else {
-        Alert.alert('Limit Reached', `You can only select up to ${maxSelection} items.`);
+        Alert.alert(t('Limit Reached'), `You can only select up to ${maxSelection} items.`);
       }
     }
   };
@@ -87,12 +89,12 @@ const RedeemRewardScreen = ({ navigation, route }) => {
   const handleRedeem = () => {
     if (category.type === 'plan_upgrade') {
       if (!selectedPlan) {
-        Alert.alert('Selection Required', 'Please select a membership plan.');
+        Alert.alert(t('Selection Required'), t('Please select a membership plan.'));
         return;
       }
     } else if (category.type === 'visibility_upgrade') {
       if (selectedProducts.length === 0) {
-        Alert.alert('Selection Required', 'Please select at least one product.');
+        Alert.alert(t('Selection Required'), t('Please select at least one product.'));
         return;
       }
     }
@@ -199,7 +201,7 @@ const RedeemRewardScreen = ({ navigation, route }) => {
         {/* Conditional Content */}
         {category.type === 'plan_upgrade' ? (
           <View style={styles.plansContainer}>
-            <Text style={styles.sectionTitle}>Select a membership plan</Text>
+            <Text style={styles.sectionTitle}>{t('Select a membership plan')}</Text>
             {membershipPlans.map(renderPlanOption)}
           </View>
         ) : (
@@ -222,11 +224,11 @@ const RedeemRewardScreen = ({ navigation, route }) => {
           activeOpacity={0.8}
           disabled={category.type === 'plan_upgrade' ? !selectedPlan : selectedProducts.length === 0}
         >
-          <Text style={styles.redeemButtonText}>Redeem Your Reward</Text>
+          <Text style={styles.redeemButtonText}>{t('Redeem Your Reward')}</Text>
         </TouchableOpacity>
 
         {/* Footer */}
-        <Text style={styles.footerText}>© 2024-2025 RoundBuy Inc ®</Text>
+        <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeAreaView>
   );

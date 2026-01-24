@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -16,6 +17,7 @@ import disputeService from '../../services/disputeService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const IssueDisputeFormScreen = ({ navigation, route }) => {
+    const { t } = useTranslation();
     const { issueId, issueNumber } = route.params || {};
     const [loading, setLoading] = useState(false);
     const [issueData, setIssueData] = useState(null);
@@ -56,11 +58,11 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
     const handleSendDispute = async () => {
         // Validate fields
         if (!disputeDescription.trim()) {
-            Alert.alert('Error', 'Please describe the disputed issue');
+            Alert.alert(t('Error'), t('Please describe the disputed issue'));
             return;
         }
         if (!disputeDemand.trim()) {
-            Alert.alert('Error', 'Please specify your demand');
+            Alert.alert(t('Error'), t('Please specify your demand'));
             return;
         }
 
@@ -73,11 +75,11 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
 
             if (response.success) {
                 Alert.alert(
-                    'Dispute Created',
-                    'Your dispute has been sent to the seller.',
+                    t('Dispute Created'),
+                    t('Your dispute has been sent to the seller.'),
                     [
                         {
-                            text: 'OK',
+                            text: t('OK'),
                             onPress: () => {
                                 navigation.navigate('SupportResolution');
                             },
@@ -87,7 +89,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             console.error('Escalate error:', error);
-            Alert.alert('Error', error.message || 'Failed to create dispute');
+            Alert.alert(t('Error'), error.message || t('Failed to create dispute'));
         } finally {
             setLoading(false);
         }
@@ -138,9 +140,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
 
                 {/* Guidelines Link */}
                 <TouchableOpacity style={styles.guidelinesLink}>
-                    <Text style={styles.guidelinesText}>
-                        Read RoundBuy Guidelines for Disputes
-                    </Text>
+                    <Text style={styles.guidelinesText}>{t('Read RoundBuy Guidelines for Disputes')}</Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} />
                 </TouchableOpacity>
 
@@ -157,15 +157,15 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 {/* Product Info */}
                 <View style={styles.infoSection}>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Product:</Text>
+                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
                         <Text style={styles.infoValue}>{issueData.product_name || issueData.ad_title}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issuer:</Text>
+                        <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
                         <Text style={styles.infoValue}>{currentUser?.full_name || 'You'}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>Issued to:</Text>
+                        <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
                         <Text style={styles.infoValue}>{issueData.other_party_name}</Text>
                     </View>
                 </View>
@@ -173,14 +173,14 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 {/* Buyer's Issue */}
                 <View style={styles.issueSection}>
                     <View style={styles.issueSectionHeader}>
-                        <Text style={styles.sectionTitle}>BUYER'S ISSUE</Text>
+                        <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
                         <Text style={styles.sectionTime}>{formatDate(issueData.created_at)}</Text>
                     </View>
 
-                    <Text style={styles.fieldLabel}>The Disputed Issue with the product:</Text>
+                    <Text style={styles.fieldLabel}>{t('The Disputed Issue with the product:')}</Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder="Describe the disputed issue..."
+                        placeholder={t('Describe the disputed issue...')}
                         placeholderTextColor="#999"
                         multiline
                         numberOfLines={4}
@@ -189,10 +189,10 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                         textAlignVertical="top"
                     />
 
-                    <Text style={styles.fieldLabel}>Issuers Demand:</Text>
+                    <Text style={styles.fieldLabel}>{t('Issuers Demand:')}</Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder="What do you demand from the seller?"
+                        placeholder={t('What do you demand from the seller?')}
                         placeholderTextColor="#999"
                         multiline
                         numberOfLines={4}
@@ -213,14 +213,14 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 >
                     <Text style={styles.linkText}>
                         Buyer Upload evidence in PDF format click{' '}
-                        <Text style={styles.linkHighlight}>here</Text>
+                        <Text style={styles.linkHighlight}>{t('here')}</Text>
                     </Text>
                 </TouchableOpacity>
 
                 {/* Chat History Link */}
                 <TouchableOpacity style={styles.linkButton}>
                     <Text style={styles.linkText}>
-                        <Text style={styles.linkHighlight}>Chat history.pdf (uploaded)</Text> click to view
+                        <Text style={styles.linkHighlight}>{t('Chat history.pdf (uploaded)')}</Text> click to view
                     </Text>
                 </TouchableOpacity>
 
@@ -228,7 +228,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 <View style={styles.infoLinkContainer}>
                     <Text style={styles.infoLinkText}>
                         More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>click here</Text>
+                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
@@ -242,7 +242,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                     {loading ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.sendButtonText}>Send Dispute to Seller</Text>
+                        <Text style={styles.sendButtonText}>{t('Send Dispute to Seller')}</Text>
                     )}
                 </TouchableOpacity>
             </ScrollView>

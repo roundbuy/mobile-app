@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import { Feather } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 
 const DisputeFormScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { category, order, problem } = route.params;
   const [formData, setFormData] = useState({
     description: '',
@@ -22,7 +24,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.description.trim()) {
       newErrors.description = 'Please describe the issue';
     } else if (formData.description.length < 50) {
@@ -52,24 +54,22 @@ const DisputeFormScreen = ({ navigation, route }) => {
     <SafeScreenContainer>
       <ScrollView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Dispute Details</Text>
-          <Text style={styles.subtitle}>
-            Provide detailed information about your issue
-          </Text>
+          <Text style={styles.title}>{t('Dispute Details')}</Text>
+          <Text style={styles.subtitle}>{t('Provide detailed information about your issue')}</Text>
         </View>
 
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Summary</Text>
+          <Text style={styles.summaryTitle}>{t('Summary')}</Text>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Category:</Text>
+            <Text style={styles.summaryLabel}>{t('Category:')}</Text>
             <Text style={styles.summaryValue}>{category.name}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Problem:</Text>
+            <Text style={styles.summaryLabel}>{t('Problem:')}</Text>
             <Text style={styles.summaryValue}>{problem.name}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Order:</Text>
+            <Text style={styles.summaryLabel}>{t('Order:')}</Text>
             <Text style={styles.summaryValue}>#{order.order_number}</Text>
           </View>
         </View>
@@ -78,9 +78,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
           <Text style={styles.label}>
             Describe the Issue <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>
-            Provide as much detail as possible (minimum 50 characters)
-          </Text>
+          <Text style={styles.hint}>{t('Provide as much detail as possible (minimum 50 characters)')}</Text>
           <TextInput
             style={[
               styles.textArea,
@@ -88,7 +86,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
             ]}
             multiline
             numberOfLines={6}
-            placeholder="Example: I received the product but it was damaged during shipping. The box was intact, but the item inside had visible scratches and dents..."
+            placeholder={t('Example: I received the product but it was damaged during shipping. The box was intact, but the item inside had visible scratches and dents...')}
             value={formData.description}
             onChangeText={(text) =>
               setFormData({ ...formData, description: text })
@@ -106,9 +104,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
           <Text style={styles.label}>
             Expected Resolution <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.hint}>
-            What would you like to happen?
-          </Text>
+          <Text style={styles.hint}>{t('What would you like to happen?')}</Text>
           <TextInput
             style={[
               styles.textArea,
@@ -116,7 +112,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
             ]}
             multiline
             numberOfLines={4}
-            placeholder="Example: I would like a full refund of $XX.XX or a replacement product sent at no additional cost..."
+            placeholder={t('Example: I would like a full refund of $XX.XX or a replacement product sent at no additional cost...')}
             value={formData.expectedResolution}
             onChangeText={(text) =>
               setFormData({ ...formData, expectedResolution: text })
@@ -128,15 +124,13 @@ const DisputeFormScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.formSection}>
-          <Text style={styles.label}>Additional Information</Text>
-          <Text style={styles.hint}>
-            Any other details that might help resolve this issue (optional)
-          </Text>
+          <Text style={styles.label}>{t('Additional Information')}</Text>
+          <Text style={styles.hint}>{t('Any other details that might help resolve this issue (optional)')}</Text>
           <TextInput
             style={styles.textArea}
             multiline
             numberOfLines={4}
-            placeholder="Example: I've tried contacting the seller but received no response. The product was advertised as new but appears to be used..."
+            placeholder={t("Example: I've tried contacting the seller but received no response. The product was advertised as new but appears to be used...")}
             value={formData.additionalInfo}
             onChangeText={(text) =>
               setFormData({ ...formData, additionalInfo: text })
@@ -147,7 +141,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
         <View style={styles.infoCard}>
           <Feather name="info" size={20} color="#4169E1" />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Tips for Success</Text>
+            <Text style={styles.infoTitle}>{t('Tips for Success')}</Text>
             <Text style={styles.infoText}>
               • Be clear and specific{'\n'}
               • Include relevant dates and details{'\n'}
@@ -161,7 +155,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
           style={styles.continueButton}
           onPress={handleContinue}
         >
-          <Text style={styles.continueButtonText}>Continue to Evidence Upload</Text>
+          <Text style={styles.continueButtonText}>{t('Continue to Evidence Upload')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeScreenContainer>

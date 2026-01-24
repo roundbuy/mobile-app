@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
@@ -18,6 +19,7 @@ import claimService from '../../services/claimService';
 import GlobalHeader from '../../components/GlobalHeader';
 
 const SupportResolutionScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     // Main tab state (My support / Resolution center)
     const [activeMainTab, setActiveMainTab] = useState('support');
 
@@ -195,7 +197,7 @@ const SupportResolutionScreen = ({ navigation }) => {
         <SafeAreaView style={styles.container} edges={['top']}>
             {/* Global Header */}
             <GlobalHeader
-                title="Support & Resolution"
+                title={t('Support & Resolution')}
                 navigation={navigation}
                 showBackButton={true}
                 showIcons={true}
@@ -215,9 +217,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                             styles.mainTabText,
                             activeMainTab === 'support' && styles.mainTabTextActive,
                         ]}
-                    >
-                        My support
-                    </Text>
+                    >{t('My support')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[
@@ -231,9 +231,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                             styles.mainTabText,
                             activeMainTab === 'resolution' && styles.mainTabTextActive,
                         ]}
-                    >
-                        Resolution center
-                    </Text>
+                    >{t('Resolution center')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -259,9 +257,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeSupportTab === 'all' && styles.subTabTextActive,
                                 ]}
-                            >
-                                All
-                            </Text>
+                            >{t('All')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="support-deleted"
@@ -276,9 +272,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeSupportTab === 'deleted' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Deleted ads
-                            </Text>
+                            >{t('Deleted ads')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="support-appeals"
@@ -293,9 +287,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeSupportTab === 'appeals' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Ads appeals
-                            </Text>
+                            >{t('Ads appeals')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="support-tickets"
@@ -310,9 +302,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeSupportTab === 'tickets' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Tickets
-                            </Text>
+                            >{t('Tickets')}</Text>
                         </TouchableOpacity>
                     </>
                 ) : (
@@ -330,9 +320,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'all' && styles.subTabTextActive,
                                 ]}
-                            >
-                                All
-                            </Text>
+                            >{t('All')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="resolution-exchanges"
@@ -347,9 +335,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'exchanges' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Exchanges
-                            </Text>
+                            >{t('Exchanges')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="resolution-issues"
@@ -364,9 +350,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'issues' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Issues
-                            </Text>
+                            >{t('Issues')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="resolution-disputes"
@@ -381,9 +365,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'disputes' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Disputes
-                            </Text>
+                            >{t('Disputes')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="resolution-claims"
@@ -398,9 +380,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'claims' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Claims
-                            </Text>
+                            >{t('Claims')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             key="resolution-ended"
@@ -415,9 +395,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                                     styles.subTabText,
                                     activeResolutionTab === 'ended' && styles.subTabTextActive,
                                 ]}
-                            >
-                                Ended
-                            </Text>
+                            >{t('Ended')}</Text>
                         </TouchableOpacity>
                     </>
                 )}
@@ -445,7 +423,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Feather name="inbox" size={64} color="#CCC" />
-                            <Text style={styles.emptyText}>No items found</Text>
+                            <Text style={styles.emptyText}>{t('No items found')}</Text>
                         </View>
                     }
                 />
@@ -456,7 +434,7 @@ const SupportResolutionScreen = ({ navigation }) => {
                 <Feather name="info" size={16} color="#666" />
                 <Text style={styles.footerText}>
                     More information on Deleted ads,{' '}
-                    <Text style={styles.footerLink}>click here</Text>
+                    <Text style={styles.footerLink}>{t('click here')}</Text>
                 </Text>
             </View>
 
