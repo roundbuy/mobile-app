@@ -21,7 +21,7 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import Constants from 'expo-constants';
 
 const SetLocationMapScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { locationType = 'centrePoint', onSave, existingLocation } = route.params || {};
 
   const [selectedAddress, setSelectedAddress] = useState('');
@@ -196,6 +196,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
     if (onSave) {
       onSave(locationData);
     } else {
+      navigation.goBack();
       Alert.alert(
         t('Success'),
         t('Location saved successfully!'),

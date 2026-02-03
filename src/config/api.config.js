@@ -16,7 +16,8 @@ import Constants from 'expo-constants';
 const getApiUrl = () => {
   // TEMPORARY HARDCODE: Bypass environment variable caching in native builds
   // TODO: Remove this hardcode once native build is updated
-  const hardcodedUrl = 'http://localhost:5001/api/v1/mobile-app';
+  // const hardcodedUrl = 'http://localhost:5001/api/v1/mobile-app';
+  const hardcodedUrl = 'https://api.roundbuy.com/backend/api/v1/mobile-app';
   console.log('⚠️  USING HARDCODED API URL (temporary fix):', hardcodedUrl);
   return hardcodedUrl;
 
