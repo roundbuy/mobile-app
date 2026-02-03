@@ -45,8 +45,14 @@ export const TranslationProvider = ({ children }) => {
             }
 
             // Detect device locale
-            const deviceLocale = Localization.locale; // e.g., "en-US", "hi-IN"
-            const languageCode = deviceLocale.split('-')[0]; // Extract "en" from "en-US"
+            let deviceLocale = Localization.locale;
+
+            // Fallback for newer Expo versions or if locale is null
+            if (!deviceLocale && Localization.getLocales && Localization.getLocales().length > 0) {
+                deviceLocale = Localization.getLocales()[0].languageTag;
+            }
+
+            const languageCode = deviceLocale ? deviceLocale.split('-')[0] : DEFAULT_LANGUAGE; // Extract "en" from "en-US"
 
             console.log('🌍 Device locale detected:', deviceLocale);
             console.log('🔤 Language code:', languageCode);

@@ -91,7 +91,7 @@ const AllMembershipsScreen = ({ navigation, route }) => {
                       t('Your free plan has been activated successfully!'),
                       [{
                         text: t('Start Browsing'),
-                        onPress: () => navigation.replace('Main')
+                        onPress: () => navigation.replace('SocialLogin')
                       }]
                     );
                   } else {
@@ -101,7 +101,7 @@ const AllMembershipsScreen = ({ navigation, route }) => {
                       t('Your free plan has been activated successfully!'),
                       [{
                         text: t('OK'),
-                        onPress: () => navigation.goBack()
+                        onPress: () => navigation.replace('SocialLogin')
                       }]
                     );
                   }

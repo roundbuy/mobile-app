@@ -920,89 +920,122 @@ const SearchScreen = ({ navigation, route }) => {
                   />
                 )}
 
-                {/* Advertisement markers */}
-                {advertisements.map((ad) => {
-                  // Only show ads with location data
-                  if (!ad.latitude || !ad.longitude) return null;
+                {/* Advertisement markers - with offset for overlapping items */}
+                {(() => {
+                  // Group ads by location to handle overlaps
+                  const adsByLocation = {};
+                  advertisements.forEach(ad => {
+                    if (ad.latitude && ad.longitude) {
+                      const key = `${parseFloat(ad.latitude).toFixed(4)},${parseFloat(ad.longitude).toFixed(4)}`;
+                      if (!adsByLocation[key]) adsByLocation[key] = [];
+                      adsByLocation[key].push(ad);
+                    }
+                  });
 
-                  // Get activity color and label from ACTIVITY_COLORS
-                  const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
-                  const markerLabel = activityData.label;
-                  const markerColor = activityData.color;
-                  const isSelected = selectedMarker === ad.id;
+                  // Flatten back to array with offsets
+                  const processedMarkers = [];
+                  Object.values(adsByLocation).forEach(group => {
+                    if (group.length === 1) {
+                      processedMarkers.push(group[0]);
+                    } else {
+                      // Apply circular offset for overlapping markers
+                      group.forEach((ad, index) => {
+                        const angle = (index / group.length) * 2 * Math.PI;
+                        const radius = 0.0002; // Small radius for offset (approx 20m)
 
-                  return (
-                    <Marker
-                      key={ad.id}
-                      coordinate={{
-                        latitude: parseFloat(ad.latitude),
-                        longitude: parseFloat(ad.longitude),
-                      }}
-                      onPress={() => {
-                        // Tap marker: callout will show automatically
-                        setSelectedMarker(ad.id);
+                        processedMarkers.push({
+                          ...ad,
+                          latitude: parseFloat(ad.latitude) + (radius * Math.cos(angle)),
+                          longitude: parseFloat(ad.longitude) + (radius * Math.sin(angle)),
+                          isOffset: true // Flag to indicate modified position
+                        });
+                      });
+                    }
+                  });
 
-                        // Animate map to position marker at 20% from bottom
-                        if (mapRef.current) {
-                          const markerCoordinate = {
-                            latitude: parseFloat(ad.latitude),
-                            longitude: parseFloat(ad.longitude),
-                          };
+                  return processedMarkers.map((ad) => {
+                    // Only show ads with location data
+                    if (!ad.latitude || !ad.longitude) return null;
 
-                          // Calculate offset to position marker at 20% from bottom (80% from top)
-                          // This is done by adjusting the latitude
-                          const latitudeDelta = region.latitudeDelta || 0.0922;
-                          const offsetLatitude = markerCoordinate.latitude + (latitudeDelta * 0.3); // Shift up by 30% of delta
+                    // Get activity color and label from ACTIVITY_COLORS
+                    const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
+                    const markerLabel = activityData.label;
+                    const markerColor = activityData.color;
+                    const isSelected = selectedMarker === ad.id;
 
-                          mapRef.current.animateToRegion({
-                            latitude: offsetLatitude,
-                            longitude: markerCoordinate.longitude,
-                            latitudeDelta: latitudeDelta,
-                            longitudeDelta: region.longitudeDelta || 0.0421,
-                          }, 300);
-                        }
-                      }}
-                      onCalloutPress={() => {
-                        // Tap callout: navigate to product
-                        handleProductPress(ad);
-                      }}
-                    >
-                      <View style={[styles.customMarker, { backgroundColor: markerColor }, isSelected && styles.selectedMarker]}>
-                        <Text style={styles.markerText}>{markerLabel}</Text>
-                      </View>
+                    return (
+                      <Marker
+                        key={ad.id}
+                        coordinate={{
+                          latitude: parseFloat(ad.latitude),
+                          longitude: parseFloat(ad.longitude),
+                        }}
+                        onPress={() => {
+                          // Tap marker: callout will show automatically
+                          setSelectedMarker(ad.id);
+
+                          // Animate map to position marker at 20% from bottom
+                          if (mapRef.current) {
+                            const markerCoordinate = {
+                              latitude: parseFloat(ad.latitude),
+                              longitude: parseFloat(ad.longitude),
+                            };
+
+                            // Calculate offset to position marker at 20% from bottom (80% from top)
+                            // This is done by adjusting the latitude
+                            const latitudeDelta = region.latitudeDelta || 0.0922;
+                            const offsetLatitude = markerCoordinate.latitude + (latitudeDelta * 0.3); // Shift up by 30% of delta
+
+                            mapRef.current.animateToRegion({
+                              latitude: offsetLatitude,
+                              longitude: markerCoordinate.longitude,
+                              latitudeDelta: latitudeDelta,
+                              longitudeDelta: region.longitudeDelta || 0.0421,
+                            }, 300);
+                          }
+                        }}
+                        onCalloutPress={() => {
+                          // Tap callout: navigate to product
+                          handleProductPress(ad);
+                        }}
+                      >
+                        <View style={[styles.customMarker, { backgroundColor: markerColor }, isSelected && styles.selectedMarker]}>
+                          <Text style={styles.markerText}>{markerLabel}</Text>
+                        </View>
 
 
-                      {/* Callout - Always present, shows when marker is tapped */}
-                      <Callout tooltip onPress={() => handleProductPress(ad)}>
-                        <TouchableOpacity
-                          style={styles.calloutContainer}
-                          onPress={() => handleProductPress(ad)}
-                          activeOpacity={0.8}
-                        >
-                          <View style={styles.calloutImageContainer}>
-                            {ad.images && ad.images.length > 0 ? (
-                              <Image
-                                source={{ uri: getFullImageUrl(ad.images[0]) }}
-                                style={styles.calloutImage}
-                              />
-                            ) : (
-                              <View style={styles.calloutImagePlaceholder}>
-                                <FontAwesome name="image" size={20} color="#ccc" />
-                              </View>
-                            )}
-                          </View>
-                          <View style={styles.calloutInfo}>
-                            <Text style={styles.calloutTitle} numberOfLines={2}>
-                              {ad.title}
-                            </Text>
-                            <Text style={styles.calloutPrice}>£{ad.price}</Text>
-                            <Text style={styles.calloutTap}>{t('Tap to view details')}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      </Callout>
-                    </Marker>
-                  );
-                })}
+                        {/* Callout - Always present, shows when marker is tapped */}
+                        <Callout tooltip onPress={() => handleProductPress(ad)}>
+                          <TouchableOpacity
+                            style={styles.calloutContainer}
+                            onPress={() => handleProductPress(ad)}
+                            activeOpacity={0.8}
+                          >
+                            <View style={styles.calloutImageContainer}>
+                              {ad.images && ad.images.length > 0 ? (
+                                <Image
+                                  source={{ uri: getFullImageUrl(ad.images[0]) }}
+                                  style={styles.calloutImage}
+                                />
+                              ) : (
+                                <View style={styles.calloutImagePlaceholder}>
+                                  <FontAwesome name="image" size={20} color="#ccc" />
+                                </View>
+                              )}
+                            </View>
+                            <View style={styles.calloutInfo}>
+                              <Text style={styles.calloutTitle} numberOfLines={2}>
+                                {ad.title}
+                              </Text>
+                              <Text style={styles.calloutPrice}>£{ad.price}</Text>
+                              <Text style={styles.calloutTap}>{t('Tap to view details')}</Text>
+                            </View>
+                          </TouchableOpacity>
+                        </Callout>
+                      </Marker>
+                    );
+                  });
+                })()}
               </MapView>
             )}
 
