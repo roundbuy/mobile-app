@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
@@ -12,45 +12,40 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityAdChoicesScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
-  const { ad, type } = route.params;
-  
-  const [selectedDuration, setSelectedDuration] = useState(null);
-  const [selectedDistance, setSelectedDistance] = useState(null);
+  const { t } = useTranslation();
+  const { planType, plans, distancePlans } = route.params;
+
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [selectedDistanceId, setSelectedDistanceId] = useState(null);
+
+  // Sort plans (durations)
+  const sortedPlans = [...plans].sort((a, b) => a.duration_days - b.duration_days);
+
+  // Sort distance plans
+  const sortedDistances = [...(distancePlans || [])].sort((a, b) => a.sort_order - b.sort_order);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const durationOptions = [
-    { id: 1, label: '3 days', value: 3 },
-    { id: 2, label: '7 days', value: 7 },
-    { id: 3, label: '10 days', value: 10 },
-    { id: 4, label: '14 days', value: 14 },
-  ];
-
-  const distanceOptions = [
-    { id: 1, label: '< 2,5 km', price: '£7.00', value: 2.5 },
-    { id: 2, label: '< 5 km', price: '£10.00', value: 5 },
-    { id: 3, label: '< 7,5 km', price: '£12.00', value: 7.5 },
-    { id: 4, label: '< 10 km', price: '£15.00', value: 10 },
-  ];
-
   const handleContinue = () => {
-    if (!selectedDuration || !selectedDistance) {
-      alert('Please select both duration and distance options');
+    if (!selectedPlanId || (sortedDistances.length > 0 && !selectedDistanceId)) {
+      alert('Please select all options');
       return;
     }
 
-    const selectedDurationOption = durationOptions.find(opt => opt.id === selectedDuration);
-    const selectedDistanceOption = distanceOptions.find(opt => opt.id === selectedDistance);
+    const selectedPlan = sortedPlans.find(p => p.id === selectedPlanId);
+    const selectedDistance = sortedDistances.find(d => d.id === selectedDistanceId);
 
-    navigation.navigate('VisibilityCart', {
-      ad,
-      type,
-      duration: selectedDurationOption,
-      distance: selectedDistanceOption,
+    navigation.navigate('PurchaseVisibilityAdsList', {
+      planType,
+      selectedPlan,
+      selectedDistance
     });
+  };
+
+  const getCurrencySymbol = (code) => {
+    return code === 'GBP' ? '£' : (code === 'USD' ? '$' : code);
   };
 
   return (
@@ -68,23 +63,29 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
         {/* Choose display time */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('Choose display time:')}</Text>
-          
+
           <View style={styles.buttonGrid}>
-            {durationOptions.map((option) => (
+            {sortedPlans.map((plan) => (
               <TouchableOpacity
-                key={option.id}
+                key={plan.id}
                 style={[
                   styles.optionButton,
-                  selectedDuration === option.id && styles.optionButtonSelected
+                  selectedPlanId === plan.id && styles.optionButtonSelected
                 ]}
-                onPress={() => setSelectedDuration(option.id)}
+                onPress={() => setSelectedPlanId(plan.id)}
                 activeOpacity={0.7}
               >
                 <Text style={[
                   styles.optionButtonText,
-                  selectedDuration === option.id && styles.optionButtonTextSelected
+                  selectedPlanId === plan.id && styles.optionButtonTextSelected
                 ]}>
-                  {option.label}
+                  {plan.duration_label || `${plan.duration_days} ${t('days')}`}
+                </Text>
+                <Text style={[
+                  styles.optionPriceText,
+                  selectedPlanId === plan.id && styles.optionButtonTextSelected
+                ]}>
+                  {getCurrencySymbol('GBP')}{plan.discounted_price}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -98,47 +99,55 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
         </View>
 
         {/* Choose radius (distance) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('Choose radius (distance):')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('By setting the radius or distance you decide how far your Ad will be displayed.')}</Text>
-          
-          <View style={styles.buttonGrid}>
-            {distanceOptions.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.optionButton,
-                  selectedDistance === option.id && styles.optionButtonSelected
-                ]}
-                onPress={() => setSelectedDistance(option.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={[
-                  styles.optionButtonText,
-                  selectedDistance === option.id && styles.optionButtonTextSelected
-                ]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {sortedDistances.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('Choose radius (distance):')}</Text>
+            <Text style={styles.sectionSubtitle}>{t('By setting the radius or distance you decide how far your Ad will be displayed.')}</Text>
 
-          <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-            <Text style={styles.infoLinkText}>{t('For more information, about prices')}</Text>
-            <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-            <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-          </TouchableOpacity>
-        </View>
+            <View style={styles.buttonGrid}>
+              {sortedDistances.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.optionButton,
+                    selectedDistanceId === option.id && styles.optionButtonSelected
+                  ]}
+                  onPress={() => setSelectedDistanceId(option.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[
+                    styles.optionButtonText,
+                    selectedDistanceId === option.id && styles.optionButtonTextSelected
+                  ]}>
+                    {option.is_unlimited ? t('Unlimited') : `< ${option.distance_km} km`}
+                  </Text>
+                  <Text style={[
+                    styles.optionPriceText,
+                    selectedDistanceId === option.id && styles.optionButtonTextSelected
+                  ]}>
+                    {getCurrencySymbol('GBP')}{option.discounted_price}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
+              <Text style={styles.infoLinkText}>{t('For more information, about prices')}</Text>
+              <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
+              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Continue Button */}
         <TouchableOpacity
           style={[
             styles.continueButton,
-            (!selectedDuration || !selectedDistance) && styles.continueButtonDisabled
+            (!selectedPlanId || (sortedDistances.length > 0 && !selectedDistanceId)) && styles.continueButtonDisabled
           ]}
           onPress={handleContinue}
           activeOpacity={0.7}
-          disabled={!selectedDuration || !selectedDistance}
+          disabled={!selectedPlanId || (sortedDistances.length > 0 && !selectedDistanceId)}
         >
           <Text style={styles.continueButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
@@ -219,6 +228,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+    marginBottom: 4
+  },
+  optionPriceText: {
+    fontSize: 14,
+    color: '#666',
   },
   optionButtonTextSelected: {
     color: '#fff',

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const BillingPaymentsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -279,6 +280,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
         )}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      <SuggestionsFooter sourceRoute="BillingPayments" />
     </SafeAreaView>
   );
 };

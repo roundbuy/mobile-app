@@ -8,7 +8,7 @@ import { useTranslation } from '../../context/TranslationContext';
 const LicenseAgreementScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const handleAccept = () => {
-    navigation.replace('ATTPrompt');
+    navigation.replace('NotificationPermission');
   };
 
   const handleCancel = () => {

@@ -8,38 +8,59 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { platformReviewService } from '../../../services';
+import { useAuth } from '../../../context/AuthContext';
 
 const ReviewSiteFormScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [experience, setExperience] = useState('');
   const [improvements, setImprovements] = useState('');
-  const username = 'jonnie12';
+  const [submitting, setSubmitting] = useState(false);
+
+  const username = user?.username || user?.full_name || t('User');
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       Alert.alert(t('Rating Required'), t('Please provide a rating before submitting.'));
       return;
     }
-    
-    Alert.alert(
-      t('Success'),
-      t('Thank you for your review!'),
-      [
-        {
-          text: t('OK'),
-          onPress: () => navigation.navigate('SiteReviews'),
-        },
-      ]
-    );
+
+    try {
+      setSubmitting(true);
+      await platformReviewService.submitReview({
+        type: 'site',
+        rating,
+        experience,
+        improvements
+      });
+
+      Alert.alert(
+        t('Success'),
+        t('Thank you for your review!'),
+        [
+          {
+            text: t('OK'),
+            onPress: () => navigation.navigate('SiteReviews'),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Review error:', error);
+      Alert.alert(t('Error'), t('Failed to submit review. Please try again.'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderStar = (index) => {
@@ -130,11 +151,16 @@ const ReviewSiteFormScreen = ({ navigation }) => {
 
         {/* Submit Button */}
         <TouchableOpacity
-          style={styles.submitButton}
+          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           activeOpacity={0.8}
+          disabled={submitting}
         >
-          <Text style={styles.submitButtonText}>{t('Send your review')}</Text>
+          {submitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.submitButtonText}>{t('Send your review')}</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -230,6 +256,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
+  submitButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+  }
 });
 
 export default ReviewSiteFormScreen;

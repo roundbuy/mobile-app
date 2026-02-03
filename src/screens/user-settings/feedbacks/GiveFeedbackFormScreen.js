@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
+
   View,
   Text,
   StyleSheet,
@@ -9,20 +10,28 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import { feedbackService } from '../../../services';
+import { getFullImageUrl } from '../../../utils/imageUtils';
 
 const GiveFeedbackFormScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { transaction, advertisementId, offerId, reviewedUserId, transactionType } = route.params;
+  const { transaction, advertisementId, offerId, reviewedUserId, transactionType, isEdit, feedback, images } = route.params;
 
   const [experienceType, setExperienceType] = useState('positive'); // 'positive', 'negative', 'neutral'
-  const [rating, setRating] = useState(0);
-  const [feedbackText, setFeedbackText] = useState('');
+  const [rating, setRating] = useState(feedback ? feedback.rating : 0);
+  const [feedbackText, setFeedbackText] = useState(feedback ? feedback.comment : '');
   const [submitting, setSubmitting] = useState(false);
+
+  // Extract product details
+  const productTitle = feedback?.advertisement?.title || transaction?.title || t('Product');
+  // Order of precedence: images param > feedback.advertisement.images > transaction.images
+  const rawImages = images || feedback?.advertisement?.images || transaction?.images || [];
+  const productImage = rawImages.length > 0 ? getFullImageUrl(rawImages[0]) : null;
 
   const handleBack = () => {
     navigation.goBack();
@@ -41,27 +50,34 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
     try {
       setSubmitting(true);
 
-      const feedbackData = {
-        advertisementId,
-        offerId: offerId || null,
-        reviewedUserId,
-        rating,
-        comment: feedbackText.trim(),
-        transactionType: transactionType || 'sell'
-      };
-
-      const response = await feedbackService.createFeedback(feedbackData);
+      let response;
+      if (isEdit && feedback?.id) {
+        response = await feedbackService.updateFeedback(feedback.id, {
+          rating,
+          comment: feedbackText.trim()
+        });
+      } else {
+        const feedbackData = {
+          advertisementId,
+          offerId: offerId || null,
+          reviewedUserId,
+          rating,
+          comment: feedbackText.trim(),
+          transactionType: transactionType || 'sell'
+        };
+        response = await feedbackService.createFeedback(feedbackData);
+      }
 
       if (response.success) {
         Alert.alert(
           t('Success'),
-          t('Your feedback has been submitted successfully!'),
+          t(isEdit ? 'Your feedback has been updated successfully!' : 'Your feedback has been submitted successfully!'),
           [
             {
               text: t('OK'),
               onPress: () => {
-                // Navigate back to the feedback list screen
-                navigation.navigate('GiveFeedbackList');
+                // Navigate back
+                navigation.goBack();
               },
             },
           ]
@@ -107,17 +123,33 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('Give Feedback')}</Text>
+        <Text style={styles.headerTitle}>{t(isEdit ? 'Edit Feedback' : 'Give Feedback')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Product Info */}
+        <View style={styles.productSection}>
+          {productImage ? (
+            <Image source={{ uri: productImage }} style={styles.productImage} />
+          ) : (
+            <View style={[styles.productImage, styles.placeholderImage]}>
+              <Ionicons name="image-outline" size={40} color="#ccc" />
+            </View>
+          )}
+          <Text style={styles.productTitle} numberOfLines={2}>
+            {productTitle}
+          </Text>
+        </View>
+
         {/* User Info */}
         <View style={styles.userSection}>
           <View style={styles.avatar}>
             <FontAwesome name="user-circle" size={50} color="#666" />
           </View>
-          <Text style={styles.username}>{transaction?.otherParty?.name || t('User')}</Text>
+          <Text style={styles.username}>
+            {feedback?.reviewedUser?.name || transaction?.otherParty?.name || t('User')}
+          </Text>
         </View>
 
         {/* Rate the Experience */}
@@ -198,7 +230,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>{t('Send your Feedback')}</Text>
+            <Text style={styles.submitButtonText}>{t(isEdit ? 'Update Feedback' : 'Send your Feedback')}</Text>
           )}
         </TouchableOpacity>
 
@@ -239,7 +271,34 @@ const styles = StyleSheet.create({
   },
   userSection: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 16,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  productSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  productImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    marginRight: 16,
+  },
+  placeholderImage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  productTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
   },
   avatar: {
     marginBottom: 12,

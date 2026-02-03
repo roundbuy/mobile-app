@@ -180,7 +180,7 @@ const PolicyUpdatesScreen = ({ navigation }) => {
                                 <Ionicons
                                     name={expandedId === update.id ? 'chevron-up' : 'chevron-down'}
                                     size={20}
-                                    color="#999"
+                                    color="#191919ff"
                                 />
                             </TouchableOpacity>
 
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     policyText: {
         fontSize: 15,
         color: '#000',
-        fontWeight: '400',
+        fontWeight: '500',
     },
     importantBadge: {
         backgroundColor: '#FFF3E0',
@@ -304,11 +304,11 @@ const styles = StyleSheet.create({
     },
     updateDate: {
         fontSize: 13,
-        color: '#666',
+        color: '#191919ff',
     },
     versionText: {
         fontSize: 12,
-        color: '#999',
+        color: 'rgba(153, 153, 153, 1)919ff',
         backgroundColor: '#f5f5f5',
         paddingHorizontal: 6,
         paddingVertical: 2,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     changeText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#191919ff',
         lineHeight: 20,
     },
     viewPolicyButton: {
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#191919ff',
         lineHeight: 18,
     },
     bottomSpacer: {

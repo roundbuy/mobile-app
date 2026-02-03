@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import GlobalHeader from '../../components/GlobalHeader';
+import SuggestionsFooter from '../../components/SuggestionsFooter';
 import { useWallet } from '../../contexts/WalletContext';
 import walletService from '../../services/walletService';
 
@@ -227,6 +228,7 @@ const WalletScreen = ({ navigation }) => {
                 </View>
 
                 <View style={styles.bottomSpace} />
+                <SuggestionsFooter sourceRoute="Wallet" />
             </ScrollView>
         </SafeAreaView>
     );

@@ -73,6 +73,11 @@ const UserDrawer = ({ visible, onClose, navigation }) => {
         { id: 5, title: 'Support & Resolution', icon: 'help-circle-outline', screen: 'SupportResolution' },
         { id: 6, title: 'Membership', icon: 'card-outline', screen: 'AllMemberships' },
         { id: 7, title: 'Notifications', icon: 'notifications-outline', screen: 'Notifications' },
+        { id: 9, title: 'Reviews', icon: 'star-outline', screen: 'Review' },
+        { id: 10, title: 'Platform Info', icon: 'information-circle-outline', screen: 'PlatformMenu' },
+        { id: 11, title: 'About Us', icon: 'people-outline', screen: 'AboutUs' },
+        { id: 12, title: 'How it Works', icon: 'help-buoy-outline', screen: 'HowItWorks' },
+        { id: 13, title: 'Visibility Boosts', icon: 'rocket-outline', screen: 'VisibilityBoostInfo' },
         { id: 8, title: 'Settings', icon: 'settings-outline', screen: 'UserAccount' },
     ];
 

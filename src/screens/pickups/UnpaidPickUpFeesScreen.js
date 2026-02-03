@@ -60,6 +60,8 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
         // Navigate to payment screen
         navigation.navigate('PickUpPayment', {
             pickupId: pickup.id,
+            pickupData: pickup,
+            productPrice: pickup.advertisement_price || pickup.offer_price, // Explicitly pass price
             amount: pickup.total_fee,
             advertisementTitle: pickup.advertisement_title
         });
@@ -80,7 +82,32 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
         }, 0);
     };
 
-    const renderUnpaidItem = ({ item }) => {
+    const UnpaidFeeCard = ({ item, onPayNow, t }) => {
+        const [expanded, setExpanded] = useState(false);
+
+        // Initial fees from item
+        const pickupFee = parseFloat(item.pickup_fee || 0);
+        const safeServiceFee = parseFloat(item.safe_service_fee || 0);
+        const productPrice = parseFloat(item.advertisement_price || 0);
+        const originalTotal = parseFloat(item.total_fee || 0);
+
+        // New logic: Buyer's Fee = Pickup + Service
+        const buyersFee = pickupFee + safeServiceFee;
+
+        // Static 2.7% calculation
+        const itemFeePercent = 0.027;
+        const itemFee = productPrice * itemFeePercent;
+
+        // Discount matches item fee
+        const discount = itemFee;
+
+        // Subtotal = Product Price + Buyers Fee + Item Fee
+        const subTotal = productPrice + buyersFee + itemFee;
+
+        // Grand Total = Subtotal - Discount
+        // Effectively: Product Price + Buyers Fee
+        const calculatedTotal = subTotal - discount;
+
         // Get product image
         let productImageUri = null;
         if (item.advertisement_images) {
@@ -116,33 +143,95 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
                             {item.advertisement_title}
                         </Text>
                         <Text style={styles.productPrice}>
-                            Product Price: £{parseFloat(item.advertisement_price || 0).toFixed(2)}
+                            {t('Product Price')}: £{productPrice.toFixed(2)}
                         </Text>
                         <Text style={styles.scheduledDate}>
-                            Scheduled: {formatDate(item.scheduled_date)}
+                            {t('Scheduled')}: {new Date(item.scheduled_date).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })}
                         </Text>
                     </View>
                 </View>
 
                 {/* Fee Breakdown */}
+                {/* Fee Breakdown */}
                 <View style={styles.feeSection}>
+                    {/* Product Price */}
                     <View style={styles.feeRow}>
-                        <Text style={styles.feeLabel}>{t('Pickup Fee')}</Text>
+                        <Text style={styles.feeLabel}>{t('Product Price')}</Text>
                         <Text style={styles.feeValue}>
-                            £{parseFloat(item.pickup_fee || 0).toFixed(2)}
+                            £{productPrice.toFixed(2)}
                         </Text>
                     </View>
+
+                    {/* Expandable Buyer's Fee */}
+                    <TouchableOpacity
+                        style={styles.feeRow}
+                        onPress={() => setExpanded(!expanded)}
+                        activeOpacity={0.7}
+                    >
+                        <View style={styles.feeLabelContainer}>
+                            <Text style={styles.feeLabelMain}>{t('Buyers Fee')}</Text>
+                            <Ionicons
+                                name={expanded ? "chevron-up" : "chevron-down"}
+                                size={16}
+                                color="#666"
+                                style={{ marginLeft: 4 }}
+                            />
+                        </View>
+                        <Text style={styles.feeValueMain}>
+                            £{buyersFee.toFixed(2)}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {expanded && (
+                        <View style={styles.expandedSection}>
+                            <View style={styles.subFeeRow}>
+                                <Text style={styles.subFeeLabel}>{t('Pick Up & Exchange Fee')}</Text>
+                                <Text style={styles.subFeeValue}>£{pickupFee.toFixed(2)}</Text>
+                            </View>
+                            <View style={styles.subFeeRow}>
+                                <Text style={styles.subFeeLabel}>{t('Service Fee')}</Text>
+                                <Text style={styles.subFeeValue}>£{safeServiceFee.toFixed(2)}</Text>
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Item Fee */}
                     <View style={styles.feeRow}>
-                        <Text style={styles.feeLabel}>{t('Safe Service Fee')}</Text>
+                        <Text style={styles.feeLabel}>{t('Item Fee')} (2.7%)</Text>
                         <Text style={styles.feeValue}>
-                            £{parseFloat(item.safe_service_fee || 0).toFixed(2)}
+                            £{itemFee.toFixed(2)}
                         </Text>
                     </View>
+
+                    {/* Sub Total divider */}
+                    <View style={[styles.divider, { marginVertical: 4 }]} />
+
+                    {/* Sub Total */}
+                    <View style={styles.feeRow}>
+                        <Text style={[styles.feeLabel, { fontWeight: '600' }]}>{t('Sub Total')}</Text>
+                        <Text style={[styles.feeValue, { fontWeight: '600' }]}>
+                            £{subTotal.toFixed(2)}
+                        </Text>
+                    </View>
+
+                    {/* Discount */}
+                    <View style={styles.feeRow}>
+                        <Text style={[styles.feeLabel, { color: '#4CAF50' }]}>{t('Discount')} (2.7%)</Text>
+                        <Text style={[styles.feeValue, { color: '#4CAF50' }]}>
+                            -£{discount.toFixed(2)}
+                        </Text>
+                    </View>
+
                     <View style={styles.divider} />
+
                     <View style={styles.feeRow}>
-                        <Text style={styles.totalLabel}>{t('Total')}</Text>
+                        <Text style={styles.totalLabel}>{t('Grand Total')}</Text>
                         <Text style={styles.totalValue}>
-                            £{parseFloat(item.total_fee || 0).toFixed(2)}
+                            £{calculatedTotal.toFixed(2)}
                         </Text>
                     </View>
                 </View>
@@ -150,7 +239,7 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
                 {/* Pay Now Button */}
                 <TouchableOpacity
                     style={styles.payButton}
-                    onPress={() => handlePayNow(item)}
+                    onPress={() => onPayNow(item)}
                     activeOpacity={0.8}
                 >
                     <Ionicons name="card-outline" size={20} color="#fff" />
@@ -193,7 +282,7 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
             ) : (
                 <FlatList
                     data={unpaidPickups}
-                    renderItem={renderUnpaidItem}
+                    renderItem={({ item }) => <UnpaidFeeCard item={item} onPayNow={handlePayNow} t={t} />}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
@@ -325,6 +414,41 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#000',
+    },
+    feeLabelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    feeLabelMain: {
+        fontSize: 14,
+        color: '#000',
+        fontWeight: '600',
+    },
+    feeValueMain: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#000',
+    },
+    expandedSection: {
+        paddingVertical: 8,
+        paddingLeft: 12,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 4,
+        marginTop: 4,
+        marginBottom: 8,
+    },
+    subFeeRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 2,
+    },
+    subFeeLabel: {
+        fontSize: 13,
+        color: '#666',
+    },
+    subFeeValue: {
+        fontSize: 13,
+        color: '#666',
     },
     divider: {
         height: 1,

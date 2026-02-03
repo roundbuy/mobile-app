@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../../assets/images';
+import { getFullImageUrl } from '../../../utils/imageUtils';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
@@ -17,7 +18,7 @@ import { COLORS } from '../../../constants/theme';
 import { feedbackService } from '../../../services';
 
 const GiveFeedbackListScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,7 +63,8 @@ const GiveFeedbackListScreen = ({ navigation }) => {
       advertisementId: transaction.advertisementId,
       offerId: transaction.offerId,
       reviewedUserId: transaction.otherParty.id,
-      transactionType: transaction.transactionType
+      transactionType: transaction.transactionType,
+      images: transaction.images // Explicitly pass images
     });
   };
 
@@ -133,11 +135,18 @@ const GiveFeedbackListScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <Image
-              source={
-                transaction.images && transaction.images.length > 0
-                  ? { uri: transaction.images[0] }
-                  : IMAGES.placeholder
-              }
+              source={(() => {
+                try {
+                  const images = typeof transaction.images === 'string' ? JSON.parse(transaction.images) : transaction.images;
+                  if (images && images.length > 0) {
+                    const url = getFullImageUrl(images[0]);
+                    if (url) return { uri: url };
+                  }
+                } catch (e) {
+                  console.log('Error parsing transaction image:', e);
+                }
+                return IMAGES.chair1;
+              })()}
               style={styles.productImage}
             />
 

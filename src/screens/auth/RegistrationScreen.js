@@ -4,9 +4,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
+import OnboardingModal from '../../components/onboarding/OnboardingModal';
 
 const RegistrationScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const [showOnboarding, setShowOnboarding] = React.useState(false);
   console.log('📱 RegistrationScreen: Rendering...');
 
   const handleSignIn = () => {
@@ -55,12 +57,50 @@ const RegistrationScreen = ({ navigation }) => {
           <Text style={styles.subtitle}>{t('Buy and Sell products and services just around you!')}</Text>
 
           <TouchableOpacity
+            style={styles.onboardingButton}
+            onPress={() => setShowOnboarding(true)}
+          >
+            <Text style={styles.onboardingButtonText}>{t('Find out what we offer!')}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.demoButton}
             onPress={handleTestDemo}
           >
             <Text style={styles.demoButtonText}>{t('Test RoundBuy Demo')}</Text>
           </TouchableOpacity>
         </View>
+
+        <OnboardingModal
+          visible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+          tourId="registration_tour"
+          onFinish={() => {
+            setShowOnboarding(false);
+            navigation.navigate('CreateAccount');
+          }}
+          title="Registration"
+          slides={[
+            {
+              title: 'Onboard 1',
+              heading: 'Location Benefits',
+              description: 'Location: Lorem ipsum dolores est. Lorem ipsum dolores est. Default location is your... Product location...',
+              list: ['Value Propostion 1', 'Value Propostion 2', 'Value Propostion 3']
+            },
+            {
+              title: 'Onboard 2',
+              heading: 'Listing Features',
+              description: 'Listing: Lorem ipsum dolores est. Lorem ipsum dolores est.',
+              list: ['Value Propostion 1', 'Value Propostion 2', 'Value Propostion 3']
+            },
+            {
+              title: 'Onboard 3',
+              heading: 'Mission Statement',
+              description: 'Our Mission statement: lorum ipsum dolores est, lorum ipsum dolores est.',
+              buttonText: 'Sign Up now!'
+            }
+          ]}
+        />
 
         {/* Footer with Buttons */}
         <View style={styles.footer}>
@@ -160,6 +200,26 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     letterSpacing: -0.9,
     marginBottom: 2,
+  },
+  onboardingButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  onboardingButtonText: {
+    fontSize: 16,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   demoButton: {
     height: 54,

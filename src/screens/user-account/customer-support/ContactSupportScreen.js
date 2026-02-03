@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const ContactSupportScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
@@ -143,6 +144,8 @@ const ContactSupportScreen = ({ route, navigation }) => {
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
+        <View style={styles.bottomSpacer} />
+        <SuggestionsFooter sourceRoute="ContactSupport" />
       </ScrollView>
     </SafeAreaView>
   );

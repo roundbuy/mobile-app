@@ -44,12 +44,13 @@ export const createFeedback = async (feedbackData) => {
  * Get feedbacks received by current user
  * @param {number} limit - Number of feedbacks to fetch
  * @param {number} offset - Offset for pagination
+ * @param {string} status - Filter by status (optional)
  * @returns {Promise} User's received feedbacks and stats
  */
-export const getMyFeedbacks = async (limit = 50, offset = 0) => {
+export const getMyFeedbacks = async (limit = 50, offset = 0, status = null) => {
     try {
         const response = await api.get('/feedbacks/my-feedbacks', {
-            params: { limit, offset }
+            params: { limit, offset, status }
         });
         return response.data;
     } catch (error) {
@@ -111,11 +112,65 @@ export const canGiveFeedback = async (advertisementId, offerId = null) => {
     }
 };
 
+/**
+ * Get feedbacks given by current user
+     * @param {number} limit - Number of feedbacks to fetch
+     * @param {number} offset - Offset for pagination
+     * @returns {Promise} User's given feedbacks
+     */
+export const getGivenFeedbacks = async (limit = 50, offset = 0) => {
+    try {
+        const response = await api.get('/feedbacks/given', {
+            params: { limit, offset }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching given feedbacks:', error);
+        throw error;
+    }
+};
+
+/**
+ * Update a feedback (content)
+ * @param {number} id - Feedback ID
+ * @param {Object} data - { rating, comment }
+ * @returns {Promise} Update result
+ */
+export const updateFeedback = async (id, data) => {
+    try {
+        const response = await api.put(`/feedbacks/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating feedback:', error);
+        throw error;
+    }
+};
+
+/**
+ * Update feedback status (approve/reject)
+ * @param {number} id - Feedback ID
+ * @param {string} status - 'approved' or 'rejected'
+ * @returns {Promise} Update result
+ */
+export const updateFeedbackStatus = async (id, status) => {
+    try {
+        const response = await api.patch(`/feedbacks/${id}/status`, { status });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating feedback status:', error);
+        throw error;
+    }
+};
+
 export default {
     getEligibleForFeedback,
     createFeedback,
     getMyFeedbacks,
     getUserFeedbacks,
     getFeedbackStats,
-    canGiveFeedback
+    getFeedbackStats,
+    canGiveFeedback,
+    getGivenFeedbacks,
+    updateFeedback,
+    updateFeedbackStatus
 };

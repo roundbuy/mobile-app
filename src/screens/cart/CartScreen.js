@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IMAGES } from '../../assets/images';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
+import stripeService from '../../services/stripeService';
 
 const CartScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     planId,
     planType = 'Gold',
@@ -26,9 +27,45 @@ const CartScreen = ({ navigation, route }) => {
     userEmail
   } = route.params || {};
 
-  const subtotal = parseFloat(originalPrice || price);
-  const taxes = parseFloat(taxAmount || (subtotal * (taxRate / 100)));
-  const total = parseFloat(price);
+  const [fees, setFees] = useState({
+    subtotal: parseFloat(originalPrice || price),
+    taxes: parseFloat(taxAmount || (parseFloat(originalPrice || price) * (taxRate / 100))),
+    total: parseFloat(price),
+    discount: 0
+  });
+  const [loadingPrice, setLoadingPrice] = useState(true);
+
+  useEffect(() => {
+    fetchPrice();
+  }, []);
+
+  const fetchPrice = async () => {
+    try {
+      setLoadingPrice(true);
+      // Call backend to get calculated/pro-rated price
+      const response = await stripeService.createPaymentIntent({
+        planId,
+        currencyCode: currency,
+        amount: 0 // Backend ignores this and calculates correct amount
+      });
+
+      if (response) {
+        setFees({
+          subtotal: parseFloat(response.original_price || response.amount), // Backend sends original_price (base + tax)
+          taxes: 0, // Backend sends total incl. tax in original_price usually, or I can try to extract.
+          // Actually createPaymentIntent returns: amount (final), original_price (base+tax), discount.
+          // Let's use backend provided values.
+          total: parseFloat(response.amount),
+          discount: parseFloat(response.discount || 0)
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch price:', error);
+      // Fallback to params
+    } finally {
+      setLoadingPrice(false);
+    }
+  };
 
   const handlePayNow = () => {
     navigation.navigate('PaymentMethod', {
@@ -36,9 +73,9 @@ const CartScreen = ({ navigation, route }) => {
       planType,
       planName,
       planSlug,
-      total,
-      subtotal,
-      taxes,
+      total: fees.total,
+      subtotal: fees.subtotal,
+      taxes: fees.taxes,
       currency,
       currencySymbol,
       requiresPlan,
@@ -89,20 +126,35 @@ const CartScreen = ({ navigation, route }) => {
 
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
-          <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
-            <Text style={styles.pricingValue}>{currencySymbol}{subtotal.toFixed(2)}</Text>
-          </View>
+          {loadingPrice ? (
+            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
+          ) : (
+            <>
+              <View style={styles.pricingRow}>
+                <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
+                <Text style={styles.pricingValue}>{currencySymbol}{fees.subtotal.toFixed(2)}</Text>
+              </View>
 
-          <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
-            <Text style={styles.pricingValue}>{currencySymbol}{taxes.toFixed(2)}</Text>
-          </View>
+              {fees.discount > 0 && (
+                <View style={styles.pricingRow}>
+                  <Text style={[styles.pricingLabel, { color: '#4CAF50' }]}>{t('Unused time credit')}</Text>
+                  <Text style={[styles.pricingValue, { color: '#4CAF50' }]}>-{currencySymbol}{fees.discount.toFixed(2)}</Text>
+                </View>
+              )}
 
-          <View style={[styles.pricingRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>{t('Total')}</Text>
-            <Text style={styles.totalValue}>{currencySymbol}{total.toFixed(2)}</Text>
-          </View>
+              {fees.taxes > 0 && (
+                <View style={styles.pricingRow}>
+                  <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
+                  <Text style={styles.pricingValue}>{currencySymbol}{fees.taxes.toFixed(2)}</Text>
+                </View>
+              )}
+
+              <View style={[styles.pricingRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>{t('Total')}</Text>
+                <Text style={styles.totalValue}>{currencySymbol}{fees.total.toFixed(2)}</Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Payment Method Section */}

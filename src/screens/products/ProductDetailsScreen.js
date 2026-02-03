@@ -16,16 +16,83 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { advertisementService, favoritesService } from '../../services';
+import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 import GlobalHeader from '../../components/GlobalHeader';
 import ProductInfoModal from '../../components/ProductInfoModal';
+import ResponseMetrics from '../../components/ResponseMetrics';
 
 const { width } = Dimensions.get('window');
 
+const getBadgeConfig = (badge) => {
+  const level = badge.level?.toLowerCase();
+  const type = badge.type?.toLowerCase();
+
+  // Membership Badges
+  if (type === 'membership') {
+    switch (level) {
+      case 'gold': return { color: '#FFD700', icon: 'star', label: 'Gold' };
+      case 'green': return { color: '#4CAF50', icon: 'shield', label: 'Member' };
+      case 'orange': return { color: '#FF9800', icon: 'flash', label: 'Member' };
+      default: return { color: COLORS.primary, icon: 'user', label: 'Member' };
+    }
+  }
+
+  // Reward Badges
+  if (type === 'reward') {
+    switch (level) {
+      case 'lottery': return { color: '#9C27B0', icon: 'ticket', label: 'Lottery' };
+      case 'top_search': return { color: '#2196F3', icon: 'search', label: 'Top Search' };
+      default: return { color: COLORS.primary, icon: 'gift', label: 'Reward' };
+    }
+  }
+
+  // Visibility Plans
+  switch (level) {
+    case 'rise_to_top': return { color: '#FF5722', icon: 'rocket', label: 'Rise Up' };
+    case 'top_spot': return { color: '#E91E63', icon: 'trophy', label: 'Top Spot' };
+    case 'show_casing': return { color: '#673AB7', icon: 'diamond', label: 'Showcase' };
+    case 'targeted': return { color: '#00BCD4', icon: 'navigate', label: 'Targeted' };
+    case 'fast_ad': return { color: '#FFC107', icon: 'flash', label: 'Fast' }; // Using flash for fast ad too
+    case 'urgent': return { color: '#FF4500', icon: 'alert-circle', label: 'Urgent' };
+    case 'featured': return { color: '#9370DB', icon: 'star', label: 'Featured' };
+    default: return { color: COLORS.primary, icon: 'bookmark', label: level?.toUpperCase() || 'Badge' };
+  }
+};
+
+// New helper for membership badges based on plan
+const getMembershipConfig = (membership) => {
+  if (!membership) return null;
+
+  // Default config
+  let config = {
+    color: membership.color || '#2196F3',
+    icon: 'ribbon',
+    label: membership.name
+  };
+
+  const slug = membership.slug?.toLowerCase();
+
+  if (slug?.includes('gold')) {
+    config.icon = 'star';
+    config.color = '#FFD700'; // Gold override
+  } else if (slug?.includes('silver')) {
+    config.icon = 'shield';
+    config.color = '#C0C0C0';
+  } else if (slug?.includes('platinum')) {
+    config.icon = 'trophy';
+    config.color = '#E5E4E2';
+  } else if (slug?.includes('business')) {
+    config.icon = 'briefcase';
+  }
+
+  return config;
+};
+
 const ProductDetailsScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { advertisementId, advertisement } = route?.params || {};
   const { user, hasActiveSubscription } = useAuth();
 
@@ -38,6 +105,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [infoModal, setInfoModal] = useState({ visible: false, title: '', content: '' });
+  const [sellerMetrics, setSellerMetrics] = useState(null);
 
   // Fetch advertisement details on mount
   useEffect(() => {
@@ -52,6 +120,13 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       setLoading(false);
     }
   }, [advertisementId, advertisement]);
+
+  useEffect(() => {
+    if (productData) {
+      console.log('📦 Product Data:', JSON.stringify(productData, null, 2));
+      console.log('🏷️ Badges:', JSON.stringify(productData.badges, null, 2));
+    }
+  }, [productData]);
 
   const fetchAdvertisementDetails = async () => {
     try {
@@ -90,6 +165,23 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     }
   };
 
+  useEffect(() => {
+    if (productData?.seller?.id) {
+      // fetchSellerMetrics(productData.seller.id);
+    }
+  }, [productData?.seller?.id]);
+
+  const fetchSellerMetrics = async (sellerId) => {
+    try {
+      const response = await api.get(`/seller-metrics/${sellerId}`);
+      if (response.data.success) {
+        setSellerMetrics(response.data.data);
+      }
+    } catch (error) {
+      console.log('Error fetching seller metrics:', error);
+    }
+  };
+
   const formatAdvertisementData = (ad) => {
     return {
       id: ad.id,
@@ -114,6 +206,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         rating: ad.seller?.average_rating || 0,
         avatar: ad.seller?.avatar,
         memberSince: ad.seller?.member_since,
+        membership: ad.seller?.membership, // Add membership data here
       },
       favorites: 0, // This would need a separate API call
       location: {
@@ -122,6 +215,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       },
       createdAt: ad.created_at,
       viewsCount: ad.views_count || 0,
+      badges: ad.badges || [],
     };
   };
 
@@ -165,6 +259,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     Distance: "The distance shown is calculated from your current location or saved address to the seller's location. The walking time is an estimate based on average walking speed.",
     Condition: "The condition describes the current state of the item:\n\n• New: Brand new, unused item\n• Like New: Barely used, excellent condition\n• Very Good: Gently used, minor wear\n• Good: Used with visible signs of wear\n• Fair: Well-used, functional but worn\n• Poor: Heavy wear, may need repairs",
     Colour: "The color of the item as described by the seller. Actual color may vary slightly due to lighting and screen settings.",
+    Responsiveness: "Metrics indicating the seller's reliability:\n\n• Response Rate: Average time to reply to messages.\n• Pick Up Rate: Percentage of successful meetings for pickup/exchange.",
   };
 
   const handleInfoPress = (label) => {
@@ -301,6 +396,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             resizeMode="cover"
             defaultSource={IMAGES.placeholder}
           />
+
           <TouchableOpacity
             style={styles.favoriteButton}
             onPress={handleFavorite}
@@ -311,6 +407,20 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               color="#333"
             />
           </TouchableOpacity>
+          {productData.badges && productData.badges.length > 0 && (
+            <View style={styles.badgesWrapper}>
+              {/* 1. Only show visibility badges here */}
+              {productData.badges.filter(b => b.type === 'visibility').map((badge, index) => {
+                const config = getBadgeConfig(badge);
+                return (
+                  <View key={index} style={[styles.badgeContainer, { backgroundColor: config.color }]}>
+                    <Ionicons name={config.icon} size={10} color="#fff" style={{ marginRight: 4 }} />
+                    <Text style={styles.badgeText}>{config.label}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
           {renderImageDots()}
         </View>
 
@@ -359,7 +469,25 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               )}
             </View>
             <View style={styles.sellerInfo}>
-              <Text style={styles.sellerName}>{productData.seller.username}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.sellerName}>{productData.seller.username}</Text>
+                {/* 2. Add Membership Badge based on seller subscription */}
+                {(() => {
+                  const membership = productData.seller.membership;
+                  if (membership) {
+                    const config = getMembershipConfig(membership);
+                    if (config) {
+                      return (
+                        <View style={[styles.badgeContainer, { backgroundColor: config.color, marginLeft: 8, paddingVertical: 2, borderRadius: 8 }]}>
+                          <Ionicons name={config.icon} size={10} color="#fff" style={{ marginRight: 4 }} />
+                          <Text style={[styles.badgeText, { fontSize: 10 }]}>{config.label}</Text>
+                        </View>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
+              </View>
               {productData.seller.rating >= 0 && (
                 <View style={styles.ratingStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -375,13 +503,15 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               )}
             </View>
             <View style={styles.sellerLinksRight}>
+              {/* Read Users Feedbacks - Button at the top */}
               <TouchableOpacity
                 style={styles.sellerLinkButton}
                 onPress={handleReadFeedbacks}
               >
-                <Ionicons name="chatbubbles-outline" size={16} color="#000" style={{ marginRight: 6 }} />
-                <Text style={styles.sellerLinkButtonText}>{t('Read Feedbacks')}</Text>
+                <Text style={styles.sellerLinkButtonText}>{t('User Feedbacks')}</Text>
               </TouchableOpacity>
+
+              {/* User's Listings Button - Below metrics */}
               <TouchableOpacity
                 style={[styles.sellerLinkButton, { marginTop: 8 }]}
                 onPress={handleUserListings}
@@ -392,11 +522,18 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             </View>
           </View>
 
+          {/* Response Metrics Component */}
+          {/* <ResponseMetrics
+            metrics={sellerMetrics}
+            onPressInfo={() => handleInfoPress('Responsiveness')}
+          /> */}
+
           {/* Chat with seller button */}
           <TouchableOpacity
             style={styles.chatWithSellerButton}
             onPress={handleChatWithSeller}
           >
+
             <Text style={styles.chatWithSellerButtonText}>{t('Chat with seller')}</Text>
           </TouchableOpacity>
         </View>
@@ -541,7 +678,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         title={infoModal.title}
         content={infoModal.content}
       />
-    </SafeAreaView>
+    </SafeAreaView >
   );
 };
 
@@ -587,8 +724,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
+  },
+  badgesWrapper: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+    zIndex: 10,
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    // marginLeft: 4,
   },
   errorText: {
     fontSize: 16,

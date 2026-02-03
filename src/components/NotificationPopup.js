@@ -80,6 +80,11 @@ const NotificationPopup = ({ navigation }) => {
         return null;
     }
 
+    // Ignore campaign notifications (handled by CampaignNotificationPopup)
+    if (popupNotification.collapsed_title || popupNotification.trigger_type) {
+        return null;
+    }
+
     return (
         <Animated.View
             style={[

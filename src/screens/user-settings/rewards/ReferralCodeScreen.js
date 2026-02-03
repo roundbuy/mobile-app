@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
@@ -13,15 +13,38 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
+import { rewardsService } from '../../../services/rewardsService';
 
 const ReferralCodeScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category } = route.params;
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [username, setUsername] = useState(''); // Would come from auth context normally
 
-  // Dummy referral code - replace with actual user's code
-  const referralCode = 'RB543229';
-  const username = 'Username';
+  useEffect(() => {
+    fetchReferralData();
+  }, []);
+
+  const fetchReferralData = async () => {
+    try {
+      setLoading(true);
+      const response = await rewardsService.getReferrals();
+      if (response && response.data && response.data.referralCode) {
+        setReferralCode(response.data.referralCode);
+      } else {
+        // Generate if none exists
+        const genData = await rewardsService.generateReferralCode();
+        setReferralCode(genData.data ? genData.data.referralCode : genData.referralCode); // Handle both cases safely
+      }
+    } catch (error) {
+      console.error("Error fetching referral:", error);
+      Alert.alert(t('Error'), t('Failed to load referral code'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -51,7 +74,11 @@ const ReferralCodeScreen = ({ navigation, route }) => {
   };
 
   const handleCheckStatus = () => {
-    navigation.navigate('ReferralStatus', { category });
+    if (category?.type === 'lottery') {
+      navigation.navigate('LotteryCreditStatus', { category });
+    } else {
+      navigation.navigate('ReferralStatus', { category });
+    }
   };
 
   return (

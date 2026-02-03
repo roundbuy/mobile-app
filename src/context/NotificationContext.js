@@ -5,6 +5,7 @@
  */
 
 import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
+import { useAuth } from './AuthContext';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import notificationService from '../services/notificationService';
@@ -27,8 +28,10 @@ export const useNotifications = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
+    const { isAuthenticated } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
     const [notifications, setNotifications] = useState([]);
+    const [campaignNotifications, setCampaignNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
     const [popupNotification, setPopupNotification] = useState(null);
 
@@ -45,10 +48,8 @@ export const NotificationProvider = ({ children }) => {
         });
 
         setupNotificationListeners();
-        startHeartbeat();
 
         return () => {
-            stopHeartbeat();
             if (notificationListener.current) {
                 notificationListener.current.remove();
             }
@@ -57,6 +58,19 @@ export const NotificationProvider = ({ children }) => {
             }
         };
     }, []);
+
+    // Manage heartbeat based on authentication
+    useEffect(() => {
+        if (isAuthenticated) {
+            startHeartbeat();
+        } else {
+            stopHeartbeat();
+        }
+
+        return () => {
+            stopHeartbeat();
+        };
+    }, [isAuthenticated]);
 
     /**
      * Initialize notifications
@@ -142,6 +156,8 @@ export const NotificationProvider = ({ children }) => {
      */
     const checkHeartbeat = async () => {
         try {
+            if (!isAuthenticated) return;
+
             const deviceId = await getDeviceId();
 
             // Skip heartbeat if no device ID (simulator)
@@ -174,6 +190,25 @@ export const NotificationProvider = ({ children }) => {
 
                 // Update unread count
                 fetchUnreadCount();
+            }
+
+            // Handle campaign notifications
+            if (result.campaignNotifications && result.campaignNotifications.length > 0) {
+                console.log(`Heartbeat: ${result.campaignNotifications.length} new campaign notification(s)`);
+
+                // Show popup for the first new campaign notification
+                if (result.campaignNotifications[0]) {
+                    console.log('🎉 Triggering campaign notification popup!');
+                    setPopupNotification(result.campaignNotifications[0]);
+                }
+
+                // Store campaign notifications in state
+                setCampaignNotifications(prev => {
+                    const newNotifications = result.campaignNotifications.filter(
+                        newNotif => !prev.some(existing => existing.user_notification_id === newNotif.user_notification_id)
+                    );
+                    return [...newNotifications, ...prev];
+                });
             }
 
             // Update last check time
@@ -213,12 +248,36 @@ export const NotificationProvider = ({ children }) => {
             setLoading(true);
             const result = await notificationService.getMyNotifications(limit, offset);
             setNotifications(result.notifications || []);
+
+            // Also fetch campaign notifications
+            await fetchCampaignNotifications(limit, offset);
+
             return result.notifications || [];
         } catch (error) {
             console.error('Error fetching notifications:', error);
             return [];
         } finally {
             setLoading(false);
+        }
+    };
+
+    /**
+     * Fetch campaign notifications
+     */
+    const fetchCampaignNotifications = async (limit = 50, offset = 0) => {
+        try {
+            console.log('📢 Fetching campaign notifications...');
+            const campaignNotificationService = require('../services/campaignNotificationService').default;
+            const result = await campaignNotificationService.getMyCampaignNotifications(limit, offset);
+            console.log('📢 Campaign notifications received:', result.notifications?.length || 0);
+            if (result.notifications && result.notifications.length > 0) {
+                console.log('📢 First campaign notification:', result.notifications[0]);
+            }
+            setCampaignNotifications(result.notifications || []);
+            return result.notifications || [];
+        } catch (error) {
+            console.error('❌ Error fetching campaign notifications:', error);
+            return [];
         }
     };
 
@@ -301,6 +360,7 @@ export const NotificationProvider = ({ children }) => {
     const value = {
         unreadCount,
         notifications,
+        campaignNotifications,
         loading,
         popupNotification,
         fetchNotifications,

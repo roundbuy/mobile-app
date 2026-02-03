@@ -1,35 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
+import { rewardsService } from '../../../services/rewardsService';
 
 const ReferralStatusScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { category } = route.params;
 
   // Dummy data - replace with actual API data
-  const [referralData] = useState({
-    completed: 5, // Change this to test different states (0-5)
-    required: 5,
-    referrals: [
-      { id: 1, code: 'RBV9F9H', username: 'HeH1232', status: 'completed' },
-      { id: 2, code: 'RBV9F9H', username: 'Bob12', status: 'completed' },
-      { id: 3, code: 'RBV9F9H', username: 'Blueuser', status: 'completed' },
-      { id: 4, code: 'RBV9F9H', username: 'CoolJane', status: 'completed' },
-      { id: 5, code: 'RBV9F9H', username: 'Jawdy', status: 'completed' },
-    ],
-  });
+  const [loading, setLoading] = useState(true);
+  const [referrals, setReferrals] = useState([]);
+  const required = category.requiredReferrals || 5;
 
-  const isCompleted = referralData.completed >= referralData.required;
-  const progress = (referralData.completed / referralData.required) * 100;
+  useEffect(() => {
+    fetchReferrals();
+  }, []);
+
+  const fetchReferrals = async () => {
+    try {
+      setLoading(true);
+      const response = await rewardsService.getReferrals();
+      if (response && response.data && response.data.referrals) {
+        setReferrals(response.data.referrals);
+      } else {
+        setReferrals([]);
+      }
+    } catch (error) {
+      console.error('Error fetching referrals:', error);
+      Alert.alert(t('Error'), t('Failed to load referrals'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completedCount = referrals.filter(r => r.status === 'completed').length;
+  const isCompleted = completedCount >= required;
+  const progress = Math.min((completedCount / required) * 100, 100);
 
   const handleBack = () => {
     navigation.goBack();
@@ -42,8 +60,8 @@ const ReferralStatusScreen = ({ navigation, route }) => {
   };
 
   const renderReferralItem = (index) => {
-    const referral = referralData.referrals[index];
-    const isActive = index < referralData.completed;
+    const referral = referrals[index];
+    const isActive = index < completedCount;
 
     return (
       <View key={index} style={styles.referralItem}>
@@ -54,7 +72,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
           {isActive && referral ? (
             <>
               <Text style={styles.referralCode}>
-                REFERRAL CODE {referral.code}
+                REFERRAL CODE {referral.code || '...'}
               </Text>
               <Text style={styles.referralUsername}>
                 Username: {referral.username}
@@ -62,7 +80,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
             </>
           ) : (
             <Text style={styles.referralPending}>
-              {index === referralData.completed ? 'You need 1 more' : 'Pending...'}
+              {index === completedCount ? 'You need 1 more' : 'Pending...'}
             </Text>
           )}
         </View>
@@ -94,7 +112,7 @@ const ReferralStatusScreen = ({ navigation, route }) => {
         {/* Progress Header */}
         <View style={styles.progressHeader}>
           <Text style={styles.progressTitle}>
-            {referralData.completed} of {referralData.required}
+            {completedCount} of {required}
           </Text>
         </View>
 
@@ -124,8 +142,12 @@ const ReferralStatusScreen = ({ navigation, route }) => {
 
         {/* Referrals List */}
         <View style={styles.referralsList}>
-          {Array.from({ length: referralData.required }).map((_, index) =>
-            renderReferralItem(index)
+          {loading ? (
+            <ActivityIndicator color={COLORS.primary} />
+          ) : (
+            Array.from({ length: required }).map((_, index) =>
+              renderReferralItem(index)
+            )
           )}
         </View>
 
@@ -149,8 +171,8 @@ const ReferralStatusScreen = ({ navigation, route }) => {
               <Text style={styles.infoHeaderText}>{t('Keep going!')}</Text>
             </View>
             <Text style={styles.infoText}>
-              You need {referralData.required - referralData.completed} more referral
-              {referralData.required - referralData.completed > 1 ? 's' : ''} to
+              You need {required - completedCount} more referral
+              {required - completedCount > 1 ? 's' : ''} to
               unlock your Gold membership reward. Share your code with friends!
             </Text>
           </View>

@@ -17,6 +17,7 @@ import supportService from '../../services/supportService';
 import disputeService from '../../services/disputeService';
 import claimService from '../../services/claimService';
 import GlobalHeader from '../../components/GlobalHeader';
+import SuggestionsFooter from '../../components/SuggestionsFooter';
 
 const SupportResolutionScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -461,6 +462,7 @@ const SupportResolutionScreen = ({ navigation }) => {
             >
                 <Ionicons name="add" size={32} color="#FFF" />
             </TouchableOpacity>
+            <SuggestionsFooter sourceRoute="SupportResolution" />
         </SafeAreaView>
     );
 };

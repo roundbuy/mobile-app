@@ -98,6 +98,7 @@ export const API_ENDPOINTS = {
     PURCHASE: '/subscription/purchase',
     CREATE_PAYMENT_METHOD: '/subscription/create-payment-method',
     ACTIVATE_FREE: '/subscription/activate-free',
+    CURRENT: '/subscription/current',
     TRANSACTION: (id) => `/subscription/transaction/${id}`,
     PAYMENT_METHODS: '/subscription/payment-methods',
     STRIPE_CONFIG: '/subscription/stripe-config',
@@ -115,6 +116,7 @@ export const API_ENDPOINTS = {
     GET: (id) => `/advertisements/${id}`,
     UPDATE: (id) => `/advertisements/${id}`,
     DELETE: (id) => `/advertisements/${id}`,
+    PLANS: '/advertisements/plans',
   },
 
   // Locations

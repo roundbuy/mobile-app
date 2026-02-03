@@ -12,9 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { settingsService } from '../../../services';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const CountrySettingsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [userPreferences, setUserPreferences] = useState({
     currency_name: '',
@@ -134,6 +135,7 @@ const CountrySettingsScreen = ({ navigation }) => {
 
         {/* Copyright */}
         <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
+        <SuggestionsFooter sourceRoute="CountrySettings" />
       </ScrollView>
     </SafeAreaView>
   );

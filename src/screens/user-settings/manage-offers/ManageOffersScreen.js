@@ -16,9 +16,10 @@ import { COLORS } from '../../../constants/theme';
 import { getFullImageUrl } from '../../../utils/imageUtils';
 import { IMAGES } from '../../../assets/images';
 import offersService from '../../../services/offersService';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const ManageOffersScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('buyer'); // 'buyer' or 'seller'
   const [offers, setOffers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -173,6 +174,7 @@ const ManageOffersScreen = ({ navigation }) => {
               )}
             </View>
           }
+          ListFooterComponent={<SuggestionsFooter sourceRoute="ManageOffers" />}
         />
       )}
     </SafeAreaView>

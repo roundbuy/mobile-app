@@ -22,6 +22,43 @@ import { getFullImageUrl } from '../../utils/imageUtils';
 import LocationDisclaimerModal from '../../components/LocationDisclaimerModal';
 import UsernameRequiredModal from '../../components/UsernameRequiredModal';
 
+
+const getBadgeConfig = (badge) => {
+  const level = badge.level?.toLowerCase();
+  const type = badge.type?.toLowerCase();
+
+  // Membership Badges
+  if (type === 'membership') {
+    switch (level) {
+      case 'gold': return { color: '#FFD700', icon: 'star', label: 'Gold' };
+      case 'green': return { color: '#4CAF50', icon: 'shield', label: 'Member' };
+      case 'orange': return { color: '#FF9800', icon: 'flash', label: 'Member' };
+      default: return { color: COLORS.primary, icon: 'user', label: 'Member' };
+    }
+  }
+
+  // Reward Badges
+  if (type === 'reward') {
+    switch (level) {
+      case 'lottery': return { color: '#9C27B0', icon: 'ticket', label: 'Lottery' };
+      case 'top_search': return { color: '#2196F3', icon: 'search', label: 'Top Search' };
+      default: return { color: COLORS.primary, icon: 'gift', label: 'Reward' };
+    }
+  }
+
+  // Visibility Plans
+  switch (level) {
+    case 'rise_to_top': return { color: '#FF5722', icon: 'rocket', label: 'Rise Up' };
+    case 'top_spot': return { color: '#E91E63', icon: 'trophy', label: 'Top Spot' };
+    case 'show_casing': return { color: '#673AB7', icon: 'diamond', label: 'Showcase' };
+    case 'targeted': return { color: '#00BCD4', icon: 'navigate', label: 'Targeted' };
+    case 'fast_ad': return { color: '#FFC107', icon: 'flash', label: 'Fast' }; // Using flash for fast ad too
+    case 'urgent': return { color: '#FF4500', icon: 'alert-circle', label: 'Urgent' };
+    case 'featured': return { color: '#9370DB', icon: 'star', label: 'Featured' };
+    default: return { color: COLORS.primary, icon: 'bookmark', label: level?.toUpperCase() || 'Badge' };
+  }
+};
+
 const SearchScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { user, hasActiveSubscription } = useAuth();
@@ -542,6 +579,19 @@ const SearchScreen = ({ navigation, route }) => {
             color="#333"
           />
         </TouchableOpacity>
+        {item.badges && item.badges.length > 0 && (
+          <View style={styles.badgesWrapper}>
+            {item.badges.filter(b => b.type === 'visibility').map((badge, index) => {
+              const config = getBadgeConfig(badge);
+              return (
+                <View key={index} style={[styles.badgeContainer, { backgroundColor: config.color }]}>
+                  <Ionicons name={config.icon} size={10} color="#fff" style={{ marginRight: 4 }} />
+                  <Text style={styles.badgeText}>{config.label}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       <View style={styles.itemInfo}>
@@ -553,7 +603,7 @@ const SearchScreen = ({ navigation, route }) => {
           Distance: {Math.round((item.distance || 0) * 1000)} m / {Math.round((item.distance || 0) * 20)} min walk
         </Text>
       </View>
-    </TouchableOpacity>
+    </TouchableOpacity >
   );
 
   // Check subscription before showing content
@@ -632,10 +682,11 @@ const SearchScreen = ({ navigation, route }) => {
             {loading ? 'Loading...' : `${advertisements.length} results`}
           </Text>
           <TouchableOpacity
-            style={styles.instructionsButton}
+            style={[styles.instructionsButton, { flexDirection: 'row', alignItems: 'center' }]}
             onPress={() => Alert.alert(t('Instructions'), t('Browse advertisements by using the map or list view. Use filters to refine your search and sort options to organize results.'))}
           >
             <Text style={styles.instructionsText}>{t('Instructions')}</Text>
+            <Ionicons name="information-circle-outline" size={18} color="#001C64" style={{ marginLeft: 4 }} />
           </TouchableOpacity>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}
@@ -1350,11 +1401,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
+  badgesWrapper: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     gap: 4,
+    zIndex: 10,
   },
   navLabel: {
     fontSize: 10,
@@ -1539,7 +1593,6 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   distanceText: {
-    fontSize: 11,
     color: '#303234',
   },
   favoriteButton: {
@@ -1547,6 +1600,19 @@ const styles = StyleSheet.create({
     top: 16,
     right: 16,
     padding: 8,
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
   emptyContainer: {
     paddingVertical: 60,

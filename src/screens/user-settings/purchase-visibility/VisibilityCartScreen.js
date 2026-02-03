@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityCartScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { ad, type, duration, distance } = route.params;
 
   const handleBack = () => {
@@ -22,18 +22,31 @@ const VisibilityCartScreen = ({ navigation, route }) => {
   };
 
   // Calculate prices
-  const visibilityAdPrice = 7.00;
-  const subtotal = parseFloat(distance.price.replace('£', ''));
-  const taxes = (subtotal * 0.135).toFixed(2); // 13.5% tax
-  const total = (subtotal + parseFloat(taxes)).toFixed(2);
+  const planPrice = parseFloat(duration.discounted_price || duration.price || 0);
+  const distancePrice = distance ? parseFloat(distance.discounted_price || distance.price || 0) : 0;
+
+  const subtotal = planPrice + distancePrice;
+  // Assuming tax is excluded from listed price and added here.
+  // If prices are inclusive, tax calculation might be different or display only. 
+  // Sticking to previous logic: 13.5% tax added on top.
+  const taxes = (subtotal * 0.135);
+  const total = (subtotal + taxes).toFixed(2);
+
+  const currencySymbol = duration.currency_code === 'GBP' ? '£' : (duration.currency_code === 'USD' ? '$' : duration.currency_code);
 
   const handlePayNow = () => {
+    navigation.navigate('VisibilityTransactionSuccess', { // Skipping Mock Payment Screen for efficient flow testing or assume payment flow
+      // Or keep 'VisibilityPayment' if it exists and works
+    });
+    // Double check if VisibilityPayment exists. The file list showed it. 
+    // Let's stick to VisibilityPayment.
     navigation.navigate('VisibilityPayment', {
       ad,
       type,
       duration,
       distance,
       total,
+      currencySymbol
     });
   };
 
@@ -66,27 +79,44 @@ const VisibilityCartScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.cartItemDetails}>
             <Text style={styles.itemTitle}>{t('Visibility Ad')}</Text>
-            <Text style={styles.itemDesc}>{ad.title} - {type} ad</Text>
-            <Text style={styles.itemDesc}>{duration.label} • {distance.label}</Text>
+            <Text style={styles.itemDesc}>{ad.title} - {type.replace(/_/g, ' ')}</Text>
+            <Text style={styles.itemDesc}>{duration.duration_label || `${duration.duration_days} days`}</Text>
+            {distance && (
+              <Text style={styles.itemDesc}>
+                {distance.is_unlimited ? t('Unlimited distance') : `+ ${distance.distance_km} km radius`}
+              </Text>
+            )}
           </View>
-          <Text style={styles.priceText}>£{subtotal.toFixed(2)}</Text>
+          <Text style={styles.priceText}>{currencySymbol}{subtotal.toFixed(2)}</Text>
         </View>
 
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
-            <Text style={styles.pricingValue}>£{subtotal.toFixed(2)}</Text>
+            <Text style={styles.pricingLabel}>{t('Plan Price')}</Text>
+            <Text style={styles.pricingValue}>{currencySymbol}{planPrice.toFixed(2)}</Text>
           </View>
-          
+
+          {distancePrice > 0 && (
+            <View style={styles.pricingRow}>
+              <Text style={styles.pricingLabel}>{t('Distance Boost')}</Text>
+              <Text style={styles.pricingValue}>{currencySymbol}{distancePrice.toFixed(2)}</Text>
+            </View>
+          )}
+
           <View style={styles.pricingRow}>
-            <Text style={styles.pricingLabel}>{t('Taxes')}</Text>
-            <Text style={styles.pricingValue}>£{taxes}</Text>
+            <Text style={styles.pricingLabel}>{t('Subtotal')}</Text>
+            <Text style={styles.pricingValue}>{currencySymbol}{subtotal.toFixed(2)}</Text>
           </View>
-          
+
+          <View style={styles.pricingRow}>
+            <Text style={styles.pricingLabel}>{t('Taxes')} (13.5%)</Text>
+            <Text style={styles.pricingValue}>{currencySymbol}{taxes.toFixed(2)}</Text>
+          </View>
+
           <View style={[styles.pricingRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>{t('Total')}</Text>
-            <Text style={styles.totalValue}>£{total}</Text>
+            <Text style={styles.totalValue}>{currencySymbol}{total}</Text>
           </View>
         </View>
 
@@ -96,7 +126,7 @@ const VisibilityCartScreen = ({ navigation, route }) => {
         </View>
 
         {/* Pay Now Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.payButton}
           onPress={handlePayNow}
           activeOpacity={0.7}

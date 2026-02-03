@@ -17,9 +17,10 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import { favoritesService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const FavouritesScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -195,6 +196,7 @@ const FavouritesScreen = ({ navigation }) => {
               <Text style={styles.emptySubtext}>{t('Items you favorite will appear here')}</Text>
             </View>
           }
+          ListFooterComponent={<SuggestionsFooter sourceRoute="Favourites" />}
         />
       )}
     </SafeAreaView>

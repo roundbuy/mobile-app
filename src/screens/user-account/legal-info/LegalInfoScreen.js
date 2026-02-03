@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 import { useTranslation } from '../../../context/TranslationContext';
 
 const LegalInfoScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -134,6 +135,7 @@ const LegalInfoScreen = ({ navigation }) => {
         <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
 
         <View style={styles.bottomSpacer} />
+        <SuggestionsFooter sourceRoute="LegalInfo" />
       </ScrollView>
     </SafeAreaView>
   );

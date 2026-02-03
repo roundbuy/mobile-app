@@ -24,6 +24,7 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [fees, setFees] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showFeeDetails, setShowFeeDetails] = useState(false);
 
     useEffect(() => {
         fetchPickupFees();
@@ -42,14 +43,28 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
         }
     };
 
-    // Calculate fees based on offer price
-    const offerPrice = parseFloat(pickupData?.offer_price || 0);
+    // Calculate fees based on offer price/product price from params or data
+    // Use route param first as it's explicitly passed from previous screen
+    const rawPrice = route.params?.productPrice || pickupData?.offer_price || pickupData?.advertisement_price || 0;
+    const offerPrice = parseFloat(rawPrice);
     const pickupFee = parseFloat(fees?.pickup_fee || 0);
     const safeServiceFee = parseFloat(fees?.safe_service_fee || 0);
-    const buyerFee = parseFloat(fees?.buyer_fee || 0);
-    const itemFeePercentage = parseFloat(fees?.item_fee_percentage || 0);
+
+    // New Logic
+    const buyersFee = pickupFee + safeServiceFee;
+
+    // Static 2.7%
+    const itemFeePercentage = 2.7;
     const itemFee = (offerPrice * itemFeePercentage) / 100;
-    const totalAmount = pickupFee + safeServiceFee + buyerFee + itemFee;
+
+    // Discount matches item fee
+    const discount = itemFee;
+
+    // Subtotal = Product Price + Buyers Fee + Item Fee
+    const subTotal = offerPrice + buyersFee + itemFee;
+
+    // Grand Total = Subtotal - Discount
+    const totalAmount = subTotal - discount;
 
     const paymentMethods = [
         {
@@ -57,6 +72,12 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
             name: 'Credit/Debit Card',
             icon: 'card-outline',
             description: 'Pay securely with Stripe'
+        },
+        {
+            id: 'cod',
+            name: 'Cash on Delivery',
+            icon: 'cash-outline',
+            description: 'Pay with cash upon pickup'
         },
     ];
 
@@ -66,7 +87,9 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
             return;
         }
 
-        const paymentMethodName = selectedMethod === 'wallet' ? 'Wallet' : 'Card';
+        let paymentMethodName = 'Card';
+        if (selectedMethod === 'wallet') paymentMethodName = 'Wallet';
+        else if (selectedMethod === 'cod') paymentMethodName = 'Cash on Delivery';
 
         Alert.alert(
             t('Confirm Payment'),
@@ -80,7 +103,7 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                             setIsProcessing(true);
 
                             // TODO: Integrate with actual payment system
-                            // For now, simulate payment processing
+                            // For CODs, we might just mark as pending or instructions
                             await new Promise(resolve => setTimeout(resolve, 2000));
 
                             // Navigate to success screen or show success message
@@ -130,7 +153,7 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                         </View>
                         {offerPrice > 0 && (
                             <View style={styles.summaryRow}>
-                                <Text style={styles.summaryLabel}>{t('Offer Price')}</Text>
+                                <Text style={styles.summaryLabel}>{t('Product Price')}</Text>
                                 <Text style={styles.offerPriceText}>£{offerPrice.toFixed(2)}</Text>
                             </View>
                         )}
@@ -140,38 +163,69 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                             <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 16 }} />
                         ) : (
                             <>
-                                {pickupFee > 0 && (
-                                    <View style={styles.summaryRow}>
-                                        <Text style={styles.summaryLabel}>{t('Pickup Fee')}</Text>
-                                        <Text style={styles.summaryValue}>£{pickupFee.toFixed(2)}</Text>
-                                    </View>
-                                )}
-                                {safeServiceFee > 0 && (
-                                    <View style={styles.summaryRow}>
-                                        <Text style={styles.summaryLabel}>{t('Safe Service Fee')}</Text>
-                                        <Text style={styles.summaryValue}>£{safeServiceFee.toFixed(2)}</Text>
-                                    </View>
-                                )}
-                                {buyerFee > 0 && (
-                                    <View style={styles.summaryRow}>
-                                        <Text style={styles.summaryLabel}>{t('Buyer Fee')}</Text>
-                                        <Text style={styles.summaryValue}>£{buyerFee.toFixed(2)}</Text>
-                                    </View>
-                                )}
-                                {itemFee > 0 && (
+                                <>
+                                    {/* Expandable Buyer's Fee */}
+                                    <TouchableOpacity
+                                        style={styles.summaryRow}
+                                        onPress={() => setShowFeeDetails(!showFeeDetails)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Text style={[styles.summaryLabel, { fontWeight: '600', color: '#000' }]}>{t('Buyers Fee')}</Text>
+                                            <Ionicons
+                                                name={showFeeDetails ? "chevron-up" : "chevron-down"}
+                                                size={16}
+                                                color="#666"
+                                                style={{ marginLeft: 4 }}
+                                            />
+                                        </View>
+                                        <Text style={[styles.summaryValue, { fontWeight: '600' }]}>£{buyersFee.toFixed(2)}</Text>
+                                    </TouchableOpacity>
+
+                                    {showFeeDetails && (
+                                        <View style={styles.expandedDetails}>
+                                            <View style={styles.detailRow}>
+                                                <Text style={styles.detailLabel}>{t('Pick Up & Exchange Fee')}</Text>
+                                                <Text style={styles.detailValue}>£{pickupFee.toFixed(2)}</Text>
+                                            </View>
+                                            <View style={styles.detailRow}>
+                                                <Text style={styles.detailLabel}>{t('Service Fee')}</Text>
+                                                <Text style={styles.detailValue}>£{safeServiceFee.toFixed(2)}</Text>
+                                            </View>
+                                        </View>
+                                    )}
+
                                     <View style={styles.summaryRow}>
                                         <Text style={styles.summaryLabel}>
                                             {t('Item Fee')} ({itemFeePercentage}%)
                                         </Text>
                                         <Text style={styles.summaryValue}>£{itemFee.toFixed(2)}</Text>
                                     </View>
-                                )}
+
+                                    {/* Sub Total divider */}
+                                    <View style={[styles.divider, { marginVertical: 4 }]} />
+
+                                    {/* Sub Total */}
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { fontWeight: '600', color: '#000' }]}>{t('Sub Total')}</Text>
+                                        <Text style={[styles.summaryValue, { fontWeight: '600' }]}>
+                                            £{subTotal.toFixed(2)}
+                                        </Text>
+                                    </View>
+
+                                    <View style={styles.summaryRow}>
+                                        <Text style={[styles.summaryLabel, { color: '#4CAF50' }]}>
+                                            {t('Discount')} ({itemFeePercentage}%)
+                                        </Text>
+                                        <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>-£{discount.toFixed(2)}</Text>
+                                    </View>
+                                </>
                             </>
                         )}
 
                         <View style={styles.divider} />
                         <View style={styles.summaryRow}>
-                            <Text style={styles.totalLabel}>{t('Total')}</Text>
+                            <Text style={styles.totalLabel}>{t('Grand Total')}</Text>
                             <Text style={styles.totalValue}>
                                 £{totalAmount.toFixed(2)}
                             </Text>
@@ -407,6 +461,26 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         color: '#fff',
+    },
+    expandedDetails: {
+        backgroundColor: '#f5f5f5',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 8,
+        marginLeft: 16, // Indent slightly
+    },
+    detailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    detailLabel: {
+        fontSize: 13,
+        color: '#666',
+    },
+    detailValue: {
+        fontSize: 13,
+        color: '#333',
     },
 });
 

@@ -15,6 +15,7 @@ import { COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 import GlobalHeader from '../../components/GlobalHeader';
+import SuggestionsFooter from '../../components/SuggestionsFooter';
 
 const UserAccountScreen = ({ navigation }) => {
   const { logout, user } = useAuth();
@@ -90,7 +91,7 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 3, route: 'SupportResolution', title: t('account.support_resolution', 'Support & Resolution'), icon: 'help-circle-outline', badge: 0 },
       { id: 4, route: 'PurchaseVisibility', title: t('account.purchase_visibility', 'Purchase Visibility'), icon: 'eye-outline' },
       { id: 5, route: 'DefaultLocation', title: t('account.locations', 'Default location & Product locations'), icon: 'location-outline' },
-      { id: 6, route: 'AllMemberships', title: t('account.membership', 'Membership'), icon: 'card-outline' },
+      { id: 6, route: 'MyMembership', title: t('account.membership', 'Membership'), icon: 'card-outline' },
       { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
       { id: 9, route: 'Rewards', title: t('account.rewards', 'Rewards'), icon: 'gift-outline' },
@@ -206,6 +207,8 @@ const UserAccountScreen = ({ navigation }) => {
                 {t('settings.language', 'Language')}: {currentLanguage.toUpperCase()}
               </Text>
             </View>
+
+
             <Text style={styles.copyright}>{t('© 2020-2026, RoundBuy Inc ®')}</Text>
           </View>
         )}
@@ -216,7 +219,14 @@ const UserAccountScreen = ({ navigation }) => {
             <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
           </View>
         )}
+        {/* Suggestions Footer - Only on Account tab */}
+        {activeTab === 'account' && (
+          <SuggestionsFooter sourceRoute="UserAccount" />
+        )}
       </ScrollView>
+
+      {/* Fixed Footer for Suggestions - Only on Account tab */}
+      {/* Moved inside ScrollView as per request */}
     </SafeAreaView>
   );
 };

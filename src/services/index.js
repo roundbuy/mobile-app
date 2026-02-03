@@ -12,6 +12,7 @@ import messagingService from './messagingService';
 import favoritesService from './favoritesService';
 import offersService from './offersService';
 import feedbackService from './feedbackService';
+import platformReviewService from './platformReviewService';
 import walletService from './walletService';
 import apiClient, { storage, apiRequest, isAuthenticated } from './api';
 import { API_CONFIG, API_ENDPOINTS, ERROR_CODES } from '../config/api.config';
@@ -27,6 +28,7 @@ export {
   favoritesService,
   offersService,
   feedbackService,
+  platformReviewService,
   walletService,
   apiClient,
   storage,
@@ -48,6 +50,7 @@ export default {
   favorites: favoritesService,
   offers: offersService,
   feedback: feedbackService,
+  platformReview: platformReviewService,
   wallet: walletService,
   storage,
   apiRequest,

@@ -14,9 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { advertisementService } from '../../../services';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const DefaultLocationScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -104,7 +105,7 @@ const DefaultLocationScreen = ({ navigation }) => {
   };
 
   const getLocationName = (locationType) => {
-    switch(locationType) {
+    switch (locationType) {
       case 'centrePoint':
         return 'Centre-point & Product Location 1';
       case 'productLocation2':
@@ -183,8 +184,8 @@ const DefaultLocationScreen = ({ navigation }) => {
                 (locationType === 'centrePoint'
                   ? 'Set Centre-point &\nProduct Location 1'
                   : locationType === 'productLocation2'
-                  ? 'Set Product Location 2'
-                  : 'Set Product Location 3')}
+                    ? 'Set Product Location 2'
+                    : 'Set Product Location 3')}
             </Text>
           )}
         </TouchableOpacity>
@@ -279,6 +280,7 @@ const DefaultLocationScreen = ({ navigation }) => {
         )}
 
         <View style={styles.bottomSpacer} />
+        <SuggestionsFooter sourceRoute="DefaultLocation" />
       </ScrollView>
     </SafeAreaView>
   );

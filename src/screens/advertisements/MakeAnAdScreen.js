@@ -5,17 +5,34 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { uploadImages } from '../../services/advertisementService';
 import { checkMultipleFields, formatModerationError } from '../../services/moderationService';
-import { useTranslation } from '../../context/TranslationContext';
 
-const MakeAnAdScreen = ({ navigation }) => {
-    const { t } = useTranslation();
-  const [title, setTitle] = useState('');
+import { useTranslation } from '../../context/TranslationContext';
+import { rewardsService } from '../../services/rewardsService';
+
+const MakeAnAdScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
+  const { initialTitle, initialReferralCode } = route.params || {};
+
+  const [title, setTitle] = useState(initialTitle || '');
   const [description, setDescription] = useState('');
   const [displayTime, setDisplayTime] = useState('60days');
+  const [referralCode, setReferralCode] = useState(initialReferralCode || '');
+  const [referralError, setReferralError] = useState('');
+  const [referrerName, setReferrerName] = useState('');
+
   const [selectedImages, setSelectedImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [moderationError, setModerationError] = useState('');
+
+  // Validate initial referral code if present
+  React.useEffect(() => {
+    console.log('📱 MakeAnAdScreen: initialReferralCode:', initialReferralCode);
+    if (initialReferralCode) {
+      setReferralCode(initialReferralCode);
+      validateReferral(initialReferralCode);
+    }
+  }, [initialReferralCode]);
 
   // Request camera/gallery permissions
   const requestPermissions = async () => {
@@ -104,6 +121,37 @@ const MakeAnAdScreen = ({ navigation }) => {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const validateReferral = async (code) => {
+    if (!code) {
+      setReferralError('');
+      setReferrerName('');
+      return;
+    }
+
+    try {
+      const result = await rewardsService.validateReferralCode(code);
+      if (result.isValid) {
+        setReferrerName(result.referrerName);
+        setReferralError('');
+      } else {
+        setReferralError('Invalid referral code');
+        setReferrerName('');
+      }
+    } catch (error) {
+      setReferralError('Invalid referral code');
+    }
+  };
+
+  const handleReferralChange = (text) => {
+    setReferralCode(text);
+    if (text.length >= 6) {
+      validateReferral(text);
+    } else {
+      setReferrerName('');
+      setReferralError('');
+    }
+  };
+
   const handleContinue = async () => {
     // Validate images
     if (selectedImages.length === 0) {
@@ -155,6 +203,7 @@ const MakeAnAdScreen = ({ navigation }) => {
         description,
         displayTime,
         images: uploadedImageUrls,
+        referralCode, // Pass referral code to next screen
       });
     } catch (error) {
       console.error('Error:', error);
@@ -253,6 +302,26 @@ const MakeAnAdScreen = ({ navigation }) => {
             <Text style={styles.errorText}>{moderationError}</Text>
           ) : null}
         </View>
+
+        {/* Referral Code (Optional) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('Referral Code (Optional):')}</Text>
+          <TextInput
+            style={[styles.input, referralError ? { borderColor: 'red', borderWidth: 1 } : null]}
+            placeholder={t('Enter referral code')}
+            placeholderTextColor="#999"
+            value={referralCode}
+            onChangeText={handleReferralChange}
+            autoCapitalize="characters"
+          />
+          {referralError ? (
+            <Text style={styles.errorText}>{referralError}</Text>
+          ) : referrerName ? (
+            <Text style={{ fontSize: 12, color: '#4CAF50', marginTop: 4 }}>{t('Referred by:')} {referrerName}</Text>
+          ) : null}
+        </View>
+
+
 
         {/* Display Time Section */}
         <View style={styles.section}>

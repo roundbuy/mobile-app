@@ -20,6 +20,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 import { advertisementService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const MyAdsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -95,7 +96,16 @@ const MyAdsScreen = ({ navigation }) => {
 
   const renderAdItem = ({ item }) => {
     // Map API data to display format
-    const imageUri = item.images && item.images.length > 0 ? getFullImageUrl(item.images[0]) : IMAGES.chair1;
+    let imageSource = IMAGES.chair1;
+    try {
+      const images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
+      if (images && images.length > 0) {
+        const url = getFullImageUrl(images[0]);
+        if (url) imageSource = { uri: url };
+      }
+    } catch (e) {
+      console.log('Error parsing ad image:', e);
+    }
     const activityType = item.activity_name || 'SELL'; // Default to SELL if no activity
     const locationText = item.location_name ? `${item.city || ''}, ${item.country || ''}`.trim() : 'Location not set';
     const daysRemaining = item.end_date ? Math.ceil((new Date(item.end_date) - new Date()) / (1000 * 60 * 60 * 24)) : 60;
@@ -106,7 +116,7 @@ const MyAdsScreen = ({ navigation }) => {
         onPress={() => handleAdPress(item)}
         activeOpacity={0.7}
       >
-        <Image source={imageUri} style={styles.adImage} />
+        <Image source={imageSource} style={styles.adImage} />
 
         <View style={styles.adContent}>
           <View style={styles.adHeader}>
@@ -216,6 +226,7 @@ const MyAdsScreen = ({ navigation }) => {
               )}
             </View>
           }
+          ListFooterComponent={<SuggestionsFooter sourceRoute="MyAds" />}
         />
       )}
     </SafeAreaView>

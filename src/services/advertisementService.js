@@ -8,6 +8,19 @@ import { API_ENDPOINTS } from '../config/api.config';
  */
 
 /**
+ * Get advertisement plans
+ * @returns {Promise<Object>} List of advertisement plans
+ */
+export const getAdvertisementPlans = async () => {
+  try {
+    const response = await apiRequest('GET', API_ENDPOINTS.ADVERTISEMENT.PLANS);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Get advertisement filter options
  * @returns {Promise<Object>} Filter options (categories, activities, conditions, etc.)
  */
@@ -42,8 +55,8 @@ export const getFilters = async () => {
 export const browseAdvertisements = async (filters = {}) => {
   try {
     // Build query string from filters
-   const params = new URLSearchParams();
-    
+    const params = new URLSearchParams();
+
     Object.keys(filters).forEach(key => {
       if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
         params.append(key, filters[key]);
@@ -129,7 +142,7 @@ export const createAdvertisement = async (adData) => {
 export const getUserAdvertisements = async (options = {}) => {
   try {
     const params = new URLSearchParams();
-    
+
     if (options.status) params.append('status', options.status);
     if (options.page) params.append('page', options.page);
     if (options.limit) params.append('limit', options.limit);
@@ -280,6 +293,7 @@ export const uploadImages = async (images) => {
 };
 
 export default {
+  getAdvertisementPlans,
   getFilters,
   browseAdvertisements,
   getFeaturedAdvertisements,

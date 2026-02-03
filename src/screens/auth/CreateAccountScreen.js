@@ -5,13 +5,17 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
+import { rewardsService } from '../../services/rewardsService';
 
 const CreateAccountScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [referralError, setReferralError] = useState('');
+  const [referrerName, setReferrerName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fullNameError, setFullNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -42,10 +46,43 @@ const CreateAccountScreen = ({ navigation }) => {
     return true;
   };
 
+  // Validate referral code
+  const validateReferral = async (code) => {
+    if (!code) {
+      setReferralError('');
+      setReferrerName('');
+      return;
+    }
+
+    try {
+      const result = await rewardsService.validateReferralCode(code);
+      if (result.isValid) {
+        setReferrerName(result.referrerName);
+        setReferralError('');
+      } else {
+        setReferralError('Invalid referral code');
+        setReferrerName('');
+      }
+    } catch (error) {
+      // Ignore error for now or show generic invalid
+      setReferralError('Invalid referral code');
+    }
+  };
+
+  const handleReferralChange = (text) => {
+    setReferralCode(text);
+    if (text.length >= 6) {
+      validateReferral(text);
+    } else {
+      setReferrerName('');
+      setReferralError('');
+    }
+  };
+
   // Password strength calculation
   const getPasswordStrength = () => {
     if (!password) return { strength: '', checks: [] };
-    
+
     const checks = [
       {
         label: 'At least 8 characters',
@@ -54,7 +91,7 @@ const CreateAccountScreen = ({ navigation }) => {
       {
         label: 'Cannot contain your name or email address',
         passed: !password.toLowerCase().includes(fullName.toLowerCase().split(' ')[0]) &&
-                !password.toLowerCase().includes(email.split('@')[0].toLowerCase())
+          !password.toLowerCase().includes(email.split('@')[0].toLowerCase())
       },
       {
         label: 'Contains a number or symbol',
@@ -64,7 +101,7 @@ const CreateAccountScreen = ({ navigation }) => {
 
     const passedCount = checks.filter(c => c.passed).length;
     const strength = passedCount === 3 ? 'strong' : passedCount >= 2 ? 'medium' : 'weak';
-    
+
     return { strength, checks };
   };
 
@@ -76,10 +113,10 @@ const CreateAccountScreen = ({ navigation }) => {
       Alert.alert(t('Error'), t('Please fill all required fields'));
       return;
     }
-    
+
     const isNameValid = validateFullName(fullName);
     const isEmailValid = validateEmail(email);
-    
+
     if (!isNameValid || !isEmailValid) {
       return;
     }
@@ -88,18 +125,19 @@ const CreateAccountScreen = ({ navigation }) => {
       Alert.alert(t('Weak Password'), t('Please create a stronger password'));
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       // Call registration API
       const response = await register({
         full_name: fullName,
         email: email,
         password: password,
+        referral_code: referralCode,
         language: 'en'
       });
-      
+
       if (response.success) {
         // Registration successful, navigate to email verification
         Alert.alert(
@@ -202,6 +240,27 @@ const CreateAccountScreen = ({ navigation }) => {
           {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
         </View>
 
+        {/* Referral Code Input */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>{t('Referral Code (Optional)')}</Text>
+          <TextInput
+            style={[styles.input, referralError ? styles.inputError : null]}
+            placeholder={t('Enter code')}
+            placeholderTextColor="#c7c7cc"
+            value={referralCode}
+            onChangeText={handleReferralChange}
+            autoCapitalize="characters"
+            autoCorrect={false}
+          />
+          {referralError ? (
+            <Text style={styles.errorText}>{referralError}</Text>
+          ) : referrerName ? (
+            <Text style={{ fontSize: 11, color: '#34c759', marginTop: 4, marginLeft: 4 }}>
+              {t('Referred by:')} {referrerName}
+            </Text>
+          ) : null}
+        </View>
+
         {/* Password Input */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>{t('Password')}</Text>
@@ -223,7 +282,7 @@ const CreateAccountScreen = ({ navigation }) => {
               <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
             </TouchableOpacity>
           </View>
-          
+
           {/* Password Strength Indicator */}
           {password.length > 0 && (
             <View style={styles.passwordStrengthContainer}>
@@ -233,8 +292,8 @@ const CreateAccountScreen = ({ navigation }) => {
                   <Text style={[
                     styles.strengthValue,
                     passwordInfo.strength === 'strong' ? styles.strongText :
-                    passwordInfo.strength === 'medium' ? styles.mediumText :
-                    styles.weakText
+                      passwordInfo.strength === 'medium' ? styles.mediumText :
+                        styles.weakText
                   ]}>
                     {passwordInfo.strength}
                   </Text>
@@ -247,7 +306,7 @@ const CreateAccountScreen = ({ navigation }) => {
               ))}
             </View>
           )}
-          
+
           {/* Password Guideline Link */}
           <View style={styles.passwordHelp}>
             <TouchableOpacity onPress={handlePasswordGuideline}>

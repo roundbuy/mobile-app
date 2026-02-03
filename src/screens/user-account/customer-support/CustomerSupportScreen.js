@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import faqService from '../../../services/faqService';
 import { COLORS } from '../../../constants/theme';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const CustomerSupportScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -259,6 +260,7 @@ const CustomerSupportScreen = ({ navigation }) => {
             <View style={styles.bottomSpacer} />
           </>
         )}
+        <SuggestionsFooter sourceRoute="CustomerSupport" />
       </ScrollView>
     </SafeAreaView>
   );

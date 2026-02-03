@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 import { COLORS } from '../../../constants/theme';
 
 const PrivacyAccountScreen = ({ navigation }) => {
@@ -114,6 +115,7 @@ const PrivacyAccountScreen = ({ navigation }) => {
             renderMenuItem(item, index, index === bottomSectionItems.length - 1)
           )}
         </View>
+        <SuggestionsFooter sourceRoute="PrivacyAccount" />
       </ScrollView>
     </SafeAreaView>
   );

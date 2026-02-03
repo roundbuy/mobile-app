@@ -12,7 +12,7 @@ import { useTranslation } from '../../context/TranslationContext';
  * This avoids the StripeSdk native module requirement
  */
 const PaymentMethodScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     planId,
     planType = 'Gold',
@@ -185,43 +185,45 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             />
           </View>
 
-          {/* Expiry Month - Full Width */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('Expiry Month (MM)')}
-              placeholderTextColor="#999"
-              value={expiryMonth}
-              onChangeText={setExpiryMonth}
-              keyboardType="numeric"
-              maxLength={2}
-            />
-          </View>
 
-          {/* Expiry Year - Full Width */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('Expiry Year (YY)')}
-              placeholderTextColor="#999"
-              value={expiryYear}
-              onChangeText={setExpiryYear}
-              keyboardType="numeric"
-              maxLength={2}
-            />
-          </View>
+          {/* Expiry and CVC - Same Row */}
+          <View style={styles.rowInputs}>
+            <View style={[styles.inputContainer, styles.rowInput]}>
+              <TextInput
+                style={styles.input}
+                placeholder={t('MM')}
+                placeholderTextColor="#999"
+                value={expiryMonth}
+                onChangeText={setExpiryMonth}
+                keyboardType="numeric"
+                maxLength={2}
+              />
+            </View>
 
-          {/* CVC - Full Width */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder={t('CVC')}
-              placeholderTextColor="#999"
-              value={cvc}
-              onChangeText={setCvc}
-              keyboardType="numeric"
-              maxLength={4}
-            />
+            <View style={[styles.inputContainer, styles.rowInput]}>
+              <TextInput
+                style={styles.input}
+                placeholder={t('YY')}
+                placeholderTextColor="#999"
+                value={expiryYear}
+                onChangeText={setExpiryYear}
+                keyboardType="numeric"
+                maxLength={2}
+              />
+            </View>
+
+            <View style={[styles.inputContainer, styles.rowInput]}>
+              <TextInput
+                style={styles.input}
+                placeholder={t('CVC')}
+                placeholderTextColor="#999"
+                value={cvc}
+                onChangeText={setCvc}
+                keyboardType="numeric"
+                maxLength={4}
+                secureTextEntry
+              />
+            </View>
           </View>
         </View>
 
@@ -383,6 +385,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 15,
     color: '#000',
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  rowInput: {
+    flex: 1,
+    marginBottom: 12,
   },
   billingSection: {
     paddingHorizontal: 20,

@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import GlobalHeader from '../../components/GlobalHeader';
+import SuggestionsFooter from '../../components/SuggestionsFooter';
 
 const PickUpExchangeScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -91,6 +92,7 @@ const PickUpExchangeScreen = ({ navigation }) => {
                         <Text style={styles.safetyLink}>{t('More safety info')}</Text>
                     </Text>
                 </View>
+                <SuggestionsFooter sourceRoute="PickUpExchange" />
             </ScrollView>
         </SafeAreaView>
     );

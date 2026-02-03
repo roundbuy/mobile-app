@@ -10,9 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const NotificationsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -49,6 +50,7 @@ const NotificationsScreen = ({ navigation }) => {
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
         ))}
+        <SuggestionsFooter sourceRoute="Notifications" />
       </ScrollView>
     </SafeAreaView>
   );

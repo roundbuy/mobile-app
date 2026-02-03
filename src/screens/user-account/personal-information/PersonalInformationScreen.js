@@ -17,10 +17,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../../constants/theme';
 import { userService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 import { useAuth } from '../../../context/AuthContext';
 
 const PersonalInformationScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -293,6 +294,7 @@ const PersonalInformationScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
+        <SuggestionsFooter sourceRoute="PersonalInformation" />
       </ScrollView>
     </SafeAreaView>
   );

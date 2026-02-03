@@ -15,11 +15,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNotifications } from '../../context/NotificationContext';
 import { useTranslation } from '../../context/TranslationContext';
 import { COLORS } from '../../constants/theme';
+import CampaignNotificationCard from '../../components/CampaignNotificationCard';
+import CampaignNotificationExpanded from '../../components/CampaignNotificationExpanded';
+import CampaignNotificationModal from '../../components/CampaignNotificationModal';
 
 const NotificationCenterScreen = ({ navigation }) => {
     const { t } = useTranslation();
     const {
         notifications,
+        campaignNotifications,
         loading,
         unreadCount,
         fetchNotifications,
@@ -30,6 +34,8 @@ const NotificationCenterScreen = ({ navigation }) => {
 
     const [refreshing, setRefreshing] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
+    const [expandedCampaignId, setExpandedCampaignId] = useState(null);
+    const [modalNotification, setModalNotification] = useState(null);
 
     const filters = ['All', 'Unread', 'Read', 'Chat'];
 
@@ -37,8 +43,19 @@ const NotificationCenterScreen = ({ navigation }) => {
         loadNotifications();
     }, []);
 
+    useEffect(() => {
+        console.log('📢 Campaign notifications in state:', campaignNotifications?.length || 0);
+        console.log('📢 Campaign notifications array:', campaignNotifications);
+        if (campaignNotifications && campaignNotifications.length > 0) {
+            console.log('📢 First campaign notification in state:', campaignNotifications[0]);
+            console.log('📢 Has type_key?', !!campaignNotifications[0].type_key);
+        }
+    }, [campaignNotifications]);
+
     const loadNotifications = async () => {
+        console.log('🔄 Loading notifications...');
         await fetchNotifications();
+        console.log('✅ Notifications loaded');
     };
 
     const handleRefresh = async () => {
@@ -132,35 +149,62 @@ const NotificationCenterScreen = ({ navigation }) => {
         return date.toLocaleDateString();
     };
 
-    const renderNotificationItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.notificationItem}
-            onPress={() => handleNotificationPress(item)}
-            activeOpacity={0.7}
-        >
-            {!item.is_read && <View style={styles.notificationDot} />}
-            <View style={styles.notificationContent}>
-                <View style={styles.notificationHeader}>
-                    <Text style={[styles.notificationTitle, !item.is_read && styles.unreadTitle]}>
-                        {item.title}
-                    </Text>
-                    <Text style={styles.notificationTime}>
-                        {formatTimestamp(item.delivered_at)}
-                    </Text>
-                </View>
-                <Text style={styles.notificationMessage} numberOfLines={2}>
-                    {item.message}
-                </Text>
-                {item.image_url && (
-                    <Image
-                        source={{ uri: item.image_url }}
-                        style={styles.notificationImage}
-                        resizeMode="cover"
+    const renderNotificationItem = ({ item }) => {
+        // Check if it's a campaign notification
+        if (item.type_key) {
+            const isExpanded = expandedCampaignId === item.user_notification_id;
+
+            if (isExpanded) {
+                return (
+                    <CampaignNotificationExpanded
+                        notification={item}
+                        onCollapse={() => setExpandedCampaignId(null)}
+                        onOpenModal={() => setModalNotification(item)}
+                        navigation={navigation}
                     />
-                )}
-            </View>
-        </TouchableOpacity>
-    );
+                );
+            } else {
+                return (
+                    <CampaignNotificationCard
+                        notification={item}
+                        onPress={() => setExpandedCampaignId(item.user_notification_id)}
+                        onDismiss={() => console.log('Dismiss:', item.user_notification_id)}
+                    />
+                );
+            }
+        }
+
+        // Regular notification
+        return (
+            <TouchableOpacity
+                style={styles.notificationItem}
+                onPress={() => handleNotificationPress(item)}
+                activeOpacity={0.7}
+            >
+                {!item.is_read && <View style={styles.notificationDot} />}
+                <View style={styles.notificationContent}>
+                    <View style={styles.notificationHeader}>
+                        <Text style={[styles.notificationTitle, !item.is_read && styles.unreadTitle]}>
+                            {item.title}
+                        </Text>
+                        <Text style={styles.notificationTime}>
+                            {formatTimestamp(item.delivered_at)}
+                        </Text>
+                    </View>
+                    <Text style={styles.notificationMessage} numberOfLines={2}>
+                        {item.message}
+                    </Text>
+                    {item.image_url && (
+                        <Image
+                            source={{ uri: item.image_url }}
+                            style={styles.notificationImage}
+                            resizeMode="cover"
+                        />
+                    )}
+                </View>
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -227,11 +271,18 @@ const NotificationCenterScreen = ({ navigation }) => {
                 </ScrollView>
             )}
 
+
             {/* Notifications List */}
+            {(() => {
+                const combinedData = [...(campaignNotifications || []), ...getFilteredNotifications()];
+                console.log('📋 Rendering FlatList with', combinedData.length, 'items');
+                console.log('📋 Campaign:', campaignNotifications?.length || 0, 'Regular:', getFilteredNotifications().length);
+                return null;
+            })()}
             <FlatList
-                data={getFilteredNotifications()}
+                data={[...(campaignNotifications || []), ...getFilteredNotifications()]}
                 renderItem={renderNotificationItem}
-                keyExtractor={(item) => item.user_notification_id.toString()}
+                keyExtractor={(item) => `${item.type_key ? 'campaign-' : 'regular-'}${item.user_notification_id || item.id}`}
                 contentContainerStyle={styles.listContent}
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
@@ -244,6 +295,14 @@ const NotificationCenterScreen = ({ navigation }) => {
                     </View>
                 }
                 showsVerticalScrollIndicator={false}
+            />
+
+            {/* Campaign Notification Modal */}
+            <CampaignNotificationModal
+                visible={!!modalNotification}
+                notification={modalNotification}
+                onClose={() => setModalNotification(null)}
+                navigation={navigation}
             />
         </SafeAreaView >
     );

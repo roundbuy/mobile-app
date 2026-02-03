@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const FeedbacksScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -27,6 +28,11 @@ const FeedbacksScreen = ({ navigation }) => {
       title: t('Give Feedback'),
       route: 'GiveFeedbackList',
     },
+    {
+      id: 3,
+      title: t('Feedback Status'),
+      route: 'FeedbackStatus',
+    },
   ];
 
   const handleMenuPress = (route) => {
@@ -44,7 +50,7 @@ const FeedbacksScreen = ({ navigation }) => {
         <View style={styles.headerRight} />
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {menuItems.map((item) => (
           <TouchableOpacity
             key={item.id}
@@ -61,7 +67,8 @@ const FeedbacksScreen = ({ navigation }) => {
         <View style={styles.footer}>
           <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
         </View>
-      </View>
+        <SuggestionsFooter sourceRoute="Feedbacks" />
+      </ScrollView>
     </SafeAreaView>
   );
 };

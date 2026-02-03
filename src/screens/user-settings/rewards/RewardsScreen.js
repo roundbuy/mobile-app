@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
@@ -7,50 +7,54 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
+import { rewardsService } from '../../../services/rewardsService';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const RewardsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
-  // Sample reward categories with dummy data
-  const [categories] = useState([
-    {
-      id: '1',
-      name: 'Referral Earn Gold Plan',
-      description: 'Earn Gold membership for free',
-      icon: 'trophy',
-      color: '#FFD700',
-      type: 'plan_upgrade',
-      requiredReferrals: 5,
-    },
-    {
-      id: '2',
-      name: 'Referral Earn 3 x Visibility Ads',
-      description: 'Make 5 x Ads and Earn 3 Visibility Ads',
-      icon: 'eye',
-      color: '#4CAF50',
-      type: 'visibility_upgrade',
-      requiredReferrals: 5,
-    },
-    {
-      id: '3',
-      name: 'Sell 7 x products and Earn Delgeet Seller mark',
-      description: 'Sell 7 products and receive special seller badge',
-      icon: 'star',
-      color: '#FF6B6B',
-      type: 'badge',
-      requiredReferrals: 7,
-    },
-  ]);
+  const { t } = useTranslation();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRewards();
+  }, []);
+
+  const fetchRewards = async () => {
+    try {
+      setLoading(true);
+      const response = await rewardsService.getRewards();
+      if (response && response.data) {
+        setCategories(response.data);
+      } else if (Array.isArray(response)) {
+        setCategories(response);
+      } else {
+        console.warn('Unexpected rewards format:', response);
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      Alert.alert(t('Error'), t('Failed to load rewards'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleCategoryPress = (category) => {
-    navigation.navigate('RewardCategoryDetail', { category });
+    if (category.type === 'lottery') {
+      navigation.navigate('RewardCategoryDetail', { category });
+    } else {
+      navigation.navigate('RewardCategoryDetail', { category });
+    }
   };
 
   const renderCategoryItem = ({ item }) => (
@@ -65,12 +69,14 @@ const RewardsScreen = ({ navigation }) => {
       <View style={styles.categoryContent}>
         <Text style={styles.categoryName}>{item.name}</Text>
         <Text style={styles.categoryDescription}>{item.description}</Text>
-        <View style={styles.referralBadge}>
-          <Ionicons name="people" size={14} color={COLORS.primary} />
-          <Text style={styles.referralText}>
-            {item.requiredReferrals} referrals required
-          </Text>
-        </View>
+        {item.requiredReferrals ? (
+          <View style={styles.referralBadge}>
+            <Ionicons name="people" size={14} color={COLORS.primary} />
+            <Text style={styles.referralText}>
+              {item.requiredReferrals} referrals required
+            </Text>
+          </View>
+        ) : null}
       </View>
       <Ionicons name="chevron-forward" size={24} color="#999" />
     </TouchableOpacity>
@@ -88,26 +94,33 @@ const RewardsScreen = ({ navigation }) => {
       </View>
 
       {/* Content */}
-      <FlatList
-        data={categories}
-        renderItem={renderCategoryItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.infoCard}>
-            <Ionicons name="gift" size={32} color={COLORS.primary} />
-            <Text style={styles.infoTitle}>{t('Earn Rewards')}</Text>
-            <Text style={styles.infoText}>{t('Complete tasks and refer friends to unlock exclusive rewards and benefits!')}</Text>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="gift-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>{t('No rewards available')}</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={categories}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.infoCard}>
+              <Ionicons name="gift" size={32} color={COLORS.primary} />
+              <Text style={styles.infoTitle}>{t('Earn Rewards')}</Text>
+              <Text style={styles.infoText}>{t('Complete tasks and refer friends to unlock exclusive rewards and benefits!')}</Text>
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="gift-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>{t('No rewards available')}</Text>
+            </View>
+          }
+        />
+      )}
+      <SuggestionsFooter sourceRoute="Rewards" />
     </SafeAreaView>
   );
 };
@@ -222,6 +235,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     marginTop: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

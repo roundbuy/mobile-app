@@ -10,6 +10,7 @@ import SplashScreen from '../screens/onboarding/SplashScreen';
 import SplashAlternative2Screen from '../screens/onboarding/SplashAlternative2Screen';
 import SplashAlternative3Screen from '../screens/onboarding/SplashAlternative3Screen';
 import ATTPromptScreen from '../screens/onboarding/ATTPromptScreen';
+import NotificationPermissionScreen from '../screens/onboarding/NotificationPermissionScreen';
 import CookiesConsentScreen from '../screens/onboarding/CookiesConsentScreen';
 import CookieSettingsScreen from '../screens/onboarding/CookieSettingsScreen';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -151,10 +152,15 @@ import FavouritesScreen from '../screens/user-settings/favourites/FavouritesScre
 import RewardsScreen from '../screens/user-settings/rewards/RewardsScreen';
 import RewardCategoryDetailScreen from '../screens/user-settings/rewards/RewardCategoryDetailScreen';
 import EarnMembershipDetailsScreen from '../screens/user-settings/membership/EarnMembershipDetailsScreen';
+import MyMembershipScreen from '../screens/user-settings/membership/MyMembershipScreen';
 import ReferralCodeScreen from '../screens/user-settings/rewards/ReferralCodeScreen';
 import ReferralStatusScreen from '../screens/user-settings/rewards/ReferralStatusScreen';
 import RedeemRewardScreen from '../screens/user-settings/rewards/RedeemRewardScreen';
 import RewardSuccessScreen from '../screens/user-settings/rewards/RewardSuccessScreen';
+import LotteryWinnersScreen from '../screens/user-settings/rewards/LotteryWinnersScreen';
+import LotteryCreditStatusScreen from '../screens/user-settings/rewards/LotteryCreditStatusScreen';
+import LotteryGuideScreen from '../screens/user-settings/rewards/LotteryGuideScreen';
+import MostPopularSearchesScreen from '../screens/user-settings/rewards/MostPopularSearchesScreen';
 import ReviewScreen from '../screens/user-settings/review/ReviewScreen';
 import ReviewRoundBuyScreen from '../screens/user-settings/review/ReviewRoundBuyScreen';
 import ReviewAppFormScreen from '../screens/user-settings/review/ReviewAppFormScreen';
@@ -162,6 +168,8 @@ import ReviewSiteFormScreen from '../screens/user-settings/review/ReviewSiteForm
 import AppReviewsScreen from '../screens/user-settings/review/AppReviewsScreen';
 import SiteReviewsScreen from '../screens/user-settings/review/SiteReviewsScreen';
 import ShareScreen from '../screens/user-settings/share/ShareScreen';
+import SuggestionScreen from '../screens/suggestions/SuggestionScreen';
+import SuggestionSuccessScreen from '../screens/suggestions/SuggestionSuccessScreen';
 
 // Resolution Center screens
 import ResolutionCenterHomeScreen from '../screens/resolution-center/ResolutionCenterHomeScreen';
@@ -214,9 +222,17 @@ import MySupportScreen from '../screens/support/MySupportScreen';
 import TicketDetailScreen from '../screens/support/TicketDetailScreen';
 import CreateTicketScreen from '../screens/support/CreateTicketScreen';
 
+// Info screens
+import AboutUsScreen from '../screens/info/AboutUsScreen';
+import HowItWorksScreen from '../screens/info/HowItWorksScreen';
+import HowItWorksDetailScreen from '../screens/info/HowItWorksDetailScreen';
+import VisibilityBoostInfoScreen from '../screens/info/VisibilityBoostInfoScreen';
+import GenericInfoScreen from '../screens/info/GenericInfoScreen';
+import PlatformMenuScreen from '../screens/info/PlatformMenuScreen';
+
 const Stack = createNativeStackNavigator();
 
-const AppNavigator = () => {
+const AppNavigator = React.forwardRef((props, ref) => {
   const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
 
   // Determine initial route based on authentication status
@@ -248,7 +264,7 @@ const AppNavigator = () => {
   };
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={ref}>
       <Stack.Navigator
         initialRouteName={getInitialRouteName()}
         screenOptions={{
@@ -326,6 +342,13 @@ const AppNavigator = () => {
           options={{
             animationEnabled: true,
             presentation: 'transparentModal',
+          }}
+        />
+        <Stack.Screen
+          name="NotificationPermission"
+          component={NotificationPermissionScreen}
+          options={{
+            animationEnabled: true,
           }}
         />
         <Stack.Screen
@@ -590,6 +613,23 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="Suggestion"
+          component={SuggestionScreen}
+          options={{
+            animationEnabled: true,
+            presentation: 'modal', // Modal presentation feels right for feedback
+          }}
+        />
+        <Stack.Screen
+          name="SuggestionSuccess"
+          component={SuggestionSuccessScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+            gestureEnabled: false, // Prevent swiping back
+          }}
+        />
+        <Stack.Screen
           name="PreviewAd"
           component={PreviewAdScreen}
           options={{
@@ -766,6 +806,22 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="HowItWorksDetail"
+          component={HowItWorksDetailScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="VisibilityBoostInfo"
+          component={VisibilityBoostInfoScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="WalletTransactions"
           component={WalletTransactionsScreen}
           options={{
@@ -800,6 +856,37 @@ const AppNavigator = () => {
             animationEnabled: true,
           }}
         />
+
+        {/* Info Screens */}
+        <Stack.Screen
+          name="AboutUs"
+          component={AboutUsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="HowItWorks"
+          component={HowItWorksScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="GenericInfo"
+          component={GenericInfoScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="PlatformMenu"
+          component={PlatformMenuScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+
         <Stack.Screen
           name="FAQList"
           component={FAQListScreen}
@@ -1040,6 +1127,32 @@ const AppNavigator = () => {
           }}
         />
         <Stack.Screen
+          name="LotteryWinners"
+          component={LotteryWinnersScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="LotteryCreditStatus"
+          component={LotteryCreditStatusScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="LotteryGuide"
+          component={LotteryGuideScreen}
+          options={{ title: 'Lottery Guide' }}
+        />
+        <Stack.Screen
+          name="MostPopularSearches"
+          component={MostPopularSearchesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="VisibilityTransactionSuccess"
           component={VisibilityTransactionSuccessScreen}
           options={{
@@ -1121,6 +1234,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name="EarnMembershipDetails"
           component={EarnMembershipDetailsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="MyMembership"
+          component={MyMembershipScreen}
           options={{
             animationEnabled: true,
           }}
@@ -1521,6 +1641,6 @@ const AppNavigator = () => {
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
+});
 
 export default AppNavigator;

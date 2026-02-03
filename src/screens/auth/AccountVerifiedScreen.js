@@ -6,12 +6,12 @@ import { IMAGES } from '../../assets/images';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AccountVerifiedScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { email } = route.params || {};
 
   const handleDone = () => {
-    // After email verification, user must select a subscription plan
-    navigation.replace('AllMemberships', { requiresPlan: true, userEmail: email });
+    // Navigate to Welcome screen first, passing the email
+    navigation.replace('Welcome', { userEmail: email, showOnboarding: true });
   };
 
   const handlePatentInfo = () => {

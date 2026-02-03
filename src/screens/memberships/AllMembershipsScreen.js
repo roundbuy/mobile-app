@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AllMembershipsScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { completeRegistration } = useAuth();
   const { requiresPlan, userEmail } = route.params || {};
   const [plans, setPlans] = useState([]);
@@ -210,11 +210,11 @@ const AllMembershipsScreen = ({ navigation, route }) => {
           </View>
 
           <TouchableOpacity
-            style={[styles.selectButton, { backgroundColor: planColor }]}
+            style={[styles.selectButton, { backgroundColor: COLORS.primary }]}
             onPress={() => handleSelectPlan(plan)}
           >
             <Text style={styles.selectButtonText}>
-              {plan.slug === 'green' ? 'Select Free Plan' : 'Select ' + plan.name}
+              {plan.slug === 'green' ? t('Select Free Plan') : t('Select ') + plan.name}
             </Text>
           </TouchableOpacity>
 

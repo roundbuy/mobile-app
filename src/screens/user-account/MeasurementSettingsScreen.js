@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/theme';
 import GlobalHeader from '../../components/GlobalHeader';
+import SuggestionsFooter from '../../components/SuggestionsFooter';
 
 const MEASUREMENT_UNITS = [
     { id: 'km', label: 'Kilometers (km)', description: 'Metric system - Default' },
@@ -109,6 +110,7 @@ const MeasurementSettingsScreen = ({ navigation }) => {
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} />
                     <Text style={styles.infoText}>{t('This setting affects distance displays in search results, filters, and maps.')}</Text>
                 </View>
+                <SuggestionsFooter sourceRoute="MeasurementSettings" />
             </ScrollView>
         </SafeAreaView>
     );

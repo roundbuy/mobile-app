@@ -5,13 +5,13 @@ import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../..
 import { useTranslation } from '../../context/TranslationContext';
 
 const PolicySelectionScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handlePolicyPress = (policyType) => {
     navigation.navigate('PolicyDetail', { policyType });
   };
 
   const handleAccept = () => {
-    navigation.replace('ATTPrompt');
+    navigation.replace('NotificationPermission');
   };
 
   return (
@@ -38,21 +38,21 @@ const PolicySelectionScreen = ({ navigation }) => {
         <View style={styles.policyOptions}>
           <Text style={styles.sectionTitle}>{t('Here are the Terms & Conditions Of here')}</Text>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.policyButton}
             onPress={() => handlePolicyPress('terms')}
           >
             <Text style={styles.policyButtonText}>{t('Read the Terms & Conditions Of here')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.policyButton}
             onPress={() => handlePolicyPress('license')}
           >
             <Text style={styles.policyButtonText}>{t('Read the License Agreement Of here')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.policyButton}
             onPress={() => handlePolicyPress('privacy')}
           >
@@ -61,7 +61,7 @@ const PolicySelectionScreen = ({ navigation }) => {
         </View>
 
         {/* Accept Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.acceptButton}
           onPress={handleAccept}
         >

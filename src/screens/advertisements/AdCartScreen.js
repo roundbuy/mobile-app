@@ -4,15 +4,57 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'rea
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
+import { rewardsService } from '../../services/rewardsService';
+import { useState } from 'react';
 
 const AdCartScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(false);
+  const [referrerName, setReferrerName] = useState('');
+
   const planType = 'Gold';
   const planName = 'membership plan';
   const price = 2.00;
   const subtotal = price;
   const taxes = (price * 0.135).toFixed(2);
   const total = (parseFloat(price) + parseFloat(taxes)).toFixed(2);
+
+  const validatePromo = async (code) => {
+    if (!code) {
+      setPromoError('');
+      setReferrerName('');
+      setDiscountApplied(false);
+      return;
+    }
+
+    try {
+      const result = await rewardsService.validateReferralCode(code);
+      if (result.isValid) {
+        setReferrerName(result.referrerName);
+        setPromoError('');
+        setDiscountApplied(true); // Just visual for now
+      } else {
+        setPromoError(t('Invalid code'));
+        setReferrerName('');
+        setDiscountApplied(false);
+      }
+    } catch (error) {
+      setPromoError(t('Invalid code'));
+    }
+  };
+
+  const handlePromoChange = (text) => {
+    setPromoCode(text);
+    if (text.length >= 6) {
+      validatePromo(text);
+    } else {
+      setPromoError('');
+      setReferrerName('');
+      setDiscountApplied(false);
+    }
+  };
 
   const handlePayNow = () => {
     navigation.navigate('AdTransaction', {
@@ -59,6 +101,30 @@ const AdCartScreen = ({ navigation, route }) => {
 
         {/* Step Indicator */}
         <Text style={styles.stepText}>7/9</Text>
+
+        {/* Promo Code Input */}
+        <View style={styles.promoContainer}>
+          <Text style={styles.promoLabel}>{t('Promo / Referral Code')}</Text>
+          <View style={styles.promoInputWrapper}>
+            <TextInput
+              style={[styles.promoInput, promoError ? { borderColor: 'red', borderWidth: 1 } : null]}
+              placeholder={t('Enter code')}
+              value={promoCode}
+              onChangeText={handlePromoChange}
+              autoCapitalize="characters"
+            />
+            {discountApplied && (
+              <View style={styles.appliedBadge}>
+                <Text style={styles.appliedText}>{t('Applied')}</Text>
+              </View>
+            )}
+          </View>
+          {promoError ? (
+            <Text style={styles.errorText}>{promoError}</Text>
+          ) : referrerName ? (
+            <Text style={styles.successText}>{t('Referred by:')} {referrerName}</Text>
+          ) : null}
+        </View>
 
         {/* Pricing Details */}
         <View style={styles.pricingContainer}>
@@ -239,6 +305,52 @@ const styles = StyleSheet.create({
   },
   bottomSpace: {
     height: 30,
+  },
+  promoContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  promoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+  },
+  promoInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAFAFA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  promoInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 14,
+    color: '#000',
+  },
+  appliedBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  appliedText: {
+    color: '#4CAF50',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  successText: {
+    color: '#4CAF50',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
 

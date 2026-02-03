@@ -15,9 +15,11 @@ import { NotificationProvider } from './src/context/NotificationContext';
 import { TranslationProvider } from './src/context/TranslationContext';
 import { WalletProvider } from './src/contexts/WalletContext';
 import NotificationPopup from './src/components/NotificationPopup';
+import CampaignNotificationPopupManager from './src/components/CampaignNotificationPopupManager';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const navigationRef = React.useRef(null);
 
   useEffect(() => {
     async function loadFonts() {
@@ -54,9 +56,10 @@ export default function App() {
             <NotificationProvider>
               <StatusBar style="auto" />
               {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
-              <AppNavigator />
+              <AppNavigator ref={navigationRef} />
               {/* </SafeAreaView> */}
               <NotificationPopup />
+              <CampaignNotificationPopupManager navigationRef={navigationRef} />
             </NotificationProvider>
           </WalletProvider>
         </AuthProvider>

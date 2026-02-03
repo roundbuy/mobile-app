@@ -6,7 +6,7 @@ import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
 
 const PreviewAdScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
 
   // Extract advertisement data from route params
@@ -24,6 +24,10 @@ const PreviewAdScreen = ({ navigation, route }) => {
     gender_id,
     price,
     location_id,
+    dim_length,
+    dim_width,
+    dim_height,
+    dim_unit,
     displayTime = '60days'
   } = route.params || {};
 
@@ -49,6 +53,10 @@ const PreviewAdScreen = ({ navigation, route }) => {
         age_id,
         size_id,
         color_id,
+        dim_length,
+        dim_width,
+        dim_height,
+        dim_unit,
         price: price || 0,
         location_id,
         display_duration_days: displayTime === '60days' ? 60 : null, // null for continuous

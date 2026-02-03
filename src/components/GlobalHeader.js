@@ -46,6 +46,12 @@ const GlobalHeader = ({
         setDrawerVisible(true);
     };
 
+    const handleSuggestionsPress = () => {
+        // Pass current route name if available, or just a generic one
+        const currentRoute = navigation?.getState()?.routes[navigation.getState().index]?.name || 'Unknown';
+        navigation?.navigate('Suggestion', { sourceRoute: currentRoute });
+    };
+
     return (
         <>
             <View style={styles.container}>
@@ -99,6 +105,15 @@ const GlobalHeader = ({
                                 activeOpacity={0.7}
                             >
                                 <Ionicons name="mail-outline" size={24} color="#000" />
+                            </TouchableOpacity>
+
+                            {/* Suggestions Icon */}
+                            <TouchableOpacity
+                                onPress={handleSuggestionsPress}
+                                style={styles.iconButton}
+                                activeOpacity={0.7}
+                            >
+                                <Ionicons name="chatbox-ellipses-outline" size={24} color="#000" />
                             </TouchableOpacity>
 
                             {/* Hamburger Menu */}

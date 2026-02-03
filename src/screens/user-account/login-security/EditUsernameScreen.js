@@ -27,10 +27,20 @@ const EditUsernameScreen = ({ navigation, route }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [availabilityStatus, setAvailabilityStatus] = useState(null); // null, 'available', 'taken', 'invalid'
     const [errorMessage, setErrorMessage] = useState('');
+    const [isRestricted, setIsRestricted] = useState(false);
 
     useEffect(() => {
         if (user?.username) {
             setCurrentUsername(user.username);
+        }
+        if (user?.last_username_change) {
+            const lastChange = new Date(user.last_username_change);
+            const now = new Date();
+            const timeDiff = now - lastChange;
+            const daysDiff = timeDiff / (1000 * 3600 * 24);
+            if (daysDiff < 31) {
+                setIsRestricted(true);
+            }
         }
     }, [user]);
 
@@ -130,7 +140,10 @@ const EditUsernameScreen = ({ navigation, route }) => {
             if (response.success) {
                 // Update user data in context with new username
                 if (response.data && response.data.user) {
-                    await updateUser({ username: response.data.user.username });
+                    await updateUser({
+                        username: response.data.user.username,
+                        last_username_change: response.data.user.last_username_change
+                    });
                 }
 
                 Alert.alert(
@@ -240,6 +253,7 @@ const EditUsernameScreen = ({ navigation, route }) => {
                             style={styles.input}
                             value={newUsername}
                             onChangeText={setNewUsername}
+                            editable={!isRestricted}
                             placeholder={t('Enter username')}
                             placeholderTextColor="#999"
                             autoCapitalize="none"
@@ -254,6 +268,39 @@ const EditUsernameScreen = ({ navigation, route }) => {
                         <Text style={styles.successText}>{t('Username is available!')}</Text>
                     )}
                 </View>
+
+                {/* Username Change Restriction Warning */}
+                {user?.last_username_change && !isFirstTime && (
+                    <View style={{
+                        backgroundColor: '#FFF3E0',
+                        padding: 12,
+                        borderRadius: 8,
+                        marginBottom: 24,
+                        borderWidth: 1,
+                        borderColor: '#FFE0B2',
+                        flexDirection: 'row',
+                        alignItems: 'center'
+                    }}>
+                        <Ionicons name="time-outline" size={24} color="#F57C00" style={{ marginRight: 12 }} />
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 13, color: '#E65100', fontWeight: 'bold', marginBottom: 2 }}>{t('Limitation')}</Text>
+                            <Text style={{ fontSize: 12, color: '#E65100' }}>
+                                {t('Username can only be changed once every 31 days.')}
+                                {(() => {
+                                    const lastChange = new Date(user.last_username_change);
+                                    const now = new Date();
+                                    const diff = now - lastChange;
+                                    const daysDiff = diff / (1000 * 3600 * 24);
+                                    if (daysDiff < 31) {
+                                        const remaining = Math.ceil(31 - daysDiff);
+                                        return ` ${t('You can change it again in')} ${remaining} ${t('day')}${remaining !== 1 ? 's' : ''}.`;
+                                    }
+                                    return '';
+                                })()}
+                            </Text>
+                        </View>
+                    </View>
+                )}
 
                 {/* Username Guidelines */}
                 <View style={styles.guidelinesContainer}>
@@ -304,10 +351,10 @@ const EditUsernameScreen = ({ navigation, route }) => {
                 <TouchableOpacity
                     style={[
                         styles.saveButton,
-                        (isSaving || availabilityStatus !== 'available' || !newUsername) && styles.saveButtonDisabled
+                        (isSaving || availabilityStatus !== 'available' || !newUsername || isRestricted) && styles.saveButtonDisabled
                     ]}
                     onPress={handleSave}
-                    disabled={isSaving || availabilityStatus !== 'available' || !newUsername}
+                    disabled={isSaving || availabilityStatus !== 'available' || !newUsername || isRestricted}
                 >
                     {isSaving ? (
                         <ActivityIndicator size="small" color="#fff" />

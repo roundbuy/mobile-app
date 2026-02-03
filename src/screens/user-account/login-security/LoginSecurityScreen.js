@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import GlobalHeader from '../../../components/GlobalHeader';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const LoginSecurityScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -54,6 +55,7 @@ const LoginSecurityScreen = ({ navigation }) => {
           <Text style={styles.menuItemText}>{t('Password')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
+        <SuggestionsFooter sourceRoute="LoginSecurity" />
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import advertisementService from '../../../services/advertisementService';
 import { IMAGES } from '../../../assets/images';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
@@ -8,83 +9,101 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
-  const { type } = route.params;
-  
-  // Map type to display title
-  const typeTitle = {
-    partner: 'Purchase a Visibility Ad',
-    targeted: 'Purchase a Targeted Ad',
-    fast: 'Purchase a Fast Ad'
+  const { t } = useTranslation();
+  const { planType, selectedPlan, selectedDistance } = route.params;
+
+  const [ads, setAds] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAds();
+  }, []);
+
+  const fetchAds = async () => {
+    try {
+      setLoading(true);
+      const response = await advertisementService.getUserAdvertisements({ limit: 100, status: 'published' });
+      if (response && response.data && response.data.advertisements) {
+        setAds(response.data.advertisements);
+      }
+    } catch (error) {
+      console.error('Error fetching ads:', error);
+      Alert.alert(t('Error'), t('Failed to load advertisements'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  // Sample data - replace with actual API data
-  const ads = [
-    {
-      id: '1',
-      title: 'Armchair',
-      subtitle: 'Distance: 1000 m / 25 min walk',
-      price: '£252',
-      image: IMAGES.chair1,
-    },
-    {
-      id: '2',
-      title: 'Wooden chair',
-      subtitle: 'Distance: 750 m / 15 min walk',
-      price: '£213',
-      image: IMAGES.chair2,
-    },
-    {
-      id: '3',
-      title: 'Work chair',
-      subtitle: 'Distance: 250 m / 5 min walk',
-      price: '£131',
-      image: IMAGES.chair3,
-    },
-    {
-      id: '4',
-      title: 'Cosy chair',
-      subtitle: 'Distance: 500 m / 10 min walk',
-      price: '£252',
-      image: IMAGES.chair1,
-    },
-  ];
-
   const handlePurchaseNow = (ad) => {
-    navigation.navigate('VisibilityAdChoices', { ad, type });
+    navigation.navigate('VisibilityCart', {
+      ad,
+      type: planType,
+      duration: selectedPlan,
+      distance: selectedDistance
+    });
   };
 
-  const renderAdItem = (item) => (
-    <View key={item.id} style={styles.adCard}>
-      <Image source={item.image} style={styles.adImage} />
-      
-      <View style={styles.adContent}>
-        <View style={styles.adInfo}>
-          <Text style={styles.adTitle}>{item.title}</Text>
-          <Text style={styles.adPrice}>{item.price}</Text>
+  const getPlanName = () => {
+    // If we have a selected plan object, use its name, otherwise fallback to type
+    if (selectedPlan && selectedPlan.name) return selectedPlan.name;
+    // Fallback formatting for type
+    return planType ? planType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : t('Purchase Visibility');
+  };
+
+  const renderAdItem = (item) => {
+    // Parse images if string
+    let imageUrl = null;
+    if (item.images) {
+      try {
+        const images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
+        if (images && images.length > 0) {
+          imageUrl = typeof images[0] === 'string' ? images[0] : images[0].uri;
+        }
+      } catch (e) {
+        console.warn('Error parsing images', e);
+      }
+    }
+
+    return (
+      <View key={item.id} style={styles.adCard}>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.adImage} resizeMode="cover" />
+        ) : (
+          <View style={[styles.adImage, { backgroundColor: '#eee', alignItems: 'center', justifyContent: 'center' }]}>
+            <Ionicons name="image-outline" size={32} color="#ccc" />
+          </View>
+        )}
+
+        <View style={styles.adContent}>
+          <View style={styles.adInfo}>
+            <Text style={styles.adTitle} numberOfLines={1}>{item.title}</Text>
+            <Text style={styles.adPrice}>{item.price} {item.currency || ''}</Text>
+          </View>
+          <Text style={styles.adSubtitle} numberOfLines={1}>{item.city || ''} {item.country || ''}</Text>
+
+          <TouchableOpacity
+            style={styles.purchaseButton}
+            onPress={() => handlePurchaseNow(item)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.purchaseButtonText}>{t('Buy Now')}</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.adSubtitle}>{item.subtitle}</Text>
-        
-        <TouchableOpacity
-          style={styles.purchaseButton}
-          onPress={() => handlePurchaseNow(item)}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.purchaseButtonText}>{t('Buy Now')}</Text>
-        </TouchableOpacity>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -93,18 +112,30 @@ const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{typeTitle[type]}</Text>
+        <Text style={styles.headerTitle}>{getPlanName()}</Text>
         <View style={styles.headerRight} />
       </View>
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Text style={styles.infoBannerText}>{t('Upgrade your best Ad Buy & Sell now!')}</Text>
+        <Text style={styles.infoBannerText}>{t('Select the ad you want to promote')}</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {ads.map((item) => renderAdItem(item))}
-        
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        ) : (
+          ads.length > 0 ? (
+            ads.map((item) => renderAdItem(item))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>{t('No advertisements found')}</Text>
+            </View>
+          )
+        )}
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
@@ -213,6 +244,20 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 24,
   },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+  }
 });
 
 export default PurchaseVisibilityAdsListScreen;

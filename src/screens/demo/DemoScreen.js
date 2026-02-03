@@ -536,10 +536,11 @@ const DemoScreen = ({ navigation, route }) => {
             {loading ? 'Loading...' : `${advertisements.length} results`}
           </Text>
           <TouchableOpacity
-            style={styles.instructionsButton}
+            style={[styles.instructionsButton, { flexDirection: 'row', alignItems: 'center' }]}
             onPress={() => setShowInstructions(true)}
           >
             <Text style={styles.instructionsText}>{t('Instructions')}</Text>
+            <Ionicons name="information-circle-outline" size={16} color="#001C64" style={{ marginLeft: 4 }} />
           </TouchableOpacity>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}

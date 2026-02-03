@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import FilterDropdown from '../../components/FilterDropdown';
@@ -7,11 +7,17 @@ import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
 
 const ChooseRestFiltersScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
-    age_id: null,
-    size_id: null,
-    color_id: null,
+    age_id: route.params?.age_id || null,
+    size_id: route.params?.size_id || null,
+    color_id: route.params?.color_id || null,
+    size_type: route.params?.size_type || 'not_applicable',
+    // Dimensions
+    dim_length: route.params?.dim_length || '',
+    dim_width: route.params?.dim_width || '',
+    dim_height: route.params?.dim_height || '',
+    dim_unit: route.params?.dim_unit || 'cm'
   });
 
   const [filterOptions, setFilterOptions] = useState({
@@ -20,9 +26,15 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     colors: [],
   });
 
+  // Size type options
+  const sizeTypeOptions = [
+    { id: 'not_applicable', name: t('Not Applicable') },
+    { id: 'dimensions', name: t('Dimension') },
+    { id: 'clothing', name: t('Clothe Size') },
+  ];
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [categoryData, setCategoryData] = useState(null);
 
   // Get gender_id and category_id from previous screen
   const selectedGenderId = route.params?.gender_id;
@@ -30,35 +42,19 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     loadFilterOptions();
-    loadCategoryData();
   }, []);
 
-  const loadCategoryData = async () => {
-    try {
-      // Fetch category details to check requires_size
-      const response = await advertisementService.getFilters();
-      if (response.success && response.data.categories) {
-        const category = response.data.categories.find(c => c.id === selectedCategoryId);
-        setCategoryData(category);
-      }
-    } catch (err) {
-      console.error('Error loading category data:', err);
-    }
-  };
+
 
   const loadFilterOptions = async () => {
     try {
       setLoading(true);
       const response = await advertisementService.getFilters();
       if (response.success) {
-        // Filter sizes based on selected gender_id
-        const filteredSizes = selectedGenderId
-          ? response.data.sizes.filter(size => size.gender_id === selectedGenderId)
-          : response.data.sizes;
-
+        // Load all sizes (not filtered by gender anymore)
         setFilterOptions({
           ...response.data,
-          sizes: filteredSizes
+          sizes: response.data.sizes
         });
       } else {
         setError('Failed to load filter options');
@@ -84,12 +80,17 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
       return false;
     }
 
-    // Check if size is required based on category
-    const requiresSize = categoryData?.requires_size;
-
-    if (requiresSize === 'required' && !filters.size_id) {
-      Alert.alert(t('Validation Error'), t('Size is required for this category. Please select a size.'));
-      return false;
+    // Check size type from user selection
+    if (filters.size_type === 'clothing') {
+      if (!filters.size_id) {
+        Alert.alert(t('Validation Error'), t('Please select a size'));
+        return false;
+      }
+    } else if (filters.size_type === 'dimensions') {
+      if (!filters.dim_length || !filters.dim_width || !filters.dim_height) {
+        Alert.alert(t('Validation Error'), t('Please enter all dimensions (H x W x L)'));
+        return false;
+      }
     }
 
     if (!filters.color_id) {
@@ -110,9 +111,18 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     const ageName = filters.age_id
       ? filterOptions.ages.find(a => a.id === filters.age_id)?.name
       : null;
-    const sizeName = filters.size_id
-      ? filterOptions.sizes.find(s => s.id === filters.size_id)?.name
-      : null;
+
+    // Determine size display name based on user-selected type
+    let sizeName = null;
+
+    if (filters.size_type === 'clothing' && filters.size_id) {
+      sizeName = filterOptions.sizes.find(s => s.id === filters.size_id)?.name;
+    } else if (filters.size_type === 'dimensions') {
+      sizeName = `${filters.dim_height}x${filters.dim_width}x${filters.dim_length} ${filters.dim_unit}`;
+    } else if (filters.size_type === 'not_applicable') {
+      sizeName = t('Not Applicable');
+    }
+
     const colorName = filters.color_id
       ? filterOptions.colors.find(c => c.id === filters.color_id)?.name
       : null;
@@ -127,6 +137,59 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     });
   };
 
+  const renderSizeInput = () => {
+    if (filters.size_type === 'not_applicable') {
+      return null; // Hide size input
+    }
+
+    if (filters.size_type === 'dimensions') {
+      return (
+        <View style={styles.dimensionsContainer}>
+          <Text style={styles.label}>{t('Dimensions (H x W x L) *')}</Text>
+          <View style={styles.dimensionsInputs}>
+            <TextInput
+              style={styles.dimensionInput}
+              placeholder="H"
+              keyboardType="numeric"
+              value={filters.dim_height}
+              onChangeText={(val) => handleFilterChange('dim_height', val)}
+            />
+            <Text style={styles.xDivider}>x</Text>
+            <TextInput
+              style={styles.dimensionInput}
+              placeholder="W"
+              keyboardType="numeric"
+              value={filters.dim_width}
+              onChangeText={(val) => handleFilterChange('dim_width', val)}
+            />
+            <Text style={styles.xDivider}>x</Text>
+            <TextInput
+              style={styles.dimensionInput}
+              placeholder="L"
+              keyboardType="numeric"
+              value={filters.dim_length}
+              onChangeText={(val) => handleFilterChange('dim_length', val)}
+            />
+            <View style={styles.unitContainer}>
+              <Text style={styles.unitText}>{filters.dim_unit}</Text>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    // Clothing size dropdown
+    return (
+      <FilterDropdown
+        label={t('Size *')}
+        value={filters.size_id}
+        options={filterOptions.sizes}
+        onSelect={(value) => handleFilterChange('size_id', value)}
+        placeholder={t('Select size')}
+      />
+    );
+  };
+
   return (
     <SafeScreenContainer>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -135,7 +198,6 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          {/* <Text style={styles.stepIndicator}>3/8</Text> */}
         </View>
 
         {/* Title */}
@@ -170,15 +232,17 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
               placeholder={t('Select age group')}
             />
 
-            {/* Only show size if category requires it (required or optional) */}
-
+            {/* Size Type Dropdown - explicit render */}
             <FilterDropdown
-              label={`Size ${categoryData?.requires_size === 'required' ? '*' : '(Optional)'}`}
-              value={filters.size_id}
-              options={filterOptions.sizes}
-              onSelect={(value) => handleFilterChange('size_id', value)}
-              placeholder={t('Select size')}
+              label={t('Size Type *')}
+              value={filters.size_type || 'not_applicable'}
+              options={sizeTypeOptions}
+              onSelect={(value) => handleFilterChange('size_type', value)}
+              placeholder={t('Select size type')}
             />
+
+            {/* Dynamic Size Input based on Size Type */}
+            {renderSizeInput()}
 
             <FilterDropdown
               label={t('Color *')}
@@ -194,8 +258,7 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
         {/* Info Text */}
         <View style={styles.infoContainer}>
           <Text style={styles.infoText}>
-            * Required fields
-            {categoryData?.requires_size === 'not_applicable' && ' (Size not applicable for this category)'}
+            * {t('Required fields')}
           </Text>
         </View>
 
@@ -227,10 +290,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#000',
     fontWeight: '300',
-  },
-  stepIndicator: {
-    fontSize: 16,
-    color: '#666',
   },
   title: {
     fontSize: 20,
@@ -285,25 +344,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
   },
-  infoLink: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  infoIcon: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: '#999',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 6,
-  },
-  infoIconText: {
-    fontSize: 12,
-    color: '#999',
-  },
   continueButton: {
     backgroundColor: COLORS.primary,
     marginHorizontal: 20,
@@ -319,6 +359,47 @@ const styles = StyleSheet.create({
   bottomSpace: {
     height: 30,
   },
+  dimensionsContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 12,
+  },
+  dimensionsInputs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dimensionInput: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#000',
+    textAlign: 'center',
+  },
+  xDivider: {
+    paddingHorizontal: 10,
+    color: '#666',
+    fontSize: 16,
+  },
+  unitContainer: {
+    marginLeft: 10,
+    backgroundColor: '#E0E0E0',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  unitText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+  }
 });
 
 export default ChooseRestFiltersScreen;

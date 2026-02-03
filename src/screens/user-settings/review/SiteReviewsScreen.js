@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
 import {
   View,
@@ -11,33 +11,46 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import { platformReviewService } from '../../../services';
+import { ActivityIndicator, RefreshControl, Image } from 'react-native';
 
 const SiteReviewsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const [reviewsData, setReviewsData] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    reviews: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   const handleBack = () => {
     navigation.goBack();
   };
 
-  // Dummy reviews data
-  const reviewsData = {
-    averageRating: 5.0,
-    totalReviews: 2,
-    reviews: [
-      {
-        id: '1',
-        username: 'jonnie12',
-        rating: 5,
-        comment: 'RoundBuy App is perfect, I think I have never used another app so useful and excellent to use. No superlative is enough to describe it!',
-        date: '2024-12-15',
-      },
-      {
-        id: '2',
-        username: 'stevew6',
-        rating: 5,
-        comment: 'Excellent app. I highly recommend it!',
-        date: '2024-12-10',
-      },
-    ],
+  const fetchReviews = async () => {
+    try {
+      const data = await platformReviewService.getReviews('site');
+      setReviewsData({
+        averageRating: data.stats ? data.stats.averageRating : 0,
+        totalReviews: data.stats ? data.stats.totalReviews : 0,
+        reviews: data.reviews || []
+      });
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchReviews();
   };
 
   const renderStars = (rating) => {
@@ -59,17 +72,28 @@ const SiteReviewsScreen = ({ navigation }) => {
     <View style={styles.reviewCard}>
       <View style={styles.reviewHeader}>
         <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Ionicons name="person-circle" size={40} color="#666" />
-          </View>
+          {item.avatar ? (
+            <Image source={{ uri: item.avatar }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatar}>
+              <Ionicons name="person-circle" size={40} color="#666" />
+            </View>
+          )}
           <View style={styles.userDetails}>
-            <Text style={styles.username}>{item.username}</Text>
+            <Text style={styles.username}>{item.full_name || t('User')}</Text>
             {renderStars(item.rating)}
           </View>
         </View>
       </View>
-      <Text style={styles.reviewComment}>{item.comment}</Text>
-      <Text style={styles.reviewDate}>{item.date}</Text>
+      <Text style={styles.reviewComment}>{item.experience}</Text>
+      {item.improvements ? (
+        <Text style={[styles.reviewComment, { fontStyle: 'italic', marginTop: 4 }]}>
+          {t('Improvements')}: {item.improvements}
+        </Text>
+      ) : null}
+      <Text style={styles.reviewDate}>
+        {new Date(item.created_at).toLocaleDateString()}
+      </Text>
     </View>
   );
 
@@ -84,28 +108,38 @@ const SiteReviewsScreen = ({ navigation }) => {
         <View style={styles.headerRight} />
       </View>
 
-      <FlatList
-        data={reviewsData.reviews}
-        renderItem={renderReviewItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.summarySection}>
-            <Text style={styles.averageRating}>{reviewsData.averageRating.toFixed(1)}</Text>
-            <View style={styles.averageStars}>
-              {renderStars(Math.round(reviewsData.averageRating))}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={reviewsData.reviews}
+          renderItem={renderReviewItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListHeaderComponent={
+            <View style={styles.summarySection}>
+              <Text style={styles.averageRating}>{Number(reviewsData.averageRating).toFixed(1)}</Text>
+              <View style={styles.averageStars}>
+                {renderStars(Math.round(reviewsData.averageRating))}
+              </View>
+              <Text style={styles.totalReviews}>{t('RoundBuy App and service')}</Text>
+              <Text style={styles.totalCount}>{reviewsData.totalReviews} {t('reviews')}</Text>
             </View>
-            <Text style={styles.totalReviews}>{t('RoundBuy App and service')}</Text>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="chatbubble-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>{t('No reviews yet')}</Text>
-          </View>
-        }
-      />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="chatbubble-outline" size={64} color="#ccc" />
+              <Text style={styles.emptyText}>{t('No reviews yet')}</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -187,6 +221,22 @@ const styles = StyleSheet.create({
   },
   avatar: {
     marginRight: 12,
+  },
+  avatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  totalCount: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
   },
   userDetails: {
     flex: 1,

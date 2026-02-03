@@ -4,6 +4,7 @@ export const IMAGES = {
   logoMain2: require('../../assets/Logo-main2.png'),
   rbLogo: require('../../assets/RB-logo.png'),
   whiteLogo: require('../../assets/white-logo.png'),
+  manSketch: require('../../assets/Mansketch.png'),
   //   whiteLogo1024: require('../../assets/white Logo 1024 px.png'),
   roundbyIcon: require('../../assets/roundby_icon.png'),
   //   roundbyIcon2x: require('../../assets/roundby_icon@2x.png'),

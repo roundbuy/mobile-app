@@ -12,9 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const ShareScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -138,6 +139,7 @@ const ShareScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+        <SuggestionsFooter sourceRoute="Share" />
       </ScrollView>
     </SafeAreaView>
   );

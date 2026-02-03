@@ -18,7 +18,7 @@ export const getSubscriptionPlans = async (currencyCode = 'INR', language = 'en'
 
   try {
     const response = await apiRequest(
-      'GET', 
+      'GET',
       `${API_ENDPOINTS.SUBSCRIPTION.PLANS}?currency_code=${currencyCode}&language=${language}`
     );
     return response;
@@ -124,11 +124,25 @@ export const activateFreePlan = async (email = null) => {
   }
 };
 
+/**
+ * Get current user subscription
+ * @returns {Promise<Object>} Current subscription details
+ */
+export const getCurrentSubscription = async () => {
+  try {
+    const response = await apiRequest('GET', API_ENDPOINTS.SUBSCRIPTION.CURRENT);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   getSubscriptionPlans,
   getPlanDetails,
   purchaseSubscription,
   activateFreePlan,
+  getCurrentSubscription,
   getTransactionStatus,
   getSavedPaymentMethods,
   getStripeConfig,
