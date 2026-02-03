@@ -28,10 +28,13 @@ export default function App() {
           Roboto_400Regular,
           Roboto_500Medium,
           Roboto_700Bold,
+          'Signatie': require('./assets/Signatie.otf'),
         });
         setFontsLoaded(true);
       } catch (error) {
-        console.error('Error loading fonts:', error);
+        console.error('❌ Error loading fonts:', error);
+      } finally {
+        console.log('✅ Fonts loaded state:', true);
       }
     }
 

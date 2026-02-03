@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Dimensions, ScrollView, Animated, Platform } from 'react-native';
 import { useTranslation } from '../../context/TranslationContext';
 import { COLORS } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants'; // For device ID if needed, or use a package
 import api from '../../services/api'; // Import centralized API service
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,19 +15,19 @@ const OnboardingModal = ({ visible, onClose, slides, tourId, onFinish, navigatio
     const scrollX = useRef(new Animated.Value(0)).current;
     const slidesRef = useRef(null);
     const startTimeRef = useRef(Date.now());
+    const [deviceId, setDeviceId] = useState('initializing-session-id');
 
-    // ... (keep trackEvent and useEffect)
-
-    // Tracking function (mock for now, replace with actual API call)
-    const trackEvent = async (action, stepIndex = currentIndex) => {
+    // Tracking function
+    const trackEvent = async (action, stepIndex = currentIndex, explicitId = null) => {
         try {
+            const currentDeviceId = explicitId || deviceId || 'unknown-session';
             const payload = {
                 tour_id: tourId,
                 step_index: stepIndex + 1, // 1-based index for analytics
                 action,
-                session_id: 'device-id-placeholder', // Replace with actual device ID logic
-                device_type: 'ios', // Dynamic
-                user_id: null // Pass if available
+                session_id: currentDeviceId,
+                device_type: Platform.OS,
+                user_id: null
             };
 
             await api.post('/onboarding/track', payload);
@@ -38,9 +39,15 @@ const OnboardingModal = ({ visible, onClose, slides, tourId, onFinish, navigatio
 
     useEffect(() => {
         if (visible) {
+            // Generate a new session ID each time the modal opens
+            const newSessionId = 'session_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+            setDeviceId(newSessionId);
+
             setCurrentIndex(0);
             startTimeRef.current = Date.now();
-            trackEvent('view', 0);
+
+            // Pass new ID explicitly to ensure 'view' event uses it immediately
+            trackEvent('view', 0, newSessionId);
         }
     }, [visible]);
 

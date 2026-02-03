@@ -6,7 +6,7 @@ import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../..
 import { useTranslation } from '../../context/TranslationContext';
 
 const ATTPromptScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleAllowTracking = () => {
     // In real app, request tracking permission here
     navigation.replace('CookiesConsent');
@@ -57,14 +57,14 @@ const ATTPromptScreen = ({ navigation }) => {
           style={styles.button}
           onPress={handleAllowTracking}
         >
-          <Text style={styles.buttonText}>{t('Continue')}</Text>
+          <Text style={styles.buttonText}>{t('Allow')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.button}
           onPress={handleAskAppNotToTrack}
         >
-          <Text style={styles.buttonText}>{t('Next')}</Text>
+          <Text style={styles.buttonText}>{t('Don\'t Allow')}</Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>

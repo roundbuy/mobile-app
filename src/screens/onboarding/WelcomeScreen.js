@@ -51,6 +51,18 @@ const WelcomeScreen = ({ navigation, route }) => {
               <Text style={styles.clickHere}>{t('click here')}</Text>
             </Text>
           </TouchableOpacity>
+
+          {/* Find Out Section */}
+          <View style={styles.findOutContainer}>
+            <Text style={styles.findOutTitle}>{t('Why should you use our App?')}</Text>
+            <Text style={styles.findOutSubtitle}>{t('Find out what we offer!')}</Text>
+            <TouchableOpacity
+              style={styles.findOutButton}
+              onPress={() => setShowOnboarding(true)}
+            >
+              <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Welcome Title */}
@@ -71,14 +83,7 @@ const WelcomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Learn Basics Section */}
-        <View style={styles.section}>
-          <Text style={styles.learnBasicsTitle}>{t('Want to learn the basics?')}</Text>
-          <Text style={styles.learnBasicsSubtitle}>{t('See how the App works!')}</Text>
-          <TouchableOpacity onPress={() => setShowOnboarding(true)}>
-            <Text style={styles.startNowText}>{t('Start now!')}</Text>
-          </TouchableOpacity>
-        </View>
+
 
         <OnboardingModal
           visible={showOnboarding}
@@ -263,6 +268,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textDecorationLine: 'underline',
     marginBottom: 20,
+    fontWeight: '600',
+  },
+  findOutContainer: {
+    marginTop: 30,
+    alignItems: 'left',
+  },
+  findOutTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00a82d', // Darker Green
+    marginBottom: 2,
+    letterSpacing: -0.2,
+  },
+  findOutSubtitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#76ff03', // Lighter Green / Lime
+    marginBottom: 10,
+    letterSpacing: -0.2,
+  },
+  findOutButton: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: '#eee',
+    width: '25%',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+  },
+  findOutButtonText: {
+    fontSize: 15,
+    color: '#0056b3', // Blue text
     fontWeight: '600',
   },
 });

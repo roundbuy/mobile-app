@@ -1214,7 +1214,7 @@ const styles = StyleSheet.create({
   filterBadge: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: 2,
     backgroundColor: COLORS.primary,
     position: 'absolute',
     top: -2,
@@ -1403,8 +1403,8 @@ const styles = StyleSheet.create({
   },
   badgesWrapper: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 8,
+    left: 8,
     flexDirection: 'column',
     alignItems: 'flex-start',
     gap: 4,
@@ -1606,7 +1606,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 1,
     alignSelf: 'flex-start',
   },
   badgeText: {

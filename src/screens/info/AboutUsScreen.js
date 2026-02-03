@@ -283,15 +283,15 @@ const styles = StyleSheet.create({
     },
     signatureTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: '400',
         color: '#000',
         marginBottom: 10,
     },
     signatureText: {
         fontSize: 32,
         color: '#4285F4', // Blue signature color
-        fontFamily: 'Zapfino', // iOS signature-like font, fallback will be handled by system
-        // fontStyle: 'italic', // Removed italic as Zapfino is already script-like
+        fontFamily: 'Signatie', // Custom font
+        fontStyle: 'italic', // Removed italic as Zapfino is already script-like
     },
     // Journey Slide Styles
     highlightText: {

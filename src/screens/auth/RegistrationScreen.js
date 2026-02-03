@@ -49,19 +49,24 @@ const RegistrationScreen = ({ navigation }) => {
               <Text style={styles.clickHere}>{t('click here')}</Text>
             </Text>
           </TouchableOpacity>
+
+          {/* Find Out Section */}
+          <View style={styles.findOutContainer}>
+            <Text style={styles.findOutTitle}>{t('Why should you use our App?')}</Text>
+            <Text style={styles.findOutSubtitle}>{t('Find out what we offer!')}</Text>
+            <TouchableOpacity
+              style={styles.findOutButton}
+              onPress={() => setShowOnboarding(true)}
+            >
+              <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Center Content */}
         <View style={styles.content}>
           <Text style={styles.tagline}>{t('Sell and Buy around you')}</Text>
           <Text style={styles.subtitle}>{t('Buy and Sell products and services just around you!')}</Text>
-
-          <TouchableOpacity
-            style={styles.onboardingButton}
-            onPress={() => setShowOnboarding(true)}
-          >
-            <Text style={styles.onboardingButtonText}>{t('Find out what we offer!')}</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.demoButton}
@@ -201,24 +206,40 @@ const styles = StyleSheet.create({
     letterSpacing: -0.9,
     marginBottom: 2,
   },
-  onboardingButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    marginBottom: 20,
+  findOutContainer: {
     marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    alignItems: 'flex-start',
   },
-  onboardingButtonText: {
+  findOutTitle: {
     fontSize: 16,
-    color: COLORS.primary,
+    fontWeight: '700',
+    color: '#00a82d', // Darker Green
+    marginBottom: 2,
+    letterSpacing: -0.2,
+  },
+  findOutSubtitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#76ff03', // Lighter Green / Lime
+    marginBottom: 10,
+    letterSpacing: -0.2,
+  },
+  findOutButton: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: '#eee',
+  },
+  findOutButtonText: {
+    fontSize: 15,
+    color: '#0056b3', // Blue text
     fontWeight: '600',
   },
   demoButton: {
