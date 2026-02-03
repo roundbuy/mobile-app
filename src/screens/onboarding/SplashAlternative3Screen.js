@@ -4,16 +4,30 @@ import { COLORS, TYPOGRAPHY, SPACING } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
 import { useTranslation } from '../../context/TranslationContext';
 
+import { useAuth } from '../../context/AuthContext';
+
 const SplashAlternative3Screen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
+  const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
+
   useEffect(() => {
-    // Navigate to License Agreement after 2 seconds
+    if (isLoading) return;
+
+    // Navigate based on auth state after 2 seconds
     const timer = setTimeout(() => {
-      navigation.replace('LicenseAgreement');
+      if (isAuthenticated) {
+        if (hasActiveSubscription()) {
+          navigation.replace('SearchScreen');
+        } else {
+          navigation.replace('AllMemberships');
+        }
+      } else {
+        navigation.replace('LicenseAgreement');
+      }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, isLoading, isAuthenticated]);
 
   return (
     <View style={styles.container}>

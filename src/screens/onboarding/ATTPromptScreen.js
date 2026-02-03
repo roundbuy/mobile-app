@@ -5,15 +5,30 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+import * as Location from 'expo-location';
+
 const ATTPromptScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const handleAllowTracking = () => {
-    // In real app, request tracking permission here
-    navigation.replace('CookiesConsent');
+  const handleAllowTracking = async () => {
+    try {
+      // 1. Request ATT Permission
+      const { status: attStatus } = await requestTrackingPermissionsAsync();
+      console.log('ATT permission status:', attStatus);
+
+      // 2. Request Location Permission (as requested to be on this screen)
+      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
+      console.log('Location permission status:', locationStatus);
+
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+    } finally {
+      navigation.replace('CookiesConsent');
+    }
   };
 
   const handleAskAppNotToTrack = () => {
-    // User declined tracking
+    // User declined tracking - skip requests or proceed
     navigation.replace('CookiesConsent');
   };
 

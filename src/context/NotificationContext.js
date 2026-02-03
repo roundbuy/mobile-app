@@ -28,7 +28,7 @@ export const useNotifications = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
     const [notifications, setNotifications] = useState([]);
     const [campaignNotifications, setCampaignNotifications] = useState([]);
@@ -61,16 +61,19 @@ export const NotificationProvider = ({ children }) => {
 
     // Manage heartbeat based on authentication
     useEffect(() => {
-        if (isAuthenticated) {
+        console.log('🔄 NotificationContext: Auth state changed - isAuthenticated:', isAuthenticated, 'Has User:', !!user?.id);
+        if (isAuthenticated && user?.id) {
+            console.log('✅ NotificationContext: Starting heartbeat for user', user.id);
             startHeartbeat();
         } else {
+            console.log('🛑 NotificationContext: Stopping heartbeat');
             stopHeartbeat();
         }
 
         return () => {
             stopHeartbeat();
         };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user]);
 
     /**
      * Initialize notifications
@@ -98,6 +101,9 @@ export const NotificationProvider = ({ children }) => {
             // Show as popup if type is popup or fullscreen
             const data = notification.request.content.data;
             if (data.type === 'popup' || data.type === 'fullscreen') {
+                // Only show popup if user is logged in
+                if (!user?.id) return;
+
                 setPopupNotification({
                     id: data.notificationId,
                     title: notification.request.content.title,
@@ -156,7 +162,7 @@ export const NotificationProvider = ({ children }) => {
      */
     const checkHeartbeat = async () => {
         try {
-            if (!isAuthenticated) return;
+            if (!isAuthenticated || !user?.id) return;
 
             const deviceId = await getDeviceId();
 
@@ -224,7 +230,7 @@ export const NotificationProvider = ({ children }) => {
     const fetchUnreadCount = async () => {
         try {
             const token = await AsyncStorage.getItem('accessToken');
-            if (!token) {
+            if (!token || !user?.id) {
                 // User not logged in
                 setUnreadCount(0);
                 return;

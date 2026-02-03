@@ -3,6 +3,8 @@ import { walletService } from '../services';
 
 const WalletContext = createContext();
 
+import { useAuth } from '../context/AuthContext';
+
 export const useWallet = () => {
     const context = useContext(WalletContext);
     if (!context) {
@@ -12,11 +14,14 @@ export const useWallet = () => {
 };
 
 export const WalletProvider = ({ children }) => {
+    const { isAuthenticated } = useAuth();
     const [wallet, setWallet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const fetchWallet = useCallback(async () => {
+        if (!isAuthenticated) return;
+
         try {
             setLoading(true);
             setError(null);
@@ -33,11 +38,13 @@ export const WalletProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [isAuthenticated]);
 
     const refreshWallet = useCallback(async () => {
-        await fetchWallet();
-    }, [fetchWallet]);
+        if (isAuthenticated) {
+            await fetchWallet();
+        }
+    }, [fetchWallet, isAuthenticated]);
 
     const updateBalance = useCallback((newBalance) => {
         setWallet(prev => prev ? { ...prev, balance: newBalance } : null);
@@ -64,8 +71,13 @@ export const WalletProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        fetchWallet();
-    }, [fetchWallet]);
+        if (isAuthenticated) {
+            fetchWallet();
+        } else {
+            setWallet(null);
+            setLoading(false);
+        }
+    }, [fetchWallet, isAuthenticated]);
 
     const value = {
         wallet,

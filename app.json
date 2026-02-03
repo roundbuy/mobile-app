@@ -62,7 +62,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you."
+        }
+      ]
     ],
     "scheme": "roundbuy"
   }

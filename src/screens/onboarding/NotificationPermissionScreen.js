@@ -5,16 +5,24 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
+import * as Notifications from 'expo-notifications';
+
 const NotificationPermissionScreen = ({ navigation }) => {
     const { t } = useTranslation();
 
     const handleAllow = async () => {
-        console.log('User allowed notifications');
-        navigation.navigate('ATTPrompt');
+        try {
+            const { status } = await Notifications.requestPermissionsAsync();
+            console.log('Notification permission status:', status);
+        } catch (error) {
+            console.error('Error requesting notification permissions:', error);
+        } finally {
+            navigation.navigate('ATTPrompt');
+        }
     };
 
     const handleDontAllow = () => {
-        console.log('User denied notifications');
+        console.log('User denied notifications (skipped request)');
         navigation.navigate('ATTPrompt');
     };
 
