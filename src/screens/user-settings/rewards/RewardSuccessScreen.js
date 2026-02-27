@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RewardSuccessScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, selectedPlan, selectedProducts } = route.params;
 
   // Animation values
@@ -89,12 +89,12 @@ const RewardSuccessScreen = ({ navigation, route }) => {
               <Ionicons name="gift" size={20} color={COLORS.primary} />
               <Text style={styles.detailLabel}>{t('Reward Type:')}</Text>
               <Text style={styles.detailValue}>
-                {category.type === 'plan_upgrade' 
-                  ? 'Membership Upgrade' 
+                {category.type === 'plan_upgrade'
+                  ? 'Membership Upgrade'
                   : 'Visibility Boost'}
               </Text>
             </View>
-            
+
             {selectedPlan && (
               <View style={styles.detailRow}>
                 <Ionicons name="star" size={20} color={COLORS.primary} />
@@ -102,7 +102,7 @@ const RewardSuccessScreen = ({ navigation, route }) => {
                 <Text style={styles.detailValue}>{selectedPlan.toUpperCase()}</Text>
               </View>
             )}
-            
+
             {selectedProducts && selectedProducts.length > 0 && (
               <View style={styles.detailRow}>
                 <Ionicons name="cube" size={20} color={COLORS.primary} />
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   successMessage: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginLeft: 8,
     marginRight: 8,
     fontWeight: '500',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     position: 'absolute',
     bottom: 20,

@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     },
     stepSubtitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         lineHeight: 16,
     },
     infoLink: {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         lineHeight: 18,
     },
     linkText: {
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     },
     noCloseLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     footer: {
         padding: 16,

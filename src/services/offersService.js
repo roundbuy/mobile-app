@@ -114,7 +114,28 @@ const declineOffer = async (offerId) => {
   return apiClient.post(`/offers/${offerId}/reject`);
 };
 
+/**
+ * Buy item instantly
+ * @param {number} advertisementId 
+ * @returns {Promise} API response
+ */
+const buyItem = async (advertisementId) => {
+  return apiClient.post('/offers/buy', { advertisementId });
+};
+
+/**
+ * Create a new offer
+ * @param {Object} data
+ * @param {number} data.advertisementId
+ * @param {number} data.price
+ * @param {string} data.message
+ */
+const createOffer = async (data) => {
+  return apiClient.post('/offers', data);
+};
+
 export default {
+  createOffer,
   getUserOffers,
   getAdvertisementOffers,
   getOfferStats,
@@ -125,5 +146,6 @@ export default {
   getDeclinedOffers,
   getPendingOffers,
   acceptOffer,
-  declineOffer
+  declineOffer,
+  buyItem
 };

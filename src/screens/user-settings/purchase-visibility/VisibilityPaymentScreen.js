@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityPaymentScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { ad, type, duration, distance, total } = route.params;
 
   const [selectedPayment, setSelectedPayment] = useState('card');
@@ -79,7 +79,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                 <TextInput
                   style={styles.input}
                   placeholder={t('Card number')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#303234"
                   value={cardNumber}
                   onChangeText={setCardNumber}
                   keyboardType="numeric"
@@ -92,7 +92,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                   <TextInput
                     style={styles.input}
                     placeholder={t('MM / YY')}
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#303234"
                     value={cardNumber}
                     onChangeText={setCardNumber}
                     keyboardType="numeric"
@@ -102,7 +102,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                   <TextInput
                     style={styles.input}
                     placeholder={t('CVC')}
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#303234"
                     value={cvc}
                     onChangeText={setCvc}
                     keyboardType="numeric"
@@ -125,7 +125,7 @@ const VisibilityPaymentScreen = ({ navigation, route }) => {
                 <TextInput
                   style={styles.input}
                   placeholder={t('ZIP')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#303234"
                   value={zipCode}
                   onChangeText={setZipCode}
                   keyboardType="numeric"
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
 
   orText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   cardStripe: {
     height: 4,
-    backgroundColor: '#999',
+    backgroundColor: '#303234',
     borderRadius: 2,
   },
 
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   inputContainer: {

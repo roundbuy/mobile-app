@@ -231,7 +231,7 @@ const EditUsernameScreen = ({ navigation, route }) => {
                                 style={styles.input}
                                 value={currentUsername}
                                 placeholder={t('Current username')}
-                                placeholderTextColor="#999"
+                                placeholderTextColor="#303234"
                                 autoCapitalize="none"
                                 editable={false}
                             />
@@ -255,7 +255,7 @@ const EditUsernameScreen = ({ navigation, route }) => {
                             onChangeText={setNewUsername}
                             editable={!isRestricted}
                             placeholder={t('Enter username')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             autoCapitalize="none"
                             autoCorrect={false}
                         />
@@ -306,7 +306,7 @@ const EditUsernameScreen = ({ navigation, route }) => {
                 <View style={styles.guidelinesContainer}>
                     {/* Header with info icon */}
                     <View style={styles.guidelinesHeader}>
-                        <Ionicons name="information-circle-outline" size={20} color="#666" />
+                        <Ionicons name="information-circle-outline" size={20} color="#505050" />
                         <Text style={styles.guidelinesHeaderText}>{t('Your username is shown on your products, profile, and feedbacks or reviews etc.')}</Text>
                     </View>
 
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     },
     welcomeText: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         lineHeight: 22,
         paddingHorizontal: 20,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
         marginBottom: 8,
     },
     inputContainer: {
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     guidelinesHeaderText: {
         flex: 1,
         fontSize: 11,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
         lineHeight: 16,
     },
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     },
     guidelineItem: {
         fontSize: 10,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
         marginBottom: 4,
         lineHeight: 14,
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     },
     moreInfoText: {
         fontSize: 11,
-        color: '#666',
+        color: '#505050',
     },
     moreInfoLink: {
         fontSize: 11,

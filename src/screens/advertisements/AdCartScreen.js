@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   logoContainer: {
     alignItems: 'flex-start',
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   planDescText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   priceText: {
     fontSize: 16,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   stepText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'right',
     paddingHorizontal: 20,
     marginBottom: 16,
@@ -254,11 +254,11 @@ const styles = StyleSheet.create({
   },
   pricingLabel: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
   },
   pricingValue: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
   },
   totalRow: {
     marginTop: 8,

@@ -34,11 +34,11 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
 
   const formatPrice = (value) => {
     if (value >= 100000) {
-      return `₹${(value / 100000).toFixed(1)}L`;
+      return `£${(value / 100000).toFixed(1)}M`;
     } else if (value >= 1000) {
-      return `₹${(value / 1000).toFixed(1)}K`;
+      return `£${(value / 1000).toFixed(1)}K`;
     }
-    return `₹${value}`;
+    return `£${value}`;
   };
 
   // Update slider value based on touch position
@@ -168,8 +168,8 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
 
               {/* Labels */}
               <View style={styles.labelsContainer}>
-                <Text style={styles.labelText}>₹0</Text>
-                <Text style={styles.labelText}>₹1L</Text>
+                <Text style={styles.labelText}>£0</Text>
+                <Text style={styles.labelText}>£1M</Text>
               </View>
             </View>
 

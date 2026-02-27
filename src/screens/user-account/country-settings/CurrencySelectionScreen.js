@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { settingsService } from '../../../services';
 
 const CurrencySelectionScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { currentCurrency, onCurrencySelected } = route?.params || {};
   const [currencies, setCurrencies] = useState([]);
   const [selected, setSelected] = useState(currentCurrency || '');
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 20,

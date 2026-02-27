@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { ad, type, duration, distance, total = '0.00' } = route.params || {};
 
   const handleDone = () => {
@@ -34,8 +34,8 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView 
-        style={styles.content} 
+      <ScrollView
+        style={styles.content}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
@@ -51,12 +51,12 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
         {/* Transaction Details Card */}
         <View style={styles.detailsCard}>
           <Text style={styles.cardTitle}>{t('Transaction Details')}</Text>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Order ID')}</Text>
             <Text style={styles.detailValue}>#VIS{Date.now().toString().slice(-8)}</Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Date')}</Text>
             <Text style={styles.detailValue}>
@@ -67,41 +67,41 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
               })}
             </Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Product')}</Text>
             <Text style={styles.detailValue}>{ad.title}</Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Visibility Type')}</Text>
             <Text style={[styles.detailValue, { textTransform: 'capitalize' }]}>
               {type} Ad
             </Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Duration')}</Text>
             <Text style={styles.detailValue}>{duration.label}</Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Distance')}</Text>
             <Text style={styles.detailValue}>{distance.label}</Text>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.totalLabel}>{t('Total Amount')}</Text>
             <Text style={styles.totalValue}>£{typeof total === 'string' ? total : total.toFixed(2)}</Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Payment Method')}</Text>
             <Text style={styles.detailValue}>{t('Card •••• 4242')}</Text>
           </View>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Status')}</Text>
             <View style={styles.statusBadge}>
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   successSubtitle: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 32,
     paddingHorizontal: 20,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailValue: {
     fontSize: 14,

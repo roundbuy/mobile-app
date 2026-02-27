@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     },
     cityLocation: {
         fontSize: 11,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     cityName: {

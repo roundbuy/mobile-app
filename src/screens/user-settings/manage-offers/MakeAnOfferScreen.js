@@ -13,9 +13,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
+import offersService from '../../../services/offersService';
 
 const MakeAnOfferScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { product } = route?.params || {};
   const [offerPrice, setOfferPrice] = useState('');
   const [message, setMessage] = useState('');
@@ -31,9 +32,30 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
     navigation.goBack();
   };
 
-  const handleMakeOffer = () => {
-    console.log('Making offer:', offerPrice);
-    navigation.goBack();
+  const handleMakeOffer = async () => {
+    if (!offerPrice) {
+      Alert.alert(t('Error'), t('Please enter an offer price'));
+      return;
+    }
+
+    try {
+      const response = await offersService.createOffer({
+        advertisementId: productData.id,
+        price: parseFloat(offerPrice),
+        message: message
+      });
+
+      if (response.data.success) {
+        Alert.alert(
+          t('Offer Sent'),
+          t('Your offer has been sent successfully!'),
+          [{ text: t('OK'), onPress: () => navigation.goBack() }]
+        );
+      }
+    } catch (error) {
+      console.error('Make offer error:', error);
+      Alert.alert(t('Error'), error.response?.data?.message || t('Failed to send offer'));
+    }
   };
 
   return (
@@ -68,7 +90,7 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
             value={offerPrice}
             onChangeText={setOfferPrice}
             placeholder="£250.00"
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="decimal-pad"
           />
         </View>
@@ -81,7 +103,7 @@ const MakeAnOfferScreen = ({ route, navigation }) => {
             value={message}
             onChangeText={setMessage}
             placeholder={t('Type your message here...')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -191,7 +213,7 @@ const styles = StyleSheet.create({
   },
   distance: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   fieldContainer: {
     marginBottom: 24,

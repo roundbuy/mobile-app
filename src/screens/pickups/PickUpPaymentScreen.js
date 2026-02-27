@@ -87,6 +87,13 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
             return;
         }
 
+        // Check if already paid
+        if (pickupData?.payment_status === 'paid') {
+            Alert.alert(t('Already Paid'), t('This pickup has already been paid for.'));
+            navigation.navigate('PickUpStatus'); // Assuming this screen exists
+            return;
+        }
+
         let paymentMethodName = 'Card';
         if (selectedMethod === 'wallet') paymentMethodName = 'Wallet';
         else if (selectedMethod === 'cod') paymentMethodName = 'Cash on Delivery';
@@ -102,27 +109,59 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                         try {
                             setIsProcessing(true);
 
-                            // TODO: Integrate with actual payment system
-                            // For CODs, we might just mark as pending or instructions
-                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            if (selectedMethod === 'wallet') {
+                                // Wallet Payment
+                                const response = await import('../../services/walletService').then(m => m.default.payWithWallet({
+                                    amount: totalAmount,
+                                    description: `Pickup Fee for ${pickupData?.advertisement_title}`,
+                                    reference_type: 'pickup_fee',
+                                    reference_id: pickupId
+                                }));
 
-                            // Navigate to success screen or show success message
-                            Alert.alert(
-                                t('Payment Successful!'),
-                                t('Your pickup fee has been paid successfully.'),
-                                [
-                                    {
-                                        text: t('OK'),
-                                        onPress: () => {
-                                            // Navigate back to pickup details or status screen
-                                            navigation.navigate('PickUpStatus');
-                                        }
-                                    }
-                                ]
-                            );
+                                if (response.data.success) {
+                                    // Success
+                                    Alert.alert(
+                                        t('Payment Successful!'),
+                                        t('Your pickup fee has been paid successfully.'),
+                                        [{ text: t('OK'), onPress: () => navigation.navigate('PickUpStatus') }]
+                                    );
+                                }
+                            } else if (selectedMethod === 'cod') {
+                                // Cash on Delivery logic (Mark as Pending Payment?)
+                                // Maybe API call to set payment_method='cod'?
+                                // For now, mock success as requested or minimal handling
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                Alert.alert(
+                                    t('Order Placed'),
+                                    t('Please pay cash upon pickup.'),
+                                    [{ text: t('OK'), onPress: () => navigation.navigate('PickUpStatus') }]
+                                );
+                            } else {
+                                // Card (mock for now)
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                Alert.alert(
+                                    t('Payment Successful'),
+                                    t('Payment processed successfully.'),
+                                    [{ text: t('OK'), onPress: () => navigation.navigate('PickUpStatus') }]
+                                );
+                            }
+
                         } catch (error) {
                             console.error('Payment error:', error);
-                            Alert.alert(t('Payment Failed'), t('Unable to process payment. Please try again.'));
+                            const msg = error.response?.data?.message || t('Unable to process payment. Please try again.');
+
+                            if (error.response?.data?.error === 'INSUFFICIENT_BALANCE') {
+                                Alert.alert(
+                                    t('Insufficient Balance'),
+                                    t('Please top up your wallet.'),
+                                    [
+                                        { text: t('Cancel'), style: 'cancel' },
+                                        { text: t('Top Up'), onPress: () => navigation.navigate('WalletTopup', { amount: (totalAmount - (error.response.data.available || 0)).toFixed(2) }) }
+                                    ]
+                                );
+                            } else {
+                                Alert.alert(t('Payment Failed'), msg);
+                            }
                         } finally {
                             setIsProcessing(false);
                         }
@@ -175,7 +214,7 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                                             <Ionicons
                                                 name={showFeeDetails ? "chevron-up" : "chevron-down"}
                                                 size={16}
-                                                color="#666"
+                                                color="#505050"
                                                 style={{ marginLeft: 4 }}
                                             />
                                         </View>
@@ -261,7 +300,7 @@ const PickUpPaymentScreen = ({ route, navigation }) => {
                                 <Ionicons
                                     name={method.icon}
                                     size={28}
-                                    color={selectedMethod === method.id ? COLORS.primary : '#666'}
+                                    color={selectedMethod === method.id ? COLORS.primary : '#505050'}
                                 />
                             </View>
                             <View style={styles.methodInfo}>
@@ -340,7 +379,7 @@ const styles = StyleSheet.create({
     },
     summaryLabel: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
     },
     summaryValue: {
         fontSize: 15,
@@ -407,7 +446,7 @@ const styles = StyleSheet.create({
     },
     methodDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     radioButton: {
         width: 24,
@@ -476,7 +515,7 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     detailValue: {
         fontSize: 13,

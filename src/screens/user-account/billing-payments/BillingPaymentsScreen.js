@@ -86,7 +86,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
         <Text style={styles.label}>{t('Card information')}</Text>
         <View style={styles.cardNumberRow}>
           <Text style={styles.cardNumber}>xxx xxxx xxxx {card.lastFour}</Text>
-          <FontAwesome name="credit-card" size={20} color="#666" />
+          <FontAwesome name="credit-card" size={20} color="#505050" />
         </View>
 
         <View style={styles.expiryRow}>
@@ -112,7 +112,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
           style={styles.zipInput}
           value={card.zip}
           placeholder={t('Enter ZIP')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#303234"
           editable={false}
         />
       </View>
@@ -156,7 +156,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
         <TextInput
           style={styles.zipInput}
           placeholder={t('Enter ZIP')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#303234"
           editable={false}
         />
       </View>
@@ -199,20 +199,20 @@ const BillingPaymentsScreen = ({ navigation }) => {
           <TextInput
             style={styles.cardInput}
             placeholder={t('Card number')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={newCard.cardNumber}
             onChangeText={(text) => setNewCard({ ...newCard, cardNumber: text })}
             keyboardType="numeric"
             maxLength={19}
           />
-          <FontAwesome name="credit-card" size={20} color="#666" />
+          <FontAwesome name="credit-card" size={20} color="#505050" />
         </View>
 
         <View style={styles.expiryRow}>
           <TextInput
             style={[styles.cardInput, styles.expiryInput]}
             placeholder={t('MM/YY')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={newCard.expiryDate}
             onChangeText={(text) => setNewCard({ ...newCard, expiryDate: text })}
             maxLength={5}
@@ -220,7 +220,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
           <TextInput
             style={[styles.cardInput, styles.cvcInput]}
             placeholder={t('CVC')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={newCard.cvc}
             onChangeText={(text) => setNewCard({ ...newCard, cvc: text })}
             keyboardType="numeric"
@@ -241,7 +241,7 @@ const BillingPaymentsScreen = ({ navigation }) => {
           value={newCard.zip}
           onChangeText={(text) => setNewCard({ ...newCard, zip: text })}
           placeholder={t('Enter ZIP')}
-          placeholderTextColor="#999"
+          placeholderTextColor="#303234"
         />
       </View>
 
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
     marginBottom: 16,
   },
   cardInfo: {
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   cardNumberRow: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginBottom: 4,
   },
   fieldValue: {
@@ -406,12 +406,12 @@ const styles = StyleSheet.create({
   },
   savedNotice: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 20,
   },
   noCardsNotice: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -458,12 +458,12 @@ const styles = StyleSheet.create({
   },
   noneSelectedText: {
     fontSize: 15,
-    color: '#999',
+    color: '#303234',
   },
 
   orPayText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 16,
   },

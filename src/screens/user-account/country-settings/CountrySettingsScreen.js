@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { settingsService } from '../../../services';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const CountrySettingsScreen = ({ navigation }) => {
@@ -21,17 +23,26 @@ const CountrySettingsScreen = ({ navigation }) => {
     currency_name: '',
     currency_symbol: '',
     language_name: '',
+    measurement_unit: '',
   });
 
-  // Fetch user preferences on component mount
-  useEffect(() => {
-    fetchUserPreferences();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUserPreferences();
+    }, [])
+  );
 
   const fetchUserPreferences = async () => {
     try {
       setIsLoading(true);
-      const response = await settingsService.getUserPreferences();
+      const [response, savedUnit] = await Promise.all([
+        settingsService.getUserPreferences(),
+        AsyncStorage.getItem('measurementUnit'),
+      ]);
+
+      let unitLabel = 'Kilometers (km)'; // Default
+      if (savedUnit === 'mi') unitLabel = 'Miles (mi)';
+      if (savedUnit === 'm') unitLabel = 'Meters (m)';
 
       if (response.success && response.data?.preferences) {
         const prefs = response.data.preferences;
@@ -39,6 +50,7 @@ const CountrySettingsScreen = ({ navigation }) => {
           currency_name: prefs.currency_name || 'Not set',
           currency_symbol: prefs.currency_symbol || '',
           language_name: prefs.language_name || 'Not set',
+          measurement_unit: unitLabel,
         });
       }
     } catch (error) {
@@ -65,6 +77,10 @@ const CountrySettingsScreen = ({ navigation }) => {
       currentLanguage: userPreferences.language_name,
       onLanguageSelected: handleLanguageSelected
     });
+  };
+
+  const handleMeasurementPress = () => {
+    navigation.navigate('MeasurementSettings');
   };
 
   const handleCurrencySelected = (currency) => {
@@ -117,12 +133,12 @@ const CountrySettingsScreen = ({ navigation }) => {
               {userPreferences.currency_symbol} {userPreferences.currency_name}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </TouchableOpacity>
 
         {/* Language */}
         <TouchableOpacity
-          style={[styles.menuItem, styles.menuItemLast]}
+          style={styles.menuItem}
           onPress={handleLanguagePress}
           activeOpacity={0.7}
         >
@@ -130,7 +146,20 @@ const CountrySettingsScreen = ({ navigation }) => {
             <Text style={styles.menuItemText}>{t('Language')}</Text>
             <Text style={styles.menuItemValue}>{userPreferences.language_name}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
+        </TouchableOpacity>
+
+        {/* Measurement Units */}
+        <TouchableOpacity
+          style={[styles.menuItem, styles.menuItemLast]}
+          onPress={handleMeasurementPress}
+          activeOpacity={0.7}
+        >
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemText}>{t('Measurement Units')}</Text>
+            <Text style={styles.menuItemValue}>{userPreferences.measurement_unit}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </TouchableOpacity>
 
         {/* Copyright */}
@@ -154,7 +183,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   header: {
     flexDirection: 'row',
@@ -208,13 +237,13 @@ const styles = StyleSheet.create({
   },
   menuItemValue: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
     fontWeight: '400',
   },
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginTop: 40,
   },

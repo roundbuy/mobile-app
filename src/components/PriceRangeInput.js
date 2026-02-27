@@ -31,7 +31,7 @@ const PriceRangeInput = ({ minPrice, maxPrice, onMinPriceChange, onMaxPriceChang
               onChangeText={onMinPriceChange}
               placeholder="0"
               keyboardType="numeric"
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
             />
           </View>
 
@@ -47,7 +47,7 @@ const PriceRangeInput = ({ minPrice, maxPrice, onMinPriceChange, onMaxPriceChang
               onChangeText={onMaxPriceChange}
               placeholder="No limit"
               keyboardType="numeric"
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
             />
           </View>
         </View>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   arrow: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   rangeContainer: {
     flexDirection: 'row',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   input: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   separatorText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
 });
 

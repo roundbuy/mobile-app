@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const NotificationSettingsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingNotifications, setMarketingNotifications] = useState(false);
 
@@ -66,7 +66,7 @@ const NotificationSettingsScreen = ({ navigation }) => {
               thumbColor="#fff"
             />
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </View>
         <Text style={styles.settingDescription}>{t('Allow or disable push notifications. You can control whether you receive notifications on your device.')}</Text>
 
@@ -78,7 +78,7 @@ const NotificationSettingsScreen = ({ navigation }) => {
               <Text style={styles.alwaysOnText}>{t('Always On')}</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </View>
         <Text style={styles.settingDescription}>{t('In-app notifications are always enabled to ensure you receive important updates and messages while using the app.')}</Text>
 
@@ -93,7 +93,7 @@ const NotificationSettingsScreen = ({ navigation }) => {
               thumbColor="#fff"
             />
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </View>
         <Text style={styles.settingDescription}>{t('Receive marketing communications including push notifications, in-app notifications, and emails about promotions, recommendations, and special offers. We need your permission to send you marketing content.')}</Text>
 
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 24,
   },
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   settingDescription: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
     marginTop: 8,
     marginBottom: 16,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   saveButton: {

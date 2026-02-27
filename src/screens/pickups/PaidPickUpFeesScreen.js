@@ -145,7 +145,7 @@ const PaidPickUpFeesScreen = ({ navigation }) => {
                 {/* Payment Details */}
                 <View style={styles.paymentSection}>
                     <View style={styles.paymentRow}>
-                        <Ionicons name="calendar-outline" size={16} color="#666" style={{ marginRight: 8 }} />
+                        <Ionicons name="calendar-outline" size={16} color="#505050" style={{ marginRight: 8 }} />
                         <Text style={styles.paymentLabel}>{t('Paid on:')}</Text>
                         <Text style={styles.paymentValue}>
                             {item.paid_at ? formatDateTime(item.paid_at) : 'N/A'}
@@ -155,7 +155,7 @@ const PaidPickUpFeesScreen = ({ navigation }) => {
                         <Ionicons
                             name={paymentMethod === 'wallet' ? 'wallet' : 'card-outline'}
                             size={16}
-                            color="#666"
+                            color="#505050"
                             style={{ marginRight: 8 }}
                         />
                         <Text style={styles.paymentLabel}>{t('Payment Method:')}</Text>
@@ -165,7 +165,7 @@ const PaidPickUpFeesScreen = ({ navigation }) => {
                     </View>
                     {item.payment_id && (
                         <View style={styles.paymentRow}>
-                            <Ionicons name="receipt-outline" size={16} color="#666" style={{ marginRight: 8 }} />
+                            <Ionicons name="receipt-outline" size={16} color="#505050" style={{ marginRight: 8 }} />
                             <Text style={styles.paymentLabel}>{t('Transaction ID:')}</Text>
                             <Text style={styles.paymentValue}>#{item.payment_id}</Text>
                         </View>
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     },
     productPrice: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     offerPrice: {
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     },
     scheduledDate: {
         fontSize: 13,
-        color: '#999',
+        color: '#303234',
     },
     paymentSection: {
         marginBottom: 16,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     },
     paymentLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     paymentValue: {
         fontSize: 14,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     },
     feeLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     feeValue: {
         fontSize: 14,
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     emptyContainer: {
         alignItems: 'center',
@@ -449,13 +449,13 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginTop: 16,
         marginBottom: 8,
     },
     emptySubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
     },
     feeWithDiscount: {
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     },
     originalFee: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textDecorationLine: 'line-through',
         marginBottom: 2,
     },

@@ -6,7 +6,7 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AdPaymentMethodScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -82,7 +82,7 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
                 <TextInput
                   style={styles.input}
                   placeholder={t('Card number')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#303234"
                   value={cardNumber}
                   onChangeText={setCardNumber}
                   keyboardType="numeric"
@@ -95,7 +95,7 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
                   <TextInput
                     style={styles.input}
                     placeholder={t('Expiry date')}
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#303234"
                     value={expiryDate}
                     onChangeText={setExpiryDate}
                     keyboardType="numeric"
@@ -105,7 +105,7 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
                   <TextInput
                     style={styles.input}
                     placeholder={t('CVC')}
-                    placeholderTextColor="#999"
+                    placeholderTextColor="#303234"
                     value={cvc}
                     onChangeText={setCvc}
                     keyboardType="numeric"
@@ -128,7 +128,7 @@ const AdPaymentMethodScreen = ({ navigation, route }) => {
                 <TextInput
                   style={styles.input}
                   placeholder={t('ZIP')}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#303234"
                   value={zipCode}
                   onChangeText={setZipCode}
                   keyboardType="numeric"
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   walletSection: {
     paddingHorizontal: 20,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginHorizontal: 16,
     fontWeight: '500',
   },
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
 
   orText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   cardStripe: {
     height: 4,
-    backgroundColor: '#999',
+    backgroundColor: '#303234',
     borderRadius: 2,
   },
 
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   inputContainer: {

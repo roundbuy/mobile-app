@@ -1,0 +1,33 @@
+// Add this JSX before {renderImageDots()} in ProductDetailsScreen.js
+// Around line 486, inside the imageContainer View
+
+          {/* Showcase Navigation Arrows */}
+          {showcaseProducts.length > 0 && (
+            <>
+              {currentShowcaseIndex > 0 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavLeft]}
+                  onPress={handlePreviousShowcaseProduct}
+                >
+                  <Ionicons name="chevron-back" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+              
+              {currentShowcaseIndex < showcaseProducts.length - 1 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavRight]}
+                  onPress={handleNextShowcaseProduct}
+                >
+                  <Ionicons name="chevron-forward" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+              
+              {/* Showcase Counter */}
+              <View style={styles.showcaseCounter}>
+                <Ionicons name="diamond" size={12} color="#fff" style={{ marginRight: 4 }} />
+                <Text style={styles.showcaseCounterText}>
+                  {currentShowcaseIndex + 1} / {showcaseProducts.length}
+                </Text>
+              </View>
+            </>
+          )}

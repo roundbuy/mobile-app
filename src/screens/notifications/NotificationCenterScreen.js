@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#999',
+        color: '#303234',
     },
     activeTabText: {
         color: '#000',
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     },
     filterChipText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         fontWeight: '500',
     },
     filterChipTextActive: {
@@ -450,12 +450,12 @@ const styles = StyleSheet.create({
     },
     notificationTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginLeft: 8,
     },
     notificationMessage: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
         marginBottom: 8,
     },

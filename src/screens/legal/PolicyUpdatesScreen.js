@@ -210,7 +210,7 @@ const PolicyUpdatesScreen = ({ navigation }) => {
 
                 {/* Info Box */}
                 <View style={styles.infoBox}>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" />
                     <Text style={styles.infoText}>{t('You will be notified of significant policy changes via email and in-app notifications.')}</Text>
                 </View>
 

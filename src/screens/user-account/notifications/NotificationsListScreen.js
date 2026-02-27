@@ -18,7 +18,7 @@ import messagingService from '../../../services/messagingService';
 import { COLORS } from '../../../constants/theme';
 
 const NotificationsListScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     notifications,
     loading,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeTabText: {
     color: '#000',
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     fontWeight: '500',
   },
   filterChipTextActive: {
@@ -443,12 +443,12 @@ const styles = StyleSheet.create({
   },
   notificationTime: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginLeft: 8,
   },
   notificationMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   loadingContainer: {
@@ -510,16 +510,16 @@ const styles = StyleSheet.create({
   },
   conversationTime: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
   otherUserName: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 2,
   },
   lastMessage: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
   },
   unreadBadge: {
     backgroundColor: COLORS.primary,

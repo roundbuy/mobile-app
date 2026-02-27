@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 
 const RedeemRewardScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, referralData } = route.params;
 
   // State for selected items
@@ -99,10 +99,10 @@ const RedeemRewardScreen = ({ navigation, route }) => {
       }
     }
 
-    navigation.navigate('RewardSuccess', { 
-      category, 
-      selectedPlan, 
-      selectedProducts 
+    navigation.navigate('RewardSuccess', {
+      category,
+      selectedPlan,
+      selectedProducts
     });
   };
 
@@ -141,7 +141,7 @@ const RedeemRewardScreen = ({ navigation, route }) => {
 
   const renderProductItem = (product) => {
     const isSelected = selectedProducts.includes(product.id);
-    
+
     return (
       <TouchableOpacity
         key={product.id}
@@ -187,8 +187,8 @@ const RedeemRewardScreen = ({ navigation, route }) => {
         {/* Reward Info Banner */}
         <View style={styles.infoBanner}>
           <Text style={styles.infoBannerTitle}>
-            {category.type === 'plan_upgrade' 
-              ? '1 x Visibility Ad' 
+            {category.type === 'plan_upgrade'
+              ? '1 x Visibility Ad'
               : '2 x Visibility Ads'}
           </Text>
           <Text style={styles.infoBannerText}>
@@ -217,8 +217,8 @@ const RedeemRewardScreen = ({ navigation, route }) => {
         <TouchableOpacity
           style={[
             styles.redeemButton,
-            (category.type === 'plan_upgrade' ? !selectedPlan : selectedProducts.length === 0) 
-              && styles.redeemButtonDisabled
+            (category.type === 'plan_upgrade' ? !selectedPlan : selectedProducts.length === 0)
+            && styles.redeemButtonDisabled
           ]}
           onPress={handleRedeem}
           activeOpacity={0.8}
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   infoBannerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   sectionTitle: {
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   planDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   planFeatures: {
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginLeft: 8,
   },
   productsContainer: {
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   productDistance: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   checkbox: {
     width: 28,
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
 });

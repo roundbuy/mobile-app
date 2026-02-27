@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     },
     charCount: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'right',
         marginTop: 4,
     },
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     tipText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
     },
     submitButton: {

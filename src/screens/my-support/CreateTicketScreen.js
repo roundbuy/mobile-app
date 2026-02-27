@@ -125,7 +125,7 @@ const CreateTicketScreen = ({ navigation }) => {
                 ? categories.find(c => c.id === formData.category_id)?.name
                 : 'Select a category'}
             </Text>
-            <Feather name="chevron-down" size={20} color="#666" />
+            <Feather name="chevron-down" size={20} color="#505050" />
           </TouchableOpacity>
           {errors.category_id && (
             <Text style={styles.errorText}>{errors.category_id}</Text>
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   formSection: {
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 10,
   },
   pickerButton: {
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   placeholderText: {
-    color: '#999',
+    color: '#303234',
   },
   modalOverlay: {
     flex: 1,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   priorityButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
   },
   priorityButtonTextActive: {
     color: '#333',
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'right',
     marginTop: 5,
   },
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   submitButton: {

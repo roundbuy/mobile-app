@@ -22,7 +22,15 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
   const sortedPlans = [...plans].sort((a, b) => a.duration_days - b.duration_days);
 
   // Sort distance plans
-  const sortedDistances = [...(distancePlans || [])].sort((a, b) => a.sort_order - b.sort_order);
+  const allSortedDistances = [...(distancePlans || [])].sort((a, b) => a.sort_order - b.sort_order);
+
+  // Filter distances based on plan type
+  const restrictedTypes = ['rise_to_top', 'top_spot', 'show_casing'];
+  const isRestricted = restrictedTypes.includes(planType);
+
+  const sortedDistances = isRestricted
+    ? allSortedDistances.filter(d => [10, 20, 30].includes(d.distance_km))
+    : allSortedDistances;
 
   const handleBack = () => {
     navigation.goBack();
@@ -36,7 +44,14 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
 
     const selectedPlan = sortedPlans.find(p => p.id === selectedPlanId);
     const selectedDistance = sortedDistances.find(d => d.id === selectedDistanceId);
-
+    console.log('Selected Plan:', selectedPlan);
+    if (selectedPlan.plan_type === 'show_casing') {
+      navigation.navigate('ShowcaseProductSelector', {
+        planType,
+        selectedPlan,
+        selectedDistance
+      });
+    }
     navigation.navigate('PurchaseVisibilityAdsList', {
       planType,
       selectedPlan,
@@ -94,7 +109,7 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
           <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
             <Text style={styles.infoLinkText}>{t('For more information,')}</Text>
             <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-            <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+            <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
           </TouchableOpacity>
         </View>
 
@@ -134,7 +149,7 @@ const VisibilityAdChoicesScreen = ({ navigation, route }) => {
             <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
               <Text style={styles.infoLinkText}>{t('For more information, about prices')}</Text>
               <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+              <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
             </TouchableOpacity>
           </View>
         )}
@@ -203,7 +218,7 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -232,7 +247,7 @@ const styles = StyleSheet.create({
   },
   optionPriceText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   optionButtonTextSelected: {
     color: '#fff',
@@ -244,7 +259,7 @@ const styles = StyleSheet.create({
   },
   infoLinkText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   clickHereText: {
     color: COLORS.primary,

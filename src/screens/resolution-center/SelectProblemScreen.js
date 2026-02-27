@@ -13,7 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const SelectProblemScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, order } = route.params;
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,10 +76,10 @@ const SelectProblemScreen = ({ navigation, route }) => {
               onPress={() => handleSelectProblem(problem)}
             >
               <View style={styles.problemIcon}>
-                <Feather 
-                  name={getProblemIcon(problem.slug)} 
-                  size={24} 
-                  color="#4169E1" 
+                <Feather
+                  name={getProblemIcon(problem.slug)}
+                  size={24}
+                  color="#4169E1"
                 />
               </View>
               <View style={styles.problemContent}>
@@ -88,7 +88,7 @@ const SelectProblemScreen = ({ navigation, route }) => {
                   {problem.description}
                 </Text>
               </View>
-              <Feather name="chevron-right" size={24} color="#999" />
+              <Feather name="chevron-right" size={24} color="#303234" />
             </TouchableOpacity>
           ))}
         </View>
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   selectedInfo: {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   selectedLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 8,
   },
   selectedValue: {
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   problemDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   infoCard: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

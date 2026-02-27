@@ -92,7 +92,7 @@ const LotteryWinnersScreen = ({ navigation }) => {
 
                 <TouchableOpacity style={styles.moreInfo}>
                     <Text style={styles.moreInfoText}>{t('More information on Rewards & Credits, click here')}</Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" />
                 </TouchableOpacity>
 
                 <Text style={styles.footerText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     },
     disclaimer: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         marginBottom: 20,
         lineHeight: 18,
@@ -193,13 +193,13 @@ const styles = StyleSheet.create({
     },
     moreInfoText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginRight: 6,
         textDecorationLine: 'underline',
     },
     footerText: {
         fontSize: 10,
-        color: '#999',
+        color: '#303234',
         marginTop: 'auto',
     },
 });

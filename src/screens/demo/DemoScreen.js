@@ -1332,7 +1332,7 @@ const styles = StyleSheet.create({
   },
   calloutTap: {
     fontSize: 11,
-    color: '#666',
+    color: '#505050',
     fontStyle: 'italic',
   },
   bottomNav: {
@@ -1524,12 +1524,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginTop: 8,
   },
   subscriptionRequired: {
@@ -1540,7 +1540,7 @@ const styles = StyleSheet.create({
   },
   subscriptionText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 20,
     marginBottom: 20,
@@ -1594,7 +1594,7 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     textAlign: 'left',
   },
   disclaimerLink: {

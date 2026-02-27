@@ -80,7 +80,7 @@ const PickUpStatusScreen = ({ navigation }) => {
             case 'cancelled':
                 return '#F44336';
             default:
-                return '#999';
+                return '#303234';
         }
     };
 
@@ -162,19 +162,19 @@ const PickUpStatusScreen = ({ navigation }) => {
                 {/* Pickup Details */}
                 <View style={styles.detailsSection}>
                     <View style={styles.detailRow}>
-                        <Ionicons name="calendar-outline" size={16} color="#666" />
+                        <Ionicons name="calendar-outline" size={16} color="#505050" />
                         <Text style={styles.detailText}>
                             {formatDate(item.scheduled_date)}
                         </Text>
                     </View>
                     <View style={styles.detailRow}>
-                        <Ionicons name="time-outline" size={16} color="#666" />
+                        <Ionicons name="time-outline" size={16} color="#505050" />
                         <Text style={styles.detailText}>
                             {formatTime(item.scheduled_time)}
                         </Text>
                     </View>
                     <View style={styles.detailRow}>
-                        <Ionicons name={isBuyer ? 'person-outline' : 'people-outline'} size={16} color="#666" />
+                        <Ionicons name={isBuyer ? 'person-outline' : 'people-outline'} size={16} color="#505050" />
                         <Text style={styles.detailText}>
                             {isBuyer ? `Seller: ${item.seller_name}` : `Buyer: ${item.buyer_name}`}
                         </Text>
@@ -195,7 +195,7 @@ const PickUpStatusScreen = ({ navigation }) => {
                 <Ionicons
                     name="chevron-forward"
                     size={20}
-                    color="#999"
+                    color="#303234"
                     style={styles.chevron}
                 />
             </TouchableOpacity>
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
     },
     activeTabText: {
         color: COLORS.primary,
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     },
     detailText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     paymentWarning: {
         flexDirection: 'row',
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     emptyContainer: {
         alignItems: 'center',
@@ -412,13 +412,13 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginTop: 16,
         marginBottom: 8,
     },
     emptySubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
     },
 });

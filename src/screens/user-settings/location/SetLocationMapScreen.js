@@ -20,6 +20,9 @@ import * as Location from 'expo-location';
 import { COLORS, SPACING } from '../../../constants/theme';
 import Constants from 'expo-constants';
 
+import LocationDisclaimerModal from '../../../components/LocationDisclaimerModal';
+import Hyperlink from '../../../components/common/Hyperlink';
+
 const SetLocationMapScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { locationType = 'centrePoint', onSave, existingLocation } = route.params || {};
@@ -30,6 +33,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
   const [mapError, setMapError] = useState(null);
   const [markerCoordinate, setMarkerCoordinate] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [disclaimerModalVisible, setDisclaimerModalVisible] = useState(false);
 
   // Get Google Maps API key from config
   const GOOGLE_MAPS_API_KEY = Platform.select({
@@ -213,6 +217,10 @@ const SetLocationMapScreen = ({ navigation, route }) => {
         return 'Product Location 2';
       case 'productLocation3':
         return 'Product Location 3';
+      case 'productLocation4':
+        return 'Product Location 4';
+      case 'productLocation5':
+        return 'Product Location 5';
       default:
         return 'Location';
     }
@@ -341,7 +349,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
                 }}
                 renderLeftButton={() => (
                   <View style={styles.searchIconContainer}>
-                    <Ionicons name="search" size={20} color="#666" />
+                    <Ionicons name="search" size={20} color="#505050" />
                   </View>
                 )}
                 renderRightButton={() => (
@@ -354,7 +362,7 @@ const SetLocationMapScreen = ({ navigation, route }) => {
                     }}
                     style={styles.clearButton}
                   >
-                    <Ionicons name="close-circle" size={20} color="#999" />
+                    <Ionicons name="close-circle" size={20} color="#303234" />
                   </TouchableOpacity>
                 )}
               />
@@ -447,11 +455,11 @@ const SetLocationMapScreen = ({ navigation, route }) => {
               {/* Zoom Controls */}
               <View style={styles.zoomControls}>
                 <TouchableOpacity style={styles.zoomButton} onPress={zoomIn} activeOpacity={0.7}>
-                  <Ionicons name="add" size={24} color="#666" />
+                  <Ionicons name="add" size={24} color="#505050" />
                 </TouchableOpacity>
                 <View style={styles.zoomDivider} />
                 <TouchableOpacity style={styles.zoomButton} onPress={zoomOut} activeOpacity={0.7}>
-                  <Ionicons name="remove" size={24} color="#666" />
+                  <Ionicons name="remove" size={24} color="#505050" />
                 </TouchableOpacity>
               </View>
 
@@ -473,11 +481,11 @@ const SetLocationMapScreen = ({ navigation, route }) => {
 
             {/* Safety Info */}
             <View style={styles.safetyInfo}>
-              <Text style={styles.safetyText}>{t('For more information on')}</Text>
-              <Text style={styles.safetyTextBold}>{t('Safety')}</Text>
-              <Text style={styles.safetyText}>{t(', click')}</Text>
-              <Text style={[styles.safetyText, styles.safetyLink]}>{t('here')}</Text>
-              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.safetyIcon} />
+              <Text style={styles.safetyText}>{t('Read our ')}</Text>
+              <Hyperlink linkKey="set_location_safety" style={[styles.safetyText, styles.safetyLink]}>{t('Safety Guidelines')}</Hyperlink>
+              <Text style={styles.safetyText}>{t(' & ')}</Text>
+              <Hyperlink linkKey="set_location_disclaimer" style={[styles.safetyText, styles.safetyLink]}>{t('Disclaimer')}</Hyperlink>
+              <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.safetyIcon} />
             </View>
 
             {/* Save Button */}
@@ -487,12 +495,31 @@ const SetLocationMapScreen = ({ navigation, route }) => {
               activeOpacity={0.7}
             >
               <Text style={styles.saveButtonText}>
-                {existingLocation ? 'Update' : 'Save'} {getLocationTitle()}
+                {`${existingLocation ? 'Update' : 'Save'} ${getLocationTitle()}`}
               </Text>
             </TouchableOpacity>
+
+            {/* Disclaimer Link */}
+            <View style={styles.disclaimerContainer}>
+              <Text style={styles.disclaimerText}>
+                Our{' '}
+                <Hyperlink
+                  linkKey="set_location_modal_disclaimer"
+                  style={styles.disclaimerLink}
+                  onPress={() => setDisclaimerModalVisible(true)}
+                >
+                  {t('Locations & Safety Disclaimer')}
+                </Hyperlink>
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <LocationDisclaimerModal
+        visible={disclaimerModalVisible}
+        onClose={() => setDisclaimerModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -585,7 +612,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     flex: 1,
@@ -648,7 +675,7 @@ const styles = StyleSheet.create({
   },
   mapTypeText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   mapTypeTextActive: {
     color: '#000',
@@ -720,7 +747,7 @@ const styles = StyleSheet.create({
   },
   safetyText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   safetyTextBold: {
     fontSize: 13,
@@ -749,6 +776,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  disclaimerContainer: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  disclaimerText: {
+    fontSize: 13,
+    color: '#8a8a8a',
+    textAlign: 'center',
+  },
+  disclaimerLink: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });
 

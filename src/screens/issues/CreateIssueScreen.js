@@ -143,7 +143,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                 >
                     {/* Handshake Icon */}
                     <View style={styles.iconContainer}>
-                        <FontAwesome name="handshake-o" size={80} color="#666" />
+                        <FontAwesome name="handshake-o" size={80} color="#505050" />
                     </View>
 
                     {/* Status Message */}
@@ -178,7 +178,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                         <TextInput
                             style={styles.textArea}
                             placeholder={t("Describe the issue you're experiencing...")}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             multiline
                             numberOfLines={6}
                             textAlignVertical="top"
@@ -197,7 +197,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                         <TextInput
                             style={styles.textArea}
                             placeholder={t('What would you like the seller to do? (e.g., refund, replacement, etc.)')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             multiline
                             numberOfLines={6}
                             textAlignVertical="top"
@@ -219,7 +219,7 @@ const CreateIssueScreen = ({ navigation, route }) => {
                             <Text style={styles.infoLink}>{t('click here')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.infoIcon}>
-                            <Ionicons name="information-circle-outline" size={20} color="#666" />
+                            <Ionicons name="information-circle-outline" size={20} color="#505050" />
                         </TouchableOpacity>
                     </View>
 
@@ -292,11 +292,11 @@ const styles = StyleSheet.create({
     },
     statusText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     timeText: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     infoSection: {
         backgroundColor: '#F8F9FA',
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 13,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     infoValue: {
         fontSize: 13,
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     },
     sectionTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     fieldLabel: {
         fontSize: 14,
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     },
     charCount: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'right',
         marginTop: 4,
     },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     infoLink: {
         fontSize: 12,

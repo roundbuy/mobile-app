@@ -100,7 +100,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
         {/* User Info */}
         <View style={styles.userSection}>
           <View style={styles.userAvatar}>
-            <Ionicons name="person-circle" size={48} color="#666" />
+            <Ionicons name="person-circle" size={48} color="#505050" />
           </View>
           <Text style={styles.username}>{username}</Text>
         </View>
@@ -119,7 +119,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
           <TextInput
             style={styles.textArea}
             placeholder={t('Share more about your experience')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             numberOfLines={4}
             value={experience}
@@ -140,7 +140,7 @@ const ReviewSiteFormScreen = ({ navigation }) => {
           <TextInput
             style={styles.textArea}
             placeholder={t('Your suggestions here...')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             numberOfLines={4}
             value={improvements}

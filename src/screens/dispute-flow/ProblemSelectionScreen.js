@@ -219,7 +219,7 @@ const ProblemSelectionScreen = ({ navigation, route }) => {
                     <Text style={styles.infoLinkText}>
                         More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
                 </TouchableOpacity>
             </ScrollView>
 
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     },
     headerStep: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     content: {
         flex: 1,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     },
     problemSubtitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         lineHeight: 16,
     },
     checkbox: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         flex: 1,
     },
     linkText: {

@@ -432,7 +432,7 @@ const SupportResolutionScreen = ({ navigation }) => {
 
             {/* Footer Info */}
             <View style={styles.footer}>
-                <Feather name="info" size={16} color="#666" />
+                <Feather name="info" size={16} color="#505050" />
                 <Text style={styles.footerText}>
                     More information on Deleted ads,{' '}
                     <Text style={styles.footerLink}>{t('click here')}</Text>
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     mainTabText: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#999',
+        color: '#303234',
     },
     mainTabTextActive: {
         color: '#000',
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     },
     subTabText: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
     },
     subTabTextActive: {
         color: '#000',
@@ -560,12 +560,12 @@ const styles = StyleSheet.create({
     },
     itemDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     itemTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginLeft: 8,
     },
     emptyContainer: {
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
         marginTop: 16,
     },
     footer: {
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
         flex: 1,
     },

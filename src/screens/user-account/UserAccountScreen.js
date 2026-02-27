@@ -78,23 +78,24 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 5, route: 'Wallet', title: t('account.wallet', 'My Wallet'), icon: 'wallet-outline' },
       { id: 6, route: 'CustomerSupport', title: t('account.support', 'Customer support'), icon: 'help-circle-outline' },
       { id: 7, route: 'CountrySettings', title: t('account.country_settings', 'Country settings'), icon: 'globe-outline' },
-      { id: 13, route: 'MeasurementSettings', title: t('account.measurement', 'Measurement Unit'), icon: 'resize-outline' },
       { id: 8, route: 'Notifications', title: t('profile.notifications', 'Notifications'), icon: 'notifications-outline' },
       { id: 9, route: 'ContactSupport', title: t('account.report_content', 'Report content'), icon: 'flag-outline' },
       { id: 10, route: 'LegalInfo', title: t('account.legal_info', 'Legal info'), icon: 'document-text-outline' },
-      { id: 11, route: 'logout', title: t('auth.logout', 'Log out'), icon: 'log-out-outline', isLogout: true },
+      { id: 11, route: 'logout', title: t('auth.logout', 'Logout'), icon: 'log-out-outline', isLogout: true },
     ],
     settings: [
-      { id: 1, route: 'ManageOffers', title: t('account.manage_offers', 'Manage offers'), icon: 'pricetag-outline' },
-      { id: 12, route: 'PickUpExchange', title: t('account.pickups', 'Pick Ups & Exchanges'), icon: 'calendar-outline' },
-      { id: 2, route: 'MyAds', title: 'My Ads', icon: 'megaphone-outline' },
-      { id: 3, route: 'SupportResolution', title: t('account.support_resolution', 'Support & Resolution'), icon: 'help-circle-outline', badge: 0 },
-      { id: 4, route: 'PurchaseVisibility', title: t('account.purchase_visibility', 'Purchase Visibility'), icon: 'eye-outline' },
-      { id: 5, route: 'DefaultLocation', title: t('account.locations', 'Default location & Product locations'), icon: 'location-outline' },
-      { id: 6, route: 'MyMembership', title: t('account.membership', 'Membership'), icon: 'card-outline' },
+      { id: 1, route: 'MyAds', title: 'My Listings', icon: 'megaphone-outline' },
+      { id: 2, route: 'ManageOffers', title: 'Manage offers', icon: 'pricetag-outline' },
+      { id: 14, route: 'ActionCenterMessagesScreen', title: 'Action Inbox', icon: 'mail-unread-outline' },
+      { id: 13, route: 'ActionCenterScreen', title: 'Action Center', icon: 'chatbubbles-outline', badge: 2 }, // Added badge for demo purposes
+      { id: 12, route: 'PickUpExchange', title: 'Pick Ups', icon: 'calendar-outline' },
+      { id: 4, route: 'PurchaseVisibility', title: 'Visibility Boosts', icon: 'eye-outline' },
+      { id: 5, route: 'DefaultLocation', title: 'My locations', icon: 'location-outline' },
+      { id: 6, route: 'MyMembership', title: 'Membership', icon: 'card-outline' },
+      { id: 3, route: 'SupportResolution', title: 'My Resolutions', icon: 'help-circle-outline', badge: 0 },
       { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
-      { id: 9, route: 'Rewards', title: t('account.rewards', 'Rewards'), icon: 'gift-outline' },
+      { id: 9, route: 'Rewards', title: 'My Rewards', icon: 'gift-outline' },
       { id: 10, route: 'Review', title: t('account.review', 'Review'), icon: 'star-outline' },
       { id: 11, route: 'Share', title: t('account.share', 'Share'), icon: 'share-social-outline' },
     ],
@@ -119,11 +120,9 @@ const UserAccountScreen = ({ navigation }) => {
         activeOpacity={0.7}
       >
         <View style={styles.menuItemContent}>
-          {item.route === 'ManageOffers' ? (
-            <Image source={offerIcon} style={styles.customMenuIcon} />
-          ) : (
-            <Ionicons name={item.icon} size={24} color="#666" style={styles.menuIcon} />
-          )}
+
+          <Ionicons name={item.icon} size={24} color="#505050" style={styles.menuIcon} />
+
           <Text style={[styles.menuItemText, item.isLogout && styles.logoutText]}>
             {item.title}
           </Text>
@@ -133,7 +132,7 @@ const UserAccountScreen = ({ navigation }) => {
             </View>
           )}
         </View>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
+        <Ionicons name="chevron-forward" size={20} color="#303234" />
       </TouchableOpacity>
     );
   };
@@ -161,7 +160,7 @@ const UserAccountScreen = ({ navigation }) => {
               style={styles.profileImage}
             />
           ) : (
-            <FontAwesome name="user-circle" size={60} color="#666" />
+            <FontAwesome name="user-circle" size={60} color="#505050" />
           )}
           <View style={styles.editBadge}>
             <Ionicons name="camera" size={16} color="#fff" />
@@ -274,7 +273,7 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -294,7 +293,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeTabText: {
     color: '#000',
@@ -323,7 +322,7 @@ const styles = StyleSheet.create({
   customMenuIcon: {
     width: 17,
     height: 23,
-    tintColor: '#666',
+    tintColor: '#505050',
     marginRight: 20,
     marginLeft: 5,
   },
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
     marginTop: 8,
   },
@@ -353,7 +352,7 @@ const styles = StyleSheet.create({
   },
   copyright: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
     textAlign: 'center',
     width: '100%',

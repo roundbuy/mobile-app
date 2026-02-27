@@ -29,13 +29,22 @@ const RewardsScreen = ({ navigation }) => {
     try {
       setLoading(true);
       const response = await rewardsService.getRewards();
+      const staticLevelReward = {
+        id: 'level_rewards',
+        name: 'Level Rewards',
+        description: 'Earn points and unlock exclusive rewards',
+        icon: 'star-circle',
+        color: '#4CAF50',
+        type: 'level',
+      };
+
       if (response && response.data) {
-        setCategories(response.data);
+        setCategories([staticLevelReward, ...response.data]);
       } else if (Array.isArray(response)) {
-        setCategories(response);
+        setCategories([staticLevelReward, ...response]);
       } else {
         console.warn('Unexpected rewards format:', response);
-        setCategories([]);
+        setCategories([staticLevelReward]);
       }
     } catch (error) {
       console.error('Error fetching rewards:', error);
@@ -52,6 +61,8 @@ const RewardsScreen = ({ navigation }) => {
   const handleCategoryPress = (category) => {
     if (category.type === 'lottery') {
       navigation.navigate('RewardCategoryDetail', { category });
+    } else if (category.type === 'level') {
+      navigation.navigate('RewardsLevel');
     } else {
       navigation.navigate('RewardCategoryDetail', { category });
     }
@@ -78,7 +89,7 @@ const RewardsScreen = ({ navigation }) => {
           </View>
         ) : null}
       </View>
-      <Ionicons name="chevron-forward" size={24} color="#999" />
+      <Ionicons name="chevron-forward" size={24} color="#303234" />
     </TouchableOpacity>
   );
 
@@ -169,7 +180,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -207,7 +218,7 @@ const styles = StyleSheet.create({
   },
   categoryDescription: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
     lineHeight: 18,
   },
@@ -233,7 +244,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
   loadingContainer: {

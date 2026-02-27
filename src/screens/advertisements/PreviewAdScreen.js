@@ -4,6 +4,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const PreviewAdScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -23,12 +24,10 @@ const PreviewAdScreen = ({ navigation, route }) => {
     color_id,
     gender_id,
     price,
-    location_id,
-    dim_length,
-    dim_width,
-    dim_height,
-    dim_unit,
-    displayTime = '60days'
+    location_ids, // Updated: Array of location IDs
+    displayTime = '60days',
+    isEdit,
+    adId,
   } = route.params || {};
 
   const handleSave = async () => {
@@ -53,25 +52,41 @@ const PreviewAdScreen = ({ navigation, route }) => {
         age_id,
         size_id,
         color_id,
-        dim_length,
-        dim_width,
-        dim_height,
-        dim_unit,
+        // dim_length, // These seem unused or optional in destructuring above, ensuring we pass what's needed
+        // dim_width,
+        // dim_height,
+        // dim_unit,
         price: price || 0,
-        location_id,
+        location_ids, // Pass array of location IDs
         display_duration_days: displayTime === '60days' ? 60 : null, // null for continuous
       };
 
-      // Create advertisement
-      const response = await advertisementService.createAdvertisement(adData);
+      // Add dimensions if they exist in params
+      if (route.params?.dim_length) adData.dim_length = route.params.dim_length;
+      if (route.params?.dim_width) adData.dim_width = route.params.dim_width;
+      if (route.params?.dim_height) adData.dim_height = route.params.dim_height;
+      if (route.params?.dim_unit) adData.dim_unit = route.params.dim_unit;
+
+      let response;
+      if (isEdit && adId) {
+        response = await advertisementService.updateAdvertisement(adId, adData);
+      } else {
+        response = await advertisementService.createAdvertisement(adData);
+      }
 
       if (response.success) {
-        // Navigate to success screen
-        navigation.navigate('AdCreationSuccess', {
-          advertisement: response.data.advertisement,
-        });
+        // Navigate to success screen or back to details if editing
+        if (isEdit) {
+          Alert.alert(t('Success'), t('Advertisement updated successfully'), [
+            { text: 'OK', onPress: () => navigation.navigate('MyAdsDetail', { ad: response.data.advertisement }) }
+          ]);
+        } else {
+          navigation.navigate('AdCreationSuccess', {
+            advertisement: response.data.advertisement,
+          });
+        }
       } else {
-        Alert.alert(t('Error'), response.message || t('Failed to create advertisement'));
+        Alert.alert(t('Error'), response.message || t(isEdit ? 'Failed to update advertisement' : 'Failed to create advertisement'));
       }
     } catch (error) {
       console.error('Save advertisement error:', error);
@@ -81,10 +96,35 @@ const PreviewAdScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleContinue = () => {
-    navigation.navigate('AdPaymentMethod', {
-      ...route.params,
-    });
+  const getLocationDisplay = () => {
+    const locations = route.params?.locations; // Array of location objects
+    if (!locations || locations.length === 0) return t('No location selected');
+
+    if (locations.length === 1) {
+      const loc = locations[0];
+      return (
+        <Text style={styles.filterValue}>
+          {loc.name}
+          {'\n'}
+          <Text style={styles.filterSubValue}>
+            {[loc.street, loc.city, loc.region, loc.country, loc.zip_code]
+              .filter(Boolean)
+              .join(', ')}
+          </Text>
+        </Text>
+      );
+    }
+
+    return (
+      <View>
+        <Text style={styles.filterValue}>{locations.length} locations selected:</Text>
+        {locations.map((loc, index) => (
+          <Text key={loc.id || index} style={styles.multiLocationItem}>
+            • {loc.name} <Text style={styles.filterSubValue}>({loc.city})</Text>
+          </Text>
+        ))}
+      </View>
+    );
   };
 
   return (
@@ -95,8 +135,7 @@ const PreviewAdScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('Preview and Check')}</Text>
-          {/* <Text style={styles.stepIndicator}>4/8</Text> */}
+          <Text style={styles.headerTitle}>{route.params?.isEdit ? t('Update Advertisement') : t('Preview and Check')}</Text>
         </View>
 
         {/* Product Image */}
@@ -104,7 +143,7 @@ const PreviewAdScreen = ({ navigation, route }) => {
           {images && images.length > 0 ? (
             <View style={styles.imagePlaceholder}>
               <Image
-                source={{ uri: images[0].startsWith('http') ? images[0] : `http://localhost:5001${images[0]}` }}
+                source={{ uri: getFullImageUrl(images[0]) }}
                 style={styles.imageBox}
                 resizeMode="cover"
               />
@@ -237,22 +276,10 @@ const PreviewAdScreen = ({ navigation, route }) => {
               )}
 
               {/* Location */}
-              {route.params?.location && (
+              {route.params?.locations && (
                 <View style={[styles.filterItem, styles.filterItemFull]}>
                   <Text style={styles.filterLabel}>{t('Location:')}</Text>
-                  <Text style={styles.filterValue}>
-                    {route.params.location.name}
-                    {'\n'}
-                    <Text style={styles.filterSubValue}>
-                      {[
-                        route.params.location.street,
-                        route.params.location.city,
-                        route.params.location.region,
-                        route.params.location.country,
-                        route.params.location.zip_code
-                      ].filter(Boolean).join(', ')}
-                    </Text>
-                  </Text>
+                  {getLocationDisplay()}
                 </View>
               )}
             </View>
@@ -269,19 +296,12 @@ const PreviewAdScreen = ({ navigation, route }) => {
             {isSaving ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text style={styles.saveButtonText}>{t('Saving...')}</Text>
+                <Text style={styles.saveButtonText}>{route.params?.isEdit ? t('Updating...') : t('Saving...')}</Text>
               </View>
             ) : (
-              <Text style={styles.saveButtonText}>{t('Save The Ad')}</Text>
+              <Text style={styles.saveButtonText}>{route.params?.isEdit ? t('Update Ad') : t('Save The Ad')}</Text>
             )}
           </TouchableOpacity>
-
-          {/* <TouchableOpacity
-            style={[styles.actionButton, styles.continueButton]}
-            onPress={handleContinue}
-          >
-            <Text style={styles.continueButtonText}>{t('Continue to Payment')}</Text>
-          </TouchableOpacity> */}
         </View>
 
         <View style={styles.bottomSpace} />
@@ -315,10 +335,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
   },
-  stepIndicator: {
-    fontSize: 16,
-    color: '#666',
-  },
   imageContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
@@ -341,7 +357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   placeholderText: {
-    color: '#999',
+    color: '#303234',
     fontSize: 16,
   },
   dotsContainer: {
@@ -357,7 +373,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   dotActive: {
-    backgroundColor: '#666',
+    backgroundColor: '#505050',
   },
   productInfo: {
     paddingHorizontal: 20,
@@ -381,7 +397,7 @@ const styles = StyleSheet.create({
   },
   productDistance: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   priceContainer: {
     backgroundColor: '#F0F0F0',
@@ -405,7 +421,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   readMore: {
@@ -426,14 +442,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50', // Green for save
   },
   saveButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  continueButton: {
-    backgroundColor: COLORS.primary,
-  },
-  continueButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
@@ -470,7 +478,7 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
   },
   filterValue: {
@@ -481,8 +489,15 @@ const styles = StyleSheet.create({
   filterSubValue: {
     fontSize: 12,
     fontWeight: '400',
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
+  },
+  multiLocationItem: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginTop: 4,
+    paddingLeft: 8,
   },
   bottomSpace: {
     height: 30,

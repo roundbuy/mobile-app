@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     },
     description: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
         lineHeight: 22,
         marginTop: 20,
         marginBottom: 24,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     },
     optionDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     infoBox: {
         flexDirection: 'row',
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
         marginLeft: 12,
     },

@@ -202,7 +202,7 @@ const PersonalInformationScreen = ({ navigation }) => {
               />
             ) : (
               <View style={styles.profileImagePlaceholder}>
-                <FontAwesome name="user" size={40} color="#999" />
+                <FontAwesome name="user" size={40} color="#303234" />
               </View>
             )}
             <View style={styles.cameraIconContainer}>
@@ -225,7 +225,7 @@ const PersonalInformationScreen = ({ navigation }) => {
             onChangeText={(text) => updateField('name', text)}
             editable={isEditMode}
             placeholder={t('Enter your name')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -238,7 +238,7 @@ const PersonalInformationScreen = ({ navigation }) => {
             onChangeText={(text) => updateField('email', text)}
             editable={isEditMode}
             placeholder={t('Enter your email')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -253,7 +253,7 @@ const PersonalInformationScreen = ({ navigation }) => {
             onChangeText={(text) => updateField('phone', text)}
             editable={isEditMode}
             placeholder={t('Enter your phone number')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="phone-pad"
           />
         </View>
@@ -267,14 +267,14 @@ const PersonalInformationScreen = ({ navigation }) => {
             onChangeText={(text) => updateField('billingAddress', text)}
             editable={isEditMode}
             placeholder={t('Enter your billing address')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
           />
         </View>
 
         {/* Info Note */}
         <View style={styles.infoContainer}>
-          <Ionicons name="information-circle-outline" size={20} color="#666" />
+          <Ionicons name="information-circle-outline" size={20} color="#505050" />
           <Text style={styles.infoText}>{t("Please note! The billing address is only used for billing, and it is not shared at the service with other users, and it's neither centre-point nor product location address.")}</Text>
         </View>
 
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
 
   content: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   input: {
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
   inputDisabled: {
     backgroundColor: '#f8f8f8',
-    color: '#666',
+    color: '#505050',
   },
   infoContainer: {
     flexDirection: 'row',
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
     marginLeft: 8,
   },
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   profileImageHint: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
   },
 });

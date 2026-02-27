@@ -2,21 +2,15 @@ import React from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
-import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const CookiesConsentScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleAcceptAll = () => {
     // Save cookie preferences and proceed to registration
     console.log('Cookies accepted');
-    navigation.replace('Registration');
-  };
-
-  const handleRejectAll = () => {
-    // Save cookie preferences (rejected) and direct to demo info page
-    console.log('Cookies rejected');
-    navigation.navigate('RoundBuyInfo', { from: 'cookies' });
+    navigation.replace('LaunchOnboarding');
   };
 
   const handleMoreInfo = () => {
@@ -35,6 +29,8 @@ const CookiesConsentScreen = ({ navigation }) => {
     navigation.navigate('PatentPending');
   };
 
+  const { colors, typography, spacing } = ONBOARDING_THEME;
+
   return (
     <SafeScreenContainer>
       {/* Header with Logo and Patent Info */}
@@ -44,56 +40,48 @@ const CookiesConsentScreen = ({ navigation }) => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+        <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
-            for more information{' '}
-            <Text style={styles.clickHere}>{t('click here')}</Text>
+            {t('Read more about')} <Text style={[styles.infoLink, { color: colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>{t('Cookies')}</Text>
+        <Text style={[styles.title, typography.heading, { textAlign: 'left' }]}>{t('Cookies')}</Text>
 
-        <Text style={styles.description}>
-          We use cookies to improve user experience. Choose what cookies you allow us to use. You can read more about our{' '}
-          <Text style={styles.linkText} onPress={handlePrivacyPolicyPress}>{t('Privacy Policy')}</Text>
-          {' '}and{' '}
-          <Text style={styles.linkText} onPress={handleCookiePolicyPress}>{t('Cookie Policy')}</Text>.
+        <Text style={[styles.description, typography.body, { textAlign: 'left' }]}>
+          {t('We use cookies to improve user experience. Choose what cookies you allow us to use. You can read more about our ')}
+          <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={handlePrivacyPolicyPress}>{t('Privacy Policy')}</Text>
+          {' '}{t('and')}{' '}
+          <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={handleCookiePolicyPress}>{t('Cookies Policy')}</Text>.
         </Text>
       </View>
 
       {/* Footer with Buttons */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.primaryButton}
+          style={[styles.primaryButton, { backgroundColor: colors.primaryButton }]}
           onPress={handleAcceptAll}
         >
           <Text style={styles.primaryButtonText}>{t('Accept All')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={handleRejectAll}
-        >
-          <Text style={styles.primaryButtonText}>{t('Reject All')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
           style={styles.secondaryButton}
           onPress={handleMoreInfo}
         >
-          <Text style={styles.secondaryButtonText}>{t('Cookies Settings')}</Text>
+          <Text style={styles.secondaryButtonText}>{t('More info')}</Text>
         </TouchableOpacity>
 
         <View style={styles.footerContent}>
           <Text style={styles.footerDescription}>
-            Read more about our{' '}
-            <Text style={styles.linkText} onPress={handlePrivacyPolicyPress}>{t('Privacy Policy')}</Text>
-            {' '}and{' '}
-            <Text style={styles.linkText} onPress={handleCookiePolicyPress}>{t('Cookie Policy')}</Text>.
+            {t('Read our')} {' '}
+            <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={handlePrivacyPolicyPress}>{t('Privacy Policy')}</Text>
+            {' '}{t('and')}{' '}
+            <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={handleCookiePolicyPress}>{t('Cookies Policy')}</Text>
           </Text>
         </View>
       </View>
@@ -106,63 +94,49 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 40,
     marginTop: 10,
+    paddingHorizontal: 20,
   },
   logo: {
-    width: 140,
+    width: 150,
     height: 60,
+    marginBottom: 5,
   },
   patentText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 12,
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#001C64',
+    marginBottom: 2,
   },
   infoLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
-  },
-  clickHere: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+    fontSize: 14,
     fontWeight: '500',
+    color: '#001C64',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginTop: 200,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 30,
+    alignItems: 'left',
+    marginTop: 0, // Removed top margin to allow flex-end to work fully
+    paddingBottom: 60,
+    alignContent: 'left',
   },
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1a1a1a',
     marginBottom: 14,
-    letterSpacing: -0.3,
+    alignItems: 'left',
   },
   description: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#000000ff',
-    lineHeight: 22,
-    letterSpacing: -0.1,
-  },
-  linkText: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
-    fontWeight: '500',
+    lineHeight: 24,
+    textAlign: 'left',
   },
   footer: {
-    paddingTop: 40,
+    paddingTop: 10, // Reduced top padding since content handles space
     paddingBottom: 20,
+    paddingHorizontal: 30,
   },
   primaryButton: {
-    height: 54,
-    backgroundColor: COLORS.primary,
-    borderRadius: 27,
+    height: 50,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -176,12 +150,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
-    letterSpacing: 0.3,
   },
   secondaryButton: {
-    height: 54,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 27,
+    height: 50,
+    backgroundColor: '#f5f5f5', // Keep light grey for consistency with "More info" visual hierarchy often seen
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -190,23 +163,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#1a1a1a',
-    letterSpacing: 0.2,
   },
   footerContent: {
     paddingHorizontal: 10,
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#000000ff',
-    lineHeight: 22,
-    letterSpacing: -0.1,
-    textAlign: 'center',
   },
   footerDescription: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#000000ff',
+    color: '#333333',
     lineHeight: 22,
-    letterSpacing: -0.1,
     textAlign: 'center',
   },
 });

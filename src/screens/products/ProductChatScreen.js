@@ -508,7 +508,7 @@ const ProductChatScreen = ({ route, navigation }) => {
                 resizeMode="cover"
               />
             ) : (
-              <FontAwesome name="user-circle" size={24} color="#666" />
+              <FontAwesome name="user-circle" size={24} color="#505050" />
             )}
           </View>
           <View style={styles.messageContent}>
@@ -572,7 +572,7 @@ const ProductChatScreen = ({ route, navigation }) => {
               <TextInput
                 style={styles.offerPriceInput}
                 placeholder={`${currencySymbol} 0.00`}
-                placeholderTextColor="#999"
+                placeholderTextColor="#303234"
                 value={offerAmount}
                 onChangeText={setOfferAmount}
                 keyboardType="decimal-pad"
@@ -695,7 +695,7 @@ const ProductChatScreen = ({ route, navigation }) => {
             <TextInput
               style={styles.offerInput}
               placeholder={`Enter offer amount (e.g., ${currencySymbol}250.00)`}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={offerAmount}
               onChangeText={setOfferAmount}
               keyboardType="decimal-pad"
@@ -712,7 +712,7 @@ const ProductChatScreen = ({ route, navigation }) => {
         {/* Message Input */}
         <View style={styles.inputContainer}>
           <TouchableOpacity style={styles.emojiButton}>
-            <Ionicons name="happy-outline" size={24} color="#666" />
+            <Ionicons name="happy-outline" size={24} color="#505050" />
           </TouchableOpacity>
           <TextInput
             style={styles.messageInput}
@@ -721,7 +721,7 @@ const ProductChatScreen = ({ route, navigation }) => {
                 ? "Advertisement data missing..."
                 : "Type a message..."
             }
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={message}
             onChangeText={setMessage}
             multiline
@@ -809,12 +809,12 @@ const styles = StyleSheet.create({
   },
   productDistance: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
   },
   productLocation: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   offerPriceContainer: {
@@ -864,7 +864,7 @@ const styles = StyleSheet.create({
   },
   pendingOfferSubtext: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   offerHistoryContainer: {
     backgroundColor: '#f9f9f9',
@@ -926,18 +926,18 @@ const styles = StyleSheet.create({
   },
   offerHistoryDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginBottom: 4,
   },
   offerHistoryMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     fontStyle: 'italic',
   },
   dateHeader: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     paddingVertical: 8,
     backgroundColor: '#f5f5f5',
   },
@@ -982,7 +982,7 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 11,
-    color: '#999',
+    color: '#303234',
     marginLeft: 8,
   },
   messageText: {
@@ -995,7 +995,7 @@ const styles = StyleSheet.create({
   },
   reactionText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   offerMessageContainer: {
     marginVertical: 12,
@@ -1023,7 +1023,7 @@ const styles = StyleSheet.create({
   },
   offerText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginTop: 2,
   },
   offerAmount: {
@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
   },
   offerActionText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   offerButtonsRow: {
@@ -1100,7 +1100,7 @@ const styles = StyleSheet.create({
   },
   acceptedDescription: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   scheduleButton: {
@@ -1128,7 +1128,7 @@ const styles = StyleSheet.create({
   },
   declinedSubtext: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   warningContainer: {
     backgroundColor: '#fff3cd',
@@ -1229,7 +1229,7 @@ const styles = StyleSheet.create({
   loadingMessagesText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   emptyMessagesContainer: {
     paddingVertical: 40,
@@ -1237,7 +1237,7 @@ const styles = StyleSheet.create({
   },
   emptyMessagesText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
 });

@@ -9,14 +9,14 @@ import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
 
 const ChooseFiltersScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [filters, setFilters] = useState({
-    category_id: null,
-    subcategory_id: null,
-    activity_id: null,
-    price: '',
-    condition_id: null,
-    gender_id: null,
+    category_id: route.params?.category_id || null,
+    subcategory_id: route.params?.subcategory_id || null,
+    activity_id: route.params?.activity_id || null,
+    price: route.params?.price || '',
+    condition_id: route.params?.condition_id || null,
+    gender_id: route.params?.gender_id || null,
   });
 
   const [filterOptions, setFilterOptions] = useState({
@@ -30,7 +30,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
   const [error, setError] = useState(null);
 
   // Location selection state
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedLocations, setSelectedLocations] = useState([]);
   const [userLocations, setUserLocations] = useState([]);
   const [showLocationModal, setShowLocationModal] = useState(false);
 
@@ -66,9 +66,9 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
         // Auto-select default location or first location
         const defaultLocation = locations.find(loc => loc.is_default);
         if (defaultLocation) {
-          setSelectedLocation(defaultLocation.id);
+          setSelectedLocations([defaultLocation.id]);
         } else if (locations.length > 0) {
-          setSelectedLocation(locations[0].id);
+          setSelectedLocations([locations[0].id]);
         }
       }
     } catch (err) {
@@ -92,16 +92,10 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
   };
 
   const validateFilters = () => {
-    // Check required fields
     if (!filters.category_id) {
       Alert.alert(t('Validation Error'), t('Please select a category'));
       return false;
     }
-
-    // if (!filters.subcategory_id) {
-    //   Alert.alert(t('Validation Error'), t('Please select a subcategory'));
-    //   return false;
-    // }
 
     if (!filters.activity_id) {
       Alert.alert(t('Validation Error'), t('Please select an activity'));
@@ -123,8 +117,8 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
       return false;
     }
 
-    if (!selectedLocation) {
-      Alert.alert(t('Validation Error'), t('Please select a location'));
+    if (!selectedLocations || selectedLocations.length === 0) {
+      Alert.alert(t('Validation Error'), t('Please select at least one location'));
       return false;
     }
 
@@ -132,13 +126,12 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
   };
 
   const handleContinue = () => {
-    // Validate before continuing
     if (!validateFilters()) {
       return;
     }
 
     // Get selected location data
-    const selectedLocationData = userLocations.find(loc => loc.id === selectedLocation);
+    const selectedLocationsData = userLocations.filter(loc => selectedLocations.includes(loc.id));
 
     // Get filter names for display
     const categoryName = filterOptions.categories.find(c => c.id === filters.category_id)?.name;
@@ -156,22 +149,54 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
     navigation.navigate('ChooseRestFilters', {
       ...route.params,
       ...filters,
-      location_id: selectedLocation,
-      location: selectedLocationData,
-      // Add filter names for preview
+      location_ids: selectedLocations,
+      locations: selectedLocationsData,
       categoryName,
       subcategoryName,
       activityName,
       conditionName,
       genderName,
+      // Pass through edit params
+      isEdit: route.params?.isEdit,
+      adId: route.params?.adId,
     });
   };
 
   const getSelectedLocationDisplay = () => {
-    const location = userLocations.find(loc => loc.id === selectedLocation);
-    if (!location) return 'No location selected';
+    if (!selectedLocations || selectedLocations.length === 0) return 'No location selected';
 
-    return `${location.name} - ${location.city}, ${location.country}`;
+    if (selectedLocations.length === 1) {
+      const location = userLocations.find(loc => loc.id === selectedLocations[0]);
+      return location ? `${location.name} - ${location.city}, ${location.country}` : 'Unknown Location';
+    }
+
+    return `${selectedLocations.length} locations selected`;
+  };
+
+  const getSelectedLocationAddressDisplay = () => {
+    if (!selectedLocations || selectedLocations.length === 0) return 'No location selected';
+
+    if (selectedLocations.length === 1) {
+      const location = userLocations.find(loc => loc.id === selectedLocations[0]);
+      if (!location) return '';
+      return [
+        location.street,
+        location.street2,
+        location.city,
+        location.region,
+        location.country,
+        location.zip_code
+      ].filter(Boolean).join(', ');
+    }
+
+    // List first 2 names...
+    const names = userLocations
+      .filter(loc => selectedLocations.includes(loc.id))
+      .map(loc => loc.name)
+      .slice(0, 2)
+      .join(', ');
+
+    return selectedLocations.length > 2 ? `${names}, ...` : names;
   };
 
   return (
@@ -206,7 +231,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
         )}
 
         {/* Filter Fields */}
-        {!loading && !error && (
+        {!loading && !error ? (
           <View style={styles.filtersContainer}>
             <FilterDropdown
               label={t('Category *')}
@@ -260,7 +285,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
               <Text style={styles.locationLabel}>{t('Choose location: *')}</Text>
 
               {userLocations.length > 0 ? (
-                <>
+                <View>
                   {/* Show selected location */}
                   <TouchableOpacity
                     style={styles.selectedLocationCard}
@@ -268,19 +293,10 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
                   >
                     <View style={styles.locationInfo}>
                       <Text style={styles.selectedLocationName}>
-                        {userLocations.find(loc => loc.id === selectedLocation)?.name || 'Select location'}
+                        {getSelectedLocationDisplay()}
                       </Text>
                       <Text style={styles.selectedLocationAddress} numberOfLines={2}>
-                        {selectedLocation && userLocations.find(l => l.id === selectedLocation)
-                          ? [
-                            userLocations.find(l => l.id === selectedLocation)?.street,
-                            userLocations.find(l => l.id === selectedLocation)?.street2,
-                            userLocations.find(l => l.id === selectedLocation)?.city,
-                            userLocations.find(l => l.id === selectedLocation)?.region,
-                            userLocations.find(l => l.id === selectedLocation)?.country,
-                            userLocations.find(l => l.id === selectedLocation)?.zip_code
-                          ].filter(Boolean).join(', ')
-                          : 'No location selected'}
+                        {getSelectedLocationAddressDisplay()}
                       </Text>
                     </View>
                     <Text style={styles.changeText}>{t('Change')}</Text>
@@ -294,7 +310,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
                     <Text style={styles.showMoreText}>Show all locations ({userLocations.length})</Text>
                     <Text style={styles.showMoreIcon}>→</Text>
                   </TouchableOpacity>
-                </>
+                </View>
               ) : (
                 <View style={styles.noLocationContainer}>
                   <Text style={styles.noLocationText}>{t('No locations found')}</Text>
@@ -305,7 +321,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
               )}
             </View>
           </View>
-        )}
+        ) : null}
 
         {/* Info Text */}
         <View style={styles.infoContainer}>
@@ -325,8 +341,8 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
         visible={showLocationModal}
         onClose={() => setShowLocationModal(false)}
         locations={userLocations}
-        selectedLocation={selectedLocation}
-        onSelectLocation={setSelectedLocation}
+        selectedLocations={selectedLocations}
+        onSelectLocations={setSelectedLocations}
       />
     </SafeScreenContainer>
   );
@@ -364,7 +380,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     paddingHorizontal: 20,
@@ -429,7 +445,7 @@ const styles = StyleSheet.create({
   },
   selectedLocationAddress: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
   changeText: {
@@ -459,7 +475,7 @@ const styles = StyleSheet.create({
   },
   noLocationText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   addLocationButton: {
@@ -479,7 +495,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#999',
+    color: '#303234',
     fontStyle: 'italic',
   },
   continueButton: {

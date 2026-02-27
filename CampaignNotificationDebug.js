@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
     },
     itemMessage: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4
     },
     itemMeta: {
         fontSize: 10,
-        color: '#999'
+        color: '#303234'
     },
     empty: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         fontStyle: 'italic',
         marginTop: 12
     }

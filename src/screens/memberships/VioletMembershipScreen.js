@@ -5,12 +5,12 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const VioletMembershipScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleSelectPlan = () => {
-    navigation.navigate('Cart', { 
-      planType: 'Violet', 
-      planName: 'Violet membership plan', 
-      price: 5.00 
+    navigation.navigate('Cart', {
+      planType: 'Violet',
+      planName: 'Violet membership plan',
+      price: 5.00
     });
   };
 
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   planSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   priceContainer: {
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   infoIconText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   selectButton: {
     backgroundColor: COLORS.primary,

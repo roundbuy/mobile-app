@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import faqService from '../../../services/faqService';
 
 const HelpFAQScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, title } = route?.params || {};
   const [searchText, setSearchText] = useState('');
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -226,7 +226,7 @@ const HelpFAQScreen = ({ route, navigation }) => {
                     <Ionicons
                       name={expandedSubcategories[subcategory.id] ? 'chevron-up' : 'chevron-down'}
                       size={20}
-                      color="#666"
+                      color="#505050"
                       style={{ marginLeft: 4 }}
                     />
                   </View>
@@ -291,17 +291,17 @@ const HelpFAQScreen = ({ route, navigation }) => {
       >
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          <Ionicons name="search" size={20} color="#505050" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder={t('Search FAQs...')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={searchText}
             onChangeText={setSearchText}
           />
           {searchText.length > 0 && (
             <TouchableOpacity onPress={() => setSearchText('')}>
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color="#303234" />
             </TouchableOpacity>
           )}
         </View>
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
   },
   emptyText: {
     marginTop: 12,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   emptySubtext: {
     marginTop: 4,
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
   },
   categoryContainer: {
     marginBottom: 12,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   categoryDescription: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginTop: 2,
   },
   categoryBadgeContainer: {
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   subcategoryCount: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
   },
   faqsContainer: {
     marginTop: 4,
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   },
   answerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   searchResultsContainer: {
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   },
   resultsCount: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
     fontWeight: '500',
   },

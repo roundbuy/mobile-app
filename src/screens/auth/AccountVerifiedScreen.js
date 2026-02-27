@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AccountVerifiedScreen = ({ navigation, route }) => {
@@ -21,17 +22,17 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
   return (
     <SafeScreenContainer>
       {/* Header with Logo and Patent Info */}
-      <View style={styles.header}>
+      {/* Header with Logo and Patent Info */}
+      <View style={styles.logoContainer}>
         <Image
           source={IMAGES.logoMain}
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+        <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
-            for more information{' '}
-            <Text style={styles.clickHere}>{t('click here')}</Text>
+            {t('Read more about')} <Text style={[styles.infoLink, { color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -65,28 +66,24 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: 40,
-    marginTop: 10,
+  logoContainer: {
+    alignItems: 'left',
+    marginBottom: 24,
   },
   logo: {
-    width: 140,
+    width: 120,
     height: 60,
-    marginBottom: 12,
   },
   patentText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#001C64',
+    marginBottom: 2,
   },
   infoLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#001C64',
   },
   clickHere: {
     color: COLORS.primary,
@@ -148,11 +145,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   copyright: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: '#8a8a8a',
+    fontSize: 12,
+    color: '#000000',
     textAlign: 'center',
-    letterSpacing: -0.1,
+    fontWeight: 'bold',
   },
 });
 

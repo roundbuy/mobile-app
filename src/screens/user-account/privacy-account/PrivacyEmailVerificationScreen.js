@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     },
     infoText: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
     },
     emailText: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     codeLabel: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
         marginBottom: 16,
         textAlign: 'center',
     },
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     },
     resendText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     resendLink: {
         fontSize: 14,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     resendLinkDisabled: {
-        color: '#999',
+        color: '#303234',
         textDecorationLine: 'none',
     },
 });

@@ -15,7 +15,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeDetailScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { disputeId } = route.params;
   const [dispute, setDispute] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,9 +49,9 @@ const DisputeDetailScreen = ({ navigation, route }) => {
       negotiating: '#9370DB',
       resolved: '#32CD32',
       escalated: '#FF6347',
-      closed: '#666',
+      closed: '#505050',
     };
-    return colors[status] || '#666';
+    return colors[status] || '#505050';
   };
 
   const getStatusIcon = (status) => {
@@ -104,10 +104,10 @@ const DisputeDetailScreen = ({ navigation, route }) => {
           styles.statusHeader,
           { backgroundColor: getStatusColor(dispute.status) }
         ]}>
-          <Feather 
-            name={getStatusIcon(dispute.status)} 
-            size={32} 
-            color="#FFF" 
+          <Feather
+            name={getStatusIcon(dispute.status)}
+            size={32}
+            color="#FFF"
           />
           <View style={styles.statusContent}>
             <Text style={styles.statusTitle}>
@@ -164,9 +164,9 @@ const DisputeDetailScreen = ({ navigation, route }) => {
           <View style={styles.card}>
             <InfoRow label={t('Category')} value={dispute.category_name} />
             <InfoRow label={t('Problem')} value={dispute.problem_name} />
-            <InfoRow 
-              label={t('Created')} 
-              value={new Date(dispute.created_at).toLocaleDateString()} 
+            <InfoRow
+              label={t('Created')}
+              value={new Date(dispute.created_at).toLocaleDateString()}
             />
           </View>
         </View>
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#666',
+    color: '#505050',
     marginTop: 20,
   },
   statusHeader: {
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   timelineTitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   timelineText: {
     fontSize: 16,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     width: 100,
   },
   infoValue: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   responseDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 10,
     textAlign: 'right',
   },

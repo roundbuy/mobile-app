@@ -36,7 +36,7 @@ const IssueDisputeBuyerReasonsScreen = ({ navigation, route }) => {
             <ScrollView style={styles.content}>
                 {/* Icon */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#666" />
+                    <FontAwesome name="clipboard" size={60} color="#505050" />
                     <View style={styles.checkBadge}>
                         <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
                     </View>
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         paddingHorizontal: 24,
         marginBottom: 24,
@@ -187,14 +187,14 @@ const styles = StyleSheet.create({
     },
     bullet: {
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
         marginRight: 8,
         marginTop: 2,
     },
     bulletText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         lineHeight: 18,
     },
     infoLinkContainer: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkHighlight: {
         color: COLORS.primary,
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#CCC',
     },
     dotActive: {
-        backgroundColor: '#666',
+        backgroundColor: '#505050',
     },
     readMoreButton: {
         backgroundColor: '#FFF',
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     },
     note: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
         paddingHorizontal: 24,
         marginBottom: 24,

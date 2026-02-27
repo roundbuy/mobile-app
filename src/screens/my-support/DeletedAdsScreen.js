@@ -16,7 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const DeletedAdsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [deletedAds, setDeletedAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -93,10 +93,10 @@ const DeletedAdsScreen = ({ navigation }) => {
 
       {item.appeal_status && (
         <View style={styles.appealStatusCard}>
-          <Feather 
-            name={item.appeal_status === 'approved' ? 'check-circle' : item.appeal_status === 'rejected' ? 'x-circle' : 'clock'} 
-            size={16} 
-            color={item.appeal_status === 'approved' ? '#32CD32' : item.appeal_status === 'rejected' ? '#FF4444' : '#FFA500'} 
+          <Feather
+            name={item.appeal_status === 'approved' ? 'check-circle' : item.appeal_status === 'rejected' ? 'x-circle' : 'clock'}
+            size={16}
+            color={item.appeal_status === 'approved' ? '#32CD32' : item.appeal_status === 'rejected' ? '#FF4444' : '#FFA500'}
           />
           <Text style={styles.appealStatusText}>
             Appeal Status: {supportService.formatAppealStatus(item.appeal_status)}
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   listContainer: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   deletedDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 5,
   },
   reasonCard: {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   appealStatusCard: {
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   appealDeadline: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     flex: 1,
   },
   appealButton: {
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   noAppealText: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     fontStyle: 'italic',
   },
   emptyContainer: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 10,
     textAlign: 'center',
     paddingHorizontal: 40,
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

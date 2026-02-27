@@ -5,6 +5,7 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const SocialLoginScreen = ({ navigation, route }) => {
@@ -147,11 +148,10 @@ const SocialLoginScreen = ({ navigation, route }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <Text style={styles.patentText}>{t('Patents Pending')}</Text>
           <TouchableOpacity onPress={handlePatentInfo}>
             <Text style={styles.infoLink}>
-              for more information{' '}
-              <Text style={styles.clickHere}>{t('click here')}</Text>
+              {t('Read more about')} <Text style={[styles.infoLink, { color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -257,7 +257,7 @@ const SocialLoginScreen = ({ navigation, route }) => {
         {/* Terms */}
         <Text style={styles.termsText}>
           By continuing, you agree to our{' '}
-          <Text style={styles.termsLink}>{t('Terms of service')}</Text> and{' '}
+          <Text style={styles.termsLink}>{t('Terms & Conditions')}</Text> and{' '}
           <Text style={styles.termsLink}>{t('Privacy Policy')}</Text>.
         </Text>
       </ScrollView>
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: 'left',
     marginBottom: 24,
   },
   logo: {
@@ -294,18 +294,15 @@ const styles = StyleSheet.create({
     height: 50,
   },
   patentText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 12,
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#001C64',
+    marginBottom: 2,
   },
   infoLink: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#001C64',
   },
   clickHere: {
     color: COLORS.primary,
@@ -429,7 +426,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   termsText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '400',
     color: '#8a8a8a',
     textAlign: 'center',
@@ -438,7 +435,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   termsLink: {
-    color: '#8a8a8a',
+    color: ONBOARDING_THEME.colors.link,
     textDecorationLine: 'underline',
   },
 });

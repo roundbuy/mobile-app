@@ -13,7 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeCategoryScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,10 +62,10 @@ const DisputeCategoryScreen = ({ navigation }) => {
               onPress={() => handleSelectCategory(category)}
             >
               <View style={styles.categoryIcon}>
-                <Feather 
-                  name={getCategoryIcon(category.slug)} 
-                  size={32} 
-                  color="#4169E1" 
+                <Feather
+                  name={getCategoryIcon(category.slug)}
+                  size={32}
+                  color="#4169E1"
                 />
               </View>
               <View style={styles.categoryContent}>
@@ -74,7 +74,7 @@ const DisputeCategoryScreen = ({ navigation }) => {
                   {category.description}
                 </Text>
               </View>
-              <Feather name="chevron-right" size={24} color="#999" />
+              <Feather name="chevron-right" size={24} color="#303234" />
             </TouchableOpacity>
           ))}
         </View>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   categoriesContainer: {
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   categoryDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   infoCard: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

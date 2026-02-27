@@ -17,5 +17,6 @@ export const IMAGES = {
   chair2: require('../../assets/chair2.png'),
   chair3: require('../../assets/chair3.png'),
   logo512: require('../../assets/Logo 12.11.2025 512 px (1).png'),
+  logoGreen: require('../../assets/Logo-green.png'),
   // add more images here
 };

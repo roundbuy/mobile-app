@@ -42,7 +42,7 @@ const SortDropdown = ({ selectedSort, onSortChange }) => {
                 <Text style={styles.dropdownButtonText} numberOfLines={1}>
                     {currentOption.label}
                 </Text>
-                <Ionicons name="chevron-down" size={16} color="#666" />
+                <Ionicons name="chevron-down" size={16} color="#505050" />
             </TouchableOpacity>
 
             <Modal
@@ -63,7 +63,7 @@ const SortDropdown = ({ selectedSort, onSortChange }) => {
                                 onPress={() => setModalVisible(false)}
                                 style={styles.closeButton}
                             >
-                                <Ionicons name="close" size={24} color="#666" />
+                                <Ionicons name="close" size={24} color="#505050" />
                             </TouchableOpacity>
                         </View>
 

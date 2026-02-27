@@ -78,6 +78,7 @@ const UserDrawer = ({ visible, onClose, navigation }) => {
         { id: 11, title: 'About Us', icon: 'people-outline', screen: 'AboutUs' },
         { id: 12, title: 'How it Works', icon: 'help-buoy-outline', screen: 'HowItWorks' },
         { id: 13, title: 'Visibility Boosts', icon: 'rocket-outline', screen: 'VisibilityBoostInfo' },
+        { id: 14, title: 'Green Vision', icon: 'leaf-outline', screen: 'GreenVision' },
         { id: 8, title: 'Settings', icon: 'settings-outline', screen: 'UserAccount' },
     ];
 
@@ -122,7 +123,7 @@ const UserDrawer = ({ visible, onClose, navigation }) => {
                         {/* User Info */}
                         <View style={styles.userSection}>
                             <View style={styles.avatarContainer}>
-                                <FontAwesome name="user-circle" size={60} color="#666" />
+                                <FontAwesome name="user-circle" size={60} color="#505050" />
                             </View>
                             <Text style={styles.userName}>{user?.name || 'User Name'}</Text>
                             <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
@@ -137,9 +138,9 @@ const UserDrawer = ({ visible, onClose, navigation }) => {
                                     onPress={() => handleMenuPress(item)}
                                     activeOpacity={0.7}
                                 >
-                                    <Ionicons name={item.icon} size={22} color="#666" style={styles.menuIcon} />
+                                    <Ionicons name={item.icon} size={22} color="#505050" style={styles.menuIcon} />
                                     <Text style={styles.menuItemText}>{item.title}</Text>
-                                    <Ionicons name="chevron-forward" size={20} color="#999" />
+                                    <Ionicons name="chevron-forward" size={20} color="#303234" />
                                 </TouchableOpacity>
                             ))}
 
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     },
     userEmail: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     menuContainer: {
         flex: 1,
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginBottom: 4,
     },
     versionText: {

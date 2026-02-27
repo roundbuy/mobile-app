@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const TicketDetailScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { ticketId } = route.params;
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -46,9 +46,9 @@ const TicketDetailScreen = ({ navigation, route }) => {
       open: '#FFA500',
       in_progress: '#4169E1',
       resolved: '#32CD32',
-      closed: '#666',
+      closed: '#505050',
     };
-    return colors[status] || '#666';
+    return colors[status] || '#505050';
   };
 
   const getPriorityColor = (priority) => {
@@ -58,7 +58,7 @@ const TicketDetailScreen = ({ navigation, route }) => {
       high: '#FF6347',
       urgent: '#FF0000',
     };
-    return colors[priority] || '#666';
+    return colors[priority] || '#505050';
   };
 
   const getStatusIcon = (status) => {
@@ -235,7 +235,7 @@ const TicketDetailScreen = ({ navigation, route }) => {
 
           {ticket.status === 'closed' && (
             <View style={styles.closedBanner}>
-              <Feather name="x-circle" size={24} color="#666" />
+              <Feather name="x-circle" size={24} color="#505050" />
               <Text style={styles.closedBannerText}>{t('This ticket is closed')}</Text>
             </View>
           )}
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#666',
+    color: '#505050',
     marginTop: 20,
   },
   statusHeader: {
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     width: 120,
   },
   infoValue: {
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   responseDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 10,
     textAlign: 'right',
   },
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   },
   resolvedDate: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 10,
     textAlign: 'right',
   },
@@ -455,12 +455,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#999',
+    borderColor: '#303234',
   },
   closedBannerText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginLeft: 10,
   },
 });

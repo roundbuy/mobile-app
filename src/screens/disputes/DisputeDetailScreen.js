@@ -221,7 +221,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
             <ScrollView style={styles.content}>
                 {/* Icon */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#666" />
+                    <FontAwesome name="clipboard" size={60} color="#505050" />
                     <View style={styles.checkBadge}>
                         <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
                     </View>
@@ -315,7 +315,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                     <Ionicons
                                         name={sellerDecision === 'accept' ? 'checkbox' : 'square-outline'}
                                         size={20}
-                                        color={sellerDecision === 'accept' ? COLORS.primary : '#999'}
+                                        color={sellerDecision === 'accept' ? COLORS.primary : '#303234'}
                                         style={styles.checkbox}
                                     />
                                     <Text style={[
@@ -333,7 +333,7 @@ const DisputeDetailScreen = ({ navigation, route }) => {
                                     <Ionicons
                                         name={sellerDecision === 'decline' ? 'checkbox' : 'square-outline'}
                                         size={20}
-                                        color={sellerDecision === 'decline' ? COLORS.primary : '#999'}
+                                        color={sellerDecision === 'decline' ? COLORS.primary : '#303234'}
                                         style={styles.checkbox}
                                     />
                                     <Text style={[
@@ -504,11 +504,11 @@ const styles = StyleSheet.create({
     },
     creationText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     creationTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     infoSection: {
         paddingHorizontal: 24,
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     infoValue: {
         fontSize: 14,
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     },
     linkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     linkHighlight: {
         color: COLORS.primary,
@@ -563,12 +563,12 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         letterSpacing: 0.5,
     },
     sectionTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     fieldLabel: {
         fontSize: 14,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     },
     decisionOptionText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         fontWeight: '500',
     },
     decisionOptionTextSelected: {
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     decisionRowText: {
         flex: 1,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     decisionRowTextSelected: {
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkHighlight: {
         color: COLORS.primary,
@@ -722,13 +722,13 @@ const styles = StyleSheet.create({
     },
     waitingText: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
         fontStyle: 'italic',
     },
     errorText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
         marginTop: 50,
     },

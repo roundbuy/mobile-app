@@ -131,7 +131,7 @@ const FeedbackStatusScreen = ({ navigation }) => {
               <Image source={{ uri: user.avatar }} style={styles.avatar} />
             ) : (
               <View style={[styles.avatar, styles.placeholderAvatar]}>
-                <FontAwesome name="user" size={20} color="#666" />
+                <FontAwesome name="user" size={20} color="#505050" />
               </View>
             )}
             <View>
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeTabText: {
     color: '#000',
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   subTabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeSubTabText: {
     color: COLORS.primary,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   productTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
   },
   message: {
     fontSize: 14,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#666',
+    color: '#505050',
   },
   actionsContainer: {
     flexDirection: 'row',
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
 });

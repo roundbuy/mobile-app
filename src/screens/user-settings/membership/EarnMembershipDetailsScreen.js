@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   stepsSection: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   stepDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     textAlign: 'center',
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
 });

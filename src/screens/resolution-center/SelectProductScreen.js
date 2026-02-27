@@ -91,7 +91,7 @@ const SelectProductScreen = ({ navigation, route }) => {
                     ${order.total_amount}
                   </Text>
                 </View>
-                <Feather name="chevron-right" size={24} color="#999" />
+                <Feather name="chevron-right" size={24} color="#303234" />
               </TouchableOpacity>
             ))}
           </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   ordersContainer: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   orderDate: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   orderPrice: {
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 10,
   },
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

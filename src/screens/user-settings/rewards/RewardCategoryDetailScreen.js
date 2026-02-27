@@ -225,7 +225,7 @@ const RewardCategoryDetailScreen = ({ navigation, route }) => {
                 <Text style={styles.menuTitle}>{option.title}</Text>
                 <Text style={styles.menuSubtitle}>{option.subtitle}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#999" />
+              <Ionicons name="chevron-forward" size={24} color="#303234" />
             </TouchableOpacity>
           ))}
         </View>
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   categoryDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 12,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   menuSubtitle: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   infoSection: {
     backgroundColor: '#f8f9fa',
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

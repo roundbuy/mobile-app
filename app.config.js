@@ -3,7 +3,7 @@ export default {
     expo: {
         name: "RoundBuy",
         slug: "roundbuy",
-        version: "2.0.0",
+        version: "2.0.1",
         orientation: "portrait",
         icon: "./assets/logo-crop.png",
         userInterfaceStyle: "light",
@@ -18,7 +18,7 @@ export default {
         ios: {
             supportsTablet: true,
             bundleIdentifier: "com.buyaround.roundbuy",
-            buildNumber: "2.0.0",
+            buildNumber: "1",
             deploymentTarget: "13.4",
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
@@ -75,15 +75,13 @@ export default {
                 "react-native-maps",
                 {
                     "provider": "google",
-                    "useGoogleMaps": true
+                    "useGoogleMaps": true,
+                    "googleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
                 }
             ],
-            [
-                "./plugins/withGoogleMapsIOS",
-                {
-                    "apiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
-                }
-            ]
+            "@react-native-community/datetimepicker"
+            // Custom plugin removed - the official react-native-maps plugin above
+            // handles all iOS Google Maps configuration including Podfile and AppDelegate
         ],
         scheme: "roundbuy",
         extra: {

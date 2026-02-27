@@ -146,7 +146,7 @@ const ConversationsListScreen = ({ navigation }) => {
                                     resizeMode="cover"
                                 />
                             ) : (
-                                <Ionicons name="person" size={16} color="#999" />
+                                <Ionicons name="person" size={16} color="#303234" />
                             )}
                         </View>
                         <Text style={styles.otherPartyName} numberOfLines={1}>
@@ -175,7 +175,7 @@ const ConversationsListScreen = ({ navigation }) => {
                 {hasUnread && <View style={styles.unreadDot} />}
 
                 {/* Chevron */}
-                <Ionicons name="chevron-forward" size={20} color="#999" />
+                <Ionicons name="chevron-forward" size={20} color="#303234" />
             </TouchableOpacity>
         );
     };
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 15,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
     },
     activeTabText: {
         color: COLORS.primary,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     },
     timestamp: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     userInfoRow: {
         flexDirection: 'row',
@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
     },
     otherPartyName: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         flex: 1,
     },
     lastMessage: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         marginBottom: 4,
     },
     unreadMessage: {

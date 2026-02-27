@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     },
     fallbackText: {
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         marginBottom: 8,
     },
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     },
     fallbackNote: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
         fontStyle: 'italic',
     },

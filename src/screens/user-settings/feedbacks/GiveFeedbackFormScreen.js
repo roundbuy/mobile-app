@@ -145,7 +145,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
         {/* User Info */}
         <View style={styles.userSection}>
           <View style={styles.avatar}>
-            <FontAwesome name="user-circle" size={50} color="#666" />
+            <FontAwesome name="user-circle" size={50} color="#505050" />
           </View>
           <Text style={styles.username}>
             {feedback?.reviewedUser?.name || transaction?.otherParty?.name || t('User')}
@@ -210,7 +210,7 @@ const GiveFeedbackFormScreen = ({ navigation, route }) => {
           <TextInput
             style={styles.textArea}
             placeholder={t('Please write a feedback here! Max 50 characters!')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             maxLength={50}
             value={feedbackText}
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   experienceButtonSelected: {
-    backgroundColor: '#999',
+    backgroundColor: '#303234',
   },
   experienceButtonText: {
     fontSize: 15,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
   submitButton: {

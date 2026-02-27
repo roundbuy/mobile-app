@@ -76,7 +76,7 @@ const SiteReviewsScreen = ({ navigation }) => {
             <Image source={{ uri: item.avatar }} style={styles.avatarImage} />
           ) : (
             <View style={styles.avatar}>
-              <Ionicons name="person-circle" size={40} color="#666" />
+              <Ionicons name="person-circle" size={40} color="#505050" />
             </View>
           )}
           <View style={styles.userDetails}>
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   totalReviews: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     fontWeight: '500',
   },
   reviewCard: {
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   totalCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 4,
   },
   userDetails: {
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
 });

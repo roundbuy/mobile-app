@@ -229,7 +229,7 @@ const MakeAnAdScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.backButton}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('Make an Ad')}</Text>
+          <Text style={styles.headerTitle}>{t('List an Item')}</Text>
           {/* <Text style={styles.stepIndicator}>1/8</Text> */}
         </View>
 
@@ -284,14 +284,14 @@ const MakeAnAdScreen = ({ navigation, route }) => {
           <TextInput
             style={styles.input}
             placeholder={t('Ad title')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={title}
             onChangeText={setTitle}
           />
           <TextInput
             style={styles.input}
             placeholder={t('Description')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={description}
             onChangeText={setDescription}
           />
@@ -309,7 +309,7 @@ const MakeAnAdScreen = ({ navigation, route }) => {
           <TextInput
             style={[styles.input, referralError ? { borderColor: 'red', borderWidth: 1 } : null]}
             placeholder={t('Enter referral code')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={referralCode}
             onChangeText={handleReferralChange}
             autoCapitalize="characters"
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   section: {
     paddingHorizontal: 20,
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   },
   uploadOr: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   selectFilesButton: {
@@ -460,18 +460,18 @@ const styles = StyleSheet.create({
   },
   allowedFiles: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
   },
   fileTypes: {
     fontSize: 11,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginBottom: 12,
   },
   dragText: {
     fontSize: 11,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
   imageSlots: {
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   },
   charLimit: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 4,
   },
   displayTimeButtons: {
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   },
   timeButtonText: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
     fontWeight: '500',
   },
   timeButtonTextActive: {

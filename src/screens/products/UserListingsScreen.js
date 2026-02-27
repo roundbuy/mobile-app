@@ -75,7 +75,16 @@ const UserListingsScreen = ({ route, navigation }) => {
     };
 
     const renderAdItem = ({ item }) => {
-        const imageUri = item.images && item.images.length > 0 ? getFullImageUrl(item.images[0]) : IMAGES.chair1;
+        let parsedImages = [];
+        try {
+            parsedImages = typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []);
+        } catch (e) {
+            console.warn('Failed to parse images in UserListingsScreen:', item.images);
+        }
+
+        const imageUri = parsedImages.length > 0 ? getFullImageUrl(parsedImages[0]) : null;
+        const finalImageSource = imageUri ? { uri: imageUri } : IMAGES.chair1;
+
         const activityType = item.activity_name || 'SELL';
         const locationText = item.city ? `${item.city}, ${item.country || ''}`.trim() : 'Location not set';
         const daysRemaining = item.end_date ? Math.ceil((new Date(item.end_date) - new Date()) / (1000 * 60 * 60 * 24)) : 60;
@@ -86,7 +95,7 @@ const UserListingsScreen = ({ route, navigation }) => {
                 onPress={() => handleAdPress(item)}
                 activeOpacity={0.7}
             >
-                <Image source={{ uri: imageUri }} style={styles.adImage} />
+                <Image source={finalImageSource} style={styles.adImage} />
 
                 <View style={styles.adContent}>
                     <View style={styles.adHeader}>
@@ -102,19 +111,18 @@ const UserListingsScreen = ({ route, navigation }) => {
                     </View>
 
                     <Text style={styles.priceText}>£{item.price}</Text>
-                    <Text style={styles.distanceText}>{locationText}</Text>
 
                     <View style={styles.statsRow}>
                         <View style={styles.statItem}>
-                            <Ionicons name="heart" size={16} color="#666" />
+                            <Ionicons name="heart" size={16} color="#505050" />
                             <Text style={styles.statText}>{item.likes_count || 0}</Text>
                         </View>
                         <View style={styles.statItem}>
-                            <Ionicons name="eye" size={16} color="#666" />
+                            <Ionicons name="eye" size={16} color="#505050" />
                             <Text style={styles.statText}>{item.views_count || 0}</Text>
                         </View>
                         <View style={styles.statItem}>
-                            <Ionicons name="chatbubble" size={16} color="#666" />
+                            <Ionicons name="chatbubble" size={16} color="#505050" />
                             <Text style={styles.statText}>{item.messages_count || 0}</Text>
                         </View>
                     </View>
@@ -149,7 +157,7 @@ const UserListingsScreen = ({ route, navigation }) => {
                 <FlatList
                     data={ads}
                     renderItem={renderAdItem}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     refreshing={isRefreshing}
@@ -259,7 +267,7 @@ const styles = StyleSheet.create({
     },
     distanceText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 8,
     },
     statsRow: {
@@ -274,7 +282,7 @@ const styles = StyleSheet.create({
     },
     statText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginLeft: 4,
     },
     statusRow: {
@@ -289,7 +297,7 @@ const styles = StyleSheet.create({
     },
     daysText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     loadingContainer: {
         flex: 1,
@@ -299,7 +307,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     emptyContainer: {
         alignItems: 'center',
@@ -308,7 +316,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
         marginTop: 16,
     },
     retryButton: {

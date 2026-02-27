@@ -79,7 +79,6 @@ const ManageOffersScreen = ({ navigation }) => {
       ? getFullImageUrl(JSON.parse(item.advertisement_images)[0])
       : IMAGES.chair1;
 
-    // Determine activity type badge
     const activityType = item.activity_type || 'SELL';
 
     return (
@@ -88,29 +87,22 @@ const ManageOffersScreen = ({ navigation }) => {
 
         <View style={styles.offerContent}>
           <View style={styles.offerHeader}>
-            <Text style={styles.productTitle} numberOfLines={1}>
-              {item.advertisement_title || 'Product'}
-            </Text>
-            <View style={[
-              styles.activityBadge,
-              activityType === 'SELL' && styles.sellBadge,
-              activityType === 'RENT' && styles.rentBadge,
-              activityType === 'BUY' && styles.buyBadge,
-              activityType === 'GIVE' && styles.giveBadge,
-            ]}>
-              <Text style={styles.activityBadgeText}>{activityType}</Text>
+            <View style={styles.titleCol}>
+              <Text style={styles.productTitle} numberOfLines={1}>
+                {item.advertisement_title || 'Product'}
+              </Text>
+            </View>
+            <View style={styles.typeCol}>
+              <Text style={styles.activityBadgeText}>{activityType.toUpperCase()}</Text>
             </View>
           </View>
 
-          <Text style={styles.distanceText}>
-            Distance: {item.distance || '0'} m / {item.walk_time || '0'} min walk
-          </Text>
-
-          <Text style={styles.instructionText}>{t('Click below to view the offer history for this product')}</Text>
+          <Text style={styles.instructionText}>{t('View item offer history')}</Text>
 
           <TouchableOpacity
             style={styles.viewHistoryButton}
             onPress={() => handleViewOfferHistory(item)}
+            activeOpacity={0.7}
           >
             <Text style={styles.viewHistoryButtonText}>{t('View Offer history')}</Text>
           </TouchableOpacity>
@@ -174,9 +166,10 @@ const ManageOffersScreen = ({ navigation }) => {
               )}
             </View>
           }
-          ListFooterComponent={<SuggestionsFooter sourceRoute="ManageOffers" />}
+
         />
       )}
+      <SuggestionsFooter sourceRoute="ManageOffers" />
     </SafeAreaView>
   );
 };
@@ -223,91 +216,74 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeTabText: {
     color: '#000',
     fontWeight: '700',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
   },
   offerCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    overflow: 'hidden',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+    alignItems: 'flex-start',
   },
   productImage: {
-    width: 120,
-    height: 140,
+    width: 100,
+    height: 100,
+    borderRadius: 12,
     backgroundColor: '#f5f5f5',
   },
   offerContent: {
     flex: 1,
-    padding: 12,
+    marginLeft: 16,
+    justifyContent: 'space-between',
   },
   offerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 8,
+  },
+  titleCol: {
+    flex: 1,
+    paddingRight: 8,
   },
   productTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000',
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 4,
   },
-  activityBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  sellBadge: {
-    backgroundColor: '#4CAF50',
-  },
-  rentBadge: {
-    backgroundColor: '#FF9800',
-  },
-  buyBadge: {
-    backgroundColor: COLORS.primary,
-  },
-  giveBadge: {
-    backgroundColor: '#9C27B0',
+  typeCol: {
+    alignItems: 'flex-end',
   },
   activityBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  distanceText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#000',
   },
   instructionText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
     lineHeight: 16,
   },
   viewHistoryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#000',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    borderRadius: 24,
     alignItems: 'center',
+    marginTop: 4,
   },
   viewHistoryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
     color: '#000',
   },
   loadingContainer: {
@@ -318,7 +294,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -327,7 +303,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
   retryButton: {

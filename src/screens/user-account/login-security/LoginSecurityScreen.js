@@ -29,7 +29,7 @@ const LoginSecurityScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <GlobalHeader
-        title={t('Login and security')}
+        title={t('Login & Security')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -43,7 +43,7 @@ const LoginSecurityScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <Text style={styles.menuItemText}>{t('Username')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </TouchableOpacity>
 
         {/* Password */}
@@ -53,10 +53,10 @@ const LoginSecurityScreen = ({ navigation }) => {
           activeOpacity={0.7}
         >
           <Text style={styles.menuItemText}>{t('Password')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </TouchableOpacity>
-        <SuggestionsFooter sourceRoute="LoginSecurity" />
       </ScrollView>
+      <SuggestionsFooter sourceRoute="LoginSecurity" />
     </SafeAreaView>
   );
 };

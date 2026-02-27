@@ -89,7 +89,7 @@ const ShareScreen = ({ navigation }) => {
       name: 'etc.',
       icon: 'ellipsis-horizontal',
       iconLibrary: 'Ionicons',
-      color: '#666',
+      color: '#505050',
     },
   ];
 
@@ -139,8 +139,8 @@ const ShareScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
-        <SuggestionsFooter sourceRoute="Share" />
       </ScrollView>
+      <SuggestionsFooter sourceRoute="Share" />
     </SafeAreaView>
   );
 };
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,

@@ -177,7 +177,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             <TextInput
               style={styles.input}
               placeholder={t('Card number')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={cardNumber}
               onChangeText={formatCardNumber}
               keyboardType="numeric"
@@ -192,7 +192,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
               <TextInput
                 style={styles.input}
                 placeholder={t('MM')}
-                placeholderTextColor="#999"
+                placeholderTextColor="#303234"
                 value={expiryMonth}
                 onChangeText={setExpiryMonth}
                 keyboardType="numeric"
@@ -204,7 +204,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
               <TextInput
                 style={styles.input}
                 placeholder={t('YY')}
-                placeholderTextColor="#999"
+                placeholderTextColor="#303234"
                 value={expiryYear}
                 onChangeText={setExpiryYear}
                 keyboardType="numeric"
@@ -216,7 +216,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
               <TextInput
                 style={styles.input}
                 placeholder={t('CVC')}
-                placeholderTextColor="#999"
+                placeholderTextColor="#303234"
                 value={cvc}
                 onChangeText={setCvc}
                 keyboardType="numeric"
@@ -235,7 +235,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             <TextInput
               style={styles.input}
               placeholder={t('ZIP / Postal Code')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={zipCode}
               onChangeText={setZipCode}
               keyboardType="default"
@@ -246,7 +246,7 @@ const PaymentMethodScreen = ({ navigation, route }) => {
             <TextInput
               style={styles.input}
               placeholder={t('Country')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={country}
               onChangeText={setCountry}
             />
@@ -341,11 +341,11 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   summaryValue: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   totalRow: {
     marginTop: 8,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   inputContainer: {
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     paddingHorizontal: 40,
     marginBottom: 16,

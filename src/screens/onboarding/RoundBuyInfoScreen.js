@@ -41,7 +41,7 @@ const RoundBuyInfoScreen = ({ navigation, route }) => {
                         style={styles.logo}
                         resizeMode="contain"
                     />
-                    <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+                    <Text style={styles.patentText}>{t('Patents Pendings')}</Text>
                     <TouchableOpacity onPress={handlePatentInfo}>
                         <Text style={styles.infoLink}>
                             for more information{' '}

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG, ERROR_CODES } from '../config/api.config';
+import trackingService from './TrackingService';
 
 /**
  * Storage keys for AsyncStorage
@@ -26,19 +27,24 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     try {
+      await trackingService.initialize(); // Ensure fresh status
       const token = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Add Tracking Status Headers
+      const trackingHeaders = trackingService.getTrackingHeaders();
+      config.headers = { ...config.headers, ...trackingHeaders };
     } catch (error) {
       console.error('Error getting token from storage:', error);
     }
-    
+
     // Log request in development
     if (__DEV__) {
       console.log(`🚀 API Request: ${config.method.toUpperCase()} ${config.url}`);
     }
-    
+
     return config;
   },
   (error) => {
@@ -55,7 +61,7 @@ apiClient.interceptors.response.use(
     if (__DEV__) {
       console.log(`✅ API Response: ${response.config.url}`, response.status);
     }
-    
+
     return response;
   },
   async (error) => {
@@ -188,7 +194,7 @@ apiClient.interceptors.response.use(
           require_subscription: true,
         });
       }
-      
+
       if (errorData.error_code === 'FEATURE_LIMIT_EXCEEDED') {
         return Promise.reject({
           ...errorData,
@@ -255,7 +261,7 @@ export const storage = {
         [STORAGE_KEYS.ACCESS_TOKEN, accessToken],
         [STORAGE_KEYS.REFRESH_TOKEN, refreshToken],
       ]);
-      
+
       if (__DEV__) {
         console.log('✅ Tokens saved successfully to AsyncStorage');
       }
@@ -356,7 +362,7 @@ export const apiRequest = async (method, url, data = null, config = {}) => {
       url,
       ...config,
     };
-    
+
     // Only add data for non-GET requests and when data is not null
     if (method !== 'GET' && data !== null) {
       requestConfig.data = data;
@@ -364,9 +370,9 @@ export const apiRequest = async (method, url, data = null, config = {}) => {
       // For POST/PUT/DELETE without data, send empty object
       requestConfig.data = {};
     }
-    
+
     const response = await apiClient(requestConfig);
-    
+
     return response.data;
   } catch (error) {
     throw error;

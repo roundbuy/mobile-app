@@ -19,7 +19,7 @@ import { COLORS } from '../../../constants/theme';
 import { offersService } from '../../../services';
 
 const DeclinedOffersScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   listContent: {
     padding: 16,
@@ -227,13 +227,13 @@ const styles = StyleSheet.create({
   },
   offerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 4,
   },
   dateText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
   offerActions: {
     flexDirection: 'row',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
 });

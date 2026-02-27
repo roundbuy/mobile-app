@@ -16,7 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const AdAppealScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { adId } = route.params;
   const [ad, setAd] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#666',
+    color: '#505050',
     marginTop: 20,
   },
   header: {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   adCard: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   reasonLabel: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#666',
+    color: '#505050',
     marginBottom: 5,
   },
   reasonText: {
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 10,
   },
   input: {
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'right',
     marginTop: 5,
   },
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   submitButton: {

@@ -80,7 +80,7 @@ const LotteryCreditStatusScreen = ({ navigation }) => {
 
                 <TouchableOpacity style={styles.moreInfo}>
                     <Text style={styles.moreInfoText}>{t('More information on Rewards & Credits, click here')}</Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" />
                 </TouchableOpacity>
 
                 {/* Only show this note if balance > 0 or specific condition */}
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     },
     balanceLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 40,
     },
     historyContainer: {
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     },
     historyTitle: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginBottom: 10,
     },
     historyItem: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     },
     historyDate: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     historyAmount: {
         fontSize: 14,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     },
     moreInfoText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginRight: 6,
         textDecorationLine: 'underline',
     },

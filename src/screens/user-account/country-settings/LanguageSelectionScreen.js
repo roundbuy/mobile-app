@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   demoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   loadingContainer: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   languageItem: {
     flexDirection: 'row',
@@ -238,12 +238,12 @@ const styles = StyleSheet.create({
   },
   nativeNameText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   languageCode: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#999',
+    color: '#303234',
     backgroundColor: '#f5f5f5',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 20,

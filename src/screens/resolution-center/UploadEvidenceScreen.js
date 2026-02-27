@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const UploadEvidenceScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, order, problem, formData } = route.params;
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -54,8 +54,8 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
         t('Would you like to continue without uploading evidence? Adding evidence strengthens your case.'),
         [
           { text: t('Go Back'), style: t('cancel') },
-          { 
-            text: t('Continue Anyway'), 
+          {
+            text: t('Continue Anyway'),
             onPress: () => proceedToReview(),
           },
         ]
@@ -85,7 +85,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
 
         <View style={styles.uploadSection}>
           <Text style={styles.sectionTitle}>{t('Add Evidence (Optional)')}</Text>
-          
+
           <View style={styles.uploadButtons}>
             <TouchableOpacity
               style={styles.uploadButton}
@@ -120,7 +120,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
             <Text style={styles.sectionTitle}>
               Selected Files ({files.length})
             </Text>
-            
+
             {files.map((file, index) => (
               <View key={index} style={styles.fileCard}>
                 <View style={styles.fileIcon}>
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   uploadSection: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 10,
   },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   fileType: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   removeButton: {
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   buttonContainer: {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   skipButtonText: {
-    color: '#666',
+    color: '#505050',
     fontSize: 16,
     fontWeight: '600',
   },

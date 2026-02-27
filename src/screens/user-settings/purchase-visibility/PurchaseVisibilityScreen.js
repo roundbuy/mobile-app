@@ -70,8 +70,10 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
   const getTypeDisplayName = (type) => {
     switch (type) {
       case 'rise_to_top': return t('Rise to Top');
-      case 'top_spot': return t('Top Spot');
-      case 'show_casing': return t('Show Casing');
+      case 'top_spot': return t('TopSpot');
+      case 'show_casing': return t('ShowCasing');
+      case 'home_market': return t('HomeMarket');
+      case 'garage_sales': return t('GarageSales');
       case 'targeted': return t('Targeted Ad');
       case 'fast': return t('Fast Ad');
       default: return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -80,7 +82,7 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
 
   const getTypeDescription = (type) => {
     switch (type) {
-      case 'rise_to_top': return t('Get noticed first! Your ad rises to the top of search results locally.');
+      case 'rise_to_top': return t('Get noticed first! Your listing is risen to the top of search results once in a day.');
       case 'top_spot': return t('Secure the #1 spot in search results for maximum visibility.');
       case 'show_casing': return t('Premium placement on homepage and category pages.');
       case 'targeted': return t('Reach your specific audience with location-based targeting.');
@@ -124,11 +126,11 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
 
         <View style={styles.metaContainer}>
           <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color="#666" />
+            <Ionicons name="time-outline" size={16} color="#505050" />
             <Text style={styles.metaText}>{minDuration} - {maxDuration}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={16} color="#666" />
+            <Ionicons name="location-outline" size={16} color="#505050" />
             {/* Assuming default is 3km based on migration, or check plan data */}
             <Text style={styles.metaText}>{t('Up to 10km+')}</Text>
           </View>
@@ -168,7 +170,7 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
           </View>
         ) : (
           <View style={styles.plansContainer}>
-            <Text style={styles.subtitle}>{t('Choose how you want to promote your ad')}</Text>
+            <Text style={styles.subtitle}>{t('Choose how you want to promote your listing')}</Text>
 
             {orderedTypes.map(type => renderTypeCard(type, groupedPlans[type]))}
 
@@ -190,7 +192,7 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -225,29 +227,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   plansContainer: {
-    padding: 20,
+    padding: 10,
     gap: 20,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginBottom: 10,
     textAlign: 'center'
   },
   emptyText: {
     textAlign: 'center',
-    color: '#666',
+    color: '#505050',
     marginTop: 40,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    // borderRadius: 16,
+    padding: 10,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 8,
+    // elevation: 3,
     borderWidth: 1,
     borderColor: '#f0f0f0',
   },
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 16,
   },

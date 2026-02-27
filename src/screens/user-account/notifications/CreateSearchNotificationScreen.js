@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const CreateSearchNotificationScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [activity, setActivity] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
@@ -59,7 +59,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={activity}
             onChangeText={setActivity}
             placeholder={t('Select activity')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -71,7 +71,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={category}
             onChangeText={setCategory}
             placeholder={t('Select category')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -83,7 +83,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={subcategory}
             onChangeText={setSubcategory}
             placeholder={t('Select subcategory')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -95,7 +95,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={keywords}
             onChangeText={setKeywords}
             placeholder={t('Enter keywords')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -107,7 +107,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={condition}
             onChangeText={setCondition}
             placeholder={t('Select condition')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           /> </View>
 
         {/* Price */}
@@ -118,7 +118,7 @@ const CreateSearchNotificationScreen = ({ navigation }) => {
             value={price}
             onChangeText={setPrice}
             placeholder={t('Enter price range')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="numeric"
           />
         </View>
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   intro: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 24,
   },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginBottom: 20,
   },

@@ -100,7 +100,7 @@ const GiveFeedbackListScreen = ({ navigation }) => {
     if (error) {
       return (
         <View style={styles.centerContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color="#999" />
+          <Ionicons name="alert-circle-outline" size={64} color="#303234" />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchEligibleTransactions}>
             <Text style={styles.retryButtonText}>{t('Retry')}</Text>
@@ -246,12 +246,12 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   errorText: {
     marginTop: 16,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
   },
   retryButton: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
   },
   productCard: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   otherPartyText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
   },
   priceText: {
@@ -345,17 +345,17 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginBottom: 12,
   },
   distanceText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 4,
   },
   statusText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   feedbackButton: {

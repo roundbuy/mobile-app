@@ -16,6 +16,7 @@ import CookieSettingsScreen from '../screens/onboarding/CookieSettingsScreen';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
 import RoundBuyInfoScreen from '../screens/onboarding/RoundBuyInfoScreen';
 import OnboardingDemoScreen from '../screens/onboarding/DemoScreen';
+import LaunchOnboardingScreen from '../screens/onboarding/LaunchOnboardingScreen';
 
 // Legal screens
 import LicenseAgreementScreen from '../screens/legal/LicenseAgreementScreen';
@@ -60,7 +61,7 @@ import PaymentMethodScreen from '../screens/cart/PaymentMethodScreen';
 import TransactionStatusScreen from '../screens/cart/TransactionStatusScreen';
 
 // Payment screens
-import PaddlePaymentScreen from '../screens/payments/PaddlePaymentScreen';
+// import PaddlePaymentScreen from '../screens/payments/PaddlePaymentScreen';
 
 // Advertisement screens
 import MakeAnAdScreen from '../screens/advertisements/MakeAnAdScreen';
@@ -135,9 +136,11 @@ import PickUpPaymentScreen from '../screens/pickups/PickUpPaymentScreen';
 import ReschedulePickUpScreen from '../screens/pickups/ReschedulePickUpScreen';
 import MyAdsScreen from '../screens/user-settings/my-ads/MyAdsScreen';
 import MyAdsDetailScreen from '../screens/user-settings/my-ads/MyAdsDetailScreen';
+import EditAdLocationsScreen from '../screens/user-settings/my-ads/EditAdLocationsScreen';
 import PurchaseVisibilityScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityScreen';
 import PurchaseVisibilityAdsListScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityAdsListScreen';
 import VisibilityAdChoicesScreen from '../screens/user-settings/purchase-visibility/VisibilityAdChoicesScreen';
+import ShowcaseProductSelectorScreen from '../screens/user-settings/purchase-visibility/ShowcaseProductSelectorScreen';
 import VisibilityCartScreen from '../screens/user-settings/purchase-visibility/VisibilityCartScreen';
 import VisibilityPaymentScreen from '../screens/user-settings/purchase-visibility/VisibilityPaymentScreen';
 import VisibilityTransactionSuccessScreen from '../screens/user-settings/purchase-visibility/VisibilityTransactionSuccessScreen';
@@ -161,6 +164,8 @@ import LotteryWinnersScreen from '../screens/user-settings/rewards/LotteryWinner
 import LotteryCreditStatusScreen from '../screens/user-settings/rewards/LotteryCreditStatusScreen';
 import LotteryGuideScreen from '../screens/user-settings/rewards/LotteryGuideScreen';
 import MostPopularSearchesScreen from '../screens/user-settings/rewards/MostPopularSearchesScreen';
+import RewardsLevelScreen from '../screens/user-settings/rewards/RewardsLevelScreen';
+import RewardLevelDetailScreen from '../screens/user-settings/rewards/RewardLevelDetailScreen';
 import ReviewScreen from '../screens/user-settings/review/ReviewScreen';
 import ReviewRoundBuyScreen from '../screens/user-settings/review/ReviewRoundBuyScreen';
 import ReviewAppFormScreen from '../screens/user-settings/review/ReviewAppFormScreen';
@@ -180,6 +185,16 @@ import SelectProblemScreen from '../screens/resolution-center/SelectProblemScree
 import ReviewEligibilityScreen from '../screens/resolution-center/ReviewEligibilityScreen';
 import DisputeConfirmationScreen from '../screens/resolution-center/DisputeConfirmationScreen';
 import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagingScreen';
+
+// Buyer-Seller Process screens
+import ActionCenterScreen from '../screens/buyer-seller-process/ActionCenterScreen';
+import ActionCenterMessagesScreen from '../screens/buyer-seller-process/ActionCenterMessagesScreen';
+import Step1EnquiryScreen from '../screens/buyer-seller-process/Step1EnquiryScreen';
+import Step2OfferScreen from '../screens/buyer-seller-process/Step2OfferScreen';
+import Step3DeliverySelectionScreen from '../screens/buyer-seller-process/Step3DeliverySelectionScreen';
+import Step4ScheduleScreen from '../screens/buyer-seller-process/Step4ScheduleScreen';
+import Step5DealConfirmationScreen from '../screens/buyer-seller-process/Step5DealConfirmationScreen';
+import SingleItemActionScreen from '../screens/buyer-seller-process/SingleItemActionScreen';
 
 // My Support screens
 import MySupportHomeScreen from '../screens/my-support/MySupportHomeScreen';
@@ -229,6 +244,8 @@ import HowItWorksDetailScreen from '../screens/info/HowItWorksDetailScreen';
 import VisibilityBoostInfoScreen from '../screens/info/VisibilityBoostInfoScreen';
 import GenericInfoScreen from '../screens/info/GenericInfoScreen';
 import PlatformMenuScreen from '../screens/info/PlatformMenuScreen';
+import GreenVisionScreen from '../screens/info/GreenVisionScreen';
+import GreenVisionDetailScreen from '../screens/info/GreenVisionDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -273,6 +290,73 @@ const AppNavigator = React.forwardRef((props, ref) => {
         }}
       >
         {/* Onboarding Flow */}
+
+        {/* Buyer-Seller Process Routes */}
+        <Stack.Screen
+          name="ActionCenterScreen"
+          component={ActionCenterScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ActionCenterMessagesScreen"
+          component={ActionCenterMessagesScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SingleItemActionScreen"
+          component={SingleItemActionScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Step1EnquiryScreen"
+          component={Step1EnquiryScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Step2OfferScreen"
+          component={Step2OfferScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Step3DeliverySelectionScreen"
+          component={Step3DeliverySelectionScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Step4ScheduleScreen"
+          component={Step4ScheduleScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Step5DealConfirmationScreen"
+          component={Step5DealConfirmationScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen
           name="Splash"
           component={SplashAlternative3Screen}
@@ -376,6 +460,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="OnboardingDemo"
           component={OnboardingDemoScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+
+        <Stack.Screen
+          name="LaunchOnboarding"
+          component={LaunchOnboardingScreen}
           options={{
             animationEnabled: true,
           }}
@@ -581,6 +673,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
             animationEnabled: true,
           }}
         />
+        {/* Paddle Payment Screen - Removed as unused/deprecated
         <Stack.Screen
           name="PaddlePayment"
           component={PaddlePaymentScreen}
@@ -589,11 +682,19 @@ const AppNavigator = React.forwardRef((props, ref) => {
             presentation: 'modal',
           }}
         />
+        */}
 
         {/* Make an Ad Flow */}
         <Stack.Screen
           name="MakeAnAd"
           component={MakeAnAdScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="EditAnAd"
+          component={require('../screens/advertisements/EditAnAdScreen').default}
           options={{
             animationEnabled: true,
           }}
@@ -886,6 +987,20 @@ const AppNavigator = React.forwardRef((props, ref) => {
             animationEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="GreenVision"
+          component={GreenVisionScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="GreenVisionDetail"
+          component={GreenVisionDetailScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
 
         <Stack.Screen
           name="FAQList"
@@ -1092,6 +1207,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="EditAdLocations"
+          component={EditAdLocationsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="PurchaseVisibility"
           component={PurchaseVisibilityScreen}
           options={{
@@ -1108,6 +1230,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="VisibilityAdChoices"
           component={VisibilityAdChoicesScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ShowcaseProductSelector"
+          component={ShowcaseProductSelectorScreen}
           options={{
             animationEnabled: true,
           }}
@@ -1219,7 +1348,21 @@ const AppNavigator = React.forwardRef((props, ref) => {
         {/* Rewards Flow */}
         <Stack.Screen
           name="Rewards"
-          component={RewardsScreen}
+          component={RewardsLevelScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RewardsLevel"
+          component={RewardsLevelScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="RewardLevelDetail"
+          component={RewardLevelDetailScreen}
           options={{
             animationEnabled: true,
           }}

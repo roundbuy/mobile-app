@@ -6,7 +6,7 @@ import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../..
 import { useTranslation } from '../../context/TranslationContext';
 
 const CookieSettingsScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [necessary, setNecessary] = useState(true); // Always on
   const [functional, setFunctional] = useState(false);
   const [performance, setPerformance] = useState(false);
@@ -61,7 +61,7 @@ const CookieSettingsScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <Text style={styles.patentText}>{t('Patents Pendings')}</Text>
           <TouchableOpacity onPress={handlePatentInfo}>
             <Text style={styles.infoLink}>
               for more information{' '}

@@ -16,7 +16,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeMessagingScreen = ({ route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { disputeId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -87,7 +87,7 @@ const DisputeMessagingScreen = ({ route }) => {
               <Feather
                 name={isAdmin ? 'shield' : 'user'}
                 size={16}
-                color={isAdmin ? '#4169E1' : '#666'}
+                color={isAdmin ? '#4169E1' : '#505050'}
               />
               <Text style={styles.senderName}>
                 {isAdmin ? 'Support Team' : item.sender_name}
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   senderName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginLeft: 5,
   },
   messageText: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 11,
-    color: '#999',
+    color: '#303234',
     marginTop: 5,
     textAlign: 'right',
   },
@@ -281,12 +281,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#999',
+    color: '#303234',
     marginTop: 15,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginTop: 5,
     textAlign: 'center',
   },

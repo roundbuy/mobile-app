@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeConfirmationScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, order, problem, formData, files = [] } = route.params;
   const [submitting, setSubmitting] = useState(false);
 
@@ -74,9 +74,9 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
             <InfoRow label={t('Order Number')} value={`#${order.order_number}`} />
             <InfoRow label={t('Product')} value={order.product_name} />
             <InfoRow label={t('Amount')} value={`$${order.total_amount}`} />
-            <InfoRow 
-              label={t('Order Date')} 
-              value={new Date(order.order_date).toLocaleDateString()} 
+            <InfoRow
+              label={t('Order Date')}
+              value={new Date(order.order_date).toLocaleDateString()}
             />
           </View>
         </View>
@@ -125,10 +125,10 @@ const DisputeConfirmationScreen = ({ navigation, route }) => {
               </Text>
               {files.map((file, index) => (
                 <View key={index} style={styles.fileItem}>
-                  <Feather 
-                    name={file.type === 'image' ? 'image' : 'file-text'} 
-                    size={20} 
-                    color="#4169E1" 
+                  <Feather
+                    name={file.type === 'image' ? 'image' : 'file-text'}
+                    size={20}
+                    color="#4169E1"
                   />
                   <Text style={styles.fileName} numberOfLines={1}>
                     {file.name}
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   section: {
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     width: 120,
   },
   infoValue: {
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   buttonContainer: {

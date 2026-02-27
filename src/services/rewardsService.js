@@ -72,5 +72,36 @@ export const rewardsService = {
         } catch (error) {
             throw error;
         }
+    },
+
+    // Level Rewards Endpoints
+    getLevelStatus: async () => {
+        try {
+            const response = await api.get('/rewards/level-status');
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    getLevelRewards: async () => {
+        try {
+            const response = await api.get('/rewards/level-rewards');
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    redeemLevelReward: async (rewardId, productId) => {
+        try {
+            const response = await api.post('/rewards/redeem-level-reward', {
+                rewardId,
+                productId
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
     }
 };

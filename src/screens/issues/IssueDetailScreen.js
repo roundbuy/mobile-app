@@ -175,7 +175,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
             closed_by_buyer: '#808080',
             escalated_to_dispute: '#9370DB',
         };
-        return colors[status] || '#666';
+        return colors[status] || '#505050';
     };
 
     const getStatusLabel = (status) => {
@@ -281,7 +281,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
             >
                 {/* Handshake Icon */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="handshake-o" size={60} color="#666" />
+                    <FontAwesome name="handshake-o" size={60} color="#505050" />
                 </View>
 
                 {/* Creation Message */}
@@ -373,7 +373,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                         <TextInput
                             style={styles.responseTextArea}
                             placeholder={t('Explain your decision...')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             multiline
                             numberOfLines={4}
                             value={sellerResponseText}
@@ -528,7 +528,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
                         <TextInput
                             style={styles.messageInput}
                             placeholder={t('Type a message...')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             value={newMessage}
                             onChangeText={setNewMessage}
                             multiline
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 12,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     errorContainer: {
         flex: 1,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
         marginTop: 16,
         marginBottom: 24,
     },
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
     },
     headerSubtitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginTop: 2,
     },
     headerRight: {
@@ -631,12 +631,12 @@ const styles = StyleSheet.create({
     },
     creationText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         fontWeight: '500',
     },
     creationTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     statusCard: {
         backgroundColor: '#FFF',
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     infoValue: {
         fontSize: 14,
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     },
     sectionSubtitle: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginBottom: 8,
     },
     fieldLabel: {
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     },
     createdDate: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginTop: 8,
     },
     viewIssueLink: {
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     },
     viewIssueLinkText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     viewIssueLinkHighlight: {
         color: COLORS.primary,
@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkHighlight: {
         color: COLORS.primary,
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
     decisionLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     decisionBadge: {
         flexDirection: 'row',
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
     },
     actionLoadingText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
     },
     messagesSection: {
@@ -911,7 +911,7 @@ const styles = StyleSheet.create({
     },
     noMessagesText: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         marginTop: 12,
     },
     messageCard: {
@@ -926,7 +926,7 @@ const styles = StyleSheet.create({
     messageSender: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     messageText: {
@@ -936,7 +936,7 @@ const styles = StyleSheet.create({
     },
     messageTime: {
         fontSize: 11,
-        color: '#999',
+        color: '#303234',
         marginTop: 4,
     },
     messageInputContainer: {

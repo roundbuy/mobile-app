@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   summaryCard: {
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     width: 80,
   },
   summaryValue: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 10,
   },
   textArea: {
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'right',
     marginTop: 5,
   },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   continueButton: {

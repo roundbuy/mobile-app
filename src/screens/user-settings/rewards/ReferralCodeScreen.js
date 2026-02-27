@@ -116,7 +116,7 @@ const ReferralCodeScreen = ({ navigation, route }) => {
           <Text style={styles.codeLabel}>{t('Your unique referral code:')}</Text>
           <View style={styles.codeContainer}>
             <View style={styles.codeDashedBorder}>
-              <Ionicons name="cut" size={24} color="#999" style={styles.scissorsIcon} />
+              <Ionicons name="cut" size={24} color="#303234" style={styles.scissorsIcon} />
               <Text style={styles.codeText}>{referralCode}</Text>
             </View>
           </View>
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 32,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   codeLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   codeDashedBorder: {
     borderWidth: 2,
     borderStyle: 'dashed',
-    borderColor: '#999',
+    borderColor: '#303234',
     borderRadius: 12,
     padding: 20,
     alignItems: 'center',
@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
 });

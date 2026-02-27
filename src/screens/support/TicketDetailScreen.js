@@ -91,9 +91,9 @@ const TicketDetailScreen = ({ route, navigation }) => {
             open: '#4169E1',
             pending: '#FFA500',
             resolved: '#32CD32',
-            closed: '#999',
+            closed: '#303234',
         };
-        return colors[status] || '#999';
+        return colors[status] || '#303234';
     };
 
     if (loading) {
@@ -143,7 +143,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
                     <Text style={styles.subject}>{ticket.subject}</Text>
                     <View style={styles.metaRow}>
                         <View style={styles.categoryBadge}>
-                            <Ionicons name="pricetag" size={14} color="#666" />
+                            <Ionicons name="pricetag" size={14} color="#505050" />
                             <Text style={styles.categoryText}>{ticket.category}</Text>
                         </View>
                         <Text style={styles.dateText}>
@@ -167,7 +167,7 @@ const TicketDetailScreen = ({ route, navigation }) => {
                                     <Ionicons
                                         name={message.is_staff_reply ? 'shield-checkmark' : 'person-circle'}
                                         size={20}
-                                        color={message.is_staff_reply ? '#4169E1' : '#666'}
+                                        color={message.is_staff_reply ? '#4169E1' : '#505050'}
                                     />
                                     <Text style={styles.authorName}>
                                         {message.is_staff_reply ? 'Support Team' : 'You'}
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
     },
     header: {
         flexDirection: 'row',
@@ -307,12 +307,12 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginLeft: 4,
     },
     dateText: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     messagesContainer: {
         flex: 1,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     },
     messageTime: {
         fontSize: 11,
-        color: '#999',
+        color: '#303234',
     },
     messageText: {
         fontSize: 14,

@@ -151,7 +151,7 @@ const ScheduledPickUpDetailScreen = ({ route, navigation }) => {
             case 'rescheduled': return '#9C27B0';
             case 'completed': return '#4CAF50';
             case 'cancelled': return '#F44336';
-            default: return '#999';
+            default: return '#303234';
         }
     };
 
@@ -275,14 +275,14 @@ const ScheduledPickUpDetailScreen = ({ route, navigation }) => {
                     </Text>
                     <View style={styles.contactCard}>
                         <View style={styles.contactRow}>
-                            <Ionicons name="person" size={20} color="#666" />
+                            <Ionicons name="person" size={20} color="#505050" />
                             <Text style={styles.contactText}>
                                 {isBuyer ? pickup.seller_name : pickup.buyer_name}
                             </Text>
                         </View>
                         {pickup.seller_phone && (
                             <View style={styles.contactRow}>
-                                <Ionicons name="call" size={20} color="#666" />
+                                <Ionicons name="call" size={20} color="#505050" />
                                 <Text style={styles.contactText}>
                                     {isBuyer ? pickup.seller_phone : pickup.buyer_phone}
                                 </Text>
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     statusBanner: {
         flexDirection: 'row',
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     },
     detailLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     detailValue: {
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     },
     feeLabel: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
     },
     feeValue: {
         fontSize: 15,

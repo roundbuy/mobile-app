@@ -161,7 +161,7 @@ const WalletScreen = ({ navigation }) => {
                 {/* Balance Card */}
                 <View style={styles.balanceCard}>
                     <View style={styles.balanceHeader}>
-                        <Ionicons name="wallet" size={32} color={COLORS.primary} />
+                        {/* <Ionicons name="wallet" size={32} color={COLORS.primary} /> */}
                         <Text style={styles.balanceLabel}>{t('Available Balance')}</Text>
                     </View>
                     <Text style={styles.balanceAmount}>
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     balanceCard: {
         margin: 20,
@@ -265,13 +265,13 @@ const styles = StyleSheet.create({
     },
     balanceHeader: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'left',
         marginBottom: 16,
     },
     balanceLabel: {
         fontSize: 16,
         color: '#fff',
-        marginLeft: 12,
+        marginLeft: 0,
         opacity: 0.9,
     },
     balanceAmount: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     },
     transactionDate: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     transactionRight: {
         alignItems: 'flex-end',
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     },
     transactionBalance: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     emptyState: {
         alignItems: 'center',
@@ -385,12 +385,12 @@ const styles = StyleSheet.create({
     emptyStateText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginTop: 16,
     },
     emptyStateSubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         marginTop: 8,
     },
     bottomSpace: {

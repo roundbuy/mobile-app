@@ -4,7 +4,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'rea
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import OnboardingModal from '../../components/onboarding/OnboardingModal';
+import Hyperlink from '../../components/common/Hyperlink';
+
+// Placeholder images
+const PRODUCT_IMAGES = [
+  'https://cdn-icons-png.flaticon.com/512/892/892458.png', // Shopping
+  'https://cdn-icons-png.flaticon.com/512/681/681494.png', // Jacket
+  'https://cdn-icons-png.flaticon.com/512/833/833472.png', // Bag
+  'https://cdn-icons-png.flaticon.com/512/124/124034.png', // Ball
+  'https://cdn-icons-png.flaticon.com/512/681/681494.png', // Boots
+  'https://cdn-icons-png.flaticon.com/512/892/892458.png', // Baby Bottle
+];
 
 const WelcomeScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -38,30 +50,83 @@ const WelcomeScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Header with Logo and Patent Info */}
-        <View style={styles.logoContainer}>
+        {/* <View style={styles.logoContainer}>
           <Image
             source={IMAGES.logoMain}
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
-          <TouchableOpacity onPress={handlePatentInfo}>
-            <Text style={styles.infoLink}>
-              for more information{' '}
-              <Text style={styles.clickHere}>{t('click here')}</Text>
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.patentText}>{t('Patents Pending')}</Text>
+          <Hyperlink
+            onPress={handlePatentInfo}
+            linkKey="welcome_patents"
+            style={[styles.infoLink, { color: ONBOARDING_THEME.colors.link }]}
+          >
+            {t('Read more about')} {t('patents')}
+          </Hyperlink>
+        </View> */}
 
-          {/* Find Out Section */}
-          <View style={styles.findOutContainer}>
-            <Text style={styles.findOutTitle}>{t('Why should you use our App?')}</Text>
-            <Text style={styles.findOutSubtitle}>{t('Find out what we offer!')}</Text>
-            <TouchableOpacity
-              style={styles.findOutButton}
-              onPress={() => setShowOnboarding(true)}
-            >
-              <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
-            </TouchableOpacity>
+        {/* Top Section: Split View 3 Columns */}
+        <View style={styles.topSection}>
+          {/* Column 1: Info + 1 Image + Demo */}
+          <View style={styles.column1}>
+            <View style={styles.infoContainer}>
+
+              <Text style={styles.greenTitle}>{t('Make Future Green!')}</Text>
+              <Text style={styles.greenSubtitle}>{t('Find out what we offer to you?')}</Text>
+
+              <View style={styles.listContainer}>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.findOutButton}
+                onPress={() => setShowOnboarding(true)}
+              >
+                <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: 250 }}>
+              {/* Red Bag Image */}
+              <View style={styles.productCard}>
+                <Image source={{ uri: PRODUCT_IMAGES[2] }} style={styles.productImage} />
+              </View>
+
+              <Hyperlink
+                onPress={handleTryDemo}
+                linkKey="welcome_demo"
+                containerStyle={{ marginTop: 10 }}
+                style={styles.demoLinkBlue}
+                unvisitedColor="#0056b3"
+              >
+                Try the Demo
+              </Hyperlink>
+            </View>
+          </View>
+
+          {/* Column 2: 2 Vertical Images */}
+          <View style={styles.column2}>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[0] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[1] }} style={styles.productImage} />
+            </View>
+          </View>
+
+          {/* Column 3: 3 Vertical Images */}
+          <View style={styles.column3}>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[3] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[4] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[5] }} style={styles.productImage} />
+            </View>
           </View>
         </View>
 
@@ -157,6 +222,65 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     marginTop: 40,
     marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  topSection: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  column1: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  column2: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 30,
+    paddingTop: 140,
+  },
+  column3: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  demoLink: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    marginTop: 5,
+  },
+  demoLinkBlue: {
+    color: '#0056b3',
+    textDecorationLine: 'underline',
+    fontWeight: 'bold',
+  },
+  productCard: {
+    width: 100,
+    height: 160,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  productImage: {
+    width: 100,
+    height: 160,
+    resizeMode: 'contain',
   },
   logo: {
     width: 160,
@@ -186,11 +310,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.primary,
     textAlign: 'center',
-    marginBottom: 50,
+    marginBottom: 10,
     letterSpacing: -0.3,
   },
   section: {
-    marginBottom: 40,
+    marginBottom: 10,
     paddingHorizontal: 20,
   },
   sectionTitle: {
@@ -198,7 +322,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 5,
     letterSpacing: -0.3,
   },
   sectionDescription: {
@@ -207,7 +331,7 @@ const styles = StyleSheet.create({
     color: '#6a6a6a',
     textAlign: 'center',
     lineHeight: 19,
-    marginBottom: 24,
+    marginBottom: 5,
     letterSpacing: -0.1,
   },
   demoButton: {
@@ -242,19 +366,17 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   copyright: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: '#8a8a8a',
+    fontSize: 12,
+    color: '#000000',
     textAlign: 'center',
-    marginTop: 20,
-    letterSpacing: -0.1,
+    fontWeight: 'bold',
   },
   learnBasicsTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#4CAF50',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   learnBasicsSubtitle: {
     fontSize: 14,
@@ -270,9 +392,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: '600',
   },
-  findOutContainer: {
-    marginTop: 30,
-    alignItems: 'left',
+  infoContainer: {
+    position: 'absolute',
+    top: 0,
+    width: 200,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   findOutTitle: {
     fontSize: 16,
@@ -309,6 +435,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0056b3', // Blue text
     fontWeight: '600',
+  },
+  greenTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#7BFB2D',
+    marginBottom: 5,
+    lineHeight: 26,
+  },
+  greenSubtitle: {
+    fontSize: 13,
+    color: '#7BFB2D',
+    marginBottom: 10,
+    fontWeight: '700',
+  },
+  listContainer: {
+    marginBottom: 15,
+  },
+  listItem: {
+    fontSize: 13,
+    color: '#7BFB2D',
+    marginBottom: 2,
+    fontWeight: '600',
+  },
+  findOutButton: {
+    backgroundColor: '#7BFB2D',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 20,
+    width: '110',
+  },
+  findOutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
   },
 });
 

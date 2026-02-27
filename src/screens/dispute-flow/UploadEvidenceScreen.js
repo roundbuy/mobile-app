@@ -190,7 +190,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                         );
                     }}
                 >
-                    <Ionicons name="cloud-upload-outline" size={48} color="#999" />
+                    <Ionicons name="cloud-upload-outline" size={48} color="#303234" />
                     <Text style={styles.uploadText}>
                         <Text style={styles.uploadLink}>{t('Choose file(s)')}</Text> or drag file(s) here
                     </Text>
@@ -221,7 +221,7 @@ const UploadEvidenceScreen = ({ navigation, route }) => {
                     <Text style={styles.infoLinkText}>
                         More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                     </Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
                 </TouchableOpacity>
 
                 {/* Agreement Checkbox */}
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     },
     headerStep: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     content: {
         flex: 1,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 24,
     },
     evidenceTypesCard: {
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     },
     uploadText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginTop: 12,
         textAlign: 'center',
     },
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     },
     fileSizeInfo: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginBottom: 16,
     },
     filesContainer: {
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         flex: 1,
     },
     linkText: {
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     agreementText: {
         flex: 1,
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         lineHeight: 18,
     },
     footer: {

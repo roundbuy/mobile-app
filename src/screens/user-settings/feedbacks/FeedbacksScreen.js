@@ -59,7 +59,7 @@ const FeedbacksScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <Text style={styles.menuItemText}>{item.title}</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
+            <Ionicons name="chevron-forward" size={20} color="#303234" />
           </TouchableOpacity>
         ))}
 
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   copyright: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
 });
 

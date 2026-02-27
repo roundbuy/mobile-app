@@ -4,10 +4,11 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import authService from '../../services/authService';
 
 const EmailVerificationScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { verifyEmail } = useAuth();
   const { email } = route.params || {};
   const [code, setCode] = useState(['', '', '', '']);
@@ -38,25 +39,25 @@ const EmailVerificationScreen = ({ route, navigation }) => {
     }
 
     const verificationCode = code.join('');
-    
+
     try {
       setLoading(true);
-      
+
       // Call verify email API
       const response = await verifyEmail(email, verificationCode);
-      
+
       if (response.success) {
         // Navigate to Account Verified screen
         navigation.navigate('AccountVerified', { email });
       }
     } catch (error) {
       console.error('Email verification error:', error);
-      
+
       // Clear code on error
       setCode(['', '', '', '']);
-      
+
       let errorMessage = 'Verification failed. Please check your code and try again.';
-      
+
       if (error.message?.includes('expired')) {
         Alert.alert(
           t('Code Expired'),
@@ -73,7 +74,7 @@ const EmailVerificationScreen = ({ route, navigation }) => {
       } else if (error.message?.includes('Invalid')) {
         errorMessage = 'Invalid verification code. Please try again.';
       }
-      
+
       Alert.alert(t('Verification Failed'), errorMessage);
     } finally {
       setLoading(false);
@@ -89,10 +90,10 @@ const EmailVerificationScreen = ({ route, navigation }) => {
     try {
       setResending(true);
       setCode(['', '', '', '']);
-      
+
       // Call resend verification API
       const response = await authService.resendVerification(email);
-      
+
       if (response.success) {
         Alert.alert(
           t('Code Sent'),
@@ -240,10 +241,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   codeBox: {
-    width: 64,
-    height: 72,
+    width: 75,
+    height: 60,
     backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -255,6 +256,7 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   verifyButton: {
+    marginTop: 120,
     height: 54,
     backgroundColor: COLORS.primary,
     borderRadius: 27,
@@ -279,19 +281,20 @@ const styles = StyleSheet.create({
   },
   resendContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: 40,
+    marginHorizontal: 30,
   },
   resendText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '400',
-    color: '#6a6a6a',
+    color: ONBOARDING_THEME.colors.text,
   },
   resendLink: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
-    color: COLORS.primary,
+    color: ONBOARDING_THEME.colors.link,
     textDecorationLine: 'underline',
   },
   keypad: {

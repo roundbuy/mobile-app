@@ -15,7 +15,7 @@ export const validateEmail = (email) => {
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
   if (!emailRegex.test(email)) {
     return { isValid: false, error: 'Please enter a valid email address' };
   }
@@ -40,10 +40,10 @@ export const validatePassword = (password) => {
   const allChecksPassed = Object.values(checks).every(check => check);
 
   if (!password || password.trim() === '') {
-    return { 
-      isValid: false, 
-      error: 'Password is required', 
-      checks 
+    return {
+      isValid: false,
+      error: 'Password is required',
+      checks
     };
   }
 
@@ -55,10 +55,10 @@ export const validatePassword = (password) => {
     if (!checks.number) missingRequirements.push('a number');
     if (!checks.special) missingRequirements.push('a special character');
 
-    return { 
-      isValid: false, 
-      error: `Password must contain ${missingRequirements.join(', ')}`, 
-      checks 
+    return {
+      isValid: false,
+      error: `Password must contain ${missingRequirements.join(', ')}`,
+      checks
     };
   }
 
@@ -213,7 +213,7 @@ export const validatePasswordMatch = (password, confirmPassword) => {
  */
 export const sanitizeInput = (input) => {
   if (!input) return '';
-  
+
   // Remove script tags and potentially harmful characters
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
@@ -228,11 +228,11 @@ export const sanitizeInput = (input) => {
  */
 export const formatPhoneNumber = (phone) => {
   const digitsOnly = phone.replace(/\D/g, '');
-  
+
   if (digitsOnly.length === 10) {
     return `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6)}`;
   }
-  
+
   return phone;
 };
 
@@ -243,15 +243,15 @@ export const formatPhoneNumber = (phone) => {
  */
 export const getPasswordStrength = (password) => {
   if (!password) {
-    return { strength: 'None', score: 0, color: '#999999' };
+    return { strength: 'None', score: 0, color: '#303234' };
   }
 
   let score = 0;
-  
+
   // Length
   if (password.length >= 8) score += 1;
   if (password.length >= 12) score += 1;
-  
+
   // Complexity
   if (/[a-z]/.test(password)) score += 1;
   if (/[A-Z]/.test(password)) score += 1;

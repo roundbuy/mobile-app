@@ -78,7 +78,7 @@ const ReviewScreen = ({ navigation }) => {
               <Ionicons name={option.icon} size={24} color={COLORS.primary} />
             </View>
             <Text style={styles.menuTitle}>{option.title}</Text>
-            <Ionicons name="chevron-forward" size={24} color="#999" />
+            <Ionicons name="chevron-forward" size={24} color="#303234" />
           </TouchableOpacity>
         ))}
         <SuggestionsFooter sourceRoute="Review" />

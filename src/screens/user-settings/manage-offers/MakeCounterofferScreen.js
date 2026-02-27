@@ -15,7 +15,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const MakeCounterofferScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { offer } = route?.params || {};
   const [counterofferPrice, setCounterofferPrice] = useState('');
   const [message, setMessage] = useState('');
@@ -68,7 +68,7 @@ const MakeCounterofferScreen = ({ route, navigation }) => {
             value={counterofferPrice}
             onChangeText={setCounterofferPrice}
             placeholder="£250.00"
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="decimal-pad"
           />
         </View>
@@ -81,7 +81,7 @@ const MakeCounterofferScreen = ({ route, navigation }) => {
             value={message}
             onChangeText={setMessage}
             placeholder={t('Type your message here...')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   distance: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   fieldContainer: {
     marginBottom: 24,

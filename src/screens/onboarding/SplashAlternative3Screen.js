@@ -22,7 +22,7 @@ const SplashAlternative3Screen = ({ navigation }) => {
           navigation.replace('AllMemberships');
         }
       } else {
-        navigation.replace('LicenseAgreement');
+        navigation.replace('ATTPrompt');
       }
     }, 2000);
 
@@ -54,7 +54,7 @@ const SplashAlternative3Screen = ({ navigation }) => {
       <View style={styles.spacer} />
 
       {/* Patent Pending */}
-      <Text style={styles.patents}>{t('Patent Pending')}</Text>
+      <Text style={styles.patents}>{t('Patents Pending')}</Text>
     </View>
   );
 };

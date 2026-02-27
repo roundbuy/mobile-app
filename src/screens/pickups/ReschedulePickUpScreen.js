@@ -129,7 +129,7 @@ const ReschedulePickUpScreen = ({ route, navigation }) => {
                 <View style={styles.currentSchedule}>
                     <Text style={styles.currentScheduleTitle}>{t('Current Schedule')}</Text>
                     <View style={styles.currentScheduleRow}>
-                        <Ionicons name="calendar-outline" size={16} color="#666" />
+                        <Ionicons name="calendar-outline" size={16} color="#505050" />
                         <Text style={styles.currentScheduleText}>
                             {new Date(currentDate).toLocaleDateString('en-GB', {
                                 weekday: 'long',
@@ -140,7 +140,7 @@ const ReschedulePickUpScreen = ({ route, navigation }) => {
                         </Text>
                     </View>
                     <View style={styles.currentScheduleRow}>
-                        <Ionicons name="time-outline" size={16} color="#666" />
+                        <Ionicons name="time-outline" size={16} color="#505050" />
                         <Text style={styles.currentScheduleText}>
                             {formatTime(currentTime)}
                         </Text>
@@ -189,14 +189,14 @@ const ReschedulePickUpScreen = ({ route, navigation }) => {
                         style={styles.timeButton}
                         onPress={() => setShowTimePicker(!showTimePicker)}
                     >
-                        <Ionicons name="time-outline" size={20} color="#666" />
+                        <Ionicons name="time-outline" size={20} color="#505050" />
                         <Text style={styles.timeButtonText}>
                             {selectedTime ? formatTime(selectedTime) : 'Choose a time'}
                         </Text>
                         <Ionicons
                             name={showTimePicker ? 'chevron-up' : 'chevron-down'}
                             size={20}
-                            color="#666"
+                            color="#505050"
                         />
                     </TouchableOpacity>
 
@@ -233,7 +233,7 @@ const ReschedulePickUpScreen = ({ route, navigation }) => {
                     <TextInput
                         style={styles.reasonInput}
                         placeholder={t('Please explain why you need to reschedule...')}
-                        placeholderTextColor="#999"
+                        placeholderTextColor="#303234"
                         multiline
                         numberOfLines={4}
                         value={reason}
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     },
     currentScheduleText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     section: {
         padding: 16,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     characterCount: {
         marginTop: 8,
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'right',
     },
     bottomContainer: {

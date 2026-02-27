@@ -137,11 +137,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   placeholder: {
-    color: '#999',
+    color: '#303234',
   },
   arrow: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   modalOverlay: {
     flex: 1,
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   closeText: {
     fontSize: 18,
-    color: '#666',
+    color: '#505050',
   },
   optionsList: {
     paddingHorizontal: 20,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   subcategoryCount: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginTop: 2,
   },
 });

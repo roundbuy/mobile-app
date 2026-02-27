@@ -12,7 +12,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
-import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const ContactSupportScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
@@ -64,7 +63,7 @@ const ContactSupportScreen = ({ route, navigation }) => {
           <Text style={styles.introTitle}>{t('Contact us')}</Text>
           <View style={styles.introTextContainer}>
             <Text style={styles.introText}>{t('If you would like to contact us for help, suggestions or enquiries, please be in touch through this form.')}</Text>
-            <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+            <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
           </View>
         </View>
 
@@ -76,7 +75,7 @@ const ContactSupportScreen = ({ route, navigation }) => {
             value={name}
             onChangeText={setName}
             placeholder={t('Enter your name')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
           />
         </View>
 
@@ -88,7 +87,7 @@ const ContactSupportScreen = ({ route, navigation }) => {
             value={email}
             onChangeText={setEmail}
             placeholder={t('Enter your email')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -131,7 +130,7 @@ const ContactSupportScreen = ({ route, navigation }) => {
             value={description}
             onChangeText={setDescription}
             placeholder={t('Please write your enquiries here!')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             multiline
             numberOfLines={6}
             textAlignVertical="top"
@@ -145,7 +144,6 @@ const ContactSupportScreen = ({ route, navigation }) => {
 
         <View style={styles.bottomSpacer} />
         <View style={styles.bottomSpacer} />
-        <SuggestionsFooter sourceRoute="ContactSupport" />
       </ScrollView>
     </SafeAreaView>
   );
@@ -200,7 +198,7 @@ const styles = StyleSheet.create({
   introText: {
     flex: 1,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginRight: 8,
   },
@@ -224,7 +222,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#000',
+    color: '#505050',
   },
   pickerButton: {
     flexDirection: 'row',
@@ -239,7 +237,7 @@ const styles = StyleSheet.create({
   },
   pickerButtonText: {
     fontSize: 15,
-    color: '#000',
+    color: '#505050',
   },
   pickerDropdown: {
     marginTop: 4,
@@ -257,7 +255,7 @@ const styles = StyleSheet.create({
   },
   pickerItemText: {
     fontSize: 15,
-    color: '#000',
+    color: '#505050',
   },
   textArea: {
     backgroundColor: '#fff',
@@ -267,7 +265,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#000',
+    color: '#505050',
     minHeight: 120,
   },
   submitButton: {

@@ -261,6 +261,18 @@ const AllMembershipsScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
         )}
+        {/* Disclaimer Link */}
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            Our{' '}
+            <Text
+              style={styles.disclaimerLink}
+              onPress={() => setDisclaimerModalVisible(true)}
+            >
+              {t('Safety Disclaimer')}
+            </Text>
+          </Text>
+        </View>
       </ScrollView>
     </SafeScreenContainer>
   );
@@ -297,7 +309,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     flex: 1,
@@ -328,7 +340,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginBottom: 20,
   },
   planCard: {
@@ -364,7 +376,7 @@ const styles = StyleSheet.create({
   },
   planSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   priceContainer: {
@@ -388,7 +400,7 @@ const styles = StyleSheet.create({
   },
   infoIconText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   selectButton: {
     backgroundColor: COLORS.primary,
@@ -443,6 +455,20 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginRight: 8,
     fontWeight: '700',
+  },
+  disclaimerContainer: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  disclaimerText: {
+    fontSize: 14,
+    color: '#505050',
+    textAlign: 'center',
+  },
+  disclaimerLink: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
 

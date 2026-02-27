@@ -14,9 +14,10 @@ import { WebView } from 'react-native-webview';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import paddleService from '../../services/paddleService';
+import trackingService from '../../services/TrackingService';
 
 const PaddlePaymentScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     total = '2.27',
     planType = 'Gold',
@@ -32,7 +33,11 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
   const webViewRef = useRef(null);
 
   useEffect(() => {
-    initializePaddleCheckout();
+    const init = async () => {
+      await trackingService.initialize();
+      initializePaddleCheckout();
+    };
+    init();
   }, []);
 
   const initializePaddleCheckout = async () => {
@@ -41,7 +46,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
 
       // Get Paddle configuration
       const config = await paddleService.getClientToken();
-      
+
       // Create transaction
       const transaction = await paddleService.createTransaction(planId, currencyCode);
       setTransactionId(transaction.transaction_id);
@@ -49,7 +54,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
       // Generate embedded checkout HTML
       const html = generateCheckoutHTML(config.client_token, transaction);
       setCheckoutHtml(html);
-      
+
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -100,7 +105,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
     }
     .header p {
       font-size: 14px;
-      color: #666;
+      color: #505050;
     }
     .amount-box {
       background: #F5F5F5;
@@ -111,7 +116,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
     }
     .amount-label {
       font-size: 12px;
-      color: #666;
+      color: #505050;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 4px;
@@ -123,7 +128,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
     }
     .plan-name {
       font-size: 14px;
-      color: #666;
+      color: #505050;
       margin-top: 4px;
     }
     #paddle-checkout-container {
@@ -350,6 +355,7 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
           javaScriptEnabled={true}
           domStorageEnabled={true}
           startInLoadingState={true}
+          incognito={!trackingService.canTrackUser()} // Enforce no tracking if not allowed
           renderLoading={() => (
             <View style={styles.webViewLoading}>
               <ActivityIndicator size="large" color={COLORS.primary} />
@@ -438,7 +444,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     fontWeight: '500',
   },
   processingOverlay: {
@@ -478,7 +484,7 @@ const styles = StyleSheet.create({
   processingSubtext: {
     marginTop: 8,
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
 });
 

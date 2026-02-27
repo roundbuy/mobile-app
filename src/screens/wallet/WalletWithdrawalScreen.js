@@ -207,7 +207,7 @@ const WalletWithdrawalScreen = ({ navigation }) => {
                                     <Ionicons
                                         name={method.icon}
                                         size={24}
-                                        color={selectedMethod === method.id ? COLORS.primary : '#666'}
+                                        color={selectedMethod === method.id ? COLORS.primary : '#505050'}
                                     />
                                 </View>
                                 <View>
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     },
     balanceLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 8,
     },
     balanceAmount: {
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     },
     helperText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginTop: 8,
     },
     methodCard: {
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     },
     methodMin: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginTop: 2,
     },
     inputGroup: {

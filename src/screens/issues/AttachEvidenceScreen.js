@@ -138,7 +138,7 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             <ScrollView style={styles.content}>
                 {/* Handshake Icon */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="file-text-o" size={60} color="#666" />
+                    <FontAwesome name="file-text-o" size={60} color="#505050" />
                 </View>
 
                 {/* Info Message */}
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     },
     infoSubtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     uploadSection: {
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginBottom: 12,
         letterSpacing: 0.5,
     },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     },
     uploadHint: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         lineHeight: 18,
         marginTop: 8,
     },
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     },
     fileSize: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     removeButton: {
         padding: 4,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
         marginLeft: 6,
     },
     submitButton: {
-        backgroundColor: '#999',
+        backgroundColor: '#303234',
         padding: 16,
         borderRadius: 8,
         alignItems: 'center',

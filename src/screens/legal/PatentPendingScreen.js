@@ -26,8 +26,8 @@ const PatentPendingScreen = ({ navigation }) => {
             <View style={styles.iconCircle}>
                 <Ionicons name="checkmark" size={40} color={COLORS.primary} />
             </View>
-            <Text style={styles.iconText}>{t('PATENT PENDING')}</Text>
-            <Text style={styles.iconSubtext}>{t('PATENT PENDING')}</Text>
+            <Text style={styles.iconText}>{t('PATENTS PENDING')}</Text>
+            <Text style={styles.iconSubtext}>{t('PATENTS PENDING')}</Text>
         </View>
     );
 
@@ -42,7 +42,7 @@ const PatentPendingScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <GlobalHeader
-                title={t('Pending patent')}
+                title={t('Pending patents')}
                 navigation={navigation}
                 showBackButton={true}
                 showIcons={false}
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     iconSubtext: {
         fontSize: 10,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
         marginTop: 2,
     },
     sectionIconContainer: {

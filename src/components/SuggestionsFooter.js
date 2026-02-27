@@ -11,13 +11,13 @@ const SuggestionsFooter = ({ sourceRoute }) => {
         <View style={styles.suggestionsFooter}>
             <View style={styles.suggestionTextContainer}>
                 <Text style={styles.suggestionsTitle}>{t('account.suggestions_title', 'How can we improve?')}</Text>
-                <Text style={styles.suggestionsSubtitle}>{t('account.suggestions_desc', 'We welcome your feedback.')}</Text>
+                <Text style={styles.suggestionsSubtitle}>{t('account.suggestions_desc', 'We welcome your feedback')}</Text>
             </View>
             <TouchableOpacity
                 style={styles.suggestionButton}
                 onPress={() => navigation.navigate('Suggestion', { sourceRoute: sourceRoute || 'Unknown' })}
             >
-                <Text style={styles.suggestionButtonText}>{t('account.give_suggestion', 'Give Suggestion')}</Text>
+                <Text style={styles.suggestionButtonText}>{t('account.give_suggestion', 'Give Suggestions')}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     },
     suggestionsSubtitle: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     suggestionButton: {
         backgroundColor: '#000',

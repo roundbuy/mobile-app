@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const DisputeListScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,11 +78,11 @@ const DisputeListScreen = ({ navigation }) => {
 
         <View style={styles.cardFooter}>
           <View style={styles.metaItem}>
-            <Feather name="message-square" size={16} color="#666" />
+            <Feather name="message-square" size={16} color="#505050" />
             <Text style={styles.metaText}>{item.message_count || 0} messages</Text>
           </View>
           <View style={styles.metaItem}>
-            <Feather name="paperclip" size={16} color="#666" />
+            <Feather name="paperclip" size={16} color="#505050" />
             <Text style={styles.metaText}>{item.evidence_count || 0} files</Text>
           </View>
           <Text style={styles.date}>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   filterButtonText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     fontWeight: '500',
   },
   filterButtonTextActive: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   disputeType: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 2,
   },
   statusBadge: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   adTitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   deadlineContainer: {
@@ -287,12 +287,12 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginLeft: 4,
   },
   date: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginLeft: 'auto',
   },
   emptyContainer: {
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginTop: 8,
     textAlign: 'center',
     paddingHorizontal: 40,

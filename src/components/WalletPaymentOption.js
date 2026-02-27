@@ -52,7 +52,7 @@ const WalletPaymentOption = ({
                     <Ionicons
                         name="wallet"
                         size={24}
-                        color={selected ? COLORS.primary : '#666'}
+                        color={selected ? COLORS.primary : '#505050'}
                     />
                 </View>
                 <View style={styles.textContainer}>
@@ -65,7 +65,7 @@ const WalletPaymentOption = ({
                     {showBalance && (
                         <View style={styles.balanceRow}>
                             {loading ? (
-                                <ActivityIndicator size="small" color="#666" />
+                                <ActivityIndicator size="small" color="#505050" />
                             ) : wallet ? (
                                 <>
                                     <Text style={styles.balanceLabel}>Balance: </Text>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     },
     balanceLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     balanceAmount: {
         fontSize: 14,

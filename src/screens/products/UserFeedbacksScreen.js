@@ -93,7 +93,7 @@ const UserFeedbacksScreen = ({ route, navigation }) => {
         if (error) {
             return (
                 <View style={styles.centerContainer}>
-                    <Ionicons name="alert-circle-outline" size={64} color="#999" />
+                    <Ionicons name="alert-circle-outline" size={64} color="#303234" />
                     <Text style={styles.errorText}>{error}</Text>
                     <TouchableOpacity style={styles.retryButton} onPress={fetchUserFeedbacks}>
                         <Text style={styles.retryButtonText}>{t('Retry')}</Text>
@@ -147,7 +147,7 @@ const UserFeedbacksScreen = ({ route, navigation }) => {
                 {/* Feedbacks List */}
                 {feedbacks.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Ionicons name="chatbubbles-outline" size={64} color="#999" />
+                        <Ionicons name="chatbubbles-outline" size={64} color="#303234" />
                         <Text style={styles.emptyTitle}>{t('No Feedbacks Yet')}</Text>
                         <Text style={styles.emptyText}>{t("This user hasn't received any feedbacks yet.")}</Text>
                     </View>
@@ -159,7 +159,7 @@ const UserFeedbacksScreen = ({ route, navigation }) => {
                             <View style={styles.userInfo}>
                                 <View style={styles.userLeft}>
                                     <View style={styles.avatar}>
-                                        <FontAwesome name="user-circle" size={40} color="#666" />
+                                        <FontAwesome name="user-circle" size={40} color="#505050" />
                                     </View>
                                     <View>
                                         <Text style={styles.username}>{feedback.reviewer.name}</Text>
@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     errorText: {
         marginTop: 16,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
     },
     retryButton: {
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     emptyText: {
         marginTop: 8,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
     },
     description: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         paddingHorizontal: 20,
         paddingVertical: 16,
     },
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     },
     statLabel: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     statValue: {
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     },
     dateText: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginTop: 2,
     },
     productInfo: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     },
     productLabel: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 2,
     },
     productCode: {

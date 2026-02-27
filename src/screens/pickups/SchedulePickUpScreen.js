@@ -179,14 +179,14 @@ const SchedulePickUpScreen = ({ route, navigation }) => {
                         style={styles.timeButton}
                         onPress={() => setShowTimePicker(!showTimePicker)}
                     >
-                        <Ionicons name="time-outline" size={20} color="#666" />
+                        <Ionicons name="time-outline" size={20} color="#505050" />
                         <Text style={styles.timeButtonText}>
                             {selectedTime ? formatTime(selectedTime) : 'Choose a time'}
                         </Text>
                         <Ionicons
                             name={showTimePicker ? 'chevron-up' : 'chevron-down'}
                             size={20}
-                            color="#666"
+                            color="#505050"
                         />
                     </TouchableOpacity>
 
@@ -223,7 +223,7 @@ const SchedulePickUpScreen = ({ route, navigation }) => {
                     <TextInput
                         style={styles.descriptionInput}
                         placeholder={t('Add any special instructions or notes...')}
-                        placeholderTextColor="#999"
+                        placeholderTextColor="#303234"
                         multiline
                         numberOfLines={4}
                         value={description}
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     },
     productLabel: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     productTitle: {
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     characterCount: {
         marginTop: 8,
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'right',
     },
     bottomContainer: {

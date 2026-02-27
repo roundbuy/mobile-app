@@ -99,7 +99,7 @@ const ColorShadeSelector = ({ selectedShadeId, onSelect, style }) => {
                     )}
                     <Text style={styles.selectorText}>{getDisplayText()}</Text>
                 </View>
-                <Ionicons name="chevron-down" size={20} color="#666" />
+                <Ionicons name="chevron-down" size={20} color="#505050" />
             </TouchableOpacity>
 
             <Modal
@@ -114,7 +114,7 @@ const ColorShadeSelector = ({ selectedShadeId, onSelect, style }) => {
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Select Color</Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <Ionicons name="close" size={24} color="#666" />
+                                <Ionicons name="close" size={24} color="#505050" />
                             </TouchableOpacity>
                         </View>
 
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     },
     shadeText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         textTransform: 'capitalize',
     },
 });

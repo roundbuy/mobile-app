@@ -2,19 +2,21 @@ import React from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
-import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const LicenseAgreementScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const handleAccept = () => {
-    navigation.replace('NotificationPermission');
+    navigation.replace('CookiesConsent');
   };
 
   const handleCancel = () => {
+    // Navigation for cancel - maybe back to start or stay? sticking to prev logic or just going back
+    // Previous logic went to RoundBuyInfo. Screenshot shows "Cancel", usually means exit flow or go back.
+    // I'll keep it pointing to RoundBuyInfo for now as it's a "soft" exit.
     navigation.navigate('RoundBuyInfo', { from: 'license' });
   };
-
 
   const handlePolicyPress = (policyType) => {
     navigation.navigate('PolicyDetail', { policyType });
@@ -23,6 +25,8 @@ const LicenseAgreementScreen = ({ navigation }) => {
   const handlePatentInfo = () => {
     navigation.navigate('PatentPending');
   };
+
+  const { colors, typography, spacing } = ONBOARDING_THEME;
 
   return (
     <SafeScreenContainer>
@@ -38,49 +42,44 @@ const LicenseAgreementScreen = ({ navigation }) => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+          <Text style={styles.patentText}>{t('Patents Pending')}</Text>
           <TouchableOpacity onPress={handlePatentInfo}>
             <Text style={styles.infoLink}>
-              for more information{' '}
-              <Text style={styles.clickHere}>{t('click here')}</Text>
+              {t('Read more about')} <Text style={[styles.infoLink, { color: colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Content */}
         <View style={styles.content}>
-          <Text style={styles.title}>
-            License Agreement, Terms &{'\n'}Conditions, and Privacy Policy
+          <Text style={[typography.heading, styles.title]}>
+            {t('License, Terms, and Privacy Policy')}
           </Text>
 
-          <Text style={styles.description}>{t('You must agree to license agreement (EULA), Terms & Conditions and Privacy Policy below in order to complete the installation and use RoundBuy app or services. By clicking "I accept", you are agreeing to the terms of these agreements.')}</Text>
+          <Text style={[styles.description, typography.body, { textAlign: 'left' }]}>{t('You must agree to license agreement (EULA), Terms & Conditions and Privacy Policy below in order to complete the installation and use RoundBuy app or services. By clicking "I accept", you are agreeing to the terms of these agreements.')}</Text>
 
           {/* Policy Links */}
           <View style={styles.linksContainer}>
-            <Text style={styles.linkText}>
-              {t('Read the License Agreement PDF')}{' '}
-              <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('license')}>
-                {t('here')}
-              </Text>
-              {'\n'}{t('Terms & Conditions PDF')}{' '}
-              <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('terms')}>
-                {t('here')}
-              </Text>
-              {'\n'}{t('and Privacy Policy')}{' '}
-              <Text style={styles.linkHighlight} onPress={() => handlePolicyPress('privacy')}>
-                {t('here')}
-              </Text>
-            </Text>
+            <Text style={[styles.linkHeader, { textAlign: 'left', fontWeight: '400' }]}>{t('Read our policies:')}</Text>
+            <TouchableOpacity onPress={() => handlePolicyPress('license')}>
+              <Text style={[styles.linkText, { color: colors.link }]}>{t('License Agreement')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handlePolicyPress('terms')}>
+              <Text style={[styles.linkText, { color: colors.link }]}>{t('Terms & Conditions')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handlePolicyPress('privacy')}>
+              <Text style={[styles.linkText, { color: colors.link }]}>{t('Privacy Policy')}</Text>
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.emailNote}>{t('A copy of the License will be sent to you by email. It is also posted at https://roundbuy.com/legal/')}</Text>
+          <Text style={styles.emailNote}>{t('License & Terms are sent to you by email')}</Text>
         </View>
 
         {/* Footer Buttons */}
         <View style={styles.footer}>
           <View style={styles.buttonRow}>
             <TouchableOpacity
-              style={styles.acceptButton}
+              style={[styles.acceptButton, { backgroundColor: colors.primaryButton }]}
               onPress={handleAccept}
             >
               <Text style={styles.acceptButtonText}>{t('I accept')}</Text>
@@ -90,11 +89,15 @@ const LicenseAgreementScreen = ({ navigation }) => {
               onPress={handleCancel}
               style={styles.cancelButton}
             >
-              <Text style={styles.cancelButtonText}>{t('Cancel')}</Text>
+              <Text style={[styles.cancelButtonText, { color: colors.link }]}>{t('Cancel')}</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
+          <Text style={styles.bottomLink}>
+            {t('Read our ')}
+            <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={() => handlePolicyPress('license')}>{t('License')}</Text>{', '}
+            <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={() => handlePolicyPress('terms')}>{t('Terms')}</Text> {t('and')} <Text style={{ textDecorationLine: 'underline', color: colors.link }} onPress={() => handlePolicyPress('privacy')}>{t('Privacy Policy')}</Text>
+          </Text>
         </View>
       </ScrollView>
     </SafeScreenContainer>
@@ -107,101 +110,88 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: SPACING.lg,
+    paddingBottom: 24,
   },
   header: {
     alignItems: 'flex-start',
     marginBottom: 40,
     marginTop: 10,
+    paddingHorizontal: 20,
   },
   logo: {
-    width: 140,
+    width: 150,
     height: 60,
+    marginBottom: 5,
   },
   patentText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 12,
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    color: '#001C64',
+    marginBottom: 2,
   },
   infoLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
-  },
-  clickHere: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+    fontSize: 14,
     fontWeight: '500',
+    color: '#001C64',
   },
   content: {
-    flex: 1,
-    paddingHorizontal: 4,
-    marginTop: 150,
+    marginTop: 'auto',
+    paddingHorizontal: 30,
+    paddingBottom: 20,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 6,
-    lineHeight: 26,
-    letterSpacing: -0.3,
+    marginBottom: 0,
+    textAlign: 'left',
   },
   description: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: '#4a4a4a',
     marginBottom: 20,
     lineHeight: 22,
-    letterSpacing: -0.1,
   },
   linksContainer: {
-    marginBottom: 20,
+    marginBottom: 30,
+    alignItems: 'flex-start',
+  },
+  linkHeader: {
+    marginBottom: 5,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+    lineHeight: 24,
   },
   linkText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    lineHeight: 23,
-    letterSpacing: -0.1,
-  },
-  linkHighlight: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+    fontSize: 16,
     fontWeight: '500',
+    lineHeight: 24,
+    textDecorationLine: 'underline',
   },
   emailNote: {
-    fontSize: 12,
-    fontWeight: '400',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#6a6a6a',
-    lineHeight: 18,
-    marginBottom: 30,
-    letterSpacing: -0.1,
+    textAlign: 'center',
+    marginBottom: 10,
+    marginTop: 'auto',
   },
   footer: {
     alignItems: 'center',
     paddingTop: 10,
-    marginTop: 'auto',
+    paddingHorizontal: 30,
+    marginTop: 20,
   },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 70,
-    paddingHorizontal: 0,
+    marginBottom: 20,
+    gap: 15,
   },
   acceptButton: {
     flex: 1,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: COLORS.primary,
+    height: 50,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -209,33 +199,31 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   acceptButtonText: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
-    color: COLORS.white,
-    letterSpacing: 0.3,
+    color: '#FFFFFF',
   },
   cancelButton: {
     flex: 1,
-    height: 52,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 26,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   cancelButtonText: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '500',
-    color: COLORS.primary,
-    letterSpacing: 0.2,
   },
-  copyright: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#000',
+  bottomLink: {
+    fontSize: 14,
     textAlign: 'center',
-    letterSpacing: -0.1,
-    marginTop: -50,
-  },
+    color: '#333333',
+    marginTop: 10,
+    fontWeight: '500',
+  }
 });
 
 export default LicenseAgreementScreen;

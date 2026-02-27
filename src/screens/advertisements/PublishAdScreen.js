@@ -5,7 +5,7 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const PublishAdScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handlePublish = () => {
     // Navigate to search or home after publishing
     navigation.navigate('SearchScreen');
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   imageContainer: {
     paddingHorizontal: 20,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   dotActive: {
-    backgroundColor: '#666',
+    backgroundColor: '#505050',
   },
   productInfo: {
     paddingHorizontal: 20,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   productDistance: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   buyButton: {
     backgroundColor: COLORS.primary,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   descriptionText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   readMore: {

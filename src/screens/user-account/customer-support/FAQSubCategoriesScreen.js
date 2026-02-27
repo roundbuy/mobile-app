@@ -74,7 +74,7 @@ const FAQSubCategoriesScreen = ({ route, navigation }) => {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Search Bar - Visual only for now, or could implement local filter */}
                 <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                    <Ionicons name="search" size={20} color="#505050" style={styles.searchIcon} />
                     <Text style={styles.searchPlaceholder}>{t('Search questions...')}</Text>
                 </View>
 
@@ -97,7 +97,7 @@ const FAQSubCategoriesScreen = ({ route, navigation }) => {
                                     <Text style={styles.itemText}>{item.name}</Text>
                                     <View style={styles.badgeContainer}>
                                         {/* <Text style={styles.countText}>{item.faq_count || 0}</Text> */}
-                                        <Ionicons name="chevron-forward" size={20} color="#999" style={{ marginLeft: 8 }} />
+                                        <Ionicons name="chevron-forward" size={20} color="#303234" style={{ marginLeft: 8 }} />
                                     </View>
                                 </TouchableOpacity>
                             ))
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     },
     searchPlaceholder: {
         fontSize: 15,
-        color: '#999',
+        color: '#303234',
     },
     loaderContainer: {
         marginTop: 40,
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
     },
     countText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         fontWeight: '500',
     },
     emptyText: {
         textAlign: 'center',
-        color: '#666',
+        color: '#505050',
         marginTop: 20,
     }
 });

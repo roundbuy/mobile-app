@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const SupportTicketListScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,9 +48,9 @@ const SupportTicketListScreen = ({ navigation }) => {
       open: '#FFA500',
       in_progress: '#4169E1',
       resolved: '#32CD32',
-      closed: '#666',
+      closed: '#505050',
     };
-    return colors[status] || '#666';
+    return colors[status] || '#505050';
   };
 
   const getPriorityColor = (priority) => {
@@ -60,7 +60,7 @@ const SupportTicketListScreen = ({ navigation }) => {
       high: '#FF6347',
       urgent: '#FF0000',
     };
-    return colors[priority] || '#666';
+    return colors[priority] || '#505050';
   };
 
   const renderTicket = ({ item }) => (
@@ -70,7 +70,7 @@ const SupportTicketListScreen = ({ navigation }) => {
     >
       <View style={styles.ticketHeader}>
         <View style={styles.ticketNumber}>
-          <Feather name="hash" size={16} color="#666" />
+          <Feather name="hash" size={16} color="#505050" />
           <Text style={styles.ticketNumberText}>{item.ticket_number}</Text>
         </View>
         <View
@@ -93,7 +93,7 @@ const SupportTicketListScreen = ({ navigation }) => {
 
       <View style={styles.ticketFooter}>
         <View style={styles.ticketInfo}>
-          <Feather name="clock" size={14} color="#666" />
+          <Feather name="clock" size={14} color="#505050" />
           <Text style={styles.ticketDate}>
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   filterTabText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
   },
   filterTabTextActive: {
     color: '#FFF',
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   ticketNumberText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginLeft: 5,
   },
   statusBadge: {
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   ticketDate: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginLeft: 5,
   },
   priorityBadge: {
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 10,
     textAlign: 'center',
   },

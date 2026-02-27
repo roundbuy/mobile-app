@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     },
     successText: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
     },
     detailsSection: {
         marginTop: 20,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 12,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     infoValue: {
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     cancelButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     bottomSpacer: {
         height: 40,

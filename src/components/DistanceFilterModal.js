@@ -19,13 +19,19 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
   const SLIDER_MAX = SLIDER_CONFIG.max;
   const SLIDER_MIN = SLIDER_CONFIG.min;
   const SLIDER_DECIMAL_PRECISION = SLIDER_CONFIG.decimalPrecision;
+  const UNLIMITED_RADIUS = 100000; // Value to represent unlimited
+
 
   const sliderTrackRef = useRef(null);
   const sliderLayout = useRef({ x: 0, width: 0 });
 
   useEffect(() => {
     if (visible) {
-      setTempRadius(selectedRadius || SLIDER_CONFIG.defaultValue);
+      if (selectedRadius >= SLIDER_MAX) {
+        setTempRadius(SLIDER_MAX);
+      } else {
+        setTempRadius(selectedRadius || SLIDER_CONFIG.defaultValue);
+      }
       getLocationAsync();
     }
   }, [visible, selectedRadius]);
@@ -33,16 +39,26 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
   // Update map zoom when radius changes
   useEffect(() => {
     if (mapRef.current && location) {
-      const radiusInKm = tempRadius;
-      const radiusInDegrees = radiusInKm / 111; // Approximate conversion
-      const newDelta = radiusInDegrees * 2.5; // Add padding around circle
+      if (tempRadius >= SLIDER_MAX) {
+        // Zoom out for unlimited
+        mapRef.current.animateToRegion({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 2.0, // Large delta for view
+          longitudeDelta: 2.0,
+        }, 300);
+      } else {
+        const radiusInKm = tempRadius;
+        const radiusInDegrees = radiusInKm / 111; // Approximate conversion
+        const newDelta = radiusInDegrees * 2.5; // Add padding around circle
 
-      mapRef.current.animateToRegion({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        latitudeDelta: newDelta,
-        longitudeDelta: newDelta,
-      }, 300);
+        mapRef.current.animateToRegion({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: newDelta,
+          longitudeDelta: newDelta,
+        }, 300);
+      }
     }
   }, [tempRadius]);
 
@@ -109,7 +125,11 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
   ).current;
 
   const handleApply = () => {
-    onSelectRadius(tempRadius);
+    if (tempRadius >= SLIDER_MAX) {
+      onSelectRadius(UNLIMITED_RADIUS);
+    } else {
+      onSelectRadius(tempRadius);
+    }
     onClose();
   };
 
@@ -154,14 +174,16 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
                   showsCompass={false}
                   toolbarEnabled={false}
                 >
-                  {/* Radius Circle */}
-                  <Circle
-                    center={location}
-                    radius={tempRadius * 1000} // Convert km to meters
-                    strokeWidth={2}
-                    strokeColor={COLORS.primary}
-                    fillColor={`${COLORS.primary}20`} // 20% opacity
-                  />
+                  {/* Radius Circle - only show if not unlimited */}
+                  {tempRadius < SLIDER_MAX && (
+                    <Circle
+                      center={location}
+                      radius={tempRadius * 1000} // Convert km to meters
+                      strokeWidth={2}
+                      strokeColor={COLORS.primary}
+                      fillColor={`${COLORS.primary}20`} // 20% opacity
+                    />
+                  )}
 
                   {/* Center Marker */}
                   <Marker
@@ -182,7 +204,9 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
 
               {/* Distance Overlay */}
               <View style={styles.distanceOverlay}>
-                <Text style={styles.distanceText}>{tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
+                <Text style={styles.distanceText}>
+                  {tempRadius >= SLIDER_MAX ? 'Unlimited' : `${tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km`}
+                </Text>
               </View>
             </View>
 
@@ -213,7 +237,7 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
               </View>
               <View style={styles.sliderLabels}>
                 <Text style={styles.sliderLabelText}>0 km</Text>
-                <Text style={styles.sliderLabelText}>{SLIDER_MAX} km</Text>
+                <Text style={styles.sliderLabelText}>Unlimited</Text>
               </View>
             </View>
 

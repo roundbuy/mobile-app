@@ -134,6 +134,9 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
       ageName,
       sizeName,
       colorName,
+      // Pass through edit params
+      isEdit: route.params?.isEdit,
+      adId: route.params?.adId,
     });
   };
 
@@ -305,7 +308,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     paddingHorizontal: 20,
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   continueButton: {
     backgroundColor: COLORS.primary,
@@ -385,7 +388,7 @@ const styles = StyleSheet.create({
   },
   xDivider: {
     paddingHorizontal: 10,
-    color: '#666',
+    color: '#505050',
     fontSize: 16,
   },
   unitContainer: {

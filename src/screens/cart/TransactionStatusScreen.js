@@ -5,7 +5,7 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const TransactionStatusScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const {
     success = true,
     amount = '2.27',
@@ -67,14 +67,14 @@ const TransactionStatusScreen = ({ navigation, route }) => {
           </View>
 
           <Text style={styles.statusTitle}>{t('Payment Unsuccessful')}</Text>
-          
+
           <View style={styles.failedMessageContainer}>
             <Text style={styles.failedMessage}>{t('We were unable to process your payment. Check that all the payment details were correct.')}</Text>
             <Text style={styles.tryAgainText}>{t('Please try again!')}</Text>
           </View>
 
           {/* Try Again Button */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.actionButton}
             onPress={handleTryAgain}
           >
@@ -141,7 +141,7 @@ const TransactionStatusScreen = ({ navigation, route }) => {
         </View>
 
         {/* Done Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionButton}
           onPress={handleDone}
         >
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   statusSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -223,14 +223,14 @@ const styles = StyleSheet.create({
   },
   failedMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 16,
   },
   tryAgainText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   detailsTitle: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginBottom: 20,
   },
   detailRow: {
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailValue: {
     fontSize: 14,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   receiptText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginBottom: 20,
   },

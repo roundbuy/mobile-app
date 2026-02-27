@@ -100,7 +100,7 @@ const MostPopularSearchesScreen = ({ navigation }) => {
 
                             <TouchableOpacity style={styles.moreInfo}>
                                 <Text style={styles.moreInfoText}>{t('More information on Rewards & Credits, click here')}</Text>
-                                <Ionicons name="information-circle-outline" size={20} color="#666" />
+                                <Ionicons name="information-circle-outline" size={20} color="#505050" />
                             </TouchableOpacity>
 
                             <Text style={styles.copyrightText}>{t('© 2024-2026 RoundBuy Inc ®')}</Text>
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     },
     footnote: {
         fontSize: 10,
-        color: '#666',
+        color: '#505050',
         marginBottom: 20,
         lineHeight: 14,
     },
@@ -188,13 +188,13 @@ const styles = StyleSheet.create({
     },
     moreInfoText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginRight: 6,
         textDecorationLine: 'underline',
     },
     copyrightText: {
         fontSize: 10,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
     },
 });

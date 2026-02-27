@@ -9,6 +9,7 @@ import { useTranslation } from '../../../context/TranslationContext';
 
 import PlanUpgradeRestrictionModal from '../../../components/PlanUpgradeRestrictionModal';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
+import Hyperlink from '../../../components/common/Hyperlink';
 
 const MyMembershipScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -137,56 +138,41 @@ const MyMembershipScreen = ({ navigation }) => {
 
     const renderPlanCard = (plan) => {
         const isCurrent = currentSubscription && plan.slug === currentSubscription.plan_slug;
-        const isBest = plan.tag === 'best' || plan.is_best;
-        const isPopular = plan.tag === 'popular' || plan.is_popular;
         const planColor = plan.color || '#4CAF50';
         const price = parseFloat(plan.target_currency?.total_price || 0);
-        const symbol = plan.target_currency?.symbol || '$';
+        const symbol = plan.target_currency?.symbol || '£';
         const renewalPrice = parseFloat(plan.renewal?.total_price || price);
         const hasDifferentRenewal = plan.renewal?.is_different || false;
-        const isFree = price === 0 && renewalPrice > 0;
+        const isFree = price === 0 && renewalPrice === 0;
         const isFreeFirstYear = price === 0 && renewalPrice > 0;
 
         return (
-            <View key={plan.id} style={[styles.planCard, isCurrent && styles.currentPlanCard]}>
+            <View key={plan.id} style={styles.planCard}>
                 <TouchableOpacity onPress={() => handlePlanDetails(plan.name)}>
                     <View style={[styles.planHeader, { backgroundColor: planColor }]}>
                         <Text style={styles.planTitle}>{plan.name}</Text>
-                        {isCurrent && (
-                            <View style={styles.currentBadge}>
-                                <Text style={styles.currentBadgeText}>{t('CURRENT')}</Text>
-                            </View>
-                        )}
-                        {isBest && !isCurrent && (
-                            <View style={styles.bestBadge}>
-                                <Text style={styles.bestBadgeText}>{t('BEST VALUE')}</Text>
-                            </View>
-                        )}
-                        {isPopular && !isBest && !isCurrent && (
-                            <View style={styles.popularBadge}>
-                                <Text style={styles.popularBadgeText}>{t('POPULAR')}</Text>
-                            </View>
-                        )}
                     </View>
                 </TouchableOpacity>
 
                 <View style={styles.planContent}>
-                    <Text style={styles.planSubtitle}>{plan.subheading || plan.description}</Text>
+                    {plan.subheading || plan.description ? (
+                        <Text style={styles.planSubtitle}>{plan.subheading || plan.description}</Text>
+                    ) : null}
 
                     <View style={styles.priceContainer}>
                         <Text style={styles.priceText}>
                             {isFreeFirstYear ? (
-                                `FREE, then ${symbol}${renewalPrice.toFixed(2)} / ${plan.duration_days} days`
+                                `Price ${symbol}${renewalPrice} now for free ${symbol}0 / year`
                             ) : isFree ? (
-                                `FREE / ${plan.duration_days} days`
+                                `Price ${symbol}0 / year`
                             ) : hasDifferentRenewal && renewalPrice !== price ? (
-                                `Price ${symbol}${price.toFixed(2)} now, then ${symbol}${renewalPrice.toFixed(2)} / ${plan.duration_days} days`
+                                `Price ${symbol}${price} now, then ${symbol}${renewalPrice} / year`
                             ) : (
-                                `Price ${symbol}${price.toFixed(2)} / ${plan.duration_days} days`
+                                `Price ${symbol}${price} / year`
                             )}
                         </Text>
-                        <TouchableOpacity style={styles.infoIcon}>
-                            <Text style={styles.infoIconText}>ⓘ</Text>
+                        <TouchableOpacity>
+                            <Ionicons name="information-circle-outline" size={20} color="#000" style={styles.infoIconStyles} />
                         </TouchableOpacity>
                     </View>
 
@@ -198,16 +184,28 @@ const MyMembershipScreen = ({ navigation }) => {
                         onPress={() => handleSelectPlan(plan)}
                         disabled={isCurrent}
                     >
-                        <Text style={styles.selectButtonText}>
-                            {isCurrent ? t('Current Plan') : plan.slug === 'green' ? t('Switch to Free Plan') : t('Upgrade to ') + plan.name}
+                        <Text style={[
+                            styles.selectButtonText,
+                            isCurrent && styles.currentPlanButtonText
+                        ]}>
+                            {isCurrent ? t('Current plan') : plan.slug === 'green' ? t('Switch to Free Plan') : t('Upgrade to ') + plan.name}
                         </Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.featuresTitle}>{plan.name} plan includes:</Text>
+                    <View style={styles.cardDivider} />
+
+                    <Text style={styles.featuresTitle}>{plan.name} plan includes</Text>
                     {plan.description_bullets && plan.description_bullets.map((feature, index) => (
-                        <Text key={index} style={styles.featureItem}>• {feature}</Text>
+                        <View key={index} style={styles.featureRow}>
+                            <Text style={styles.bulletPoint}>•</Text>
+                            <Text style={styles.featureItem}>{feature}</Text>
+                        </View>
                     ))}
                 </View>
+                <Text style={styles.footerText}>
+                    Read our <Hyperlink linkKey="billing_policy" style={styles.footerLinkText} unvisitedColor={COLORS.primary} textDecorationLine="underline">{t('Subscriptions & Billing Policy')}</Hyperlink>{'\n'}
+                    and <Hyperlink linkKey="refund_policy" style={styles.footerLinkText} unvisitedColor={COLORS.primary} textDecorationLine="underline">{t('Refund Policy')}</Hyperlink>
+                </Text>
             </View>
         );
     };
@@ -230,7 +228,7 @@ const MyMembershipScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('My Membership')}</Text>
+                <Text style={styles.headerTitle}>{t('Membership plans')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
@@ -238,15 +236,24 @@ const MyMembershipScreen = ({ navigation }) => {
                 {/* Current Plan Summary */}
                 {currentSubscription && (
                     <View style={styles.currentPlanSummary}>
-                        <Text style={styles.summaryTitle}>{t('Your Current Plan')}</Text>
-                        <Text style={styles.summaryPlanName}>{currentSubscription.plan_name}</Text>
+                        <View style={styles.currentPlanRow}>
+                            <Text style={styles.currentPlanLabel}>{t('Your current plan:')}</Text>
+                            <View style={[styles.inlineBadge, { backgroundColor: currentSubscription.plan_color || '#4CAF50' }]}>
+                                <Text style={styles.inlineBadgeText}>{currentSubscription.plan_name}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => { }}>
+                                <Text style={styles.upgradeLink}>{t('Upgrade')}</Text>
+                            </TouchableOpacity>
+                        </View>
                         <Text style={styles.summaryDates}>
-                            {t('Valid until')}: {new Date(currentSubscription.end_date).toLocaleDateString()}
+                            {t('Your annual membership starts:')} {new Date(currentSubscription.start_date || currentSubscription.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '.')}
                         </Text>
+                        <Text style={styles.summaryDates}>
+                            {t('Your annual membership ends:')} {new Date(currentSubscription.end_date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '.')}
+                        </Text>
+                        <View style={styles.divider} />
                     </View>
                 )}
-
-                <Text style={styles.title}>{t('Available Plans')}</Text>
 
                 {/* Plan Cards */}
                 {plans.map(plan => renderPlanCard(plan))}
@@ -256,7 +263,13 @@ const MyMembershipScreen = ({ navigation }) => {
                         <Text style={styles.emptyText}>{t('No subscription plans available')}</Text>
                     </View>
                 )}
-                <SuggestionsFooter sourceRoute="MyMembership" />
+
+                <View style={styles.footerLinksContainer}>
+                    <Text style={styles.footerText}>
+                        Read our <Hyperlink linkKey="billing_policy" style={styles.footerLinkText} unvisitedColor={COLORS.primary} textDecorationLine="underline">{t('Subscriptions & Billing Policy')}</Hyperlink>{'\n'}
+                        and <Hyperlink linkKey="refund_policy" style={styles.footerLinkText} unvisitedColor={COLORS.primary} textDecorationLine="underline">{t('Refund Policy')}</Hyperlink>
+                    </Text>
+                </View>
             </ScrollView>
 
             {/* Upgrade Restriction Modal */}
@@ -276,22 +289,18 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        backgroundColor: '#fff',
     },
     backButton: {
         padding: 4,
+        marginRight: 16,
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 20,
+        fontWeight: '700',
         color: '#000',
-        flex: 1,
-        textAlign: 'center',
-        marginRight: 36,
     },
     headerRight: {
         width: 32,
@@ -307,159 +316,134 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     currentPlanSummary: {
         backgroundColor: '#fff',
-        margin: 16,
-        padding: 20,
-        // borderRadius: 12,
-        // borderWidth: 2,
-        // borderColor: COLORS.primary,
+        paddingHorizontal: 20,
+        paddingTop: 8,
+        paddingBottom: 24,
     },
-    summaryTitle: {
+    currentPlanRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+        flexWrap: 'wrap',
+    },
+    currentPlanLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
-        marginBottom: 8,
-    },
-    summaryPlanName: {
-        fontSize: 24,
-        fontWeight: '700',
         color: '#000',
-        marginBottom: 4,
+        marginRight: 8,
+    },
+    inlineBadge: {
+        paddingVertical: 2,
+        paddingHorizontal: 6,
+        marginRight: 8,
+    },
+    inlineBadgeText: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#fff',
+    },
+    upgradeLink: {
+        fontSize: 13,
+        fontWeight: '500',
+        color: COLORS.primary,
+        textDecorationLine: 'underline',
     },
     summaryDates: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#505050',
+        marginBottom: 2,
     },
-    title: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: '#000',
-        paddingHorizontal: 20,
-        marginBottom: 20,
+    divider: {
+        height: 1,
+        backgroundColor: '#f0f0f0',
+        marginTop: 24,
     },
     planCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
         marginHorizontal: 16,
-        marginBottom: 20,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    currentPlanCard: {
-        borderWidth: 2,
-        borderColor: COLORS.primary,
+        marginBottom: 32,
     },
     planHeader: {
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
     },
     planTitle: {
-        fontSize: 22,
+        fontSize: 18,
         fontWeight: '700',
-        color: '#FFFFFF',
+        color: '#000',
     },
     planContent: {
-        padding: 20,
+        padding: 16,
     },
     planSubtitle: {
         fontSize: 14,
-        color: '#666',
-        marginBottom: 12,
+        color: '#505050',
+        marginBottom: 16,
     },
     priceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     priceText: {
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#000',
-        flex: 1,
+        marginRight: 6,
     },
-    infoIcon: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: '#E0E0E0',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    infoIconText: {
-        fontSize: 12,
-        color: '#666',
+    infoIconStyles: {
+        marginLeft: 2,
     },
     selectButton: {
         paddingVertical: 12,
-        paddingHorizontal: 32,
+        paddingHorizontal: 24,
         borderRadius: 24,
         alignSelf: 'flex-start',
-        marginBottom: 16,
+        marginBottom: 24,
     },
     currentPlanButton: {
-        backgroundColor: '#999',
+        backgroundColor: '#f0f0f0',
     },
     selectButtonText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
         color: '#FFFFFF',
     },
-    currentBadge: {
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        paddingVertical: 4,
-        paddingHorizontal: 12,
-        borderRadius: 12,
+    currentPlanButtonText: {
+        color: '#303234',
+        fontWeight: '500',
     },
-    currentBadgeText: {
-        fontSize: 11,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        letterSpacing: 0.5,
-    },
-    bestBadge: {
-        backgroundColor: 'rgba(255,255,255,0.3)',
-        paddingVertical: 4,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-    },
-    bestBadgeText: {
-        fontSize: 11,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        letterSpacing: 0.5,
-    },
-    popularBadge: {
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        paddingVertical: 4,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-    },
-    popularBadgeText: {
-        fontSize: 11,
-        fontWeight: '600',
-        color: '#FFFFFF',
+    cardDivider: {
+        height: 1,
+        backgroundColor: '#f0f0f0',
+        marginBottom: 20,
     },
     featuresTitle: {
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#000',
+        marginBottom: 16,
+    },
+    featureRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
         marginBottom: 12,
     },
+    bulletPoint: {
+        fontSize: 14,
+        color: '#000',
+        marginRight: 8,
+        marginTop: -1,
+    },
     featureItem: {
+        flex: 1,
         fontSize: 13,
-        color: '#333',
-        marginBottom: 8,
-        lineHeight: 20,
+        color: '#505050',
+        lineHeight: 18,
     },
     emptyContainer: {
         paddingVertical: 60,
@@ -467,7 +451,22 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
+    },
+    footerLinksContainer: {
+        paddingVertical: 32,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    footerText: {
+        fontSize: 12,
+        color: '#000',
+        textAlign: 'center',
+        lineHeight: 18,
+    },
+    footerLinkText: {
+        fontSize: 12,
+        fontWeight: '400',
     },
 });
 

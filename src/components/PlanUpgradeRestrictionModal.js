@@ -30,7 +30,7 @@ const PlanUpgradeRestrictionModal = ({ visible, onClose }) => {
                         onPress={onClose}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <Ionicons name="close" size={24} color="#999" />
+                        <Ionicons name="close" size={24} color="#303234" />
                     </TouchableOpacity>
 
                     {/* Logo */}
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     },
     instructionText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     actionButton: {

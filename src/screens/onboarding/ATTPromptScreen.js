@@ -2,7 +2,7 @@ import React from 'react';
 import { IMAGES } from '../../assets/images';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
-import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
@@ -23,18 +23,20 @@ const ATTPromptScreen = ({ navigation }) => {
     } catch (error) {
       console.error('Error requesting permissions:', error);
     } finally {
-      navigation.replace('CookiesConsent');
+      navigation.replace('NotificationPermission');
     }
   };
 
   const handleAskAppNotToTrack = () => {
     // User declined tracking - skip requests or proceed
-    navigation.replace('CookiesConsent');
+    navigation.replace('NotificationPermission');
   };
 
   const handlePatentInfo = () => {
     navigation.navigate('PatentPending');
   };
+
+  const { colors, typography, spacing } = ONBOARDING_THEME;
 
   return (
     <SafeScreenContainer>
@@ -45,11 +47,10 @@ const ATTPromptScreen = ({ navigation }) => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+        <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
-            for more information{' '}
-            <Text style={styles.clickHere}>{t('click here')}</Text>
+            {t('Read more about')} <Text style={[styles.infoLink, { color: colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -57,29 +58,36 @@ const ATTPromptScreen = ({ navigation }) => {
       {/* Content */}
       <View style={styles.content}>
         {/* Title */}
-        <Text style={styles.title}>{t('ATT Prompt')}</Text>
+        <Text style={[styles.title, typography.heading]}>{t('ATT Prompt')}</Text>
 
         {/* Description */}
-        <Text style={styles.description}>{t('"RoundBuy" would like permission to track you acrosss apps and websites owned by other companies.')}</Text>
-
-        {/* Explanation */}
-        <Text style={styles.explanation}>{t('Your data will be used to deliver personalized ads to you.')}</Text>
+        <Text style={[styles.description]}>
+          <Text style={{ fontWeight: '700' }}>"RoundBuy" {t('would like permission to track you acrosss apps and websites owned by other companies.')}</Text> {t('Your data will be used to deliver personalized ads to you.')}
+        </Text>
       </View>
 
       {/* Footer with Action Buttons */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleAllowTracking}
-        >
-          <Text style={styles.buttonText}>{t('Allow')}</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleAllowTracking}
+          >
+            <Text style={[styles.buttonText, { color: colors.link }]}>{t('Allow Tracking')}</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleAskAppNotToTrack}
-        >
-          <Text style={styles.buttonText}>{t('Don\'t Allow')}</Text>
+          <View style={styles.divider} />
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleAskAppNotToTrack}
+          >
+            <Text style={[styles.buttonText, { color: colors.link }]}>{t('Ask App Not to Track')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.safetyLink}>
+          <Text style={styles.safetyText}>{t('Our')} <Text style={{ color: colors.link, textDecorationLine: 'underline' }}>{t('Safety Disclaimers')}</Text></Text>
         </TouchableOpacity>
       </View>
     </SafeScreenContainer>
@@ -91,79 +99,76 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 40,
     marginTop: 10,
+    paddingHorizontal: 20,
   },
   logo: {
-    width: 140,
+    width: 150,
     height: 60,
+    marginBottom: 5,
   },
   patentText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginTop: 12,
-    marginBottom: 6,
-    letterSpacing: -0.2,
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#001C64',
+    marginBottom: 2,
   },
   infoLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
-  },
-  clickHere: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+    fontSize: 14,
     fontWeight: '500',
+    color: '#001C64',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     paddingHorizontal: 30,
-    marginTop: 300,
+    alignItems: 'center',
+    paddingBottom: 30, // Space above footer
   },
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    textAlign: 'center',
     marginBottom: 30,
-    letterSpacing: -0.3,
   },
   description: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#1a1a1a',
+    fontSize: 18,
     textAlign: 'center',
-    marginBottom: 20,
+    color: '#000000',
     lineHeight: 24,
-    letterSpacing: -0.2,
-  },
-  explanation: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    textAlign: 'center',
-    lineHeight: 20,
-    letterSpacing: -0.1,
+    paddingHorizontal: 5,
   },
   footer: {
-    paddingTop: 40,
-    paddingBottom: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 0,
+  },
+  buttonContainer: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
   },
   button: {
-    height: 50,
+    height: 55,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
-    borderTopColor: '#dfddddff',
-    borderTopWidth: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
   },
   buttonText: {
-    fontSize: 17,
-    fontWeight: '500',
-    color: COLORS.primary,
-    letterSpacing: 0.1,
+    fontSize: 20,
+    fontWeight: '600',
   },
+  safetyLink: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  safetyText: {
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 22,
+    textAlign: 'center',
+    color: '#333333',
+  }
+
 });
 
 export default ATTPromptScreen;

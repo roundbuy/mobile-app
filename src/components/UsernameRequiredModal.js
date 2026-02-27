@@ -48,7 +48,7 @@ const UsernameRequiredModal = ({ visible, onCreateUsername }) => {
 
                     {/* Info */}
                     <View style={styles.infoContainer}>
-                        <Ionicons name="information-circle-outline" size={16} color="#666" />
+                        <Ionicons name="information-circle-outline" size={16} color="#505050" />
                         <Text style={styles.infoText}>
                             This is a one-time setup
                         </Text>
@@ -93,14 +93,14 @@ const styles = StyleSheet.create({
     },
     message: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 8,
     },
     submessage: {
         fontSize: 13,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
         lineHeight: 20,
         marginBottom: 24,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     },
     infoText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
 });
 

@@ -19,7 +19,7 @@ import { advertisementService, favoritesService } from '../../services';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
-import { getFullImageUrl } from '../../utils/imageUtils';
+import { getFullImageUrl, getAllImageUrls } from '../../utils/imageUtils';
 import GlobalHeader from '../../components/GlobalHeader';
 import ProductInfoModal from '../../components/ProductInfoModal';
 import ResponseMetrics from '../../components/ResponseMetrics';
@@ -93,7 +93,7 @@ const getMembershipConfig = (membership) => {
 
 const ProductDetailsScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
-  const { advertisementId, advertisement } = route?.params || {};
+  const { advertisementId, advertisement, showcaseGroupId, showcaseIndex } = route?.params || {};
   const { user, hasActiveSubscription } = useAuth();
 
   // State management
@@ -106,6 +106,16 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [offerAmount, setOfferAmount] = useState('');
   const [infoModal, setInfoModal] = useState({ visible: false, title: '', content: '' });
   const [sellerMetrics, setSellerMetrics] = useState(null);
+
+  // Showcase navigation state
+  const [showcaseProducts, setShowcaseProducts] = useState([]);
+  const [currentShowcaseIndex, setCurrentShowcaseIndex] = useState(showcaseIndex || 0);
+
+  // HomeMarket navigation state
+  const [homeMarketProducts, setHomeMarketProducts] = useState([]);
+  const [currentHomeMarketUserIndex, setCurrentHomeMarketUserIndex] = useState(route?.params?.homeMarketUserIndex || 0);
+  const [currentHomeMarketIndex, setCurrentHomeMarketIndex] = useState(route?.params?.homeMarketIndex || 0);
+  const homeMarketTier = route?.params?.homeMarketTier;
 
   // Fetch advertisement details on mount
   useEffect(() => {
@@ -171,6 +181,103 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     }
   }, [productData?.seller?.id]);
 
+  // Fetch showcase products if this product is part of a showcase
+  useEffect(() => {
+    if (showcaseGroupId) {
+      fetchShowcaseProducts();
+    }
+  }, [showcaseGroupId]);
+
+  const fetchShowcaseProducts = async () => {
+    try {
+      const response = await api.get('/advertisements/browse', {
+        params: { page: 1, limit: 100 }
+      });
+
+      if (response.data.success) {
+        const ads = response.data.data.advertisements;
+        const showcase = ads.find(item =>
+          item.type === 'showcase' && item.showcase_group_id === showcaseGroupId
+        );
+
+        if (showcase && showcase.products) {
+          setShowcaseProducts(showcase.products);
+          console.log(`📦 Loaded ${showcase.products.length} showcase products`);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching showcase products:', error);
+    }
+  };
+
+  // Fetch HomeMarket products if this product is part of a HomeMarket
+  useEffect(() => {
+    if (homeMarketTier) {
+      fetchHomeMarketProducts();
+    }
+  }, [homeMarketTier]);
+
+  const fetchHomeMarketProducts = async () => {
+    try {
+      // Fetch products for the specific tier
+      const response = await api.get('/advertisements/browse', {
+        params: {
+          page: 1,
+          limit: 100,
+          latitude: user?.latitude,
+          longitude: user?.longitude,
+          radius: 50
+        }
+      });
+
+      if (response.data.success) {
+        const ads = response.data.data.advertisements;
+        // Find the HomeMarket group
+        const homemarketGroup = ads.find(item => item.type === 'homemarket_group');
+
+        if (homemarketGroup && homemarketGroup.users && homemarketGroup.users.length > currentHomeMarketUserIndex) {
+          const userProducts = homemarketGroup.users[currentHomeMarketUserIndex].products;
+          if (userProducts) {
+            setHomeMarketProducts(userProducts);
+            console.log(`🏠 Loaded ${userProducts.length} HomeMarket products for user index ${currentHomeMarketUserIndex}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching HomeMarket products:', error);
+    }
+  };
+
+  const handlePreviousHomeMarketProduct = () => {
+    if (currentHomeMarketIndex > 0 && homeMarketProducts.length > 0) {
+      const newIndex = currentHomeMarketIndex - 1;
+      const nextProduct = homeMarketProducts[newIndex];
+      setCurrentHomeMarketIndex(newIndex);
+
+      navigation.replace('ProductDetails', {
+        advertisementId: nextProduct.id,
+        homeMarketTier: homeMarketTier,
+        homeMarketUserIndex: currentHomeMarketUserIndex,
+        homeMarketIndex: newIndex
+      });
+    }
+  };
+
+  const handleNextHomeMarketProduct = () => {
+    if (currentHomeMarketIndex < homeMarketProducts.length - 1) {
+      const newIndex = currentHomeMarketIndex + 1;
+      const nextProduct = homeMarketProducts[newIndex];
+      setCurrentHomeMarketIndex(newIndex);
+
+      navigation.replace('ProductDetails', {
+        advertisementId: nextProduct.id,
+        homeMarketTier: homeMarketTier,
+        homeMarketUserIndex: currentHomeMarketUserIndex,
+        homeMarketIndex: newIndex
+      });
+    }
+  };
+
   const fetchSellerMetrics = async (sellerId) => {
     try {
       const response = await api.get(`/seller-metrics/${sellerId}`);
@@ -197,9 +304,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       age: ad.age_name || 'Any',
       size: ad.size_name || '',
       colour: ad.color_name || '',
-      images: ad.images ? ad.images.map(img =>
-        img.startsWith('http') ? img : `http://localhost:5001${img}`
-      ) : [IMAGES.placeholder],
+      images: ad.images ? getAllImageUrls(ad.images) : [IMAGES.placeholder],
       seller: {
         id: ad.seller_id,
         username: ad.seller_name || 'Unknown Seller',
@@ -240,9 +345,95 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     setIsFavorite(prev => !prev);
   };
 
-  const handleBuy = () => {
-    // Navigate to purchase flow
-    console.log('Buy now clicked');
+  const handleBuy = async () => {
+    if (!user) {
+      Alert.alert(t('Login Required'), t('Please login to buy items.'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // 1. Get Wallet Balance and Fees
+      const [walletRes, feesRes] = await Promise.all([
+        api.get('/wallet'),
+        api.get('/pickups/fees')
+      ]);
+
+      const wallet = walletRes.data.data.wallet;
+      const fees = feesRes.data.fees;
+
+      const balance = parseFloat(wallet.balance);
+      const buyerFee = parseFloat(fees.pickup_fee) + parseFloat(fees.safe_service_fee); // Assuming automatic deduction covers these
+
+      if (balance < buyerFee) {
+        Alert.alert(
+          t('Insufficient Balance'),
+          t(`You need £${buyerFee.toFixed(2)} in your wallet to cover the Buyer's Fee. Your current balance is £${balance.toFixed(2)}.`),
+          [
+            { text: t('Cancel'), style: 'cancel' },
+            {
+              text: t('Top Up'),
+              onPress: () => navigation.navigate('WalletTopup', {
+                amount: (buyerFee - balance).toFixed(2), // Suggest needed amount
+                minAmount: 5 // Or generic min
+              })
+            }
+          ]
+        );
+        setLoading(false);
+        return;
+      }
+
+      // 2. Confirm Purchase
+      Alert.alert(
+        t('Confirm Purchase'),
+        t(`Are you sure you want to buy this item? A fee of £${buyerFee.toFixed(2)} will be deducted from your wallet.`),
+        [
+          { text: t('Cancel'), style: 'cancel', onPress: () => setLoading(false) },
+          {
+            text: t('Buy Now'),
+            onPress: async () => {
+              try {
+                // 3. Call Buy API
+                const buyRes = await api.post('/offers/buy', { advertisementId: productData.id });
+
+                if (buyRes.data.success) {
+                  Alert.alert(
+                    t('Success'),
+                    t('Item purchased successfully! Please schedule your pickup.'),
+                    [
+                      {
+                        text: t('Schedule Pickup'),
+                        onPress: () => {
+                          // Navigate with minimal data, let screen fetch details
+                          navigation.navigate('SchedulePickUp', {
+                            offerId: buyRes.data.offer_id, // Use new offer ID
+                            advertisementId: productData.id,
+                            advertisementTitle: productData.title
+                          });
+                        }
+                      }
+                    ]
+                  );
+                }
+              } catch (buyError) {
+                console.error('Buy error:', buyError);
+                const msg = buyError.response?.data?.message || t('Failed to complete purchase');
+                Alert.alert(t('Error'), msg);
+              } finally {
+                setLoading(false);
+              }
+            }
+          }
+        ]
+      );
+
+    } catch (error) {
+      console.error('Pre-buy check error:', error);
+      Alert.alert(t('Error'), t('Failed to initiate purchase. Please check your connection.'));
+      setLoading(false);
+    }
   };
 
   const handleManageOffers = () => {
@@ -310,21 +501,83 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     });
   };
 
-  const handleSchedulePickup = () => {
+  const handleSchedulePickup = async () => {
     // Check if user has an accepted offer for this product
-    // For now, navigate directly - you may want to add offer validation
     if (!productData) {
       Alert.alert(t('Error'), t('Product data not available'));
       return;
     }
 
-    // Navigate to schedule pickup screen
-    // Note: You should verify there's an accepted offer before allowing scheduling
-    navigation.navigate('SchedulePickUp', {
-      offerId: null, // TODO: Get actual accepted offer ID
-      advertisementId: productData.id,
-      advertisementTitle: productData.title
-    });
+    try {
+      setLoading(true);
+      // Fetch user's accepted offers for this ad
+      // Using existing service method if available or generic generic offers fetch
+      const response = await api.get('/offers', {
+        params: {
+          status: 'accepted',
+          // We don't have ad ID filter in generic 'offers' endpoint documentation directly?
+          // Offers controller has separate `getAdvertisementOffers` but that returns all.
+          // Let's filter client side or use getAdvertisementOffers.
+        }
+      });
+
+      // Actually, assuming user is BUYER.
+      // Let's use `getAdvertisementOffers` (requires us to parse owner/buyer logic).
+      const offersRes = await api.get(`/offers/advertisement/${productData.id}`);
+
+      let acceptedOffer = null;
+      if (offersRes.data.success) {
+        // Find accepted offer where I am the buyer
+        acceptedOffer = offersRes.data.offers.find(o => o.status === 'accepted' && o.buyer_id === user.id);
+      }
+
+      if (acceptedOffer) {
+        navigation.navigate('SchedulePickUp', {
+          offerId: acceptedOffer.id,
+          advertisementId: productData.id,
+          advertisementTitle: productData.title
+        });
+      } else {
+        Alert.alert(t('No Accepted Offer'), t('You do not have an accepted offer for this item yet.'));
+      }
+
+    } catch (err) {
+      console.error('Check offer error', err);
+      Alert.alert(t('Error'), t('Failed to verify offer status.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Showcase navigation handlers
+  const handlePreviousShowcaseProduct = () => {
+    if (currentShowcaseIndex > 0 && showcaseProducts.length > 0) {
+      const newIndex = currentShowcaseIndex - 1;
+      const nextProduct = showcaseProducts[newIndex];
+      setCurrentShowcaseIndex(newIndex);
+
+      // Navigate to the previous product
+      navigation.replace('ProductDetails', {
+        advertisementId: nextProduct.id,
+        showcaseGroupId: showcaseGroupId,
+        showcaseIndex: newIndex
+      });
+    }
+  };
+
+  const handleNextShowcaseProduct = () => {
+    if (currentShowcaseIndex < showcaseProducts.length - 1) {
+      const newIndex = currentShowcaseIndex + 1;
+      const nextProduct = showcaseProducts[newIndex];
+      setCurrentShowcaseIndex(newIndex);
+
+      // Navigate to the next product
+      navigation.replace('ProductDetails', {
+        advertisementId: nextProduct.id,
+        showcaseGroupId: showcaseGroupId,
+        showcaseIndex: newIndex
+      });
+    }
   };
 
   const renderImageDots = () => {
@@ -388,14 +641,36 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Product Image */}
+        {/* Product Image Gallery */}
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: getFullImageUrl(productData.images[currentImageIndex]) }}
-            style={styles.productImage}
-            resizeMode="cover"
-            defaultSource={IMAGES.placeholder}
-          />
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+              setCurrentImageIndex(newIndex);
+            }}
+            scrollEventThrottle={16}
+          >
+            {productData.images && productData.images.length > 0 ? (
+              productData.images.map((img, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: getFullImageUrl(img) }}
+                  style={[styles.productImage, { width: width }]}
+                  resizeMode="cover"
+                  defaultSource={IMAGES.placeholder}
+                />
+              ))
+            ) : (
+              <Image
+                source={IMAGES.placeholder}
+                style={[styles.productImage, { width: width }]}
+                resizeMode="cover"
+              />
+            )}
+          </ScrollView>
 
           <TouchableOpacity
             style={styles.favoriteButton}
@@ -421,20 +696,77 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               })}
             </View>
           )}
+          {/* Showcase Navigation Arrows */}
+          {showcaseProducts.length > 0 && (
+            <>
+              {currentShowcaseIndex > 0 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavLeft]}
+                  onPress={handlePreviousShowcaseProduct}
+                >
+                  <Ionicons name="chevron-back" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              {currentShowcaseIndex < showcaseProducts.length - 1 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavRight]}
+                  onPress={handleNextShowcaseProduct}
+                >
+                  <Ionicons name="chevron-forward" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              {/* Showcase Counter */}
+              <View style={styles.showcaseCounter}>
+                <Ionicons name="diamond" size={12} color="#fff" style={{ marginRight: 4 }} />
+                <Text style={styles.showcaseCounterText}>
+                  {currentShowcaseIndex + 1} / {showcaseProducts.length}
+                </Text>
+              </View>
+            </>
+          )}
           {renderImageDots()}
+
+          {/* HomeMarket Navigation Arrows */}
+          {homeMarketProducts.length > 0 && (
+            <>
+              {currentHomeMarketIndex > 0 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavLeft]}
+                  onPress={handlePreviousHomeMarketProduct}
+                >
+                  <Ionicons name="chevron-back" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              {currentHomeMarketIndex < homeMarketProducts.length - 1 && (
+                <TouchableOpacity
+                  style={[styles.showcaseNavButton, styles.showcaseNavRight]}
+                  onPress={handleNextHomeMarketProduct}
+                >
+                  <Ionicons name="chevron-forward" size={32} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              {/* HomeMarket Counter */}
+              <View style={[styles.showcaseCounter, { backgroundColor: 'rgba(255, 140, 0, 0.9)' }]}>
+                <Text style={styles.showcaseCounterText}>
+                  HomeMarket {currentHomeMarketIndex + 1} / {homeMarketProducts.length}
+                </Text>
+              </View>
+            </>
+          )}
+
         </View>
 
         {/* Product Info */}
         <View style={styles.productInfo}>
-          <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>{productData.title}</Text>
-            <TouchableOpacity style={styles.buyButton} onPress={handleBuy}>
-              <Text style={styles.buyButtonText}>BUY {productData.price}</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.productTitle}>{productData.title}</Text>
           <Text style={styles.distanceText}>
             Distance: {productData.distance} / {productData.maxDistance}
           </Text>
+          <Text style={styles.productPrice}>{productData.price}</Text>
         </View>
 
         {/* Description */}
@@ -465,7 +797,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
                   resizeMode="cover"
                 />
               ) : (
-                <FontAwesome name="user" size={24} color="#666" />
+                <FontAwesome name="user" size={24} color="#505050" />
               )}
             </View>
             <View style={styles.sellerInfo}>
@@ -578,7 +910,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             <TextInput
               style={styles.offerInput}
               placeholder={t('Enter offer amount')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={offerAmount}
               onChangeText={setOfferAmount}
               keyboardType="numeric"
@@ -665,7 +997,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         >
           <Ionicons name="alert-circle-outline" size={20} color="#DC143C" />
           <Text style={styles.issueDisputeLinkText}>{t('Issue a Dispute')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
@@ -695,7 +1027,7 @@ const DetailRow = ({ label, value, onInfoPress }) => {
             style={styles.infoButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="information-circle-outline" size={18} color="#666" />
+            <Ionicons name="information-circle-outline" size={18} color="#505050" />
           </TouchableOpacity>
         )}
       </View>
@@ -718,7 +1050,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     flex: 1,
@@ -750,7 +1082,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 16,
     marginBottom: 20,
@@ -839,7 +1171,7 @@ const styles = StyleSheet.create({
   },
   distanceText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   section: {
     padding: 16,
@@ -866,7 +1198,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailLabelContainer: {
     flexDirection: 'row',
@@ -953,7 +1285,7 @@ const styles = StyleSheet.create({
   },
   sellerLinkSeparator: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginHorizontal: 4,
   },
   ratingRow: {
@@ -963,7 +1295,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginLeft: 4,
   },
   chatButton: {
@@ -1006,7 +1338,7 @@ const styles = StyleSheet.create({
   },
   negotiateText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   legalSection: {
     padding: 16,
@@ -1025,7 +1357,7 @@ const styles = StyleSheet.create({
   },
   legalText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
     marginBottom: 8,
   },
@@ -1043,7 +1375,7 @@ const styles = StyleSheet.create({
   },
   reportText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   moderateTag: {
     backgroundColor: '#f0f0f0',
@@ -1115,17 +1447,17 @@ const styles = StyleSheet.create({
   },
   offerReceivedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   offerDeclinedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   offerAcceptedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   manageOffersButton: {
@@ -1198,7 +1530,7 @@ const styles = StyleSheet.create({
   },
   pickupInstructions: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
   schedulePickupButton: {
@@ -1232,8 +1564,50 @@ const styles = StyleSheet.create({
     color: '#DC143C',
     marginLeft: 12,
   },
+  productPrice: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#000',
+    marginTop: 8,
+  },
   bottomSpacer: {
     height: 40,
+  },
+  // Showcase Navigation Styles
+  showcaseNavButton: {
+    position: 'absolute',
+    top: '50%',
+    transform: [{ translateY: -20 }],
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  showcaseNavLeft: {
+    left: 16,
+  },
+  showcaseNavRight: {
+    right: 16,
+  },
+  showcaseCounter: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(103, 58, 183, 0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 15,
+  },
+  showcaseCounterText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

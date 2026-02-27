@@ -61,9 +61,9 @@ const MySupportScreen = ({ navigation }) => {
             open: '#4169E1',
             pending: '#FFA500',
             resolved: '#32CD32',
-            closed: '#999',
+            closed: '#303234',
         };
-        return colors[status] || '#999';
+        return colors[status] || '#303234';
     };
 
     const renderTicketCard = (ticket) => (
@@ -81,7 +81,7 @@ const MySupportScreen = ({ navigation }) => {
             <Text style={styles.ticketSubject}>{ticket.subject}</Text>
             <View style={styles.cardFooter}>
                 <View style={styles.categoryBadge}>
-                    <Ionicons name="pricetag" size={14} color="#666" />
+                    <Ionicons name="pricetag" size={14} color="#505050" />
                     <Text style={styles.categoryText}>{ticket.category}</Text>
                 </View>
                 <Text style={styles.dateText}>
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     },
     statLabel: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginTop: 4,
     },
     tabsContainer: {
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     },
     tabText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     activeTabText: {
         color: '#4169E1',
@@ -446,16 +446,16 @@ const styles = StyleSheet.create({
     },
     categoryText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginLeft: 4,
     },
     dateText: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     lastMessage: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginTop: 8,
         fontStyle: 'italic',
     },
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#999',
+        color: '#303234',
         marginTop: 16,
     },
     emptySubtext: {

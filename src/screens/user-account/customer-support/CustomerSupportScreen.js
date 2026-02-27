@@ -154,25 +154,25 @@ const CustomerSupportScreen = ({ navigation }) => {
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('Customer support')}</Text>
+        <Text style={styles.headerTitle}>{t('Customer Support')}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          <Ionicons name="search" size={20} color="#505050" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder={t('Search questions, keywords or topics')}
-            placeholderTextColor="#999"
+            placeholderTextColor="#303234"
             value={searchText}
             onChangeText={setSearchText}
             autoCorrect={false}
           />
           {searchText.length > 0 && (
             <TouchableOpacity onPress={() => { setSearchText(''); setShowResults(false); }}>
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color="#303234" />
             </TouchableOpacity>
           )}
         </View>
@@ -198,7 +198,7 @@ const CustomerSupportScreen = ({ navigation }) => {
                     activeOpacity={0.7}
                   >
                     <Text autoCapitalize='words' style={styles.categoryText}>{item.name}</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#999" />
+                    <Ionicons name="chevron-forward" size={20} color="#303234" />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -260,7 +260,7 @@ const CustomerSupportScreen = ({ navigation }) => {
             <View style={styles.bottomSpacer} />
           </>
         )}
-        <SuggestionsFooter sourceRoute="CustomerSupport" />
+        {/* <SuggestionsFooter sourceRoute="CustomerSupport" /> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   },
   cardSubtitle: {
     fontSize: 10, // Small text
-    color: '#666',
+    color: '#505050',
     lineHeight: 14,
   },
   bottomSpacer: {
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
-    color: '#666',
+    color: '#505050',
   },
   emptyText: {
     marginTop: 10,
@@ -412,14 +412,14 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     marginTop: 5,
-    color: '#999',
+    color: '#303234',
   },
   searchResultsList: {
     marginTop: 10,
   },
   resultsCount: {
     marginBottom: 10,
-    color: '#666',
+    color: '#505050',
     fontSize: 12,
   },
   searchResultItem: {
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   resultPath: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   }
 });
 

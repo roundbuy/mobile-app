@@ -18,6 +18,7 @@ import { COLORS } from '../../../constants/theme';
 import { favoritesService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
+import { getAllImageUrls } from '../../../utils/imageUtils';
 
 const FavouritesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -43,9 +44,7 @@ const FavouritesScreen = ({ navigation }) => {
           title: fav.advertisement?.title || 'Untitled',
           price: fav.advertisement?.price || '0.00',
           images: fav.advertisement?.images ?
-            fav.advertisement.images.map(img =>
-              img.startsWith('http') ? { uri: img } : { uri: `http://localhost:5001${img}` }
-            ) : [IMAGES.chair1],
+            getAllImageUrls(fav.advertisement.images).map(url => ({ uri: url })) : [IMAGES.chair1],
           category_name: fav.advertisement?.category_name || 'Uncategorized',
           location_name: fav.advertisement?.city || 'Unknown',
           seller_name: fav.advertisement?.seller_name || 'Unknown Seller',
@@ -217,7 +216,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   listContent: {
     padding: 16,
@@ -270,7 +269,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     backgroundColor: '#f0f0f0',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -278,11 +277,11 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   sellerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -292,12 +291,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginTop: 8,
     textAlign: 'center',
   },

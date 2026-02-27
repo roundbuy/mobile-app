@@ -5,7 +5,7 @@ import { IMAGES } from '../../assets/images';
 import { useTranslation } from '../../context/TranslationContext';
 
 const SplashAlternative2Screen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   useEffect(() => {
     // Navigate to Alternative 3 after 2 seconds
     const timer = setTimeout(() => {
@@ -30,7 +30,7 @@ const SplashAlternative2Screen = ({ navigation }) => {
       <Text style={styles.description}>{t('just around you!')}</Text>
 
       {/* Patent Pending */}
-      <Text style={styles.patent}>{t('Patent Pending')}</Text>
+      <Text style={styles.patent}>{t('Patents Pendings')}</Text>
     </View>
   );
 };

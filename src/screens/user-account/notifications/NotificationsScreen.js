@@ -20,7 +20,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const menuItems = [
     { id: 1, title: 'Notifications & Chat', screen: 'NotificationsList' },
-    { id: 2, title: 'Create a new Notifications', screen: 'CreateSearchNotification' },
+    { id: 2, title: 'Add Search notification', screen: 'CreateSearchNotification' },
     { id: 3, title: 'Notification settings', screen: 'NotificationSettings' },
   ];
 
@@ -47,11 +47,11 @@ const NotificationsScreen = ({ navigation }) => {
             activeOpacity={0.7}
           >
             <Text style={styles.menuItemText}>{item.title}</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
+            <Ionicons name="chevron-forward" size={20} color="#303234" />
           </TouchableOpacity>
         ))}
-        <SuggestionsFooter sourceRoute="Notifications" />
       </ScrollView>
+      <SuggestionsFooter sourceRoute="Notifications" />
     </SafeAreaView>
   );
 };

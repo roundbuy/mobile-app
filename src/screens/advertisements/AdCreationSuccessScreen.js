@@ -5,7 +5,7 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AdCreationSuccessScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { advertisement } = route.params || {};
   const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes in seconds
   const [status, setStatus] = useState('review'); // 'review' or 'published'
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 20,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailValue: {
     fontSize: 16,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   reviewNote: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   publishedSection: {
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   tertiaryButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
   },
   infoSection: {
     backgroundColor: '#F8F9FA',
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   bottomSpace: {

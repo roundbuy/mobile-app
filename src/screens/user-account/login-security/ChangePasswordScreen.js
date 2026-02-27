@@ -61,7 +61,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               value={oldPassword}
               onChangeText={setOldPassword}
               placeholder={t('Enter old password')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               secureTextEntry={!showOldPassword}
               autoCapitalize="none"
             />
@@ -72,7 +72,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               <Ionicons
                 name={showOldPassword ? 'eye-outline' : 'eye-off-outline'}
                 size={24}
-                color="#999"
+                color="#303234"
               />
             </TouchableOpacity>
           </View>
@@ -87,7 +87,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder={t('Enter new password')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               secureTextEntry={!showNewPassword}
               autoCapitalize="none"
             />
@@ -98,7 +98,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               <Ionicons
                 name={showNewPassword ? 'eye-outline' : 'eye-off-outline'}
                 size={24}
-                color="#999"
+                color="#303234"
               />
             </TouchableOpacity>
           </View>
@@ -113,7 +113,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder={t('Confirm new password')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
             />
@@ -124,7 +124,7 @@ const ChangePasswordScreen = ({ navigation }) => {
               <Ionicons
                 name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
                 size={24}
-                color="#999"
+                color="#303234"
               />
             </TouchableOpacity>
           </View>
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
     marginBottom: 8,
   },
   passwordContainer: {

@@ -77,9 +77,9 @@ const ClaimDetailScreen = ({ route, navigation }) => {
             case 'resolved':
                 return '#66BB6A';
             case 'closed':
-                return '#999';
+                return '#303234';
             default:
-                return '#999';
+                return '#303234';
         }
     };
 
@@ -109,7 +109,7 @@ const ClaimDetailScreen = ({ route, navigation }) => {
             case 'low':
                 return '#4CAF50';
             default:
-                return '#999';
+                return '#303234';
         }
     };
 
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
     },
     header: {
         flexDirection: 'row',
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     },
     claimDate: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     statusBadge: {
         paddingHorizontal: 12,
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         textTransform: 'uppercase',
         marginBottom: 12,
         letterSpacing: 0.5,
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     },
     disputeDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     partiesContainer: {
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
     },
     partyLabel: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     partyName: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     },
     adminName: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         fontStyle: 'italic',
     },
     adminInfo: {
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     timelineDotLast: {
-        backgroundColor: '#999',
+        backgroundColor: '#303234',
     },
     timelineContent: {
         flex: 1,
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     },
     timelineDate: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkContainer: {
         flexDirection: 'row',
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     infoLinkText: {
         flex: 1,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkHighlight: {
         color: COLORS.primary,

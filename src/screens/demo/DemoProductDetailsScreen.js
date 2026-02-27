@@ -17,11 +17,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { demoService } from '../../services/demo.service';
+import { getAllImageUrls } from '../../utils/imageUtils';
 
 const { width } = Dimensions.get('window');
 
 const DemoProductDetailsScreen = ({ route, navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { advertisementId, advertisement } = route?.params || {};
 
   // State management
@@ -85,9 +86,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
       age: ad.age_name || 'Any',
       size: ad.size_name || '',
       colour: ad.color_name || '',
-      images: ad.images ? ad.images.map(img =>
-        img.startsWith('http') ? img : `http://localhost:5001${img}`
-      ) : [IMAGES.placeholder],
+      images: ad.images ? getAllImageUrls(ad.images) : [IMAGES.placeholder],
       seller: {
         id: ad.seller_id,
         username: ad.seller_name || 'Unknown Seller',
@@ -271,7 +270,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
                   resizeMode="cover"
                 />
               ) : (
-                <FontAwesome name="user" size={24} color="#666" />
+                <FontAwesome name="user" size={24} color="#505050" />
               )}
             </View>
             <View style={styles.sellerInfo}>
@@ -333,7 +332,7 @@ const DemoProductDetailsScreen = ({ route, navigation }) => {
             <TextInput
               style={styles.offerInput}
               placeholder={t('Enter offer amount')}
-              placeholderTextColor="#999"
+              placeholderTextColor="#303234"
               value={offerAmount}
               onChangeText={setOfferAmount}
               keyboardType="numeric"
@@ -398,7 +397,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   errorContainer: {
     flex: 1,
@@ -409,7 +408,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 16,
     marginBottom: 20,
@@ -525,7 +524,7 @@ const styles = StyleSheet.create({
   },
   distanceText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   section: {
     padding: 16,
@@ -552,7 +551,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     flex: 1,
   },
   detailValue: {
@@ -601,7 +600,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginLeft: 4,
   },
   chatButton: {
@@ -617,7 +616,7 @@ const styles = StyleSheet.create({
   },
   negotiateText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   legalSection: {
     padding: 16,
@@ -636,7 +635,7 @@ const styles = StyleSheet.create({
   },
   legalText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
     marginBottom: 8,
   },
@@ -654,7 +653,7 @@ const styles = StyleSheet.create({
   },
   reportText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   moderateTag: {
     backgroundColor: '#f0f0f0',
@@ -726,17 +725,17 @@ const styles = StyleSheet.create({
   },
   offerReceivedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   offerDeclinedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   offerAcceptedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 6,
   },
   manageOffersButton: {

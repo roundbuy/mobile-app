@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { IMAGES } from '../../assets/images';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, ActivityIndicator, Alert, Platform, PanResponder, Image, FlatList, RefreshControl, Dimensions } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Circle, Callout, PROVIDER_GOOGLE } from '../../components/MapView';
 import * as Location from 'expo-location';
@@ -21,7 +21,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getFullImageUrl } from '../../utils/imageUtils';
 import LocationDisclaimerModal from '../../components/LocationDisclaimerModal';
 import UsernameRequiredModal from '../../components/UsernameRequiredModal';
-
+import ShowcaseCarousel from '../../components/ShowcaseCarousel';
+import HomeMarketCarousel from '../../components/HomeMarketCarousel';
+import BannerAdCard from '../../components/BannerAdCard';
+import SectionHeader from '../../components/SectionHeader';
+import PromotionsGrid from '../../components/PromotionsGrid';
+import StandardProductCard from '../../components/StandardProductCard';
+import Hyperlink from '../../components/common/Hyperlink';
 
 const getBadgeConfig = (badge) => {
   const level = badge.level?.toLowerCase();
@@ -42,6 +48,7 @@ const getBadgeConfig = (badge) => {
     switch (level) {
       case 'lottery': return { color: '#9C27B0', icon: 'ticket', label: 'Lottery' };
       case 'top_search': return { color: '#2196F3', icon: 'search', label: 'Top Search' };
+      case 'diligent': return { color: '#2196F3', icon: 'star', label: 'Diligent' };
       default: return { color: COLORS.primary, icon: 'gift', label: 'Reward' };
     }
   }
@@ -50,12 +57,12 @@ const getBadgeConfig = (badge) => {
   switch (level) {
     case 'rise_to_top': return { color: '#FF5722', icon: 'rocket', label: 'Rise Up' };
     case 'top_spot': return { color: '#E91E63', icon: 'trophy', label: 'Top Spot' };
-    case 'show_casing': return { color: '#673AB7', icon: 'diamond', label: 'Showcase' };
+    // case 'show_casing': return { color: '#673AB7', icon: 'diamond', label: 'Showcase' };
     case 'targeted': return { color: '#00BCD4', icon: 'navigate', label: 'Targeted' };
     case 'fast_ad': return { color: '#FFC107', icon: 'flash', label: 'Fast' }; // Using flash for fast ad too
     case 'urgent': return { color: '#FF4500', icon: 'alert-circle', label: 'Urgent' };
     case 'featured': return { color: '#9370DB', icon: 'star', label: 'Featured' };
-    default: return { color: COLORS.primary, icon: 'bookmark', label: level?.toUpperCase() || 'Badge' };
+    default: return null;
   }
 };
 
@@ -104,6 +111,7 @@ const SearchScreen = ({ navigation, route }) => {
   const SLIDER_MAX = SLIDER_CONFIG.max;
   const SLIDER_MIN = SLIDER_CONFIG.min;
   const SLIDER_DECIMAL_PRECISION = SLIDER_CONFIG.decimalPrecision;
+  const UNLIMITED_RADIUS = 100000;
   const [sliderValue, setSliderValue] = useState(2); // Default 2km radius
   const sliderTrackRef = useRef(null);
   const sliderLayout = useRef({ x: 0, width: 0 });
@@ -171,20 +179,29 @@ const SearchScreen = ({ navigation, route }) => {
   // Dynamic zoom when radius changes
   useEffect(() => {
     if (mapRef.current && sliderValue) {
-      const radiusInKm = sliderValue;
-      const radiusInDegrees = radiusInKm / 111; // Approximate conversion
-      const newDelta = radiusInDegrees * 2.5; // Add padding around circle
+      if (sliderValue >= UNLIMITED_RADIUS) {
+        // Zoom out for unlimited
+        const centerLocation = getSelectedUserLocation();
+        mapRef.current.animateToRegion({
+          latitude: centerLocation.latitude,
+          longitude: centerLocation.longitude,
+          latitudeDelta: 5.0, // Large delta for unlimited view
+          longitudeDelta: 5.0,
+        }, 300);
+      } else {
+        const radiusInKm = sliderValue;
+        const radiusInDegrees = radiusInKm / 111; // Approximate conversion
+        const newDelta = radiusInDegrees * 2.5; // Add padding around circle
 
-      const centerLocation = getSelectedUserLocation();
+        const centerLocation = getSelectedUserLocation();
 
-      mapRef.current.animateToRegion({
-        latitude: centerLocation.latitude,
-        longitude: centerLocation.longitude,
-        latitudeDelta: newDelta,
-        longitudeDelta: newDelta,
-      }, 300); // 300ms animation
-
-      console.log(`🔍 Zoom updated: Radius ${radiusInKm}km → Delta ${newDelta.toFixed(4)}`);
+        mapRef.current.animateToRegion({
+          latitude: centerLocation.latitude,
+          longitude: centerLocation.longitude,
+          latitudeDelta: newDelta,
+          longitudeDelta: newDelta,
+        }, 300); // 300ms animation
+      }
     }
   }, [sliderValue, selectedLocation]); // Added selectedLocation dependency
 
@@ -237,25 +254,44 @@ const SearchScreen = ({ navigation, route }) => {
       if (response.success) {
         const newAds = response.data.advertisements;
 
-        // Log API response for debugging
-        console.log('📦 API Response:', JSON.stringify(response.data, null, 2));
-        console.log(`📊 Total ads received: ${newAds.length}`);
+        // DEBUG: Log received data structure
+        console.log('\n🔍 FRONTEND DEBUG: Received data from API');
+        console.log(`📊 Total items: ${newAds.length}`);
 
-        // Log first ad details including images
-        if (newAds.length > 0) {
-          const firstAd = newAds[0];
-          console.log('\n🔍 First Advertisement Details:');
-          console.log('  - ID:', firstAd.id);
-          console.log('  - Title:', firstAd.title);
-          console.log('  - Price:', firstAd.price);
-          console.log('  - Images:', firstAd.images);
-          console.log('  - Images type:', typeof firstAd.images);
-          console.log('  - Images is array:', Array.isArray(firstAd.images));
-          console.log('  - Images length:', firstAd.images?.length);
-          if (firstAd.images && firstAd.images.length > 0) {
-            console.log('  - First image URL:', firstAd.images[0]);
+        // Count item types
+        const typeCounts = {};
+        newAds.forEach(item => {
+          const type = item.type || 'product';
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });
+
+        console.log('📋 Item types breakdown:');
+        Object.entries(typeCounts).forEach(([type, count]) => {
+          console.log(`   - ${type}: ${count}`);
+        });
+
+        // Show first 15 items
+        console.log('\n🏷️  First 15 items:');
+        newAds.slice(0, 15).forEach((item, idx) => {
+          if (item.type === 'section_header') {
+            console.log(`   ${idx + 1}. SECTION HEADER: "${item.title}"`);
+          } else if (item.type === 'horizontal_line') {
+            console.log(`   ${idx + 1}. ─────────────────`);
+          } else if (item.type === 'showcase') {
+            console.log(`   ${idx + 1}. SHOWCASE (${item.products?.length || 0} products)`);
+          } else if (item.type === 'homemarket_group') {
+            console.log(`   ${idx + 1}. HOMEMARKET GROUP (${item.users?.length || 0} users)`);
+          } else if (item.type === 'banner') {
+            console.log(`   ${idx + 1}. BANNER (${item.size})`);
+          } else if (item.type === 'standard') {
+            console.log(`   ${idx + 1}. STANDARD BATCH (${item.products?.length || 0} products)`);
+          } else if (item.type === 'promotions') {
+            console.log(`   ${idx + 1}. PROMOTIONS BATCH (${item.products?.length || 0} products)`);
+          } else {
+            console.log(`   ${idx + 1}. PRODUCT: ${item.title?.substring(0, 30)} (ID: ${item.id})`);
           }
-        }
+        });
+        console.log('');
 
         if (loadMore) {
           setAdvertisements([...advertisements, ...newAds]);
@@ -522,7 +558,13 @@ const SearchScreen = ({ navigation, route }) => {
     const percentage = Math.max(0, Math.min(100, (relativeX / width) * 100));
     const actualValue = (percentage / 100) * SLIDER_MAX;
     const roundedValue = parseFloat(actualValue.toFixed(SLIDER_DECIMAL_PRECISION));
-    setSliderValue(roundedValue);
+
+    // If slider is at max or very close to it, treat as unlimited
+    if (roundedValue >= SLIDER_MAX) {
+      setSliderValue(UNLIMITED_RADIUS);
+    } else {
+      setSliderValue(roundedValue);
+    }
   };
 
   const sliderPanResponder = useRef(
@@ -539,72 +581,135 @@ const SearchScreen = ({ navigation, route }) => {
     })
   ).current;
 
-  const renderListItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.gridItem}
-      onPress={() => handleProductPress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.imageContainer}>
-        {item.images && item.images.length > 0 ? (
-          <Image
-            source={{ uri: getFullImageUrl(item.images[0]) }}
-            style={styles.image}
-            defaultSource={IMAGES.placeholder}
-          />
-        ) : (
-          <View style={[styles.image, styles.placeholder]}>
-            <Text style={styles.placeholderText}>{t('No Image')}</Text>
-          </View>
-        )}
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            // Toggle favorite locally (API integration pending backend fix)
-            setFavorites(prev => {
-              const newFavorites = new Set(prev);
-              if (newFavorites.has(item.id)) {
-                newFavorites.delete(item.id);
-              } else {
-                newFavorites.add(item.id);
-              }
-              return newFavorites;
-            });
-          }}
-        >
-          <FontAwesome
-            name={favorites.has(item.id) ? "heart" : "heart-o"}
-            size={24}
-            color="#333"
-          />
-        </TouchableOpacity>
-        {item.badges && item.badges.length > 0 && (
-          <View style={styles.badgesWrapper}>
-            {item.badges.filter(b => b.type === 'visibility').map((badge, index) => {
-              const config = getBadgeConfig(badge);
-              return (
-                <View key={index} style={[styles.badgeContainer, { backgroundColor: config.color }]}>
-                  <Ionicons name={config.icon} size={10} color="#fff" style={{ marginRight: 4 }} />
-                  <Text style={styles.badgeText}>{config.label}</Text>
-                </View>
-              );
-            })}
-          </View>
-        )}
-      </View>
+  const renderListItem = ({ item, index }) => {
+    // DEBUG: Log rendering (only first 20 items to avoid spam)
+    console.log(`🎨 Rendering [${index}]: ${item.type}`);
+    if (index < 40) {
+      const itemType = item.type || 'product';
+      if (itemType === 'section_header') {
+        console.log(`🎨 Rendering [${index}]: SECTION "${item.title}"`);
+      } else if (itemType === 'horizontal_line') {
+        console.log(`🎨 Rendering [${index}]: ─────────`);
+      } else if (itemType === 'showcase' || itemType === 'homemarket_group' || itemType === 'banner') {
+        console.log(`🎨 Rendering [${index}]: ${itemType.toUpperCase()}`);
+      } else {
+        console.log(`🎨 Rendering [${index}]: ${itemType.toUpperCase()}`);
+      }
+    }
 
-      <View style={styles.itemInfo}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-          <Text style={styles.priceText}>£{item.price}</Text>
+    // Handle horizontal lines
+    if (item.type === 'horizontal_line') {
+      return null;
+    }
+
+    // Handle placeholders (empty space to complete rows)
+    if (item.type === 'placeholder') {
+      return <View style={{ flex: 1, margin: 8 }} />;
+    }
+
+    // Handle section headers
+    if (item.type === 'section_header') {
+      return null;
+    }
+
+    // Check if this is a promotions grid
+    if (item.type === 'promotions') {
+      return (
+        <View style={{ width: Dimensions.get('window').width, marginLeft: -16 }}>
+          <PromotionsGrid
+            promotions={item.products}
+            onProductPress={(product) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+              });
+            }}
+          />
         </View>
-        <Text style={styles.distanceText} numberOfLines={1}>
-          Distance: {Math.round((item.distance || 0) * 1000)} m / {Math.round((item.distance || 0) * 20)} min walk
-        </Text>
-      </View>
-    </TouchableOpacity >
-  );
+      );
+    }
+
+    // Check if this is a showcase
+    if (item.type === 'showcase') {
+      return (
+        <View style={{ width: 400, marginLeft: -16 }}>
+          <ShowcaseCarousel
+            showcase={item}
+            onProductPress={(product, productIndex, showcaseGroupId) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+                showcaseGroupId: showcaseGroupId,
+                showcaseIndex: productIndex
+              });
+            }}
+          />
+        </View>
+      );
+    }
+
+    // Check if this is a homemarket
+    if (item.type === 'homemarket') {
+      return (
+        <View style={{ width: 400, marginLeft: -16 }}>
+          <HomeMarketCarousel
+            homemarket={item}
+            onProductPress={(product, index, tier) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+                homeMarketTier: tier,
+                homeMarketIndex: index
+              });
+            }}
+          />
+        </View>
+      );
+    }
+
+    // Check if this is a homemarket group
+    if (item.type === 'homemarket_group') {
+      return (
+        <View style={styles.fullWidthItem}>
+          <HomeMarketCarousel
+            homemarketGroup={item}
+            onProductPress={(product, userIndex, productIndex, tier) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+                productDetails: product,
+                homeMarketTier: tier,
+                homeMarketUserIndex: userIndex,
+                homeMarketIndex: productIndex
+              });
+            }}
+          />
+        </View>
+      );
+    }
+
+    // Check if this is a standard products batch
+    if (item.type === 'standard') {
+      return (
+        <View style={{ width: Dimensions.get('window').width, marginLeft: -16 }}>
+          <StandardProductCard
+            products={item.products}
+            onProductPress={(product) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+              });
+            }}
+          />
+        </View>
+      );
+    }
+
+    // Fallback for individual products (should not happen with batching, but kept for safety)
+    if (!item.type || item.type === 'product') {
+      console.warn('⚠️ Individual product detected (should be in batch):', item.id, item.title);
+      return null; // Skip individual products since they should be in batches
+    }
+
+    // Unknown type
+    console.warn('⚠️ Unknown item type:', item.type);
+    return null;
+  };
 
   // Check subscription before showing content
   if (!hasActiveSubscription()) {
@@ -655,7 +760,7 @@ const SearchScreen = ({ navigation, route }) => {
 
           <TouchableOpacity style={styles.filterButton} onPress={handleDistancePress}>
             <Text style={styles.filterButtonText}>
-              Distance{filters.radius && filters.radius !== 50 ? ` (${filters.radius}km)` : ''}
+              Distance{filters.radius >= UNLIMITED_RADIUS ? ' (Unlimited)' : (filters.radius && filters.radius !== 50 ? ` (${filters.radius}km)` : '')}
             </Text>
             {filters.radius && filters.radius !== 50 && <View style={styles.filterBadge} />}
           </TouchableOpacity>
@@ -670,7 +775,7 @@ const SearchScreen = ({ navigation, route }) => {
           <TouchableOpacity style={styles.filterButton} onPress={handlePricePress}>
             <Text style={styles.filterButtonText}>
               Price{(filters.min_price || filters.max_price) ?
-                ` (₹${filters.min_price || '0'}-${filters.max_price || '∞'})` : ''}
+                ` (₹${filters.min_price || '0'} - ${filters.max_price || '∞'})` : ''}
             </Text>
             {(filters.min_price || filters.max_price) && <View style={styles.filterBadge} />}
           </TouchableOpacity>
@@ -681,13 +786,15 @@ const SearchScreen = ({ navigation, route }) => {
           <Text style={styles.resultCount}>
             {loading ? 'Loading...' : `${advertisements.length} results`}
           </Text>
-          <TouchableOpacity
-            style={[styles.instructionsButton, { flexDirection: 'row', alignItems: 'center' }]}
+          <Hyperlink
+            linkKey="search_instructions"
+            containerStyle={[styles.instructionsButton, { flexDirection: 'row', alignItems: 'center' }]}
+            style={styles.instructionsText}
             onPress={() => Alert.alert(t('Instructions'), t('Browse advertisements by using the map or list view. Use filters to refine your search and sort options to organize results.'))}
           >
-            <Text style={styles.instructionsText}>{t('Instructions')}</Text>
-            <Ionicons name="information-circle-outline" size={18} color="#001C64" style={{ marginLeft: 4 }} />
-          </TouchableOpacity>
+            {t('Instructions')}
+            {/* <Ionicons name="information-circle-outline" size={18} color="#001C64" style={{ marginLeft: 4 }} /> */}
+          </Hyperlink>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}
             onSortChange={(sortOptions) => {
@@ -701,37 +808,46 @@ const SearchScreen = ({ navigation, route }) => {
       <View style={{ flex: 1, paddingBottom: 0 }}>
         {/* List View */}
         {viewMode === 'list' && (
-          <FlatList
-            data={advertisements}
-            renderItem={renderListItem}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContainer}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                colors={[COLORS.primary]}
-              />
-            }
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-              !loading && (
-                <View style={styles.emptyContainer}>
-                  <FontAwesome name="search" size={48} color="#ccc" />
-                  <Text style={styles.emptyText}>{t('No advertisements found')}</Text>
-                  <Text style={styles.emptySubtext}>{t('Try adjusting your filters')}</Text>
-                </View>
-              )
-            }
-            ListFooterComponent={
-              loading && page > 1 && (
-                <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
-              )
-            }
-          />
+          <>
+            <FlatList
+              data={advertisements}
+              renderItem={renderListItem}
+              keyExtractor={(item, index) => {
+                if (item.type === 'promotions') return `promotions-grid-${index}`;
+                if (item.type === 'showcase') return `showcase-${item.showcase_group_id}-${index}`;
+                if (item.type === 'homemarket_group') return `homemarket-group-${index}`;
+                if (item.type === 'banner') return `banner-${item.id}-${index}`;
+                if (item.type === 'section_header') return `section-${item.title}-${index}`;
+                if (item.type === 'horizontal_line') return `line-${index}`;
+                if (item.type === 'placeholder') return `placeholder-${index}`;
+                return item.id ? `${item.id}-${index}` : `item-${index}`;
+              }}
+              contentContainerStyle={styles.listContainer}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  colors={[COLORS.primary]}
+                />
+              }
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListEmptyComponent={
+                !loading && (
+                  <View style={styles.emptyContainer}>
+                    <FontAwesome name="search" size={48} color="#ccc" />
+                    <Text style={styles.emptyText}>{t('No advertisements found')}</Text>
+                    <Text style={styles.emptySubtext}>{t('Try adjusting your filters')}</Text>
+                  </View>
+                )
+              }
+              ListFooterComponent={
+                loading && page > 1 && (
+                  <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
+                )
+              }
+            />
+          </>
         )}
 
         {/* Map View */}
@@ -742,36 +858,32 @@ const SearchScreen = ({ navigation, route }) => {
             {console.log('🗺️ PROVIDER_GOOGLE:', PROVIDER_GOOGLE)}
             <View style={styles.fixedButtons}>
               <View style={styles.topLocations}>
-                <TouchableOpacity
-                  style={[
-                    styles.locationBadge,
-                    selectedLocation === 1 && styles.locationBadgeSelected
-                  ]}
-                  onPress={() => setSelectedLocation(1)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.locationNumber}>1</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.locationBadge,
-                    selectedLocation === 2 && styles.locationBadgeSelected
-                  ]}
-                  onPress={() => setSelectedLocation(2)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.locationNumber}>2</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.locationBadge,
-                    selectedLocation === 3 && styles.locationBadgeSelected
-                  ]}
-                  onPress={() => setSelectedLocation(3)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.locationNumber}>3</Text>
-                </TouchableOpacity>
+                {userLocations.length > 0 ? (
+                  userLocations.map((_, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.locationBadge,
+                        selectedLocation === index + 1 && styles.locationBadgeSelected
+                      ]}
+                      onPress={() => setSelectedLocation(index + 1)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.locationNumber}>{index + 1}</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <TouchableOpacity
+                    style={[
+                      styles.locationBadge,
+                      selectedLocation === 1 && styles.locationBadgeSelected
+                    ]}
+                    onPress={() => setSelectedLocation(1)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.locationNumber}>1</Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <View style={styles.zoomControls}>
                 <TouchableOpacity
@@ -881,23 +993,19 @@ const SearchScreen = ({ navigation, route }) => {
                 <Circle
                   center={getSelectedUserLocation()}
                   radius={sliderValue * 1000}
-                  strokeWidth={2}
-                  strokeColor="#001C64"
-                  fillColor="rgba(0, 28, 100, 0.1)"
+                  strokeWidth={0}
+                  strokeColor="transparent"
+                  fillColor="rgba(74, 144, 226, 0.25)"
                 />
 
-                {/* Center location marker - small icon at circle center */}
+                {/* Center location marker */}
                 <Marker
                   key={`center-marker-${selectedLocation}`}
                   coordinate={getSelectedUserLocation()}
                   anchor={{ x: 0.5, y: 0.5 }}
                   tracksViewChanges={false}
                 >
-                  <Image
-                    source={require('../../../assets/icon.png')}
-                    style={{ width: 15, height: 15 }}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.centerMarkerLocation} />
                 </Marker>
 
                 {/* User location marker */}
@@ -914,21 +1022,72 @@ const SearchScreen = ({ navigation, route }) => {
                   <Marker
                     coordinate={clickedLocation}
                     title={t('Selected Location')}
-                    description={`Radius: ${clickedLocationRadius}km - Tap to clear`}
+                    description={`Radius: ${clickedLocationRadius} km - Tap to clear`}
                     pinColor="orange"
                     onPress={() => setClickedLocation(null)}
                   />
                 )}
 
+
                 {/* Advertisement markers - with offset for overlapping items */}
                 {(() => {
+                  // First, flatten the advertisements array to extract actual products
+                  const flattenedAds = [];
+                  advertisements.forEach(item => {
+                    if (item.type === 'promotions' || item.type === 'standard') {
+                      // Extract products from batches
+                      if (item.products && Array.isArray(item.products)) {
+                        flattenedAds.push(...item.products);
+                      }
+                    } else if (item.type === 'showcase' || item.type === 'homemarket') {
+                      // Extract products from showcase/homemarket
+                      if (item.products && Array.isArray(item.products)) {
+                        flattenedAds.push(...item.products);
+                      }
+                    } else if (item.type === 'homemarket_group') {
+                      // Extract products from homemarket group
+                      if (item.users) {
+                        item.users.forEach(u => {
+                          if (u.products) {
+                            flattenedAds.push(...u.products);
+                          }
+                        });
+                      }
+                    } else if (!item.type || item.type === 'product') {
+                      // Individual product (shouldn't happen with batching, but handle it)
+                      flattenedAds.push(item);
+                    }
+                    // Skip banners, section_header, horizontal_line, etc.
+                  });
+
                   // Group ads by location to handle overlaps
                   const adsByLocation = {};
-                  advertisements.forEach(ad => {
-                    if (ad.latitude && ad.longitude) {
-                      const key = `${parseFloat(ad.latitude).toFixed(4)},${parseFloat(ad.longitude).toFixed(4)}`;
-                      if (!adsByLocation[key]) adsByLocation[key] = [];
-                      adsByLocation[key].push(ad);
+                  flattenedAds.forEach(ad => {
+                    // Method to add ad to a specific location key
+                    const addToLocation = (lat, lng, locationId = null) => {
+                      if (lat && lng) {
+                        const key = `${parseFloat(lat).toFixed(4)},${parseFloat(lng).toFixed(4)}`;
+                        if (!adsByLocation[key]) adsByLocation[key] = [];
+                        // Avoid duplicates if same ad is added multiple times for same location (though unlikely with this logic)
+                        const isDuplicate = adsByLocation[key].some(existingAd => existingAd.id === ad.id && existingAd.locationId === locationId);
+                        if (!isDuplicate) {
+                          adsByLocation[key].push({ ...ad, latitude: lat, longitude: lng, locationId });
+                        }
+                      }
+                    };
+
+                    // If we have multiple locations and we want to show all (e.g. unlimited or just general multi-location support)
+                    // We can check if we should show all. The user asked "if unlimited then show all", 
+                    // but it might be better to ALWAYS show all locations for a product if they exist, 
+                    // as that gives better visibility. 
+                    // Let's implement showing all locations if available.
+                    if (ad.locations && Array.isArray(ad.locations) && ad.locations.length > 0) {
+                      ad.locations.forEach(loc => {
+                        addToLocation(loc.latitude, loc.longitude, loc.id);
+                      });
+                    } else {
+                      // Fallback to top-level lat/long
+                      addToLocation(ad.latitude, ad.longitude);
                     }
                   });
 
@@ -953,19 +1112,24 @@ const SearchScreen = ({ navigation, route }) => {
                     }
                   });
 
-                  return processedMarkers.map((ad) => {
+                  return processedMarkers.map((ad, index) => {
                     // Only show ads with location data
                     if (!ad.latitude || !ad.longitude) return null;
 
                     // Get activity color and label from ACTIVITY_COLORS
                     const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
                     const markerLabel = activityData.label;
-                    const markerColor = activityData.color;
+
+                    // Check if advertisement has any visibility badges
+                    const hasVisibilityBadge = ad.badges && ad.badges.some(badge => badge.type === 'visibility');
+
+                    // If has visibility badge, show red color, otherwise use activity color
+                    const markerColor = hasVisibilityBadge ? '#FF0000' : activityData.color;
                     const isSelected = selectedMarker === ad.id;
 
                     return (
                       <Marker
-                        key={ad.id}
+                        key={ad.locationId ? `${ad.id}-${ad.locationId}` : `${ad.id}-${index}`}
                         coordinate={{
                           latitude: parseFloat(ad.latitude),
                           longitude: parseFloat(ad.longitude),
@@ -1043,12 +1207,13 @@ const SearchScreen = ({ navigation, route }) => {
             {viewMode === 'map' && (
               <View style={styles.disclaimerContainer}>
                 <Text style={styles.disclaimerText}>
-                  Locations are approximate. {' '}
-                  <Text
+                  Our{' '}
+                  <Hyperlink
+                    linkKey="search_disclaimer"
                     style={styles.disclaimerLink}
                     onPress={() => setDisclaimerModalVisible(true)}
                   >
-                    {t('Read more')}</Text>
+                    {t('Locations & Safety Disclaimer')}</Hyperlink>
                 </Text>
               </View>
             )}
@@ -1086,19 +1251,21 @@ const SearchScreen = ({ navigation, route }) => {
             <View
               style={[
                 styles.sliderFill,
-                { width: `${(sliderValue / SLIDER_MAX) * 100}%` }
+                { width: `${Math.min(100, (sliderValue >= UNLIMITED_RADIUS ? 100 : (sliderValue / SLIDER_MAX) * 100))}% ` }
               ]}
             />
             <View
               style={[
                 styles.sliderThumb,
-                { left: `${(sliderValue / SLIDER_MAX) * 100}%` }
+                { left: `${Math.min(100, (sliderValue >= UNLIMITED_RADIUS ? 100 : (sliderValue / SLIDER_MAX) * 100))}% ` }
               ]}
             />
           </View>
           <View style={styles.rowa}>
-            <Text style={[styles.sliderLabel, { alignSelf: 'left' }]}>{t('Distance')}</Text>
-            <Text style={[styles.sliderLabel, { alignSelf: 'right' }]}>{sliderValue.toFixed(SLIDER_DECIMAL_PRECISION)} km</Text>
+            <Text style={[styles.sliderLabel, { alignSelf: 'flex-start' }]}>{t('Distance')}</Text>
+            <Text style={[styles.sliderLabel, { alignSelf: 'flex-end' }]}>
+              {sliderValue >= UNLIMITED_RADIUS ? 'Unlimited' : `${sliderValue.toFixed(SLIDER_DECIMAL_PRECISION)} km`}
+            </Text>
           </View>
         </View>
       )}
@@ -1119,9 +1286,9 @@ const SearchScreen = ({ navigation, route }) => {
 
         <TouchableOpacity style={styles.navItem} onPress={handleMakeAnAd}>
           <View style={styles.plusCircle}>
-            <FontAwesome name="plus" size={24} color={COLORS.primary} />
+            <FontAwesome name="plus" size={20} color={COLORS.primary} />
           </View>
-          <Text style={styles.navLabel}>{t('New Ad')}</Text>
+          <Text style={styles.navLabel}>{t('List an item')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PickUpExchange')}>
@@ -1156,6 +1323,7 @@ const SearchScreen = ({ navigation, route }) => {
         onClose={() => setDistanceModalVisible(false)}
         selectedRadius={filters.radius}
         onSelectRadius={handleDistanceSelect}
+        userLocation={getSelectedUserLocation()}
       />
 
       <PriceRangeFilterModal
@@ -1416,7 +1584,7 @@ const styles = StyleSheet.create({
   },
   calloutTap: {
     fontSize: 11,
-    color: '#666',
+    color: '#605f5fff',
     fontStyle: 'italic',
   },
   bottomNav: {
@@ -1437,6 +1605,35 @@ const styles = StyleSheet.create({
   badgesWrapper: {
     position: 'absolute',
     top: 8,
+    left: 8,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
+    zIndex: 10,
+  },
+  centerMarkerLocation: {
+    backgroundColor: '#4285F4',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  centerMarkerText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  badgesWrapperBottomLeft: {
+    position: 'absolute',
+    bottom: 8,
     left: 8,
     flexDirection: 'column',
     alignItems: 'flex-start',
@@ -1569,11 +1766,11 @@ const styles = StyleSheet.create({
     height: 4
   },
   listContainer: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     paddingBottom: 100
   },
   gridItem: {
-    width: '48%',
+    width: '50%',
     marginBottom: 16,
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -1654,12 +1851,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginTop: 8,
   },
   subscriptionRequired: {
@@ -1670,7 +1867,7 @@ const styles = StyleSheet.create({
   },
   subscriptionText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginTop: 20,
     marginBottom: 20,
@@ -1701,12 +1898,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-    alignItems: 'left',
+    alignItems: 'center',
     width: '90%',
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     textAlign: 'left',
   },
   disclaimerLink: {
@@ -1714,6 +1911,40 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textDecorationLine: 'underline',
     fontWeight: '600',
+  },
+  showcaseContainer: {
+    marginVertical: 1,
+    paddingVertical: 1,
+    backgroundColor: 'transparent',
+  },
+  topBorder: {
+    height: 2,
+    backgroundColor: '#e0e0e0ff',
+    marginHorizontal: 5,
+    marginBottom: 12,
+    width: 395,
+  },
+  bottomBorder: {
+    height: 2,
+    backgroundColor: '#e0e0e0ff',
+    marginTop: 12,
+    marginHorizontal: 5,
+    marginBottom: 12,
+    width: 395,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    marginLeft: 16,
+    marginRight: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#e0e0e0ff',
+    fontWeight: '600',
+    marginLeft: 6,
   },
 });
 

@@ -24,8 +24,8 @@ const PrivacyAccountScreen = ({ navigation }) => {
     { id: 1, title: 'Privacy policy', section: 'top' },
     { id: 2, title: 'ATT tracking preferences', section: 'top' },
     { id: 3, title: 'Cookies preferences', section: 'top' },
-    { id: 4, title: 'Request Deletion of User Data', section: 'top' },
-    { id: 5, title: 'Download your Personal Data as PDF', section: 'top' },
+    { id: 4, title: 'Request deletion of user data', section: 'top' },
+    { id: 5, title: 'Download personal data', section: 'top' },
     { id: 6, title: 'Delete personal data', section: 'bottom' },
     { id: 7, title: 'Delete Account', section: 'bottom', isDanger: true },
   ];
@@ -46,19 +46,19 @@ const PrivacyAccountScreen = ({ navigation }) => {
       case 4: // Request Deletion of User Data
         navigation.navigate('ConfirmAccessRights', {
           requestType: 'deletion',
-          title: 'Request Deletion of User Data'
+          title: 'Request deletion of user data'
         });
         break;
       case 5: // Download your Personal Data as PDF
         navigation.navigate('ConfirmAccessRights', {
           requestType: 'download',
-          title: 'Download Personal Data'
+          title: 'Download personal data'
         });
         break;
       case 6: // Delete personal data
         navigation.navigate('ConfirmAccessRights', {
           requestType: 'delete_data',
-          title: 'Delete Personal Data'
+          title: 'Delete personal data'
         });
         break;
       case 7: // Delete Account
@@ -85,7 +85,7 @@ const PrivacyAccountScreen = ({ navigation }) => {
       <Text style={[styles.menuItemText, item.isDanger && styles.dangerText]}>
         {item.title}
       </Text>
-      <Ionicons name="chevron-forward" size={20} color="#999" />
+      <Ionicons name="chevron-forward" size={20} color="#303234" />
     </TouchableOpacity>
   );
 
@@ -115,8 +115,9 @@ const PrivacyAccountScreen = ({ navigation }) => {
             renderMenuItem(item, index, index === bottomSectionItems.length - 1)
           )}
         </View>
-        <SuggestionsFooter sourceRoute="PrivacyAccount" />
+
       </ScrollView>
+      <SuggestionsFooter sourceRoute="PrivacyAccount" />
     </SafeAreaView>
   );
 };

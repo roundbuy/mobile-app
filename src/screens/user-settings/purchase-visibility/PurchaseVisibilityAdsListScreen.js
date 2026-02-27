@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   adSubtitle: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   purchaseButton: {
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   }
 });
 

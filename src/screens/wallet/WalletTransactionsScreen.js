@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     filterText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
     },
     filterTextActive: {
         color: '#fff',
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     listContent: {
         flexGrow: 1,
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     transactionCategory: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         textTransform: 'uppercase',
         marginBottom: 2,
     },
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     },
     transactionDate: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     transactionRight: {
         alignItems: 'flex-end',
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     },
     transactionBalance: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     emptyState: {
         flex: 1,
@@ -365,12 +365,12 @@ const styles = StyleSheet.create({
     emptyStateText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         marginTop: 16,
     },
     emptyStateSubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         marginTop: 8,
         textAlign: 'center',
     },

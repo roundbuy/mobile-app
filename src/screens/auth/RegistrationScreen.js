@@ -1,79 +1,123 @@
 import React from 'react';
 import { IMAGES } from '../../assets/images';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
-import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS, SPACING } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 import OnboardingModal from '../../components/onboarding/OnboardingModal';
+import Hyperlink from '../../components/common/Hyperlink';
+
+const { width } = Dimensions.get('window');
+
+// Placeholder images since no assets were provided
+const PRODUCT_IMAGES = [
+  'https://cdn-icons-png.flaticon.com/512/892/892458.png', // Shopping
+  'https://cdn-icons-png.flaticon.com/512/681/681494.png', // Jacket
+  'https://cdn-icons-png.flaticon.com/512/833/833472.png', // Bag
+  'https://cdn-icons-png.flaticon.com/512/124/124034.png', // Ball
+  'https://cdn-icons-png.flaticon.com/512/681/681494.png', // Boots
+  'https://cdn-icons-png.flaticon.com/512/892/892458.png', // Baby Bottle
+];
 
 const RegistrationScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
-  console.log('📱 RegistrationScreen: Rendering...');
 
   const handleSignIn = () => {
-    console.log('Navigate to Sign In');
     navigation.navigate('SocialLogin');
   };
 
   const handleRegister = () => {
-    console.log('Navigate to Register');
     navigation.navigate('CreateAccount');
   };
 
-  const handlePatentInfo = () => {
-    console.log('Navigate to Patent Information');
-    navigation.navigate('PatentPending');
-  };
-
   const handleTestDemo = () => {
-    console.log('Navigate to Test Demo');
     navigation.navigate('Demo');
   };
 
+  return (
+    <SafeScreenContainer>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Top Section: Split View 3 Columns */}
+        <View style={styles.topSection}>
+          {/* Column 1: Info + 1 Image + Demo */}
+          <View style={styles.column1}>
+            <View style={styles.infoContainer}>
 
-  try {
-    return (
-      <SafeScreenContainer>
-        {/* Header with Logo and Patent Info */}
-        <View style={styles.header}>
-          <Image
-            source={IMAGES.logoMain}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.patentText}>{t('Patent Pending')}</Text>
-          <TouchableOpacity onPress={handlePatentInfo}>
-            <Text style={styles.infoLink}>
-              for more information{' '}
-              <Text style={styles.clickHere}>{t('click here')}</Text>
-            </Text>
-          </TouchableOpacity>
+              <Text style={styles.greenTitle}>{t('Make Future Green!')}</Text>
+              <Text style={styles.greenSubtitle}>{t('Find out what we offer to you?')}</Text>
 
-          {/* Find Out Section */}
-          <View style={styles.findOutContainer}>
-            <Text style={styles.findOutTitle}>{t('Why should you use our App?')}</Text>
-            <Text style={styles.findOutSubtitle}>{t('Find out what we offer!')}</Text>
-            <TouchableOpacity
-              style={styles.findOutButton}
-              onPress={() => setShowOnboarding(true)}
-            >
-              <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
-            </TouchableOpacity>
+              <View style={styles.listContainer}>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.findOutButton}
+                onPress={() => setShowOnboarding(true)}
+              >
+                <Text style={styles.findOutButtonText}>{t('Find out!')}</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: 250 }}>
+              {/* Red Bag Image */}
+              <View style={styles.productCard}>
+                <Image source={{ uri: PRODUCT_IMAGES[2] }} style={styles.productImage} />
+              </View>
+
+              <Hyperlink
+                onPress={handleTestDemo}
+                linkKey="registration_demo"
+                containerStyle={{ marginTop: 10 }}
+                style={styles.demoLinkBlue}
+                unvisitedColor="#0056b3"
+              >
+                Try the Demo
+              </Hyperlink>
+            </View>
+          </View>
+
+          {/* Column 2: 2 Vertical Images */}
+          <View style={styles.column2}>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[0] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[1] }} style={styles.productImage} />
+            </View>
+          </View>
+
+          {/* Column 3: 3 Vertical Images */}
+          <View style={styles.column3}>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[3] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[4] }} style={styles.productImage} />
+            </View>
+            <View style={styles.productCard}>
+              <Image source={{ uri: PRODUCT_IMAGES[5] }} style={styles.productImage} />
+            </View>
           </View>
         </View>
 
-        {/* Center Content */}
-        <View style={styles.content}>
-          <Text style={styles.tagline}>{t('Sell and Buy around you')}</Text>
-          <Text style={styles.subtitle}>{t('Buy and Sell products and services just around you!')}</Text>
+        {/* Middle Heading */}
+        <Text style={styles.mainHeading}>{t('Sell & Buy second-hand\naround you fast')}</Text>
 
-          <TouchableOpacity
-            style={styles.demoButton}
-            onPress={handleTestDemo}
-          >
-            <Text style={styles.demoButtonText}>{t('Test RoundBuy Demo')}</Text>
-          </TouchableOpacity>
+        {/* Footer Buttons */}
+        <View style={styles.footer}>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
+              <Text style={styles.signInButtonText}>{t('Sign in')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+              <Text style={styles.registerButtonText}>{t('Register')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.copyright}>{t('© 2020-2025 RoundBuy Inc ®')}</Text>
         </View>
 
         <OnboardingModal
@@ -106,205 +150,187 @@ const RegistrationScreen = ({ navigation }) => {
             }
           ]}
         />
-
-        {/* Footer with Buttons */}
-        <View style={styles.footer}>
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={styles.signInButton}
-              onPress={handleSignIn}
-            >
-              <Text style={styles.signInButtonText}>{t('Sign in')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.registerButton}
-              onPress={handleRegister}
-            >
-              <Text style={styles.registerButtonText}>{t('Register')}</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
-        </View>
-      </SafeScreenContainer>
-    );
-  } catch (error) {
-    console.error('❌ RegistrationScreen: Render error:', error);
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: 20 }}>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, color: '#000' }}>{t('Registration Screen')}</Text>
-        <Text style={{ fontSize: 16, marginBottom: 20, color: '#666', textAlign: 'center' }}>{t('Error loading screen. Check console for details.')}</Text>
-        <TouchableOpacity
-          style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8 }}
-          onPress={handleSignIn}
-        >
-          <Text style={{ color: '#fff', fontSize: 16 }}>{t('Sign In')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ backgroundColor: '#34C759', padding: 15, borderRadius: 8, marginTop: 10 }}
-          onPress={handleRegister}
-        >
-          <Text style={{ color: '#fff', fontSize: 16 }}>{t('Register')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+      </ScrollView>
+    </SafeScreenContainer >
+  );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: 40,
-    marginTop: 10,
-  },
-  logo: {
-    width: 140,
-    height: 60,
-    marginBottom: 12,
-  },
-  patentText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    marginBottom: 6,
-    letterSpacing: -0.2,
-  },
-  infoLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: '#6a6a6a',
-    letterSpacing: -0.1,
-  },
-  clickHere: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
-    fontWeight: '500',
-  },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingTop: 250,
+    paddingTop: 40,
   },
-  tagline: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    letterSpacing: -0.2,
-    lineHeight: 36,
-    marginBottom: 12,
+  topSection: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center', // Top alignment
+    gap: 10,
   },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#676777ff',
-    textAlign: 'center',
-    lineHeight: 22,
-    letterSpacing: -0.9,
-    marginBottom: 2,
-  },
-  findOutContainer: {
-    marginTop: 20,
+  // Column 1 styles
+  column1: {
+    flex: 1, // Wider for text
+    // paddingRight: 10,
     alignItems: 'flex-start',
   },
-  findOutTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#00a82d', // Darker Green
-    marginBottom: 2,
-    letterSpacing: -0.2,
+  // Column 2 styles
+  column2: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 30, // Vertical gap
+    paddingTop: 140, // Offset
   },
-  findOutSubtitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#76ff03', // Lighter Green / Lime
+  // Column 3 styles
+  column3: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop: 40, // Offset
+    // gap: 10, // Vertical gap
+    // marginTop: -20, // Negative margin to start higher or offset differently? Or just 0.
+    // Let's assume standard alignment but maybe different gap or starting point?
+    // Screenshot shows staggered. Column 2 starts lower than Column 3?
+    // User said "column 2 middle vertical" and "column 3 middle vertical".
+    // I'll align them top for now with gaps.
+  },
+  greenTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#7BFB2D',
+    marginBottom: 5,
+    lineHeight: 26,
+  },
+  greenSubtitle: {
+    fontSize: 13,
+    color: '#7BFB2D',
     marginBottom: 10,
-    letterSpacing: -0.2,
+    fontWeight: '700',
+  },
+  listContainer: {
+    marginBottom: 15,
+  },
+  listItem: {
+    fontSize: 13,
+    color: '#7BFB2D',
+    marginBottom: 2,
+    fontWeight: '600',
   },
   findOutButton: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#7BFB2D',
     paddingVertical: 8,
-    paddingHorizontal: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
-    borderWidth: 0.5,
-    borderColor: '#eee',
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 20,
+    width: '110',
   },
   findOutButtonText: {
+    color: '#FFFFFF',
     fontSize: 15,
-    color: '#0056b3', // Blue text
-    fontWeight: '600',
+    fontWeight: '900',
   },
-  demoButton: {
-    height: 54,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 27,
+  demoLink: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    marginTop: 5,
+  },
+  demoLinkBlue: {
+    color: '#0056b3',
+    textDecorationLine: 'underline',
+    fontWeight: 'bold',
+  },
+  productCard: {
+    width: 100,
+    height: 160,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 50,
-    marginTop: 6,
+    marginBottom: 10,
   },
-  demoButtonText: {
-    fontSize: 22,
-    fontWeight: '500',
-    color: '#1a1a1a',
-    letterSpacing: 0.2,
+  productImage: {
+    width: 100,
+    height: 160,
+    resizeMode: 'contain',
+  },
+  mainHeading: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 30,
+    paddingHorizontal: 10,
   },
   footer: {
-    paddingTop: 0,
-    paddingBottom: 20,
+    marginTop: 'auto',
+    width: '100%',
+    alignItems: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
+    gap: 20,
+    marginBottom: 30,
+    width: '100%',
+    justifyContent: 'center',
   },
   signInButton: {
-    flex: 1,
-    height: 54,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  signInButtonText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.primary,
-    letterSpacing: 0.2,
-  },
-  registerButton: {
-    flex: 1,
-    height: 54,
-    backgroundColor: COLORS.primary,
-    borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#eee',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    minWidth: 120,
+    alignItems: 'center',
   },
-  registerButtonText: {
+  signInButtonText: {
+    color: '#0056b3',
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
-    letterSpacing: 0.3,
+  },
+  registerButton: {
+    backgroundColor: '#001C64',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    minWidth: 120,
+    alignItems: 'center',
+  },
+  registerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   copyright: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#000',
+    fontSize: 12,
+    color: '#000000',
     textAlign: 'center',
-    letterSpacing: -0.1,
+    fontWeight: 'bold',
+  },
+  infoContainer: {
+    position: 'absolute',
+    top: 0,
+    width: '200',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
 

@@ -79,7 +79,7 @@ const PickUpExchangeScreen = ({ navigation }) => {
                                 <Text style={styles.menuTitle}>{item.title}</Text>
                                 <Text style={styles.menuDescription}>{item.description}</Text>
                             </View>
-                            <Ionicons name="chevron-forward" size={24} color="#999" />
+                            <Ionicons name="chevron-forward" size={24} color="#303234" />
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -92,8 +92,8 @@ const PickUpExchangeScreen = ({ navigation }) => {
                         <Text style={styles.safetyLink}>{t('More safety info')}</Text>
                     </Text>
                 </View>
-                <SuggestionsFooter sourceRoute="PickUpExchange" />
             </ScrollView>
+            <SuggestionsFooter sourceRoute="PickUpExchange" />
         </SafeAreaView>
     );
 };
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     },
     menuDescription: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     safetyInfo: {
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     safetyText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     safetyLink: {

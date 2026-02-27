@@ -2,6 +2,7 @@ const { withPodfile, withAppDelegate } = require('@expo/config-plugins');
 
 const withGoogleMapsIOS = (config, { apiKey }) => {
     // 1. Modify Podfile to use the Google subspec
+    // 1. Modify Podfile to use the Google subspec
     config = withPodfile(config, (config) => {
         const podfileContent = config.modResults.contents;
 
@@ -10,20 +11,23 @@ const withGoogleMapsIOS = (config, { apiKey }) => {
             return config;
         }
 
-        // Add the Google Maps subspec after the rn_maps_path definition
-        // We look for the standard line that Expo generates
-        const targetPathLine = `rn_maps_path = File.dirname(\`node --print "require.resolve('react-native-maps/package.json')"\`)`;
-        const googlePodLine = `  pod 'react-native-maps/Google', :path => rn_maps_path`;
+        // Define the pod code block ensuring rn_maps_path is defined
+        const googleMapsPodCode = `
+  # React Native Maps dependencies
+  rn_maps_path = File.dirname(\`node --print "require.resolve('react-native-maps/package.json')"\`)
+  pod 'react-native-maps/Google', :path => rn_maps_path
+`;
 
-        if (podfileContent.includes(targetPathLine)) {
+        // Attempt to insert after use_native_modules! which is standard in Expo Podfiles
+        if (podfileContent.includes('use_native_modules!')) {
             config.modResults.contents = podfileContent.replace(
-                targetPathLine,
-                `${targetPathLine}\n${googlePodLine}`
+                'use_native_modules!',
+                `use_native_modules!${googleMapsPodCode}`
             );
         } else {
-            // Fallback: append to bottom if we can't find the specific line (unlikely)
-            console.warn("Could not find rn_maps_path in Podfile, appending Google Maps pod manually.");
-            config.modResults.contents += `\n${googlePodLine}\n`;
+            // Fallback: append to the end of the file (might be outside target, but best effort)
+            console.warn("Could not find use_native_modules! in Podfile, appending Google Maps pod manually.");
+            config.modResults.contents += `\n${googleMapsPodCode}\n`;
         }
 
         return config;

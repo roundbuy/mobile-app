@@ -7,6 +7,7 @@ import {
   Roboto_400Regular,
   Roboto_500Medium,
   Roboto_700Bold,
+  Roboto_900Black,
 } from '@expo-google-fonts/roboto';
 import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/constants/theme';
@@ -14,6 +15,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { NotificationProvider } from './src/context/NotificationContext';
 import { TranslationProvider } from './src/context/TranslationContext';
 import { WalletProvider } from './src/contexts/WalletContext';
+import { LinkHistoryProvider } from './src/context/LinkHistoryContext';
 import NotificationPopup from './src/components/NotificationPopup';
 import CampaignNotificationPopupManager from './src/components/CampaignNotificationPopupManager';
 
@@ -28,6 +30,7 @@ export default function App() {
           Roboto_400Regular,
           Roboto_500Medium,
           Roboto_700Bold,
+          Roboto_900Black,
           'Signatie': require('./assets/Signatie.otf'),
         });
         setFontsLoaded(true);
@@ -53,20 +56,22 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <TranslationProvider>
-        <AuthProvider>
-          <WalletProvider>
-            <NotificationProvider>
-              <StatusBar style="auto" />
-              {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
-              <AppNavigator ref={navigationRef} />
-              {/* </SafeAreaView> */}
-              <NotificationPopup />
-              <CampaignNotificationPopupManager navigationRef={navigationRef} />
-            </NotificationProvider>
-          </WalletProvider>
-        </AuthProvider>
-      </TranslationProvider>
+      <LinkHistoryProvider>
+        <TranslationProvider>
+          <AuthProvider>
+            <WalletProvider>
+              <NotificationProvider>
+                <StatusBar style="auto" />
+                {/* <SafeAreaView edges={['top','bottom']} style={{ flex: 1 }}> */}
+                <AppNavigator ref={navigationRef} />
+                {/* </SafeAreaView> */}
+                <NotificationPopup />
+                <CampaignNotificationPopupManager navigationRef={navigationRef} />
+              </NotificationProvider>
+            </WalletProvider>
+          </AuthProvider>
+        </TranslationProvider>
+      </LinkHistoryProvider>
     </SafeAreaProvider>
   );
 }

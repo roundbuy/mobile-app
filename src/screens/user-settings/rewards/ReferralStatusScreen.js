@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
   },
   successBanner: {
@@ -317,11 +317,11 @@ const styles = StyleSheet.create({
   },
   referralUsername: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   referralPending: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     fontStyle: 'italic',
   },
   checkmarkContainer: {
@@ -366,12 +366,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
   },
   footerText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
   },
 });

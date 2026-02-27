@@ -5,7 +5,7 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const GreenMembershipScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   return (
     <SafeScreenContainer>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   planSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginBottom: 12,
   },
   priceContainer: {
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   infoIconText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
   },
   currentPlanBadge: {
     backgroundColor: '#F5F5F5',

@@ -23,7 +23,7 @@ const PriceInput = ({ price, onPriceChange, label = 'Price' }) => {
                 onChangeText={handlePriceChange}
                 placeholder="Enter price"
                 keyboardType="numeric"
-                placeholderTextColor="#999"
+                placeholderTextColor="#303234"
             />
         </View>
     );

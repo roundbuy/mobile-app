@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     infoBannerText: {
         flex: 1,
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginLeft: 12,
         lineHeight: 20,
     },
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     },
     summaryLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     summaryValue: {
         fontSize: 14,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     },
     fieldHint: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         marginBottom: 12,
     },
     textArea: {
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     },
     priorityText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         fontWeight: '500',
     },
     priorityTextActive: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     warningText: {
         flex: 1,
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginLeft: 12,
         lineHeight: 18,
     },

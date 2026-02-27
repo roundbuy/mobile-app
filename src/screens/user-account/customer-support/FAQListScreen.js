@@ -48,7 +48,7 @@ const FAQListScreen = ({ route, navigation }) => {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Search Bar - Visual placeholder */}
                 <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                    <Ionicons name="search" size={20} color="#505050" style={styles.searchIcon} />
                     <Text style={styles.searchPlaceholder}>{t('Search questions...')}</Text>
                 </View>
 
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     },
     searchPlaceholder: {
         fontSize: 15,
-        color: '#999',
+        color: '#303234',
     },
     listContainer: {
         marginTop: 0,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     },
     answerText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 22,
     },
     emptyContainer: {
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     emptyText: {
-        color: '#999',
+        color: '#303234',
         fontSize: 15,
     },
     bottomSpacer: {

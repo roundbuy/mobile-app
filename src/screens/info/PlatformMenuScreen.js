@@ -9,6 +9,8 @@ import GlobalHeader from '../../components/GlobalHeader';
 const PlatformMenuScreen = ({ navigation }) => {
     const { t } = useTranslation();
 
+    // Menu items for platform information including Green Vision
+
     const menuItems = [
         {
             id: '1',
@@ -49,6 +51,12 @@ const PlatformMenuScreen = ({ navigation }) => {
                 { heading: t('Lower Carbon Footprint'), text: t('Local trade means less transportation pollution.') },
                 { heading: t('Sustainable Lifestyle'), text: t('Make sustainability a daily habit.') }
             ]
+        },
+        {
+            id: '4.5',
+            title: t('Green Vision'),
+            icon: 'leaf',
+            targetScreen: 'GreenVision'
         },
         {
             id: '5',
@@ -105,7 +113,7 @@ const PlatformMenuScreen = ({ navigation }) => {
                             <Ionicons name={item.icon} size={24} color={COLORS.primary} />
                         </View>
                         <Text style={styles.menuTitle}>{item.title}</Text>
-                        <Ionicons name="chevron-forward" size={24} color="#999" />
+                        <Ionicons name="chevron-forward" size={24} color="#303234" />
                     </TouchableOpacity>
                 ))}
             </ScrollView>

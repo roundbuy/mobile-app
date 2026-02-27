@@ -14,7 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { advertisementService } from '../../../services';
+import LocationDisclaimerModal from '../../../components/LocationDisclaimerModal';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
+import Hyperlink from '../../../components/common/Hyperlink';
 
 const DefaultLocationScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -22,15 +24,33 @@ const DefaultLocationScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [disclaimerModalVisible, setDisclaimerModalVisible] = useState(false);
 
   // Get membership plan from user data
   const getMembershipPlan = () => {
-    if (!user?.subscription_plan_slug) return 'green';
-    return user.subscription_plan_slug.toLowerCase().includes('gold') ? 'gold' : 'green';
+    console.log('DEBUG: User object:', JSON.stringify(user, null, 2));
+    if (!user?.subscription_plan_slug) {
+      console.log('DEBUG: No subscription_plan_slug found');
+      return 'green';
+    }
+    const slug = user.subscription_plan_slug.toLowerCase();
+    console.log('DEBUG: Plan slug:', slug);
+    if (slug.includes('gold')) return 'gold';
+    if (slug.includes('orange')) return 'orange';
+    return 'green';
   };
 
   const membershipPlan = getMembershipPlan();
-  const maxLocations = membershipPlan === 'gold' ? 3 : 1;
+
+  const getMaxLocations = () => {
+    switch (membershipPlan) {
+      case 'gold': return 5;
+      case 'orange': return 3;
+      default: return 1;
+    }
+  };
+
+  const maxLocations = getMaxLocations();
 
   // Fetch user locations on component mount
   useEffect(() => {
@@ -90,7 +110,13 @@ const DefaultLocationScreen = ({ navigation }) => {
           if (response.success) {
             // Refresh locations
             await fetchUserLocations();
-            Alert.alert(t('Success'), t('Location saved successfully!'));
+            Alert.alert(
+              t('Success'),
+              t('Location saved successfully!'),
+              [
+                { text: t('OK'), onPress: () => navigation.goBack() }
+              ]
+            );
           } else {
             Alert.alert(t('Error'), response.message || t('Failed to save location'));
           }
@@ -107,11 +133,15 @@ const DefaultLocationScreen = ({ navigation }) => {
   const getLocationName = (locationType) => {
     switch (locationType) {
       case 'centrePoint':
-        return 'Centre-point & Product Location 1';
+        return 'Default Location & Product Location (centre-point)';
       case 'productLocation2':
         return 'Product Location 2';
       case 'productLocation3':
         return 'Product Location 3';
+      case 'productLocation4':
+        return 'Product Location 4';
+      case 'productLocation5':
+        return 'Product Location 5';
       default:
         return 'Location';
     }
@@ -119,17 +149,26 @@ const DefaultLocationScreen = ({ navigation }) => {
 
   const getExistingLocation = (locationType) => {
     // Map location types to database entries
+    // Assuming locations are stored/returned in order of creation or can be identified by name/metadata
+    // For now, simpler mapping based on index if the backend returns them in consistent order
+
+    // Better strategy: try to match by name first, or fall back to index if needed
+    // But since names can be edited, index is safer IF we guarantee order.
+    // Given the previous code used index, we will stick to index mapping for now.
+
     const typeMapping = {
-      centrePoint: 0, // First location is centre-point
-      productLocation2: 1, // Second location
-      productLocation3: 2, // Third location
+      centrePoint: 0,
+      productLocation2: 1,
+      productLocation3: 2,
+      productLocation4: 3,
+      productLocation5: 4,
     };
 
     const index = typeMapping[locationType];
     return locations[index] || null;
   };
 
-  const handleUpgradeToGold = () => {
+  const handleUpgrade = () => {
     navigation.navigate('AllMemberships');
   };
 
@@ -139,16 +178,22 @@ const DefaultLocationScreen = ({ navigation }) => {
 
     return (
       <View style={styles.locationSection} key={locationType}>
-        {description && (
+        {!!description && (
           <>
             <Text style={styles.locationTitle}>{title}</Text>
             <Text style={styles.locationDescription}>{description}</Text>
-            <Text style={styles.locationNote}>{t('Both Centre-point and Product location 1 are located in the same spot!')}</Text>
-            <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-              <Text style={styles.infoLinkText}>{t('For more information')}</Text>
-              <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-              <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-            </TouchableOpacity>
+            {locationType === 'centrePoint' && (
+              <Text style={styles.locationNote}>{t('Both Centre-point and Product location 1 are located in the same spot!')}</Text>
+            )}
+            <Hyperlink
+              linkKey="location_info_link"
+              containerStyle={styles.infoLink}
+              style={[styles.infoLinkText, styles.clickHereText]}
+              activeOpacity={0.7}
+            >
+              {t('Learn more about ')} {t('Locations')}
+              <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
+            </Hyperlink>
           </>
         )}
 
@@ -180,12 +225,7 @@ const DefaultLocationScreen = ({ navigation }) => {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text style={styles.setLocationButtonText}>
-              {hasLocation ? 'Edit Location' :
-                (locationType === 'centrePoint'
-                  ? 'Set Centre-point &\nProduct Location 1'
-                  : locationType === 'productLocation2'
-                    ? 'Set Product Location 2'
-                    : 'Set Product Location 3')}
+              {hasLocation ? 'Edit Location' : `Set ${getLocationName(locationType)}`}
             </Text>
           )}
         </TouchableOpacity>
@@ -229,59 +269,84 @@ const DefaultLocationScreen = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Centre-point & Product Location 1 */}
+            {/* Centre-point & Product Location 1 - Always Show */}
             {renderLocationButton(
               '',
               '',
               'centrePoint'
             )}
 
-            {/* Additional locations for Gold membership */}
-            {membershipPlan === 'gold' && (
-              <>
-                <View style={styles.locationSection}>
-                  <Text style={styles.locationTitle}>{t('Product Location 2')}</Text>
-                  <Text style={styles.locationDescription}>{t('Your secondary spot to advertise the products you want to Sell e.g. near to work.')}</Text>
-                  <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                    <Text style={styles.infoLinkText}>{t('For more information')}</Text>
-                    <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-                  </TouchableOpacity>
-                  {renderLocationButton('', '', 'productLocation2')}
-                </View>
+            {/* Additional locations based on membership plan */}
+            {(membershipPlan === 'orange' || membershipPlan === 'gold') && [
+              renderLocationButton(
+                t('Product Location 2'),
+                t('Your secondary spot to advertise the products you want to Sell e.g. near to work.'),
+                'productLocation2'
+              ),
+              renderLocationButton(
+                t('Product Location 3'),
+                t('Your third spot to advertise the products you want to Sell.'),
+                'productLocation3'
+              )
+            ]}
 
-                <View style={styles.locationSection}>
-                  <Text style={styles.locationTitle}>{t('Product Location 3')}</Text>
-                  <Text style={styles.locationDescription}>{t('Your secondary spot to advertise the products you want to Sell e.g. second home.')}</Text>
-                  <TouchableOpacity style={styles.infoLink} activeOpacity={0.7}>
-                    <Text style={styles.infoLinkText}>{t('For more information')}</Text>
-                    <Text style={[styles.infoLinkText, styles.clickHereText]}>{t('click here')}</Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
-                  </TouchableOpacity>
-                  {renderLocationButton('', '', 'productLocation3')}
-                </View>
-              </>
-            )}
+            {membershipPlan === 'gold' && [
+              renderLocationButton(
+                t('Product Location 4'),
+                t('Your fourth spot to advertise the products you want to Sell.'),
+                'productLocation4'
+              ),
+              renderLocationButton(
+                t('Product Location 5'),
+                t('Your fifth spot to advertise the products you want to Sell.'),
+                'productLocation5'
+              )
+            ]}
           </>
         )}
 
-        {/* Note for Green membership */}
-        {membershipPlan === 'green' && (
+        {/* Note / Upgrade Section */}
+        {membershipPlan !== 'gold' && (
           <View style={styles.noteSection}>
             <Text style={styles.noteTitle}>{t('Note:')}</Text>
-            <Text style={styles.noteText}>{t('With the Green membership you have 1x centre-point, and 1x product locations, while with the Gold membership you have 1x centre-point, and 3x product locations.')}</Text>
-            <TouchableOpacity style={styles.upgradeLink} onPress={handleUpgradeToGold} activeOpacity={0.7}>
-              <Text style={styles.upgradeLinkText}>{t('Upgrade now to Gold membership for discounted prices!')}</Text>
+            <Text style={styles.noteText}>
+              {membershipPlan === 'green'
+                ? t('With the Green membership you have 1 location (Centre-point). Upgrade to Orange for 3 locations or Gold for 5.')
+                : t('With the Orange membership you have 3 locations. Upgrade to Gold for 5 locations.')}
+            </Text>
+            <TouchableOpacity style={styles.upgradeLink} onPress={handleUpgrade} activeOpacity={0.7}>
+              <Text style={styles.upgradeLinkText}>{t('Upgrade membership for more locations!')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgradeToGold} activeOpacity={0.7}>
-              <Text style={styles.upgradeButtonText}>{t('Upgrade to Gold')}</Text>
+            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade} activeOpacity={0.7}>
+              <Text style={styles.upgradeButtonText}>{t('Upgrade Membership')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         <View style={styles.bottomSpacer} />
+        <View style={styles.bottomSpacer} />
+
+        {/* Disclaimer Link */}
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            Our{' '}
+            <Hyperlink
+              linkKey="default_location_disclaimer"
+              style={styles.disclaimerLink}
+              onPress={() => setDisclaimerModalVisible(true)}
+            >
+              {t('Locations & Safety Disclaimer')}
+            </Hyperlink>
+          </Text>
+        </View>
+
         <SuggestionsFooter sourceRoute="DefaultLocation" />
       </ScrollView>
+
+      <LocationDisclaimerModal
+        visible={disclaimerModalVisible}
+        onClose={() => setDisclaimerModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -337,7 +402,7 @@ const styles = StyleSheet.create({
   },
   infoItemText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
   locationSection: {
@@ -354,13 +419,13 @@ const styles = StyleSheet.create({
   },
   locationDescription: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
     marginBottom: 8,
   },
   locationNote: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     fontStyle: 'italic',
     marginBottom: 8,
   },
@@ -371,7 +436,7 @@ const styles = StyleSheet.create({
   },
   infoLinkText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
   },
   clickHereText: {
     color: COLORS.primary,
@@ -408,7 +473,7 @@ const styles = StyleSheet.create({
   },
   noteText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -442,7 +507,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   existingLocationInfo: {
     flexDirection: 'row',
@@ -464,7 +529,7 @@ const styles = StyleSheet.create({
   },
   locationAddress: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   defaultBadge: {
     backgroundColor: COLORS.primary,
@@ -479,6 +544,22 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  disclaimerContainer: {
+    padding: 20,
+    // backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  disclaimerText: {
+    fontSize: 14,
+    color: '#505050',
+    lineHeight: 20,
+  },
+  disclaimerLink: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
   },
 });
 

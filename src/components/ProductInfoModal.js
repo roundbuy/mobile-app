@@ -32,7 +32,7 @@ const ProductInfoModal = ({ visible, onClose, title, content }) => {
                     <View style={styles.header}>
                         <Text style={styles.title}>{title}</Text>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#666" />
+                            <Ionicons name="close" size={24} color="#505050" />
                         </TouchableOpacity>
                     </View>
 

@@ -5,9 +5,9 @@ import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
 const AdTransactionScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { success = true, total = '2.27' } = route.params || {};
-  
+
   const sessionId = `CHG ${Math.floor(10000 + Math.random() * 90000)}`;
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -76,7 +76,7 @@ const AdTransactionScreen = ({ navigation, route }) => {
         </View>
 
         {/* Done Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.actionButton}
           onPress={handleDone}
         >
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   stepIndicator: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   statusIconContainer: {
     alignItems: 'center',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   },
   statusSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   detailsTitle: {
     fontSize: 14,
-    color: '#999',
+    color: '#303234',
     marginBottom: 20,
   },
   detailRow: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailValue: {
     fontSize: 14,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   receiptText: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 11,
     fontWeight: '400',
-    color: '#999',
+    color: '#303234',
     textAlign: 'center',
     marginBottom: 20,
   },

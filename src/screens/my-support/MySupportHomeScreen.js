@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import supportService from '../../services/supportService';
 
 const MySupportHomeScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [ticketStats, setTicketStats] = useState(null);
   const [appealStats, setAppealStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +108,7 @@ const MySupportHomeScreen = ({ navigation }) => {
                 {appealStats?.can_appeal || 0} can appeal
               </Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -126,7 +126,7 @@ const MySupportHomeScreen = ({ navigation }) => {
                 {appealStats?.pending || 0} pending appeals
               </Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -142,7 +142,7 @@ const MySupportHomeScreen = ({ navigation }) => {
                 {ticketStats?.total_tickets || 0} total tickets
               </Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -158,7 +158,7 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Text style={styles.categoryTitle}>{t('Technical Issues')}</Text>
               <Text style={styles.categorySubtitle}>{t('Get help with technical problems')}</Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -174,7 +174,7 @@ const MySupportHomeScreen = ({ navigation }) => {
               <Text style={styles.categoryTitle}>{t('Billing & Payments')}</Text>
               <Text style={styles.categorySubtitle}>{t('Payment and subscription help')}</Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
         </View>
 
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   statsContainer: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 11,
-    color: '#666',
+    color: '#505050',
     marginTop: 4,
     textAlign: 'center',
   },
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   categorySubtitle: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   createButton: {
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

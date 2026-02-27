@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   itemDesc: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     marginBottom: 2,
   },
   priceText: {
@@ -224,11 +224,11 @@ const styles = StyleSheet.create({
   },
   pricingLabel: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
   },
   pricingValue: {
     fontSize: 15,
-    color: '#666',
+    color: '#505050',
   },
   totalRow: {
     marginTop: 8,

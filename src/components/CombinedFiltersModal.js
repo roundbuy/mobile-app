@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   measurementText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#505050',
   },
   selectedMeasurementText: {
     color: COLORS.primary,

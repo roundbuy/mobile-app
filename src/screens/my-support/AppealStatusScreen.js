@@ -49,7 +49,7 @@ const AppealStatusScreen = ({ navigation, route }) => {
       approved: '#32CD32',
       rejected: '#FF4444',
     };
-    return colors[status] || '#666';
+    return colors[status] || '#505050';
   };
 
   const getStatusIcon = (status) => {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#666',
+    color: '#505050',
     marginTop: 20,
   },
   statusHeader: {
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   timelineTitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   timelineText: {
     fontSize: 16,
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   deletedDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     marginTop: 5,
   },
   infoRow: {
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     width: 100,
   },
   infoValue: {
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   },
   decisionDate: {
     fontSize: 12,
-    color: '#999',
+    color: '#303234',
     textAlign: 'right',
   },
   approvedNotice: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   actionsContainer: {

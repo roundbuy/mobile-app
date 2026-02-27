@@ -77,7 +77,7 @@ const ConfirmAccessRightsScreen = ({ route, navigation }) => {
                             value={email}
                             onChangeText={setEmail}
                             placeholder={t('Enter your email')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             keyboardType="email-address"
                             autoCapitalize="none"
                             editable={!user?.email} // Disable if user is logged in
@@ -91,7 +91,7 @@ const ConfirmAccessRightsScreen = ({ route, navigation }) => {
                             value={password}
                             onChangeText={setPassword}
                             placeholder={t('Enter your password')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             secureTextEntry
                         />
                     </View>
@@ -111,7 +111,7 @@ const ConfirmAccessRightsScreen = ({ route, navigation }) => {
 
                 {/* Security Notice */}
                 <View style={styles.securityNotice}>
-                    <Ionicons name="lock-closed" size={16} color="#666" />
+                    <Ionicons name="lock-closed" size={16} color="#505050" />
                     <Text style={styles.securityText}>{t('Your credentials are encrypted and secure')}</Text>
                 </View>
             </View>
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     },
     infoText: {
         fontSize: 15,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         lineHeight: 22,
         paddingHorizontal: 20,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
         marginBottom: 8,
     },
     input: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     },
     securityText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginLeft: 8,
     },
 });

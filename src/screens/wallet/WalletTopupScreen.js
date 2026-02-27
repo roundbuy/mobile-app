@@ -170,7 +170,7 @@ const WalletTopupScreen = ({ navigation }) => {
                                     <Ionicons
                                         name={method.icon}
                                         size={24}
-                                        color={selectedMethod === method.id ? COLORS.primary : '#666'}
+                                        color={selectedMethod === method.id ? COLORS.primary : '#505050'}
                                     />
                                 </View>
                                 <Text style={[
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     },
     helperText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         marginTop: 8,
     },
     quickAmountsContainer: {
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     quickAmountText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     quickAmountTextActive: {
         color: COLORS.primary,

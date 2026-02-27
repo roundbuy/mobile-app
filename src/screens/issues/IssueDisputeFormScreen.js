@@ -132,7 +132,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
             <ScrollView style={styles.content}>
                 {/* Icon */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#666" />
+                    <FontAwesome name="clipboard" size={60} color="#505050" />
                     <View style={styles.checkBadge}>
                         <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
                     </View>
@@ -181,7 +181,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                     <TextInput
                         style={styles.textInput}
                         placeholder={t('Describe the disputed issue...')}
-                        placeholderTextColor="#999"
+                        placeholderTextColor="#303234"
                         multiline
                         numberOfLines={4}
                         value={disputeDescription}
@@ -193,7 +193,7 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                     <TextInput
                         style={styles.textInput}
                         placeholder={t('What do you demand from the seller?')}
-                        placeholderTextColor="#999"
+                        placeholderTextColor="#303234"
                         multiline
                         numberOfLines={4}
                         value={disputeDemand}
@@ -313,11 +313,11 @@ const styles = StyleSheet.create({
     },
     creationText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     creationTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     infoSection: {
         paddingHorizontal: 24,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
     },
     infoValue: {
         fontSize: 14,
@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#505050',
         letterSpacing: 0.5,
     },
     sectionTime: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
     },
     fieldLabel: {
         fontSize: 14,
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     },
     linkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     linkHighlight: {
         color: COLORS.primary,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     infoLinkHighlight: {
         color: COLORS.primary,

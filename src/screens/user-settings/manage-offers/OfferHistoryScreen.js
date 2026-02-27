@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#999',
+        color: '#303234',
     },
     activeTabText: {
         color: '#000',
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     },
     distanceText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
     },
     offerCard: {
         padding: 16,
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     },
     offerDate: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         width: 80,
     },
     offerDetails: {
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     },
     footerText: {
         fontSize: 12,
-        color: '#666',
+        color: '#505050',
         marginBottom: 12,
     },
     footerButton: {
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     emptyContainer: {
         alignItems: 'center',
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#999',
+        color: '#303234',
         marginTop: 16,
     },
 });

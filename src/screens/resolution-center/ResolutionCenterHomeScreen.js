@@ -14,7 +14,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const ResolutionCenterHomeScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -100,7 +100,7 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
               <Text style={styles.actionTitle}>{t('Create New Dispute')}</Text>
               <Text style={styles.actionSubtitle}>{t('Report an issue with a transaction')}</Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -114,7 +114,7 @@ const ResolutionCenterHomeScreen = ({ navigation }) => {
               <Text style={styles.actionTitle}>{t('View All Disputes')}</Text>
               <Text style={styles.actionSubtitle}>{t('Track your active and closed disputes')}</Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#999" />
+            <Feather name="chevron-right" size={24} color="#303234" />
           </TouchableOpacity>
         </View>
 
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   statsContainer: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
     textAlign: 'center',
   },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   },
   actionSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     marginTop: 3,
   },
   infoCard: {
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
 });

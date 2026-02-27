@@ -90,8 +90,18 @@ const MyAdsScreen = ({ navigation }) => {
 
   // Filter ads based on active tab (client-side filtering for better UX)
   const getFilteredAds = () => {
+    // If not 'all', the API already filtered the results, so return everything we have
+    // OR we could double check to be safe, but we must use the correct mapping
     if (activeTab === 'all') return ads;
-    return ads.filter(ad => ad.status === activeTab);
+
+    // Status mapping matches backend
+    const statusMap = {
+      'active': 'published',
+      'inactive': 'draft'
+    };
+
+    // If we want to be safe and filter client side too:
+    return ads.filter(ad => ad.status === statusMap[activeTab]);
   };
 
   const renderAdItem = ({ item }) => {
@@ -107,49 +117,15 @@ const MyAdsScreen = ({ navigation }) => {
       console.log('Error parsing ad image:', e);
     }
     const activityType = item.activity_name || 'SELL'; // Default to SELL if no activity
-    const locationText = item.location_name ? `${item.city || ''}, ${item.country || ''}`.trim() : 'Location not set';
-    const daysRemaining = item.end_date ? Math.ceil((new Date(item.end_date) - new Date()) / (1000 * 60 * 60 * 24)) : 60;
 
     return (
-      <TouchableOpacity
-        style={styles.adCard}
-        onPress={() => handleAdPress(item)}
-        activeOpacity={0.7}
-      >
+      <View style={styles.adCard}>
         <Image source={imageSource} style={styles.adImage} />
 
         <View style={styles.adContent}>
-          <View style={styles.adHeader}>
-            <Text style={styles.adTitle} numberOfLines={2}>{item.title}</Text>
-            <View style={[
-              styles.typeBadge,
-              activityType === 'Sell' && styles.sellBadge,
-              activityType === 'Rent' && styles.rentBadge,
-              activityType === 'Buy' && styles.buyBadge,
-            ]}>
-              <Text style={styles.typeBadgeText}>{activityType.toUpperCase()}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.distanceText}>{locationText}</Text>
-
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="heart" size={16} color="#666" />
-              <Text style={styles.statText}>{item.likes_count || 0}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="eye" size={16} color="#666" />
-              <Text style={styles.statText}>{item.views_count || 0}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Image source={clicksIcon} style={styles.clicksIcon} />
-              <Text style={styles.statText}>{item.messages_count || 0}</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Image source={offerIcon} style={styles.offerIcon} />
-              <Text style={styles.statText}>{item.watchers_count || 0}</Text>
-            </View>
+          <View style={styles.adRow}>
+            <Text style={styles.adTitle} numberOfLines={1}>{item.title}</Text>
+            <Text style={styles.activityType}>{activityType.toUpperCase()}</Text>
           </View>
 
           <View style={styles.statusRow}>
@@ -159,10 +135,18 @@ const MyAdsScreen = ({ navigation }) => {
             ]}>
               {item.status === 'published' ? 'Active' : item.status === 'draft' ? 'Draft' : 'Inactive'}
             </Text>
-            <Text style={styles.daysText}>{daysRemaining > 0 ? `${daysRemaining} days remain` : 'Expired'}</Text>
+            <Text style={styles.validityText}>{t('Continuous')}</Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.viewListingButton}
+            onPress={() => handleAdPress(item)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.viewListingButtonText}>{t('View Listing')}</Text>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -170,7 +154,7 @@ const MyAdsScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title={t('Manage My Ads')}
+        title={t('My Listings')}
         navigation={navigation}
         showBackButton={true}
         showIcons={true}
@@ -243,21 +227,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-    paddingHorizontal: 16,
   },
   tab: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomWidth: 3,
     borderBottomColor: '#000',
   },
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#999',
+    color: '#303234',
   },
   activeTabText: {
     color: '#000',
@@ -268,102 +252,69 @@ const styles = StyleSheet.create({
   },
   adCard: {
     flexDirection: 'row',
+    marginBottom: 24,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    overflow: 'hidden',
   },
   adImage: {
     width: 100,
-    height: 120,
+    height: 100,
+    borderRadius: 8,
     backgroundColor: '#f5f5f5',
   },
   adContent: {
     flex: 1,
-    padding: 12,
+    marginLeft: 16,
+    justifyContent: 'center',
   },
-  adHeader: {
+  adRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 4,
+    alignItems: 'center',
   },
   adTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000',
     flex: 1,
+    marginRight: 8,
   },
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  sellBadge: {
-    backgroundColor: '#4CAF50',
-  },
-  rentBadge: {
-    backgroundColor: '#FF9800',
-  },
-  buyBadge: {
-    backgroundColor: COLORS.primary,
-  },
-  typeBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  distanceText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  statText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
-  },
-  clicksIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#666',
-  },
-  offerIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#666',
+  activityType: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000',
   },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 6,
   },
   statusText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '700',
   },
   activeStatus: {
     color: '#4CAF50',
   },
   inactiveStatus: {
-    color: '#999',
+    color: '#9E9E9E',
   },
-  daysText: {
-    fontSize: 12,
+  validityText: {
+    fontSize: 13,
+    fontWeight: '700',
     color: '#666',
+  },
+  viewListingButton: {
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  viewListingButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#000',
   },
   loadingContainer: {
     flex: 1,
@@ -373,7 +324,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -382,7 +333,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
   retryButton: {

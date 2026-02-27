@@ -162,7 +162,7 @@ const DataRequestFormScreen = ({ route, navigation }) => {
                             value={reason}
                             onChangeText={setReason}
                             placeholder={formFields.reasonPlaceholder}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             multiline
                             numberOfLines={6}
                             textAlignVertical="top"
@@ -183,7 +183,7 @@ const DataRequestFormScreen = ({ route, navigation }) => {
                             value={additionalInfo}
                             onChangeText={setAdditionalInfo}
                             placeholder={formFields.additionalPlaceholder}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             multiline
                             numberOfLines={4}
                             textAlignVertical="top"
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     },
     headerSubtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         paddingHorizontal: 20,
     },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#666',
+        color: '#505050',
     },
     infoValue: {
         fontSize: 14,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     },
     charCount: {
         fontSize: 12,
-        color: '#999',
+        color: '#303234',
         textAlign: 'right',
         marginTop: 4,
     },
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     },
     noticeText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
     },
     submitButton: {

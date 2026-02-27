@@ -121,7 +121,7 @@ const NotificationPopup = ({ navigation }) => {
                                 style={styles.closeButton}
                                 onPress={hidePopup}
                             >
-                                <Ionicons name="close" size={20} color="#666" />
+                                <Ionicons name="close" size={20} color="#505050" />
                             </TouchableOpacity>
                         </View>
 
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     },
     message: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
         marginLeft: 40
     }

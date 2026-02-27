@@ -5,6 +5,7 @@ import SafeScreenContainer from '../../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../../constants/theme';
 import { useTranslation } from '../../../context/TranslationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import trackingService from '../../../services/TrackingService';
 
 const ATTTrackingSettingsScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -18,6 +19,8 @@ const ATTTrackingSettingsScreen = ({ navigation }) => {
 
     const loadPreferences = async () => {
         try {
+            await trackingService.initialize();
+            // Reading from storage directly for UI state, as service syncs with it
             const attPref = await AsyncStorage.getItem('att_tracking_enabled');
             const analyticsPref = await AsyncStorage.getItem('analytics_tracking_enabled');
             const advertisingPref = await AsyncStorage.getItem('advertising_tracking_enabled');
@@ -38,15 +41,23 @@ const ATTTrackingSettingsScreen = ({ navigation }) => {
 
     const handleSaveChoices = async () => {
         try {
-            await AsyncStorage.setItem('att_tracking_enabled', JSON.stringify(trackingEnabled));
-            await AsyncStorage.setItem('analytics_tracking_enabled', JSON.stringify(analyticsTracking));
-            await AsyncStorage.setItem('advertising_tracking_enabled', JSON.stringify(advertisingTracking));
+            // Use service to save preference (which also handles logic)
+            await trackingService.setTrackingPreference(trackingEnabled);
+
+            // Allow granular control if main tracking is enabled
+            if (trackingEnabled) {
+                await AsyncStorage.setItem('analytics_tracking_enabled', JSON.stringify(analyticsTracking));
+                await AsyncStorage.setItem('advertising_tracking_enabled', JSON.stringify(advertisingTracking));
+            }
 
             console.log('ATT preferences saved:', {
                 trackingEnabled,
                 analyticsTracking,
                 advertisingTracking,
             });
+
+            // Re-initialize service to pick up changes
+            await trackingService.initialize();
 
             navigation.goBack();
         } catch (error) {
@@ -93,7 +104,7 @@ const ATTTrackingSettingsScreen = ({ navigation }) => {
                         style={styles.logo}
                         resizeMode="contain"
                     />
-                    <Text style={styles.patentText}>{t('Patent Pending')}</Text>
+                    <Text style={styles.patentText}>{t('Patents Pendings')}</Text>
                     <TouchableOpacity onPress={handlePatentInfo}>
                         <Text style={styles.infoLink}>
                             for more information{' '}

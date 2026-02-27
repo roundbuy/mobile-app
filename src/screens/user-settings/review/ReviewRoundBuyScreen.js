@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../../constants/theme';
 
 const ReviewRoundBuyScreen = ({ navigation }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const handleBack = () => {
     navigation.goBack();
   };
@@ -89,17 +89,17 @@ const ReviewRoundBuyScreen = ({ navigation }) => {
               styles.optionIconContainer,
               option.bgColor && { backgroundColor: option.bgColor }
             ]}>
-              <Ionicons 
-                name={option.icon} 
-                size={28} 
-                color={option.bgColor ? '#fff' : COLORS.primary} 
+              <Ionicons
+                name={option.icon}
+                size={28}
+                color={option.bgColor ? '#fff' : COLORS.primary}
               />
             </View>
             <View style={styles.optionContent}>
               <Text style={styles.optionTitle}>{option.title}</Text>
               <Text style={styles.optionDescription}>{option.description}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#999" />
+            <Ionicons name="chevron-forward" size={24} color="#303234" />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -156,14 +156,14 @@ const styles = StyleSheet.create({
   },
   infoBannerText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 12,
   },
   infoNote: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   optionDescription: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
 });

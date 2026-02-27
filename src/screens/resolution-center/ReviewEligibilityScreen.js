@@ -13,7 +13,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import disputeService from '../../services/disputeService';
 
 const ReviewEligibilityScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const { category, order, problem } = route.params;
   const [eligibility, setEligibility] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,7 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
 
         <View style={styles.detailsCard}>
           <Text style={styles.detailsTitle}>{t('Order Details')}</Text>
-          
+
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Order Number:')}</Text>
             <Text style={styles.detailValue}>#{order.order_number}</Text>
@@ -109,30 +109,30 @@ const ReviewEligibilityScreen = ({ navigation, route }) => {
 
         <View style={styles.requirementsCard}>
           <Text style={styles.requirementsTitle}>{t('Requirements')}</Text>
-          
+
           <View style={styles.requirementRow}>
-            <Feather 
-              name={eligibility?.within_time_limit ? "check-circle" : "x-circle"} 
-              size={20} 
-              color={eligibility?.within_time_limit ? "#32CD32" : "#FF4444"} 
+            <Feather
+              name={eligibility?.within_time_limit ? "check-circle" : "x-circle"}
+              size={20}
+              color={eligibility?.within_time_limit ? "#32CD32" : "#FF4444"}
             />
             <Text style={styles.requirementText}>{t('Order within 30 days')}</Text>
           </View>
 
           <View style={styles.requirementRow}>
-            <Feather 
-              name={eligibility?.no_existing_dispute ? "check-circle" : "x-circle"} 
-              size={20} 
-              color={eligibility?.no_existing_dispute ? "#32CD32" : "#FF4444"} 
+            <Feather
+              name={eligibility?.no_existing_dispute ? "check-circle" : "x-circle"}
+              size={20}
+              color={eligibility?.no_existing_dispute ? "#32CD32" : "#FF4444"}
             />
             <Text style={styles.requirementText}>{t('No existing dispute for this order')}</Text>
           </View>
 
           <View style={styles.requirementRow}>
-            <Feather 
-              name={eligibility?.order_completed ? "check-circle" : "x-circle"} 
-              size={20} 
-              color={eligibility?.order_completed ? "#32CD32" : "#FF4444"} 
+            <Feather
+              name={eligibility?.order_completed ? "check-circle" : "x-circle"}
+              size={20}
+              color={eligibility?.order_completed ? "#32CD32" : "#FF4444"}
             />
             <Text style={styles.requirementText}>{t('Order marked as received')}</Text>
           </View>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     marginTop: 5,
   },
   eligibleCard: {
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
   },
   detailValue: {
     fontSize: 14,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
+    color: '#505050',
     lineHeight: 22,
   },
   continueButton: {

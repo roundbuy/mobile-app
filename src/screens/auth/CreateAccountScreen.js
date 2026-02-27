@@ -5,6 +5,7 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
+import { ONBOARDING_THEME } from '../../constants/theme';
 import { rewardsService } from '../../services/rewardsService';
 
 const CreateAccountScreen = ({ navigation }) => {
@@ -331,7 +332,7 @@ const CreateAccountScreen = ({ navigation }) => {
 
         {/* Already have account */}
         <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>{t('Have an account?')}</Text>
+          <Text style={styles.loginText}>{t('Have an account? ')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('SocialLogin')}>
             <Text style={styles.loginLink}>{t('Login')}</Text>
           </TouchableOpacity>
@@ -378,7 +379,7 @@ const CreateAccountScreen = ({ navigation }) => {
         {/* Terms */}
         <Text style={styles.termsText}>
           By continuing, you agree to our{' '}
-          <Text style={styles.termsLink}>{t('Terms of service')}</Text> and{' '}
+          <Text style={styles.termsLink}>{t('Terms & Conditions')}</Text> and{' '}
           <Text style={styles.termsLink}>{t('Privacy Policy')}</Text>.
         </Text>
 
@@ -417,7 +418,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '400',
     color: '#6a6a6a',
     marginBottom: 20,
@@ -514,9 +515,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   passwordGuidelineLink: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '400',
-    color: COLORS.primary,
+    color: ONBOARDING_THEME.colors.link,
     textDecorationLine: 'underline',
   },
   checkMark: {
@@ -544,19 +545,19 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     marginBottom: 16,
   },
   loginText: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '400',
-    color: '#6a6a6a',
+    color: '#000000',
   },
   loginLink: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
-    color: COLORS.primary,
+    color: ONBOARDING_THEME.colors.link,
     textDecorationLine: 'underline',
   },
   divider: {
@@ -600,7 +601,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   termsText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '400',
     color: '#8a8a8a',
     textAlign: 'center',
@@ -610,15 +611,14 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   termsLink: {
-    color: '#8a8a8a',
+    color: ONBOARDING_THEME.colors.link,
     textDecorationLine: 'underline',
   },
   copyright: {
-    fontSize: 10,
-    fontWeight: '400',
-    color: '#8a8a8a',
+    fontSize: 12,
+    color: '#000000',
     textAlign: 'center',
-    letterSpacing: -0.1,
+    fontWeight: 'bold',
   },
 });
 

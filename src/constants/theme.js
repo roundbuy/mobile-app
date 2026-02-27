@@ -377,7 +377,7 @@ export const LAYOUT = {
 // SLIDER CONFIGURATION
 // ============================================================================
 export const SLIDER_CONFIG = {
-  max: 10,                    // Maximum value for the slider (can be made dynamic in the future)
+  max: 50,                    // Maximum value for the slider (can be made dynamic in the future)
   min: 0,                     // Minimum value for the slider
   decimalPrecision: 1,        // Number of decimal places (1 = 0.1, 2 = 0.01, etc.)
   defaultValue: 5.0,          // Default value (middle of range)
@@ -418,6 +418,59 @@ export const applyTextStyle = (style) => {
 // ============================================================================
 // EXPORT DEFAULT
 // ============================================================================
+
+// ============================================================================
+// ONBOARDING THEME
+// Specific theme configuration for onboarding screens
+// ============================================================================
+export const ONBOARDING_THEME = {
+  colors: {
+    link: '#285AB1',
+    primaryButton: '#001C64', // Dark blue
+    secondaryButton: '#FFFFFF', // White
+    text: '#000000',
+    secondaryText: '#6a6a6a',
+    background: '#FFFFFF',
+    border: '#E0E0E0',
+  },
+  typography: {
+    heading: {
+      fontFamily: 'Roboto_900Black',
+      fontSize: 24, // Matches screenshot
+      textAlign: 'center',
+      color: '#000000',
+    },
+    subheading: {
+      fontFamily: 'Roboto_500Medium',
+      fontSize: 18,
+      textAlign: 'center',
+      color: '#000000',
+    },
+    body: {
+      fontFamily: 'Roboto_500Medium',
+      fontSize: 16,
+      textAlign: 'center',
+      color: '#000000',
+      lineHeight: 24,
+    },
+    link: {
+      color: '#285AB1',
+      textDecorationLine: 'underline',
+      fontFamily: 'Roboto_500Medium',
+    }
+  },
+  spacing: {
+    paddingHorizontal: 20,
+    headerMarginBottom: 40,
+    contentMarginTop: 50,
+    contentJustAboveFooter: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      paddingBottom: 40, // Space between content and footer
+    }
+  }
+};
+
 export default {
   COLORS,
   TYPOGRAPHY,
@@ -428,6 +481,7 @@ export default {
   ANIMATION,
   LAYOUT,
   SLIDER_CONFIG,
+  ONBOARDING_THEME,
   getLineHeight,
   getSpacing,
   applyTextStyle,

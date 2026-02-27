@@ -78,7 +78,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                         <TextInput
                             style={styles.input}
                             placeholder={t('Fill in!')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             value={issue}
                             onChangeText={setIssue}
                             multiline
@@ -95,7 +95,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                             <TextInput
                                 style={styles.amountInput}
                                 placeholder="0.00"
-                                placeholderTextColor="#999"
+                                placeholderTextColor="#303234"
                                 value={amount}
                                 onChangeText={setAmount}
                                 keyboardType="decimal-pad"
@@ -109,7 +109,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                         <TextInput
                             style={[styles.input, styles.textArea]}
                             placeholder={t('Fill in!')}
-                            placeholderTextColor="#999"
+                            placeholderTextColor="#303234"
                             value={additionalInfo}
                             onChangeText={setAdditionalInfo}
                             multiline
@@ -123,7 +123,7 @@ const DisputeFormScreen = ({ navigation, route }) => {
                         <Text style={styles.infoLinkText}>
                             More information on Disputes & Resolution, <Text style={styles.linkText}>{t('click here')}</Text>
                         </Text>
-                        <Ionicons name="information-circle-outline" size={20} color="#666" style={styles.infoIcon} />
+                        <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.infoIcon} />
                     </TouchableOpacity>
                 </ScrollView>
 
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     },
     headerStep: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     content: {
         flex: 1,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 24,
     },
     formGroup: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         flex: 1,
     },
     linkText: {

@@ -76,7 +76,7 @@ const ReviewEligibility2Screen = ({ navigation, route }) => {
 
                     <TouchableOpacity style={styles.moreInfoLink}>
                         <Text style={styles.moreInfoText}>More information: <Text style={styles.linkText}>{t('click here')}</Text></Text>
-                        <Ionicons name="information-circle-outline" size={18} color="#666" style={styles.infoIcon} />
+                        <Ionicons name="information-circle-outline" size={18} color="#505050" style={styles.infoIcon} />
                     </TouchableOpacity>
                 </View>
 
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     },
     headerStep: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     content: {
         flex: 1,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     },
     sectionText: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
         marginBottom: 16,
     },
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     },
     moreInfoText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         flex: 1,
     },
     linkText: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     },
     closeLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     footer: {
         padding: 16,

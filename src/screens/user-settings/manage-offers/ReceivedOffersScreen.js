@@ -19,7 +19,7 @@ import { COLORS } from '../../../constants/theme';
 import { offersService } from '../../../services';
 
 const ReceivedOffersScreen = ({ navigation, route }) => {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
   const [offers, setOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   offerText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     lineHeight: 18,
   },
   offerActions: {
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 13,
-    color: '#666',
+    color: '#505050',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#666',
+    color: '#505050',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -408,12 +408,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
+    color: '#303234',
     marginTop: 16,
   },
   dateText: {
     fontSize: 12,
-    color: '#666',
+    color: '#505050',
     marginTop: 4,
   },
 });

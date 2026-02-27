@@ -177,7 +177,7 @@ const UnpaidPickUpFeesScreen = ({ navigation }) => {
                             <Ionicons
                                 name={expanded ? "chevron-up" : "chevron-down"}
                                 size={16}
-                                color="#666"
+                                color="#505050"
                                 style={{ marginLeft: 4 }}
                             />
                         </View>
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     },
     summarySubtext: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     listContent: {
         padding: 16,
@@ -387,12 +387,12 @@ const styles = StyleSheet.create({
     },
     productPrice: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         marginBottom: 4,
     },
     scheduledDate: {
         fontSize: 13,
-        color: '#999',
+        color: '#303234',
     },
     feeSection: {
         backgroundColor: '#f8f8f8',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     },
     feeLabel: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
     },
     feeValue: {
         fontSize: 14,
@@ -444,11 +444,11 @@ const styles = StyleSheet.create({
     },
     subFeeLabel: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     subFeeValue: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
     },
     divider: {
         height: 1,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     loadingText: {
         marginTop: 16,
         fontSize: 16,
-        color: '#666',
+        color: '#505050',
     },
     emptyContainer: {
         alignItems: 'center',
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     },
     emptySubtext: {
         fontSize: 14,
-        color: '#999',
+        color: '#303234',
         textAlign: 'center',
     },
 });

@@ -92,7 +92,7 @@ const LotteryGuideScreen = ({ navigation, route }) => {
                 {/* Info Link */}
                 <TouchableOpacity style={styles.infoLink}>
                     <Text style={styles.infoLinkText}>{t('For more information, click here.')}</Text>
-                    <Ionicons name="information-circle-outline" size={20} color="#666" />
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" />
                 </TouchableOpacity>
 
                 {/* Start Button */}
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     },
     description: {
         fontSize: 14,
-        color: '#666',
+        color: '#505050',
         lineHeight: 20,
         marginBottom: 32,
     },
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     },
     stepText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         textAlign: 'center',
         lineHeight: 18,
         paddingHorizontal: 10,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     },
     infoLinkText: {
         fontSize: 13,
-        color: '#666',
+        color: '#505050',
         textDecorationLine: 'underline',
         marginRight: 6,
     },
