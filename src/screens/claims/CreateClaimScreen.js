@@ -9,9 +9,11 @@ import {
     TextInput,
     Alert,
     ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import claimService from '../../services/claimService';
 
@@ -19,8 +21,6 @@ const CreateClaimScreen = ({ route, navigation }) => {
     const { t } = useTranslation();
     const { dispute } = route.params;
     const [claimReason, setClaimReason] = useState('');
-    const [additionalEvidence, setAdditionalEvidence] = useState('');
-    const [priority, setPriority] = useState('medium');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async () => {
@@ -33,8 +33,7 @@ const CreateClaimScreen = ({ route, navigation }) => {
             setLoading(true);
             const response = await claimService.createClaim(dispute.id, {
                 claim_reason: claimReason,
-                additional_evidence: additionalEvidence,
-                priority
+                priority: 'medium' // Defaulting for streamlined experience
             });
 
             if (response.success) {
@@ -61,162 +60,96 @@ const CreateClaimScreen = ({ route, navigation }) => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('Escalate to Claim')}</Text>
-                <View style={styles.headerRight} />
-            </View>
-
-            <ScrollView style={styles.content}>
-                {/* Info Banner */}
-                <View style={styles.infoBanner}>
-                    <Ionicons name="information-circle" size={24} color={COLORS.primary} />
-                    <Text style={styles.infoBannerText}>{t('Escalating to a claim will involve admin review. Please provide detailed information.')}</Text>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                        <Ionicons name="arrow-back" size={24} color="#000" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>{t('Escalate to Claim')}</Text>
+                    <View style={styles.headerRight} />
                 </View>
 
-                {/* Dispute Summary */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Dispute Summary')}</Text>
-                    <View style={styles.disputeSummary}>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>{t('Dispute Number:')}</Text>
-                            <Text style={styles.summaryValue}>{dispute.dispute_number}</Text>
-                        </View>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>{t('Product:')}</Text>
-                            <Text style={styles.summaryValue}>{dispute.ad_title}</Text>
-                        </View>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>{t('Seller:')}</Text>
-                            <Text style={styles.summaryValue}>{dispute.seller_name}</Text>
-                        </View>
-                        <View style={styles.summaryRow}>
-                            <Text style={styles.summaryLabel}>{t('Seller Decision:')}</Text>
-                            <Text style={[styles.summaryValue, styles.declinedText]}>{t('Declined')}</Text>
+                <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+                    {/* Claim Icon */}
+                    <View style={styles.iconContainer}>
+                        <View style={styles.folderIconContainer}>
+                            <FontAwesome5 name="file-contract" size={50} color="#505050" />
+                            <View style={styles.claimBadge}>
+                                <Text style={styles.claimBadgeText}>CLAIM</Text>
+                            </View>
                         </View>
                     </View>
-                </View>
 
-                {/* Claim Reason */}
-                <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>{t('Claim Reason *')}</Text>
-                    <Text style={styles.fieldHint}>{t('Explain why you are escalating this dispute to a claim')}</Text>
-                    <TextInput
-                        style={styles.textArea}
-                        multiline
-                        numberOfLines={6}
-                        placeholder={t('Enter detailed reason for claim...')}
-                        value={claimReason}
-                        onChangeText={setClaimReason}
-                        textAlignVertical="top"
-                    />
-                </View>
-
-                {/* Additional Evidence */}
-                <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>{t('Additional Evidence (Optional)')}</Text>
-                    <Text style={styles.fieldHint}>{t('Provide any additional information or evidence')}</Text>
-                    <TextInput
-                        style={styles.textArea}
-                        multiline
-                        numberOfLines={4}
-                        placeholder={t('Enter additional evidence...')}
-                        value={additionalEvidence}
-                        onChangeText={setAdditionalEvidence}
-                        textAlignVertical="top"
-                    />
-                </View>
-
-                {/* Priority */}
-                <View style={styles.section}>
-                    <Text style={styles.fieldLabel}>{t('Priority')}</Text>
-                    <View style={styles.priorityContainer}>
-                        <TouchableOpacity
-                            style={[
-                                styles.priorityOption,
-                                priority === 'low' && styles.priorityOptionActive,
-                                { borderColor: '#4CAF50' }
-                            ]}
-                            onPress={() => setPriority('low')}
-                        >
-                            <View style={[styles.priorityDot, { backgroundColor: '#4CAF50' }]} />
-                            <Text style={[
-                                styles.priorityText,
-                                priority === 'low' && styles.priorityTextActive
-                            ]}>{t('Low')}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.priorityOption,
-                                priority === 'medium' && styles.priorityOptionActive,
-                                { borderColor: '#FFC107' }
-                            ]}
-                            onPress={() => setPriority('medium')}
-                        >
-                            <View style={[styles.priorityDot, { backgroundColor: '#FFC107' }]} />
-                            <Text style={[
-                                styles.priorityText,
-                                priority === 'medium' && styles.priorityTextActive
-                            ]}>{t('Medium')}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.priorityOption,
-                                priority === 'high' && styles.priorityOptionActive,
-                                { borderColor: '#FF9800' }
-                            ]}
-                            onPress={() => setPriority('high')}
-                        >
-                            <View style={[styles.priorityDot, { backgroundColor: '#FF9800' }]} />
-                            <Text style={[
-                                styles.priorityText,
-                                priority === 'high' && styles.priorityTextActive
-                            ]}>{t('High')}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.priorityOption,
-                                priority === 'urgent' && styles.priorityOptionActive,
-                                { borderColor: '#F44336' }
-                            ]}
-                            onPress={() => setPriority('urgent')}
-                        >
-                            <View style={[styles.priorityDot, { backgroundColor: '#F44336' }]} />
-                            <Text style={[
-                                styles.priorityText,
-                                priority === 'urgent' && styles.priorityTextActive
-                            ]}>{t('Urgent')}</Text>
-                        </TouchableOpacity>
+                    {/* Summary Info */}
+                    <View style={styles.infoTable}>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>{t('Item:')}</Text>
+                            <Text style={styles.infoValue}>{dispute.ad_title}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>{t('Claimant:')}</Text>
+                            <Text style={styles.infoValue}>{dispute.buyer_name || t('You')}</Text>
+                        </View>
+                        <View style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>{t('Defendant:')}</Text>
+                            <Text style={styles.infoValue}>{dispute.seller_name}</Text>
+                        </View>
                     </View>
-                </View>
 
-                {/* Warning */}
-                <View style={styles.warningBox}>
-                    <Ionicons name="warning" size={20} color="#FF9800" />
-                    <Text style={styles.warningText}>{t('Once submitted, this claim will be reviewed by an admin. The decision will be final.')}</Text>
-                </View>
-            </ScrollView>
+                    {/* Main Input Area */}
+                    <View style={styles.inputSection}>
+                        <Text style={styles.sectionTitle}>{t("BUYER'S CLAIM")}</Text>
+                        <View style={styles.bubbleInputContainer}>
+                            <TextInput
+                                style={styles.bubbleInput}
+                                multiline
+                                placeholder={t('Explain why you are escalating this dispute to a claim...')}
+                                placeholderTextColor="#999"
+                                value={claimReason}
+                                onChangeText={setClaimReason}
+                                textAlignVertical="top"
+                            />
+                        </View>
+                        
+                        {/* Evidence Upload Links */}
+                        <View style={styles.evidenceLinks}>
+                            <TouchableOpacity style={styles.evidenceLinkItem}>
+                                <Text style={styles.evidenceLinkText}>{t('Upload evidence')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.evidenceLinkItem}>
+                                <Text style={styles.evidenceLinkText}>{t('Upload evidence')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
-            {/* Submit Button */}
-            <View style={styles.footer}>
-                <TouchableOpacity
-                    style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-                    onPress={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#FFF" />
-                    ) : (
-                        <Text style={styles.submitButtonText}>{t('Submit Claim')}</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
+                    {/* Disclaimer */}
+                    <View style={styles.disclaimerBox}>
+                        <Ionicons name="information-circle-outline" size={20} color="#505050" />
+                        <Text style={styles.disclaimerText}>
+                            {t('Once submitted, Roundbuy support will review all evidence and their decision will be final.')}
+                        </Text>
+                    </View>
+                </ScrollView>
+
+                {/* Submit Button */}
+                <View style={styles.footer}>
+                    <TouchableOpacity
+                        style={[styles.submitButton, (!claimReason.trim() || loading) && styles.submitButtonDisabled]}
+                        onPress={handleSubmit}
+                        disabled={!claimReason.trim() || loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#FFF" />
+                        ) : (
+                            <Text style={styles.submitButtonText}>{t('Submit Claim')}</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -229,165 +162,138 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: '#F0F0F0',
     },
     backButton: {
-        padding: 8,
+        padding: 4,
     },
     headerTitle: {
+        flex: 1,
         fontSize: 18,
         fontWeight: '600',
         color: '#000',
+        textAlign: 'center',
     },
     headerRight: {
-        width: 40,
+        width: 32,
     },
     content: {
         flex: 1,
     },
-    infoBanner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#E3F2FD',
-        padding: 16,
-        margin: 16,
-        borderRadius: 8,
+    scrollContent: {
+        paddingBottom: 40,
     },
-    infoBannerText: {
+    iconContainer: {
+        alignItems: 'center',
+        paddingVertical: 30,
+    },
+    folderIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    claimBadge: {
+        position: 'absolute',
+        bottom: 20,
+        backgroundColor: '#FFF',
+        paddingHorizontal: 3,
+        paddingVertical: 1,
+        borderRadius: 2,
+        borderWidth: 1.5,
+        borderColor: '#505050',
+    },
+    claimBadgeText: {
+        fontSize: 7,
+        fontWeight: '900',
+        color: '#505050',
+    },
+    infoTable: {
+        paddingHorizontal: 24,
+        marginBottom: 30,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        marginBottom: 8,
+    },
+    infoLabel: {
+        width: 100,
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#000',
+    },
+    infoValue: {
         flex: 1,
         fontSize: 14,
         color: '#505050',
-        marginLeft: 12,
-        lineHeight: 20,
     },
-    section: {
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+    inputSection: {
+        paddingHorizontal: 24,
     },
     sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: '800',
         color: '#000',
         marginBottom: 12,
+        letterSpacing: 0.5,
     },
-    disputeSummary: {
-        backgroundColor: '#F8F9FA',
-        padding: 12,
-        borderRadius: 8,
+    bubbleInputContainer: {
+        backgroundColor: '#F8F8F8',
+        borderRadius: 16,
+        padding: 16,
+        minHeight: 180,
+        borderWidth: 0,
     },
-    summaryRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
-    },
-    summaryLabel: {
-        fontSize: 14,
-        color: '#505050',
-    },
-    summaryValue: {
-        fontSize: 14,
-        fontWeight: '600',
+    bubbleInput: {
+        flex: 1,
+        fontSize: 15,
         color: '#000',
+        lineHeight: 22,
     },
-    declinedText: {
-        color: '#F44336',
+    evidenceLinks: {
+        marginTop: 16,
+        gap: 8,
     },
-    fieldLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#000',
-        marginBottom: 4,
+    evidenceLinkItem: {
+        alignSelf: 'flex-start',
     },
-    fieldHint: {
-        fontSize: 12,
-        color: '#303234',
-        marginBottom: 12,
-    },
-    textArea: {
-        backgroundColor: '#F8F9FA',
-        borderRadius: 8,
-        padding: 12,
-        fontSize: 14,
-        color: '#000',
-        minHeight: 120,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    priorityContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-        marginTop: 8,
-    },
-    priorityOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 8,
-        borderWidth: 2,
-        backgroundColor: '#FFF',
-    },
-    priorityOptionActive: {
-        backgroundColor: '#F8F9FA',
-    },
-    priorityDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        marginRight: 8,
-    },
-    priorityText: {
-        fontSize: 14,
-        color: '#505050',
+    evidenceLinkText: {
+        fontSize: 13,
+        color: '#003366',
+        textDecorationLine: 'underline',
         fontWeight: '500',
     },
-    priorityTextActive: {
-        color: '#000',
-        fontWeight: '600',
-    },
-    warningBox: {
+    disclaimerBox: {
         flexDirection: 'row',
+        paddingHorizontal: 24,
+        marginTop: 30,
         alignItems: 'center',
-        backgroundColor: '#FFF3E0',
-        padding: 16,
-        margin: 16,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#FFE0B2',
     },
-    warningText: {
+    disclaimerText: {
         flex: 1,
-        fontSize: 13,
-        color: '#505050',
-        marginLeft: 12,
+        fontSize: 12,
+        color: '#303234',
+        marginLeft: 10,
         lineHeight: 18,
     },
     footer: {
-        padding: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#E0E0E0',
+        padding: 24,
+        paddingTop: 16,
         backgroundColor: '#FFF',
     },
     submitButton: {
-        backgroundColor: COLORS.primary,
-        paddingVertical: 16,
-        borderRadius: 8,
+        backgroundColor: '#000',
+        paddingVertical: 18,
+        borderRadius: 30,
         alignItems: 'center',
     },
     submitButtonDisabled: {
-        opacity: 0.6,
+        backgroundColor: '#CCC',
     },
     submitButtonText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#FFF',
     },
 });

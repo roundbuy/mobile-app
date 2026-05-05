@@ -5,10 +5,13 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
+import trackingService from '../../services/TrackingService';
+
 const CookiesConsentScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const handleAcceptAll = () => {
+  const handleAcceptAll = async () => {
     // Save cookie preferences and proceed to registration
+    await trackingService.setTrackingPreference(true);
     console.log('Cookies accepted');
     navigation.replace('LaunchOnboarding');
   };

@@ -11,6 +11,9 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Modal,
+  Share,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -23,6 +26,7 @@ import { getFullImageUrl, getAllImageUrls } from '../../utils/imageUtils';
 import GlobalHeader from '../../components/GlobalHeader';
 import ProductInfoModal from '../../components/ProductInfoModal';
 import ResponseMetrics from '../../components/ResponseMetrics';
+import Hyperlink from '../../components/common/Hyperlink';
 
 const { width } = Dimensions.get('window');
 
@@ -106,6 +110,60 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [offerAmount, setOfferAmount] = useState('');
   const [infoModal, setInfoModal] = useState({ visible: false, title: '', content: '' });
   const [sellerMetrics, setSellerMetrics] = useState(null);
+
+  // Layout states
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isUserStatsExpanded, setIsUserStatsExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState('HomeMarket');
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+
+  const handleShare = async () => {
+    setIsMenuVisible(false);
+    try {
+      await Share.share({
+        message: `Check out ${productData?.title || 'this item'} on Roundbuy!`,
+      });
+    } catch (error) {
+      console.error('Share error:', error);
+    }
+  };
+
+  const handleReport = () => {
+    setIsMenuVisible(false);
+    navigation.navigate('ContactSupport', {
+      initialTopic: 'Report content',
+      advertisementId: productData?.id,
+      advertisementTitle: productData?.title,
+    });
+  };
+
+  const handleRaiseIssue = () => {
+    if (!user) {
+      Alert.alert(
+        t('Login Required'),
+        t('Please login to raise an issue.'),
+        [
+          { text: t('Cancel'), style: 'cancel' },
+          { text: t('Login'), onPress: () => navigation.navigate('SocialLogin') }
+        ]
+      );
+      return;
+    }
+
+    navigation.navigate('CreateIssue', {
+      advertisementId: productData?.id,
+      otherPartyId: productData?.seller?.id || productData?.seller_id,
+      adTitle: productData?.title,
+      sellerName: productData?.seller?.username || productData?.seller_name
+    });
+  };
+
+  const calculateBuyerFee = (priceStr) => {
+    if (!priceStr) return '';
+    const match = priceStr.match(/([^\d.,\s]+)?[\s]*([\d.,]+)/);
+    const symbol = match ? (match[1] || '£') : '£';
+    return `${symbol}1.00`;
+  };
 
   // Showcase navigation state
   const [showcaseProducts, setShowcaseProducts] = useState([]);
@@ -345,94 +403,33 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     setIsFavorite(prev => !prev);
   };
 
-  const handleBuy = async () => {
+  const handleBuy = () => {
     if (!user) {
       Alert.alert(t('Login Required'), t('Please login to buy items.'));
       return;
     }
 
     try {
-      setLoading(true);
-
-      // 1. Get Wallet Balance and Fees
-      const [walletRes, feesRes] = await Promise.all([
-        api.get('/wallet'),
-        api.get('/pickups/fees')
-      ]);
-
-      const wallet = walletRes.data.data.wallet;
-      const fees = feesRes.data.fees;
-
-      const balance = parseFloat(wallet.balance);
-      const buyerFee = parseFloat(fees.pickup_fee) + parseFloat(fees.safe_service_fee); // Assuming automatic deduction covers these
-
-      if (balance < buyerFee) {
-        Alert.alert(
-          t('Insufficient Balance'),
-          t(`You need £${buyerFee.toFixed(2)} in your wallet to cover the Buyer's Fee. Your current balance is £${balance.toFixed(2)}.`),
-          [
-            { text: t('Cancel'), style: 'cancel' },
-            {
-              text: t('Top Up'),
-              onPress: () => navigation.navigate('WalletTopup', {
-                amount: (buyerFee - balance).toFixed(2), // Suggest needed amount
-                minAmount: 5 // Or generic min
-              })
-            }
-          ]
-        );
-        setLoading(false);
-        return;
+      // Extract numeric base price from formatted price string
+      let basePrice = 0;
+      if (typeof productData.price === 'string') {
+        const match = productData.price.match(/[\d.,]+/);
+        if (match) {
+          basePrice = parseFloat(match[0].replace(/,/g, ''));
+        }
+      } else if (typeof productData.price === 'number') {
+        basePrice = productData.price;
       }
 
-      // 2. Confirm Purchase
-      Alert.alert(
-        t('Confirm Purchase'),
-        t(`Are you sure you want to buy this item? A fee of £${buyerFee.toFixed(2)} will be deducted from your wallet.`),
-        [
-          { text: t('Cancel'), style: 'cancel', onPress: () => setLoading(false) },
-          {
-            text: t('Buy Now'),
-            onPress: async () => {
-              try {
-                // 3. Call Buy API
-                const buyRes = await api.post('/offers/buy', { advertisementId: productData.id });
-
-                if (buyRes.data.success) {
-                  Alert.alert(
-                    t('Success'),
-                    t('Item purchased successfully! Please schedule your pickup.'),
-                    [
-                      {
-                        text: t('Schedule Pickup'),
-                        onPress: () => {
-                          // Navigate with minimal data, let screen fetch details
-                          navigation.navigate('SchedulePickUp', {
-                            offerId: buyRes.data.offer_id, // Use new offer ID
-                            advertisementId: productData.id,
-                            advertisementTitle: productData.title
-                          });
-                        }
-                      }
-                    ]
-                  );
-                }
-              } catch (buyError) {
-                console.error('Buy error:', buyError);
-                const msg = buyError.response?.data?.message || t('Failed to complete purchase');
-                Alert.alert(t('Error'), msg);
-              } finally {
-                setLoading(false);
-              }
-            }
-          }
-        ]
-      );
-
+      navigation.navigate('Step3DeliverySelectionScreen', {
+        advertisementId: productData.id,
+        title: productData.title,
+        offerAmount: basePrice,
+        itemImage: productData.images && productData.images.length > 0 ? productData.images[0] : null
+      });
     } catch (error) {
-      console.error('Pre-buy check error:', error);
-      Alert.alert(t('Error'), t('Failed to initiate purchase. Please check your connection.'));
-      setLoading(false);
+      console.error('Pre-buy navigation error:', error);
+      Alert.alert(t('Error'), t('Failed to initiate purchase.'));
     }
   };
 
@@ -448,9 +445,9 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   // Info content for different fields
   const infoContent = {
     Distance: "The distance shown is calculated from your current location or saved address to the seller's location. The walking time is an estimate based on average walking speed.",
-    Condition: "The condition describes the current state of the item:\n\n• New: Brand new, unused item\n• Like New: Barely used, excellent condition\n• Very Good: Gently used, minor wear\n• Good: Used with visible signs of wear\n• Fair: Well-used, functional but worn\n• Poor: Heavy wear, may need repairs",
+    Condition: "The condition provided for an item helps users to filter the desired items more easily. These guidelines help buyers set expectations regarding cosmetic blemishes, packaging, and item functionality. All items need to have truthful condition!\n**Item conditions (note! You need something else for services):**\n**New:** Unused, unopened, and in original condition or packaging, with all original accessories, materials and warranties.\n**As new:** Unused, in original condition with or without it's packaging, with no signs of wear, and with all original accessories.\n**Very Good:** An item used only a little, with minor cosmetic wear, functioning perfectly and looking still very good.\n**Good:** Shows consistent use, such as minor scratches, stains, or wear marks, but is fully functional and intact.\n**Satisfactory:** Heavily used with noticeable sings of wear, such as dents, scratches, but still functional.\n**Poor:** Severe damage or heavy wear, such as damaged bindings on books or broken parts, often just barely functional.\n**Additional guidelines:**\nAll conditions stated by sellers in listings need to be accurate, with up-to-date images and descriptions, so buyers get a realistic idea of the condition. It is advisable to choose the poorer condition if uncertain.\nDefects, imperfections should be fully informed to the Buyer. Buyers should check in person the item, by inspection for accuracy & for any defects. need to inspect the item to ascertain this.\nIf Seller misleads, lies or otherwise distorts the condition to Buyer, the Buyer has right to return the item to the Seller. Always provide images and descriptions to prevent misunderstandings.\nIf user violates the community rules by choosing a wrong condition, we might block temporarily or do other more drastic measures to end it!\nFor more information, please contact us (circle with \"i\" here)",
     Colour: "The color of the item as described by the seller. Actual color may vary slightly due to lighting and screen settings.",
-    Responsiveness: "Metrics indicating the seller's reliability:\n\n• Response Rate: Average time to reply to messages.\n• Pick Up Rate: Percentage of successful meetings for pickup/exchange.",
+    Responsiveness: "Metrics indicating the seller's reliability:\n\n• **Response Rate:** Average time to reply to messages.\n• **Pick Up Rate:** Percentage of successful meetings for pickup/exchange.",
   };
 
   const handleInfoPress = (label) => {
@@ -634,10 +631,15 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Global Header */}
       <GlobalHeader
-        title={t('Product')}
+        title={t('Listing')}
         navigation={navigation}
         showBackButton={true}
-        showIcons={true}
+        showIcons={false}
+        rightContent={
+          <TouchableOpacity onPress={() => setIsMenuVisible(true)} style={{ padding: 4, paddingHorizontal: 8 }}>
+            <Ionicons name="ellipsis-vertical" size={24} color="#000" />
+          </TouchableOpacity>
+        }
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -648,7 +650,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={(e) => {
-              const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+              const newIndex = Math.round(e.nativeEvent.contentOffset.x / (width - 32));
               setCurrentImageIndex(newIndex);
             }}
             scrollEventThrottle={16}
@@ -658,7 +660,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
                 <Image
                   key={index}
                   source={{ uri: getFullImageUrl(img) }}
-                  style={[styles.productImage, { width: width }]}
+                  style={[styles.productImage, { width: width - 32 }]}
                   resizeMode="cover"
                   defaultSource={IMAGES.placeholder}
                 />
@@ -666,7 +668,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             ) : (
               <Image
                 source={IMAGES.placeholder}
-                style={[styles.productImage, { width: width }]}
+                style={[styles.productImage, { width: width - 32 }]}
                 resizeMode="cover"
               />
             )}
@@ -677,9 +679,9 @@ const ProductDetailsScreen = ({ route, navigation }) => {
             onPress={handleFavorite}
           >
             <FontAwesome
-              name={isFavorite ? 'heart' : 'heart-o'}
-              size={24}
-              color="#333"
+              name={'heart'}
+              size={32}
+              color={isFavorite ? '#DC143C' : '#505050'}
             />
           </TouchableOpacity>
           {productData.badges && productData.badges.length > 0 && (
@@ -726,7 +728,13 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               </View>
             </>
           )}
-          {renderImageDots()}
+
+          <View style={styles.imageFooterContainer}>
+            {renderImageDots()}
+            <TouchableOpacity style={styles.reportBadge}>
+              <Text style={styles.reportBadgeText}>{t('Report')}</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* HomeMarket Navigation Arrows */}
           {homeMarketProducts.length > 0 && (
@@ -762,35 +770,61 @@ const ProductDetailsScreen = ({ route, navigation }) => {
 
         {/* Product Info */}
         <View style={styles.productInfo}>
-          <Text style={styles.productTitle}>{productData.title}</Text>
-          <Text style={styles.distanceText}>
-            Distance: {productData.distance} / {productData.maxDistance}
+          <View style={styles.titleRowContainer}>
+            <Text style={styles.productTitle} numberOfLines={2}>{productData.title}</Text>
+            <Text style={styles.titleSubText} numberOfLines={1}>size {productData.size || '42'}</Text>
+            <Text style={styles.titleSubTextBold} numberOfLines={1}>{productData.condition}</Text>
+          </View>
+          <View style={styles.priceContainer}>
+            <Text style={styles.productPriceText}>£{productData.price}</Text>
+            <View style={styles.buyerFeeRow}>
+              <Text style={styles.buyerFeeText}>Buyer's Fee {calculateBuyerFee(productData.price)}</Text>
+              <Ionicons name="shield-checkmark-outline" size={12} color="#505050" style={{ marginLeft: 4 }} />
+            </View>
+          </View>
+        </View>
+
+        {/* Description & Product Details */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitleSmall}>{t('Description')}</Text>
+          <Text style={styles.descriptionText} numberOfLines={2}>
+            {productData.description || 'A wonderful armchair with brown covering and black legs. Hardly used. Massive wood...'}
           </Text>
-          <Text style={styles.productPrice}>{productData.price}</Text>
+
+          {isDescriptionExpanded && (
+            <View style={styles.detailsList}>
+              <DetailRow label={t('Category')} value={productData.category} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Distance')} value={productData.distanceMeters} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Price')} value={productData.price} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Condition')} value={productData.condition} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Gender')} value={productData.gender} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Age')} value={productData.age} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Size')} value={productData.size} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Colour')} value={productData.colour} onInfoPress={handleInfoPress} />
+            </View>
+          )}
+          <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={styles.moreInfoButton}>
+            <Text style={styles.linkTextBlue}>{isDescriptionExpanded ? t('hide info') : t('more info')}</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Description */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('Description')}</Text>
-          <Text style={styles.descriptionText}>{productData.description}</Text>
-        </View>
+        {/* User Statistics */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitleSmall}>{t('User statistics')}</Text>
+          <Text style={styles.descriptionText} numberOfLines={2}>
+            Lorem: Lorem ipsum dolores est, lorem ipsum.
+            Lorem: Lorem ipsum dolores est, lorem ipsum.
+            Lorem: Lorem ipsum dolores est, lorem ipsum.
+            Lorem: Lorem ipsum dolores est, lorem ipsum.
+            Lorem: Lorem ipsum dolores est, lorem ipsum.
+          </Text>
+          <TouchableOpacity onPress={() => setIsUserStatsExpanded(!isUserStatsExpanded)} style={styles.moreInfoButton}>
+            <Text style={[styles.linkTextBlue, { marginBottom: 10 }]}>{isUserStatsExpanded ? t('hide info') : t('more info')}</Text>
+          </TouchableOpacity>
 
-        {/* Product Details */}
-        <View style={styles.section}>
-          <DetailRow label={t('Category')} value={productData.category} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Distance')} value={productData.distanceMeters} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Condition')} value={productData.condition} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Gender')} value={productData.gender} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Age')} value={productData.age} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Size')} value={productData.size} onInfoPress={handleInfoPress} />
-          <DetailRow label={t('Colour')} value={productData.colour} onInfoPress={handleInfoPress} />
-        </View>
-
-        {/* Seller Info */}
-        <View style={styles.sellerSection}>
           <View style={styles.sellerRow}>
             <View style={styles.sellerAvatar}>
-              {productData.seller.avatar ? (
+              {productData.seller?.avatar ? (
                 <Image
                   source={{ uri: getFullImageUrl(productData.seller.avatar) }}
                   style={styles.sellerAvatarImage}
@@ -800,27 +834,11 @@ const ProductDetailsScreen = ({ route, navigation }) => {
                 <FontAwesome name="user" size={24} color="#505050" />
               )}
             </View>
-            <View style={styles.sellerInfo}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.sellerName}>{productData.seller.username}</Text>
-                {/* 2. Add Membership Badge based on seller subscription */}
-                {(() => {
-                  const membership = productData.seller.membership;
-                  if (membership) {
-                    const config = getMembershipConfig(membership);
-                    if (config) {
-                      return (
-                        <View style={[styles.badgeContainer, { backgroundColor: config.color, marginLeft: 8, paddingVertical: 2, borderRadius: 8 }]}>
-                          <Ionicons name={config.icon} size={10} color="#fff" style={{ marginRight: 4 }} />
-                          <Text style={[styles.badgeText, { fontSize: 10 }]}>{config.label}</Text>
-                        </View>
-                      );
-                    }
-                  }
-                  return null;
-                })()}
+            <View style={styles.sellerInfoOuter}>
+              <View style={styles.sellerInfoRow}>
+                <Text style={styles.sellerName}>{productData.seller?.username}</Text>
               </View>
-              {productData.seller.rating >= 0 && (
+              {productData.seller?.rating >= 0 && (
                 <View style={styles.ratingStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <FontAwesome
@@ -835,173 +853,142 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               )}
             </View>
             <View style={styles.sellerLinksRight}>
-              {/* Read Users Feedbacks - Button at the top */}
-              <TouchableOpacity
-                style={styles.sellerLinkButton}
-                onPress={handleReadFeedbacks}
-              >
-                <Text style={styles.sellerLinkButtonText}>{t('User Feedbacks')}</Text>
+              <TouchableOpacity onPress={handleReadFeedbacks}>
+                <Text style={styles.sellerLinkTextSmall}>{t('Read')} <Hyperlink text={t('Feedbacks')} onPress={handleReadFeedbacks} >Feedbacks </Hyperlink></Text>
               </TouchableOpacity>
-
-              {/* User's Listings Button - Below metrics */}
-              <TouchableOpacity
-                style={[styles.sellerLinkButton, { marginTop: 8 }]}
-                onPress={handleUserListings}
-              >
-                <Ionicons name="list-outline" size={16} color="#000" style={{ marginRight: 6 }} />
-                <Text style={styles.sellerLinkButtonText}>{t("User's Listings")}</Text>
+              <TouchableOpacity onPress={handleUserListings} style={{ marginTop: 4 }}>
+                <Text style={styles.sellerLinkTextSmall}>{t('View')} <Hyperlink text={t('Listings')} onPress={handleUserListings} >Listings </Hyperlink></Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Response Metrics Component */}
-          {/* <ResponseMetrics
-            metrics={sellerMetrics}
-            onPressInfo={() => handleInfoPress('Responsiveness')}
-          /> */}
+          <TouchableOpacity style={styles.chatWithSellerButtonGray} onPress={handleChatWithSeller}>
+            <Text style={styles.chatWithSellerButtonText}>{t('Chat now')}</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Chat with seller button */}
+        {/* Resale Disclaimer */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitleSmall}>{t('Resale Disclaimer')}</Text>
+          <Text style={styles.descriptionText} numberOfLines={2}>
+            Lorem ipsum dolores est, lorem ipsum dolores es, lorem ipsum dolores est, lorem ipsum...
+            + Refund Policy + Consumer Act for secondd hand C2C and B2C.
+          </Text>
+          <TouchableOpacity style={styles.moreInfoButton}>
+            <Text style={styles.linkTextBlue}>{t('more info')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Buyer's Fee Disclaimer */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionTitleSmall}>{t("Buyer's Fee")}</Text>
+          <Text style={styles.descriptionText} numberOfLines={2}>
+            Lorem ipsum dolores est, lorem ipsum dolores es, lorem ipsum dolores est, lorem ipsum...
+          </Text>
+          <TouchableOpacity style={styles.moreInfoButton}>
+            <Text style={styles.linkTextBlue}>{t('more info')}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.footerDisclaimerTextBottom}>
+          Our <Text style={styles.linkTextBlue}>Buyer's Fee & Disclaimers</Text>
+        </Text>
+        {/* HomeMarket & ShowCasing Tabs */}
+        <View style={styles.tabsSection}>
+          <View style={styles.tabsHeader}>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'HomeMarket' && styles.activeTabButton]}
+              onPress={() => setActiveTab('HomeMarket')}
+            >
+              <Text style={[styles.tabButtonText, activeTab === 'HomeMarket' && styles.activeTabButtonText]}>HomeMarket</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'ShowCasing' && styles.activeTabButton]}
+              onPress={() => setActiveTab('ShowCasing')}
+            >
+              <Text style={[styles.tabButtonText, activeTab === 'ShowCasing' && styles.activeTabButtonText]}>ShowCasing</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.garageText}>Garage by {productData.seller?.username || 'User'}</Text>
+          <View style={styles.gridContainer}>
+            {(activeTab === 'HomeMarket' ? homeMarketProducts : showcaseProducts).map((item, index) => (
+              <View key={index} style={styles.gridItem}>
+                <TouchableOpacity
+                  onPress={() => navigation.push('ProductDetails', { advertisementId: item.id })}
+                >
+                  <Image source={{ uri: getFullImageUrl(item.images?.[0]) }} style={styles.gridItemImage} defaultSource={IMAGES.placeholder} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.gridItemHeart}>
+                  <FontAwesome name="heart" size={16} color="#505050" />
+                </TouchableOpacity>
+                <Text style={styles.gridItemTitle} numberOfLines={1}>{item.title}</Text>
+                <Text style={styles.gridItemPrice}>£{item.price}</Text>
+                <Text style={styles.gridItemDistance}>Distance: {item.distance ? parseFloat(item.distance).toFixed(0) : 600} m / 7 min walk</Text>
+              </View>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.locationDisclaimerLink}>
+            <Text style={styles.footerDisclaimerText}>
+              Our <Text style={styles.linkTextBlue}>Location & Safety Disclaimers</Text>
+            </Text>
+
+          </TouchableOpacity>
+        </View>
+
+        {user?.id !== productData?.seller?.id && (
           <TouchableOpacity
-            style={styles.chatWithSellerButton}
-            onPress={handleChatWithSeller}
+            style={styles.issueDisputeLink}
+            onPress={handleRaiseIssue}
           >
-
-            <Text style={styles.chatWithSellerButtonText}>{t('Chat with seller')}</Text>
+            <Ionicons name="alert-circle-outline" size={24} color="#DC143C" />
+            <Text style={styles.issueDisputeLinkText}>{t('Raise an issue')}</Text>
+            <Ionicons name="chevron-forward" size={20} color="#DC143C" />
           </TouchableOpacity>
-        </View>
-
-        {/* Legal Notice */}
-        <View style={styles.legalSection}>
-          <Text style={styles.legalTitle}>
-            Legal notice{' '}
-            <Text style={styles.linkText}>{t('click here')}</Text>
-          </Text>
-          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
-          </Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, which means items are sold "as described," and buyers have ten days to report an issue through RoundBuy's system.
-          </Text>
-        </View>
-
-        {/* Report Content */}
-        <View style={styles.reportSection}>
-          <Text style={styles.reportText}>
-            Report content{' '}
-            <Text style={styles.linkText}>{t('click here')}</Text>
-          </Text>
-          <View style={styles.moderateTag}>
-            <Text style={styles.moderateText}>{t('Moderate')}</Text>
-          </View>
-        </View>
-
-        {/* Additional Legal Info */}
-        <View style={styles.legalSection}>
-          <Text style={styles.legalText}>{t('This legal notice provides the basics rules of the platform for using RoundBuy as a consumer to-consumer marketplace.')}</Text>
-          <Text style={styles.legalText}>
-            <Text style={styles.boldText}>{t('Example text:')}</Text> Private sellers are not subject to the Consumer Rights Act 2015, but items must still be "as described," and buyers have ten days to report an issue through RoundBuy's system.
-          </Text>
-        </View>
-
-        {/* Make Offer Section */}
-        <View style={styles.offerSection}>
-          <View style={styles.offerInputContainer}>
-            <TextInput
-              style={styles.offerInput}
-              placeholder={t('Enter offer amount')}
-              placeholderTextColor="#303234"
-              value={offerAmount}
-              onChangeText={setOfferAmount}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        {/* Bottom Buttons */}
-        <View style={styles.bottomButtons}>
-          <TouchableOpacity
-            style={styles.makeOfferButton}
-            onPress={handleMakeOffer}
-          >
-            <Text style={styles.makeOfferButtonText}>{t('Make offer')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.buyNowButton} onPress={handleManageOffers}>
-            <Text style={styles.buyNowButtonText}>{t('Manage Offers')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Offer History */}
-        <View style={styles.offerHistorySection}>
-          <Text style={styles.offerHistoryTitle}>
-            Offer History{' '}
-            <Text style={styles.linkText}>{t('click here')}</Text>
-          </Text>
-          <Text style={styles.offerReceivedText}>{t('You received an Offer for £100')}</Text>
-          <Text style={styles.offerDeclinedText}>{t('You Declined the offer £100')}</Text>
-          <Text style={styles.offerReceivedText}>{t('You received an offer for £220')}</Text>
-          <Text style={styles.offerAcceptedText}>{t('You Accepted the offer for £200')}</Text>
-        </View>
-
-        {/* Pick Up & Exchange Section */}
-        <View style={styles.pickupSection}>
-          {/* Buyer's Fee */}
-          <View style={styles.buyerFeeSection}>
-            <Text style={styles.buyerFeeTitle}>{t("Buyer's Fee £1.00")}</Text>
-            <Text style={styles.buyerFeeDescription}>
-              Buyer's Fee consists of Pick Up & Exchange Fee £0.70 and Service Fee £0.30. This fee is only for Buyer's, after successfull inspection and exchange to cover the expenses of the service.{' '}
-              <Text style={styles.linkTextBlue}>{t('Refund policy')}</Text> and{' '}
-              <Text style={styles.linkTextBlue}>{t('Consumer Rights Act 2015')}</Text>.
-            </Text>
-          </View>
-
-          {/* Disclaimer */}
-          <View style={styles.disclaimerSection}>
-            <Text style={styles.disclaimerTitle}>
-              <Text style={styles.linkTextBlue}>{t('Disclaimer & Legal notice')}</Text> click here
-            </Text>
-          </View>
-
-          {/* Pick Up & Exchange Info */}
-          <View style={styles.pickupInfoSection}>
-            <Text style={styles.pickupTitle}>{t('Pick Up & Exchange')}</Text>
-            <Text style={styles.pickupOfferText}>
-              Seller has answered you your offer of £245.00:{' '}
-              <Text style={styles.offerAmount}>£250.00</Text>
-            </Text>
-            <Text style={styles.acceptedText}>{t('Accepted for £245.00')}</Text>
-            <Text style={styles.pickupInstructions}>
-              Now schedule a Pick up & Exchange!{'\n'}
-              Arrange a meet up with the other user to inspect the product, and make an exchange.
-            </Text>
-          </View>
-
-          {/* Schedule Button */}
-          <TouchableOpacity
-            style={styles.schedulePickupButton}
-            onPress={handleSchedulePickup}
-          >
-            <Text style={styles.schedulePickupButtonText}>{t('Schedule a Pick Up')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Issue a Dispute Link */}
-        <TouchableOpacity
-          style={styles.issueDisputeLink}
-          onPress={() => navigation.navigate('CreateIssue', {
-            advertisementId: productData?.id,
-            otherPartyId: productData?.seller?.id || productData?.user_id,
-            adTitle: productData?.title,
-            sellerName: productData?.seller?.username || productData?.seller?.full_name || 'Seller'
-          })}
-        >
-          <Ionicons name="alert-circle-outline" size={20} color="#DC143C" />
-          <Text style={styles.issueDisputeLinkText}>{t('Issue a Dispute')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#303234" />
-        </TouchableOpacity>
+        )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Sticky Bottom Actions */}
+      <View style={styles.stickyFooter}>
+        <View style={styles.bottomButtonsFooter}>
+          <TouchableOpacity
+            style={styles.makeOfferButtonFooter}
+            onPress={handleMakeOffer}
+          >
+            <Text style={styles.makeOfferButtonTextFooter}>{t('Make offer')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buyNowButtonFooter} onPress={handleBuy}>
+            <Text style={styles.buyNowButtonTextFooter}>{t('Buy')}</Text>
+          </TouchableOpacity>
+        </View>
+
+      </View>
+
+      {/* Share / Report Menu */}
+      <Modal
+        visible={isMenuVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsMenuVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsMenuVisible(false)}>
+          <View style={styles.menuOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.dropdownMenu}>
+                <TouchableOpacity style={styles.menuItem} onPress={handleShare}>
+                  <Ionicons name="share-social-outline" size={20} color="#000" />
+                  <Text style={styles.menuItemText}>{t('Share')}</Text>
+                </TouchableOpacity>
+                <View style={styles.menuDivider} />
+                <TouchableOpacity style={styles.menuItem} onPress={handleReport}>
+                  <Ionicons name="warning-outline" size={20} color="#DC143C" />
+                  <Text style={[styles.menuItemText, { color: '#DC143C' }]}>{t('Report')}</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Info Modal */}
       <ProductInfoModal
@@ -1037,6 +1024,234 @@ const DetailRow = ({ label, value, onInfoPress }) => {
 };
 
 const styles = StyleSheet.create({
+  titleRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 16,
+    marginBottom: 8,
+  },
+  titleSubText: {
+    fontSize: 16,
+    color: '#000080',
+    fontWeight: '800',
+  },
+  titleSubTextBold: {
+    fontSize: 16,
+    color: '#000080',
+    fontWeight: '800',
+  },
+  productTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#000080',
+  },
+  productPriceText: {
+    fontSize: 14,
+    color: '#000080',
+    fontWeight: '700',
+  },
+  priceContainer: {
+    marginBottom: 8,
+  },
+  buyerFeeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  buyerFeeText: {
+    fontSize: 12,
+    color: '#000080',
+  },
+  cardSection: {
+    margin: 16,
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#fff',
+  },
+  sectionTitleSmall: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 8,
+  },
+  moreInfoButton: {
+    marginTop: 8,
+  },
+  linkTextBlue: {
+    color: '#000080',
+    textDecorationLine: 'underline',
+    fontSize: 12,
+  },
+  detailsList: {
+    marginTop: 12,
+  },
+  sellerAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+  },
+  sellerAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  sellerName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  sellerInfoOuter: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  sellerInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sellerLinkTextSmall: {
+    fontSize: 12,
+    color: '#000080',
+  },
+  chatWithSellerButtonGray: {
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  tabsSection: {
+    margin: 16,
+  },
+  tabsHeader: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    marginBottom: 16,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  activeTabButton: {
+    borderBottomWidth: 3,
+    borderBottomColor: '#000',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    color: '#505050',
+    fontWeight: '600',
+  },
+  activeTabButtonText: {
+    color: '#000',
+    fontWeight: '700',
+  },
+  garageText: {
+    fontSize: 12,
+    color: '#505050',
+    marginBottom: 16,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  gridItem: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    padding: 8,
+    marginBottom: 16,
+  },
+  gridItemImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    marginBottom: 8,
+  },
+  gridItemHeart: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 10,
+  },
+  gridItemTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#000',
+  },
+  gridItemPrice: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#000',
+    marginTop: 4,
+  },
+  gridItemDistance: {
+    fontSize: 8,
+    color: '#505050',
+    marginTop: 4,
+  },
+  locationDisclaimerLink: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  footerDisclaimerText: {
+    fontSize: 10,
+    color: '#505050',
+    textAlign: 'center',
+  },
+  stickyFooter: {
+    backgroundColor: '#fff',
+    padding: 16,
+    paddingBottom: 32,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  bottomButtonsFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  makeOfferButtonFooter: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 14,
+    borderRadius: 24,
+    alignItems: 'center',
+  },
+  makeOfferButtonTextFooter: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buyNowButtonFooter: {
+    flex: 1,
+    backgroundColor: '#000040',
+    paddingVertical: 14,
+    borderRadius: 24,
+    alignItems: 'center',
+  },
+  buyNowButtonTextFooter: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  footerDisclaimerTextBottom: {
+    fontSize: 10,
+    color: '#505050',
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1103,60 +1318,110 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    width: '100%',
-    height: 300,
-    position: 'relative',
-    backgroundColor: '#f5f5f5',
+    width: width - 32,
+    height: 550,
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    overflow: 'hidden',
   },
   productImage: {
-    width: '100%',
-    height: '100%',
+    width: width - 32,
+    height: 550,
   },
   favoriteButton: {
     position: 'absolute',
     top: 16,
     right: 16,
-    padding: 8,
+    zIndex: 10,
   },
   favoriteCount: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
-  dotsContainer: {
+  imageFooterContainer: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 0,
     left: 0,
     right: 0,
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     gap: 6,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: '#b0b0b0',
   },
   activeDot: {
+    backgroundColor: '#505050',
+  },
+  reportBadge: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    borderWidth: 1,
+    borderColor: '#b0b0b0',
     backgroundColor: '#fff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  reportBadgeText: {
+    fontSize: 10,
+    color: '#505050',
   },
   productInfo: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
-  titleRow: {
+  titleRowContainer: {
     flexDirection: 'row',
+    alignItems: 'baseline',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 16,
   },
   productTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#000',
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#001A5C',
     flex: 1,
+    textAlign: 'left',
+  },
+  titleSubText: {
+    fontSize: 16,
+    color: '#001A5C',
+    fontWeight: '800',
+    flex: 1,
+    textAlign: 'center',
+  },
+  titleSubTextBold: {
+    fontSize: 16,
+    color: '#001A5C',
+    fontWeight: '800',
+    flex: 1,
+    textAlign: 'right',
+  },
+  productPriceText: {
+    fontSize: 15,
+    color: '#001A5C',
+    fontWeight: '500',
+  },
+  buyerFeeText: {
+    fontSize: 15,
+    color: '#001A5C',
+    fontWeight: '500',
   },
   buyButton: {
     backgroundColor: COLORS.primary,
@@ -1608,6 +1873,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 55, // just below header
+    right: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    width: 150,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  menuItemText: {
+    fontSize: 14,
+    marginLeft: 10,
+    color: '#000',
+    fontWeight: '500',
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
   },
 });
 

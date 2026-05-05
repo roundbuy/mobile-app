@@ -29,56 +29,40 @@ const IssueDisputeInfoScreen = ({ navigation, route }) => {
                 >
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Dispute {issueNumber}</Text>
+                <Text style={styles.headerTitle}>{t('Disputes')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Icon */}
+                {/* Handshake Icon with Scales */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#505050" />
-                    <View style={styles.checkBadge}>
-                        <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+                        <FontAwesome name="handshake-o" size={50} color="#505050" />
                     </View>
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>{t('Recording General Information for the Disputes')}</Text>
+                <Text style={styles.titleLeft}>{t('Roundbuy Resolution Suggestions')}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
                         <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
-                    <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum')}</Text>
-                    </View>
-                </View>
-
-                {/* For more information */}
-                <Text style={styles.moreInfo}>{t('For more information click here')}</Text>
-
-                {/* Info Link */}
-                <View style={styles.infoLinkContainer}>
-                    <Text style={styles.infoLinkText}>
-                        More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
-                    </Text>
-                    <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
 
                 {/* Progress Dots */}
@@ -94,8 +78,14 @@ const IssueDisputeInfoScreen = ({ navigation, route }) => {
                     <Text style={styles.readMoreText}>{t('Read more')}</Text>
                 </TouchableOpacity>
 
-                {/* Note */}
-                <Text style={styles.note}>{t('Only one is shown for dispute escalation shown in the')}</Text>
+                {/* Footer Link */}
+                <View style={styles.footerInfoLink}>
+                    <Text style={styles.footerLinkText}>
+                        More on{' '}
+                        <Text style={styles.footerLinkHighlight}>{t('Dispute Resolution')}</Text>
+                    </Text>
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.footerIcon} />
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -137,18 +127,34 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         position: 'relative',
     },
-    checkBadge: {
+    checkmarkBadge: {
         position: 'absolute',
-        bottom: 28,
-        right: '38%',
+        bottom: 30,
+        right: '42%',
+        backgroundColor: '#000',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFF',
     },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
+    },
+    titleLeft: {
+        fontSize: 16,
+        fontWeight: '700',
         color: '#000',
-        textAlign: 'center',
+        textAlign: 'left',
         paddingHorizontal: 24,
-        marginBottom: 24,
+        marginBottom: 16,
     },
     infoSection: {
         paddingHorizontal: 24,
@@ -170,31 +176,6 @@ const styles = StyleSheet.create({
         color: '#505050',
         lineHeight: 20,
     },
-    moreInfo: {
-        fontSize: 14,
-        color: '#505050',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        marginBottom: 24,
-    },
-    infoLinkText: {
-        fontSize: 13,
-        color: '#505050',
-    },
-    infoLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-    infoIcon: {
-        marginLeft: 6,
-    },
     progressContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
@@ -212,12 +193,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#505050',
     },
     readMoreButton: {
-        backgroundColor: '#FFF',
+        backgroundColor: '#F8F8F8',
         paddingVertical: 14,
-        paddingHorizontal: 32,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
+        paddingHorizontal: 40,
+        borderRadius: 24,
+        borderWidth: 0,
         alignSelf: 'center',
         marginBottom: 16,
     },
@@ -226,12 +206,22 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#333',
     },
-    note: {
+    footerInfoLink: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    footerLinkText: {
         fontSize: 12,
         color: '#303234',
-        textAlign: 'center',
-        paddingHorizontal: 24,
-        marginBottom: 24,
+    },
+    footerLinkHighlight: {
+        color: '#003366',
+        textDecorationLine: 'underline',
+    },
+    footerIcon: {
+        marginLeft: 6,
     },
 });
 

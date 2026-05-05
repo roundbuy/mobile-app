@@ -190,8 +190,13 @@ import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagin
 import ActionCenterScreen from '../screens/buyer-seller-process/ActionCenterScreen';
 import ActionCenterMessagesScreen from '../screens/buyer-seller-process/ActionCenterMessagesScreen';
 import Step1EnquiryScreen from '../screens/buyer-seller-process/Step1EnquiryScreen';
+import ChatUploadImagesScreen from '../screens/buyer-seller-process/ChatUploadImagesScreen';
+import ProductImageGalleryScreen from '../screens/buyer-seller-process/ProductImageGalleryScreen';
 import Step2OfferScreen from '../screens/buyer-seller-process/Step2OfferScreen';
 import Step3DeliverySelectionScreen from '../screens/buyer-seller-process/Step3DeliverySelectionScreen';
+import ShippingAddressScreen from '../screens/buyer-seller-process/ShippingAddressScreen';
+import PaymentSuccessScreen from '../screens/buyer-seller-process/PaymentSuccessScreen';
+import BuyerSellerPaymentMethodScreen from '../screens/buyer-seller-process/PaymentMethodScreen';
 import Step4ScheduleScreen from '../screens/buyer-seller-process/Step4ScheduleScreen';
 import Step5DealConfirmationScreen from '../screens/buyer-seller-process/Step5DealConfirmationScreen';
 import SingleItemActionScreen from '../screens/buyer-seller-process/SingleItemActionScreen';
@@ -206,6 +211,7 @@ import AppealStatusScreen from '../screens/my-support/AppealStatusScreen';
 
 // Combined Support & Resolution screen
 import SupportResolutionScreen from '../screens/support-resolution/SupportResolutionScreen';
+import ResolutionInboxScreen from '../screens/resolutions/ResolutionInboxScreen';
 
 // Issue screens
 import CreateIssueScreen from '../screens/issues/CreateIssueScreen';
@@ -222,6 +228,7 @@ import IssueDisputeBuyerReasonsScreen from '../screens/issues/IssueDisputeBuyerR
 import IssueDisputeSellerReasonsScreen from '../screens/issues/IssueDisputeSellerReasonsScreen';
 import IssueDisputeEligibilityScreen from '../screens/issues/IssueDisputeEligibilityScreen';
 import IssueDisputeFormScreen from '../screens/issues/IssueDisputeFormScreen';
+import ClaimInformationScreen from '../screens/claims/ClaimInformationScreen';
 
 // Dispute Flow screens
 import DisputeInformationScreen from '../screens/dispute-flow/DisputeInformationScreen';
@@ -231,6 +238,7 @@ import ReviewEligibility1Screen from '../screens/dispute-flow/ReviewEligibility1
 import ReviewEligibility2Screen from '../screens/dispute-flow/ReviewEligibility2Screen';
 import DisputeFormScreen from '../screens/dispute-flow/DisputeFormScreen';
 import UploadEvidenceScreen from '../screens/dispute-flow/UploadEvidenceScreen';
+import ResolutionRecommendationScreen from '../screens/disputes/ResolutionRecommendationScreen';
 
 // Support Ticket screens
 import MySupportScreen from '../screens/support/MySupportScreen';
@@ -325,6 +333,24 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ChatUploadImagesScreen"
+          component={ChatUploadImagesScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="ProductImageGalleryScreen"
+          component={ProductImageGalleryScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
           name="Step2OfferScreen"
           component={Step2OfferScreen}
           options={{
@@ -335,6 +361,32 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="Step3DeliverySelectionScreen"
           component={Step3DeliverySelectionScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ShippingAddressScreen"
+          component={ShippingAddressScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="BuyerSellerPaymentMethodScreen"
+          component={BuyerSellerPaymentMethodScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="PaymentSuccessScreen"
+          component={PaymentSuccessScreen}
           options={{
             animationEnabled: true,
             headerShown: false,
@@ -988,6 +1040,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="ResolutionInbox"
+          component={ResolutionInboxScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="GreenVision"
           component={GreenVisionScreen}
           options={{
@@ -1613,6 +1673,15 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
 
         <Stack.Screen
+          name="ClaimInformation"
+          component={ClaimInformationScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+
+        <Stack.Screen
           name="IssueDisputeInfo"
           component={IssueDisputeInfoScreen}
           options={{
@@ -1687,6 +1756,11 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="UploadEvidenceScreen"
           component={UploadEvidenceScreen}
+          options={{ headerShown: false, animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="ResolutionRecommendation"
+          component={ResolutionRecommendationScreen}
           options={{ headerShown: false, animationEnabled: true }}
         />
 

@@ -8,16 +8,18 @@ import {
     ScrollView,
     ActivityIndicator,
     FlatList,
+    RefreshControl,
     Platform,
 } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/theme';
+import { API_CONFIG } from '../../config/api.config';
+import api from '../../services/api';
 import supportService from '../../services/supportService';
-import disputeService from '../../services/disputeService';
-import claimService from '../../services/claimService';
 import GlobalHeader from '../../components/GlobalHeader';
 import SuggestionsFooter from '../../components/SuggestionsFooter';
+import ActionCardComponent from '../buyer-seller-process/ActionCardComponent';
 
 const SupportResolutionScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -27,16 +29,18 @@ const SupportResolutionScreen = ({ navigation }) => {
     // Support sub-tabs state
     const [activeSupportTab, setActiveSupportTab] = useState('all');
 
-    // Resolution center sub-tabs state
-    const [activeResolutionTab, setActiveResolutionTab] = useState('all');
+    // Resolution center sub-tabs: only issue | dispute | claim
+    const [activeResolutionTab, setActiveResolutionTab] = useState('issue');
 
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [supportData, setSupportData] = useState([]);
-    const [resolutionData, setResolutionData] = useState([]);
+    // Resolution data split by type (like ResolutionInboxScreen)
+    const [resolutionData, setResolutionData] = useState({ issue: [], dispute: [], claim: [] });
 
     useEffect(() => {
         loadData();
-    }, [activeMainTab, activeSupportTab, activeResolutionTab]);
+    }, [activeMainTab, activeSupportTab]);
 
     const loadData = async () => {
         setLoading(true);
@@ -50,6 +54,7 @@ const SupportResolutionScreen = ({ navigation }) => {
             console.error('Error loading data:', error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -76,32 +81,49 @@ const SupportResolutionScreen = ({ navigation }) => {
         }
     };
 
+    // Load from /resolution-inbox and split by type (same as ResolutionInboxScreen)
     const loadResolutionData = async () => {
         try {
-            let response;
-            switch (activeResolutionTab) {
-                case 'exchanges':
-                    response = await disputeService.getExchanges();
-                    break;
-                case 'issues':
-                    response = await disputeService.getIssues();
-                    break;
-                case 'disputes':
-                    response = await disputeService.getDisputes();
-                    break;
-                case 'claims':
-                    response = await claimService.getClaims();
-                    break;
-                case 'ended':
-                    response = await disputeService.getEndedCases();
-                    break;
-                default:
-                    response = await disputeService.getAllResolution();
+            const response = await api.get('/resolution-inbox');
+            if (response.data?.success) {
+                setResolutionData(response.data.data); // { issue: [], dispute: [], claim: [] }
+            } else {
+                setResolutionData({ issue: [], dispute: [], claim: [] });
             }
-            setResolutionData(response.data || []);
         } catch (error) {
             console.error('Error loading resolution data:', error);
-            setResolutionData([]);
+            setResolutionData({ issue: [], dispute: [], claim: [] });
+        }
+    };
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        loadData();
+    };
+
+    // Helper to format image URLs
+    const getImageUrl = (path) => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        const baseUrl = API_CONFIG.BASE_URL.split('/api/v1')[0];
+        return `${baseUrl}/${path.replace(/^\//, '')}`;
+    };
+
+    const timeAgo = (date) => {
+        const diff = Math.floor((new Date() - new Date(date)) / 60000);
+        if (diff < 1) return 'Just now';
+        if (diff < 60) return `${diff}m`;
+        if (diff < 1440) return `${Math.floor(diff / 60)}h`;
+        return `${Math.floor(diff / 1440)}d ago`;
+    };
+
+    const navigateToDetail = (item) => {
+        if (item.type === 'issue') {
+            navigation.navigate('IssueDetail', { issueId: item.ref_id });
+        } else if (item.type === 'dispute') {
+            navigation.navigate('DisputeDetail', { disputeId: item.ref_id });
+        } else if (item.type === 'claim') {
+            navigation.navigate('ClaimDetail', { claimId: item.ref_id });
         }
     };
 
@@ -110,13 +132,10 @@ const SupportResolutionScreen = ({ navigation }) => {
             style={styles.listItem}
             onPress={() => {
                 if (activeSupportTab === 'deleted') {
-                    // Navigate to deleted ads screen with the ad data
                     navigation.navigate('DeletedAds');
                 } else if (activeSupportTab === 'appeals') {
-                    // Navigate to appeal status screen
                     navigation.navigate('AppealStatus', { appealId: item.id });
                 } else if (activeSupportTab === 'tickets') {
-                    // Navigate to ticket detail screen
                     navigation.navigate('TicketDetail', { ticketId: item.id });
                 }
             }}
@@ -135,62 +154,6 @@ const SupportResolutionScreen = ({ navigation }) => {
                 </Text>
             </View>
             <Text style={styles.itemTime}>{item.time}</Text>
-        </TouchableOpacity>
-    );
-
-    const renderResolutionItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.listItem}
-            onPress={() => {
-                // Navigate based on active tab
-                if (activeResolutionTab === 'disputes') {
-                    navigation.navigate('DisputeDetail', { disputeId: item.id });
-                } else if (activeResolutionTab === 'issues') {
-                    navigation.navigate('IssueDetail', { issueId: item.id });
-                } else if (activeResolutionTab === 'claims') {
-                    navigation.navigate('ClaimDetail', { claimId: item.id });
-                } else if (activeResolutionTab === 'exchanges') {
-                    navigation.navigate('ExchangeDetail', { exchangeId: item.id });
-                } else {
-                    // For 'all' and 'ended', use item type if available
-                    const itemType = item.type || 'issue';
-                    if (itemType === 'claim') {
-                        navigation.navigate('ClaimDetail', { claimId: item.id });
-                    } else if (itemType === 'dispute') {
-                        navigation.navigate('DisputeDetail', { disputeId: item.id });
-                    } else if (itemType === 'exchange') {
-                        navigation.navigate('ExchangeDetail', { exchangeId: item.id });
-                    } else {
-                        navigation.navigate('IssueDetail', { issueId: item.id });
-                    }
-                }
-            }}
-        >
-            <View style={styles.itemIcon}>
-                <Feather
-                    name={activeResolutionTab === 'exchanges' ? 'repeat' : 'alert-circle'}
-                    size={24}
-                    color="#4169E1"
-                />
-            </View>
-            <View style={styles.itemContent}>
-                <Text style={styles.itemTitle}>
-                    {item.claim_number ? item.claim_number :
-                        item.dispute_number ? item.dispute_number :
-                            item.issue_number ? item.issue_number :
-                                (typeof item.title === 'string' ? item.title :
-                                    typeof item.title === 'object' && item.title?.label ? item.title.label : 'Resolution Item')}
-                </Text>
-                <Text style={styles.itemDescription} numberOfLines={2}>
-                    {item.problem_description || item.issue_description ||
-                        (typeof item.description === 'string' ? item.description :
-                            typeof item.description === 'object' && item.description?.label ? item.description.label : 'No description')}
-                </Text>
-            </View>
-            <Text style={styles.itemTime}>
-                {typeof item.time === 'string' ? item.time :
-                    typeof item.time === 'object' && item.time?.label ? item.time.label : ''}
-            </Text>
         </TouchableOpacity>
     );
 
@@ -236,195 +199,115 @@ const SupportResolutionScreen = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
-            {/* Sub Tabs */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.subTabsContainer}
-                contentContainerStyle={styles.subTabsContent}
-            >
-                {activeMainTab === 'support' ? (
-                    <>
+            {/* Sub Tabs for My Support (horizontal scroll) */}
+            {activeMainTab === 'support' && (
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.subTabsContainer}
+                    contentContainerStyle={styles.subTabsContent}
+                >
+                    <TouchableOpacity
+                        key="support-all"
+                        style={[styles.subTab, activeSupportTab === 'all' && styles.subTabActive]}
+                        onPress={() => setActiveSupportTab('all')}
+                    >
+                        <Text style={[styles.subTabText, activeSupportTab === 'all' && styles.subTabTextActive]}>
+                            {t('All')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        key="support-deleted"
+                        style={[styles.subTab, activeSupportTab === 'deleted' && styles.subTabActive]}
+                        onPress={() => setActiveSupportTab('deleted')}
+                    >
+                        <Text style={[styles.subTabText, activeSupportTab === 'deleted' && styles.subTabTextActive]}>
+                            {t('Deleted ads')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        key="support-appeals"
+                        style={[styles.subTab, activeSupportTab === 'appeals' && styles.subTabActive]}
+                        onPress={() => setActiveSupportTab('appeals')}
+                    >
+                        <Text style={[styles.subTabText, activeSupportTab === 'appeals' && styles.subTabTextActive]}>
+                            {t('Ads appeals')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        key="support-tickets"
+                        style={[styles.subTab, activeSupportTab === 'tickets' && styles.subTabActive]}
+                        onPress={() => setActiveSupportTab('tickets')}
+                    >
+                        <Text style={[styles.subTabText, activeSupportTab === 'tickets' && styles.subTabTextActive]}>
+                            {t('Tickets')}
+                        </Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            )}
+
+            {/* Sub Tabs for Resolution Center — 3 full-width tabs */}
+            {activeMainTab === 'resolution' && (
+                <View style={styles.resTabsRow}>
+                    {['issue', 'dispute', 'claim'].map((tab) => (
                         <TouchableOpacity
-                            key="support-all"
-                            style={[
-                                styles.subTab,
-                                activeSupportTab === 'all' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveSupportTab('all')}
+                            key={tab}
+                            style={[styles.resTab, activeResolutionTab === tab && styles.resTabActive]}
+                            onPress={() => setActiveResolutionTab(tab)}
                         >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeSupportTab === 'all' && styles.subTabTextActive,
-                                ]}
-                            >{t('All')}</Text>
+                            <Text style={[styles.resTabText, activeResolutionTab === tab && styles.resTabTextActive]}>
+                                {t(tab.charAt(0).toUpperCase() + tab.slice(1))} ({resolutionData[tab]?.length || 0})
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            key="support-deleted"
-                            style={[
-                                styles.subTab,
-                                activeSupportTab === 'deleted' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveSupportTab('deleted')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeSupportTab === 'deleted' && styles.subTabTextActive,
-                                ]}
-                            >{t('Deleted ads')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="support-appeals"
-                            style={[
-                                styles.subTab,
-                                activeSupportTab === 'appeals' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveSupportTab('appeals')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeSupportTab === 'appeals' && styles.subTabTextActive,
-                                ]}
-                            >{t('Ads appeals')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="support-tickets"
-                            style={[
-                                styles.subTab,
-                                activeSupportTab === 'tickets' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveSupportTab('tickets')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeSupportTab === 'tickets' && styles.subTabTextActive,
-                                ]}
-                            >{t('Tickets')}</Text>
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <>
-                        <TouchableOpacity
-                            key="resolution-all"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'all' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('all')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'all' && styles.subTabTextActive,
-                                ]}
-                            >{t('All')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="resolution-exchanges"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'exchanges' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('exchanges')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'exchanges' && styles.subTabTextActive,
-                                ]}
-                            >{t('Exchanges')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="resolution-issues"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'issues' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('issues')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'issues' && styles.subTabTextActive,
-                                ]}
-                            >{t('Issues')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="resolution-disputes"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'disputes' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('disputes')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'disputes' && styles.subTabTextActive,
-                                ]}
-                            >{t('Disputes')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="resolution-claims"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'claims' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('claims')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'claims' && styles.subTabTextActive,
-                                ]}
-                            >{t('Claims')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            key="resolution-ended"
-                            style={[
-                                styles.subTab,
-                                activeResolutionTab === 'ended' && styles.subTabActive,
-                            ]}
-                            onPress={() => setActiveResolutionTab('ended')}
-                        >
-                            <Text
-                                style={[
-                                    styles.subTabText,
-                                    activeResolutionTab === 'ended' && styles.subTabTextActive,
-                                ]}
-                            >{t('Ended')}</Text>
-                        </TouchableOpacity>
-                    </>
-                )}
-            </ScrollView>
+                    ))}
+                </View>
+            )}
 
             {/* Content List */}
             {loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={COLORS.primary} />
                 </View>
-            ) : (
+            ) : activeMainTab === 'support' ? (
                 <FlatList
-                    data={activeMainTab === 'support' ? supportData : resolutionData}
-                    renderItem={
-                        activeMainTab === 'support' ? renderSupportItem : renderResolutionItem
-                    }
-                    keyExtractor={(item, index) => {
-                        if (item.claim_number) return `claim-${item.claim_number}`;
-                        if (item.dispute_number) return `dispute-${item.dispute_number}`;
-                        if (item.issue_number) return `issue-${item.issue_number}`;
-                        if (item.id) return `item-${item.id}-${index}`;
-                        return `item-${index}`;
-                    }}
+                    data={supportData}
+                    renderItem={renderSupportItem}
+                    keyExtractor={(item, index) => `support-${item.id || index}`}
                     contentContainerStyle={styles.listContainer}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Feather name="inbox" size={64} color="#CCC" />
                             <Text style={styles.emptyText}>{t('No items found')}</Text>
+                        </View>
+                    }
+                />
+            ) : (
+                // Resolution center — ActionCardComponent list
+                <FlatList
+                    data={resolutionData[activeResolutionTab] || []}
+                    keyExtractor={(item, index) => `${activeResolutionTab}-${item.ref_id}-${index}`}
+                    renderItem={({ item }) => (
+                        <ActionCardComponent
+                            itemImage={getImageUrl(item.ad_image)}
+                            userAvatar={getImageUrl(item.actor_avatar)}
+                            itemTitle={item.ad_title}
+                            username={item.actor_name}
+                            statusText={item.message}
+                            stepNumber={item.stage}
+                            actionText={'View Details'}
+                            timestamp={timeAgo(item.created_at)}
+                            onPress={() => navigateToDetail(item)}
+                            cardType={item.type}
+                            statusBadge={item.status}
+                        />
+                    )}
+                    contentContainerStyle={styles.listContainer}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Feather name="inbox" size={64} color="#CCC" />
+                            <Text style={styles.emptyText}>{t(`No ${activeResolutionTab}s found`)}</Text>
                         </View>
                     }
                 />
@@ -444,16 +327,13 @@ const SupportResolutionScreen = ({ navigation }) => {
                 style={styles.fab}
                 onPress={() => {
                     if (activeMainTab === 'support') {
-                        // Navigate to Create Ticket
                         navigation.navigate('CreateTicket');
                     } else {
-                        // Resolution center - show options for Issue or Dispute
-                        if (activeResolutionTab === 'issues' || activeResolutionTab === 'all') {
+                        if (activeResolutionTab === 'issue') {
                             navigation.navigate('CreateIssue');
-                        } else if (activeResolutionTab === 'disputes') {
+                        } else if (activeResolutionTab === 'dispute') {
                             navigation.navigate('DisputeInformation');
                         } else {
-                            // Default to create issue
                             navigation.navigate('CreateIssue');
                         }
                     }
@@ -500,10 +380,12 @@ const styles = StyleSheet.create({
     subTabsContainer: {
         borderBottomWidth: 1,
         borderBottomColor: '#E0E0E0',
+        minHeight: 50,
         maxHeight: 50,
     },
     subTabsContent: {
-        paddingHorizontal: 16,
+        flexDirection: 'row',
+        paddingHorizontal: 6,
         paddingVertical: 8,
     },
     subTab: {
@@ -523,6 +405,33 @@ const styles = StyleSheet.create({
     subTabTextActive: {
         color: '#000',
         fontWeight: '600',
+    },
+    // Resolution 3-tab row
+    resTabsRow: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    resTab: {
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderBottomWidth: 2,
+        borderBottomColor: 'transparent',
+    },
+    resTabActive: {
+        borderBottomColor: COLORS.primary,
+    },
+    resTabText: {
+        fontSize: 14,
+        color: '#888',
+        fontWeight: '600',
+    },
+    resTabTextActive: {
+        color: '#000',
     },
     loadingContainer: {
         flex: 1,

@@ -5,16 +5,16 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
-import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+import trackingService from '../../services/TrackingService';
 import * as Location from 'expo-location';
 
 const ATTPromptScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const handleAllowTracking = async () => {
     try {
-      // 1. Request ATT Permission
-      const { status: attStatus } = await requestTrackingPermissionsAsync();
-      console.log('ATT permission status:', attStatus);
+      // 1. Request ATT Permission via Service
+      const status = await trackingService.requestPermission();
+      console.log('ATT permission status:', status);
 
       // 2. Request Location Permission (as requested to be on this screen)
       const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
@@ -27,8 +27,9 @@ const ATTPromptScreen = ({ navigation }) => {
     }
   };
 
-  const handleAskAppNotToTrack = () => {
-    // User declined tracking - skip requests or proceed
+  const handleAskAppNotToTrack = async () => {
+    // Explicitly set to false in service
+    await trackingService.setTrackingPreference(false);
     navigation.replace('NotificationPermission');
   };
 

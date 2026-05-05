@@ -5,20 +5,37 @@ import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
 
+import trackingService from '../../services/TrackingService';
+
 const CookieSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [necessary, setNecessary] = useState(true); // Always on
   const [functional, setFunctional] = useState(false);
   const [performance, setPerformance] = useState(false);
   const [advertising, setAdvertising] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
 
-  const handleSaveChoices = () => {
-    console.log('Cookie preferences saved:', {
-      necessary,
-      functional,
-      performance,
-      advertising,
-    });
+  React.useEffect(() => {
+    const loadPrefs = async () => {
+      await trackingService.initialize();
+      const prefs = trackingService.getPreferences();
+      setFunctional(prefs.functional);
+      setPerformance(prefs.performance);
+      setAdvertising(prefs.advertising);
+      setAnalytics(prefs.analytics);
+    };
+    loadPrefs();
+  }, []);
+
+  const handleSaveChoices = async () => {
+    await Promise.all([
+      trackingService.updatePreference('functional', functional),
+      trackingService.updatePreference('performance', performance),
+      trackingService.updatePreference('advertising', advertising),
+      trackingService.updatePreference('analytics', analytics),
+    ]);
+
+    console.log('Cookie preferences saved');
     navigation.goBack();
   };
 
@@ -82,6 +99,13 @@ const CookieSettingsScreen = ({ navigation }) => {
           description="These cookies are required for good functionality of our service and can't be switched off in our system."
           value={necessary}
           disabled={true}
+        />
+
+        <CookieOption
+          title={t('Analytics')}
+          description="We use these cookies to understand how visitors interact with our app, helping us identify areas for improvement."
+          value={analytics}
+          onValueChange={setAnalytics}
         />
 
         <CookieOption

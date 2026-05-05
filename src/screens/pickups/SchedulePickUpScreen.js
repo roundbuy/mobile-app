@@ -9,6 +9,7 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +19,10 @@ import pickupService from '../../services/pickupService';
 
 const SchedulePickUpScreen = ({ route, navigation }) => {
     const { t } = useTranslation();
-    const { offerId, advertisementId, advertisementTitle } = route.params;
+    const { offerId, advertisementId, advertisementTitle, itemImage, role, otherUserName } = route.params;
+
+    const isSeller = role === 'selling';
+    const displayRoleName = otherUserName || (isSeller ? 'Buyer' : 'Seller');
 
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
@@ -58,14 +62,7 @@ const SchedulePickUpScreen = ({ route, navigation }) => {
 
     const handleSchedulePickup = async () => {
         // Validation
-        if (!offerId) {
-            Alert.alert(
-                t('Offer Required'),
-                t('You need to have an accepted offer before scheduling a pickup. Please make an offer first and wait for the seller to accept it.'),
-                [{ text: t('OK'), onPress: () => navigation.goBack() }]
-            );
-            return;
-        }
+        // Note: offerId constraint removed. Server now verifies checkout state.
 
         if (!selectedDate) {
             Alert.alert(t('Error'), t('Please select a pickup date'));
@@ -117,6 +114,18 @@ const SchedulePickUpScreen = ({ route, navigation }) => {
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
         return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const getPreviewDate = () => {
+        if (!selectedDate) return 'Date and time not selected';
+        let dateStr = new Date(selectedDate).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long'
+        });
+        if (selectedTime) {
+            dateStr += ' - ' + formatTime(selectedTime);
+        }
+        return dateStr;
     };
 
     return (
@@ -232,6 +241,26 @@ const SchedulePickUpScreen = ({ route, navigation }) => {
                     />
                     <Text style={styles.characterCount}>{description.length}/500</Text>
                 </View>
+
+                {/* Summary Card */}
+                <View style={styles.summaryCard}>
+                    <Image source={{ uri: itemImage || 'https://via.placeholder.com/80' }} style={styles.summaryImage} />
+                    <View style={styles.summaryContent}>
+                        <Text style={styles.summaryTitle} numberOfLines={2}>
+                            {isSeller ? `Pick Up for ${advertisementTitle} from Buyer:` : `Pick Up for ${advertisementTitle} from Seller:`}
+                        </Text>
+                        <View style={styles.summaryUserRow}>
+                            <Ionicons name="person-circle-outline" size={20} color="#000" />
+                            <Text style={styles.summaryUserName}>{displayRoleName}</Text>
+                        </View>
+                        <View style={styles.summaryDivider} />
+                        <View style={styles.summaryDateRow}>
+                            <Ionicons name="calendar-outline" size={20} color="#555" />
+                            <Text style={styles.summaryDateText}>{getPreviewDate()}</Text>
+                        </View>
+                    </View>
+                </View>
+
             </ScrollView>
 
             {/* Bottom Button */}
@@ -390,6 +419,57 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         color: '#fff',
+    },
+    summaryCard: {
+        flexDirection: 'row',
+        backgroundColor: '#E5EBF5',
+        marginHorizontal: 16,
+        marginBottom: 24,
+        marginTop: 8,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    summaryImage: {
+        width: 100,
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    summaryContent: {
+        flex: 1,
+        padding: 12,
+        justifyContent: 'center',
+    },
+    summaryTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 6,
+    },
+    summaryUserRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    summaryUserName: {
+        fontSize: 13,
+        color: '#000',
+        marginLeft: 6,
+        fontWeight: '500',
+    },
+    summaryDivider: {
+        height: 1,
+        backgroundColor: '#C8D3E3',
+        marginBottom: 8,
+    },
+    summaryDateRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    summaryDateText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#000',
+        marginLeft: 6,
     },
 });
 

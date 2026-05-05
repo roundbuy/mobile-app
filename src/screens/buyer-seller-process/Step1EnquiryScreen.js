@@ -13,6 +13,7 @@ import {
     Image,
     Alert
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import ActionCardComponent from './ActionCardComponent';
@@ -21,6 +22,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 import ChatRestrictionsModal from '../../components/ChatRestrictionsModal';
+import { uploadImages } from '../../services/advertisementService';
 
 const Step1EnquiryScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
@@ -64,6 +66,9 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
     const currencySymbol = userCurrency === 'USD' ? '$' :
         userCurrency === 'EUR' ? '€' :
             userCurrency === 'GBP' ? '£' : '£';
+
+    // Check if the current user is the seller of the advertisement related to this conversation
+    const isCurrentUserSeller = conversation?.seller_id === currentUserId;
 
     useEffect(() => {
         loadConversationAndMessages();
@@ -136,6 +141,14 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
         } catch (error) {
             console.error('Error loading offers:', error);
         }
+    };
+
+    const handleSelectImage = () => {
+        const adId = advertisementId || conversation?.advertisement_id;
+        navigation.navigate('ChatUploadImagesScreen', {
+            advertisementId: adId,
+            conversationId: conversationId || conversation?.id
+        });
     };
 
     const handleSend = async () => {
@@ -288,97 +301,170 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
                 hour12: false,
             }) : '';
 
-        const isCurrentUserSeller = conversation?.seller_id === currentUserId;
-
         if (item.type === 'offer') {
             const isOfferFromCurrentUser = item.sender_id === currentUserId;
 
             return (
-                <View style={styles.messageRow}>
-                    <View style={styles.avatarContainer}>
-                        {item.sender_avatar ? (
-                            <Image source={{ uri: getFullImageUrl(item.sender_avatar) }} style={styles.avatarImage} resizeMode="cover" />
-                        ) : (
-                            <View style={styles.defaultAvatarContainer}>
-                                <FontAwesome name="user-circle" size={40} color="#000" />
-                                <View style={styles.activeDot} />
+                <View style={[styles.messageRow, { marginLeft: 0 }]}>
+                    <View style={styles.messageContent}>
+                        {/* Offer Content matching Mockup design */}
+                        {item.status === 'pending' && (
+                            <View style={styles.offerCardInnerBordered}>
+                                <Text style={styles.offerHeadline}>
+                                    {isCurrentUserSeller && !isOfferFromCurrentUser ? 'New offer' : 'Offer made'}
+                                </Text>
+
+                                <View style={styles.offerTextRow}>
+                                    <Text style={styles.offerActionText}>
+                                        <Text style={styles.offerUsernameBold}>{item.sender_name}</Text>{' '}
+                                        made an offer to <Text style={styles.offerUsernameBold}>{isOfferFromCurrentUser ? (conversation?.seller_name || 'the seller') : 'you'}</Text>:
+                                    </Text>
+                                    <Text style={styles.offerAmountBoldRight}>{currencySymbol}{item.amount}</Text>
+                                </View>
+
+                                {isOfferFromCurrentUser ? (
+                                    <Text style={styles.offerContextText}>
+                                        Your offer shall be Accepted, or Declined.
+                                    </Text>
+                                ) : null}
+
+                                {isCurrentUserSeller && !isOfferFromCurrentUser && (
+                                    <View style={styles.offerActionContainer}>
+                                        <Text style={styles.offerRespondLabel}>Respond</Text>
+                                        <View style={styles.offerButtonsRow}>
+                                            <TouchableOpacity
+                                                style={[styles.offerDeclineBtn, sending && styles.offerBtnDisabled]}
+                                                onPress={() => handleRespondToOffer(item.offer_id, 'reject')}
+                                                disabled={sending}
+                                            >
+                                                <Text style={styles.offerDeclineBtnText}>Decline</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[styles.offerAcceptBtn, sending && styles.offerBtnDisabled]}
+                                                onPress={() => handleRespondToOffer(item.offer_id, 'accept')}
+                                                disabled={sending}
+                                            >
+                                                <Text style={styles.offerAcceptBtnText}>Accept</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
                             </View>
                         )}
-                    </View>
 
-                    <View style={styles.messageContent}>
-                        <View style={styles.messageHeaderRow}>
-                            <Text style={styles.senderName}>{item.sender_name || 'User'}</Text>
-                            <Text style={styles.timestampText}>{timestamp}</Text>
-                        </View>
-                        <Text style={styles.messageText}>
-                            {isOfferFromCurrentUser ? 'I am ready to make an offer. Here it is.' : 'Almost there! Just few days fixing the Design and there you have it.'}
-                        </Text>
-
-                        {/* Offer Card embedded below the text */}
-                        <View style={styles.offerCardInner}>
-                            {isOfferFromCurrentUser && item.status === 'pending' && (
-                                <Text style={styles.offerHeadline}>An offer made succesfully!</Text>
-                            )}
-
-                            <View style={styles.offerDetailsRow}>
-                                <Text style={styles.offerUsernameBold}>{item.sender_name} </Text>
-                                <Text style={styles.offerDetailsText}>{isOfferFromCurrentUser ? 'You made an offer:' : 'made an offer:'}</Text>
-                                <Text style={styles.offerAmountBold}>{currencySymbol}{item.amount}</Text>
-                            </View>
-
-                            {item.status === 'pending' && isOfferFromCurrentUser && (
-                                <Text style={styles.offerContextText}>
-                                    <Text style={{ fontWeight: 'bold' }}>{conversation?.seller_name || 'The seller'}</Text> will either Accept, Decline or Make an Offer to you.
+                        {item.status === 'accepted' && (
+                            <View style={styles.offerCardInnerBordered}>
+                                <Text style={styles.offerHeadline}>Offer Accepted for {currencySymbol}{item.amount}</Text>
+                                <Text style={styles.offerResolvedSubTitle}>
+                                    <Text style={styles.offerUsernameBold}>{isOfferFromCurrentUser ? (conversation?.seller_name || 'The seller') : 'You'}</Text> accepted <Text style={styles.offerUsernameBold}>{item.sender_name}</Text> offer.
                                 </Text>
-                            )}
+                                <Text style={styles.offerResolvedNote}>
+                                    It has priority, until inspection and decision, for 3 days.
+                                </Text>
+                            </View>
+                        )}
 
-                            {item.status === 'pending' && isCurrentUserSeller && !isOfferFromCurrentUser && (
-                                <View style={styles.offerActionButtons}>
-                                    <View style={styles.offerButtonsRow}>
-                                        <TouchableOpacity
-                                            style={[styles.offerDeclineBtn, sending && styles.offerBtnDisabled]}
-                                            onPress={() => handleRespondToOffer(item.offer_id, 'reject')}
-                                            disabled={sending}
-                                        >
-                                            <Text style={styles.offerDeclineBtnText}>Decline</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={[styles.offerCounterBtn, sending && styles.offerBtnDisabled]}
-                                            onPress={handleMakeOffer}
-                                            disabled={sending}
-                                        >
-                                            <Text style={styles.offerCounterBtnText}>Make an Offer</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    <TouchableOpacity
-                                        style={[styles.offerAcceptBtn, sending && styles.offerBtnDisabled]}
-                                        onPress={() => handleRespondToOffer(item.offer_id, 'accept')}
-                                        disabled={sending}
-                                    >
-                                        <Text style={styles.offerAcceptBtnText}>Accept</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-
-                            {item.status === 'accepted' && (
-                                <View style={styles.offerStatusBoxAccepted}>
-                                    <Text style={styles.offerStatusTextWhite}>Accepted</Text>
-                                </View>
-                            )}
-
-                            {item.status === 'rejected' && (
-                                <View style={styles.offerStatusBoxDeclined}>
-                                    <Text style={styles.offerStatusTextWhite}>Declined</Text>
-                                </View>
-                            )}
-                        </View>
+                        {item.status === 'rejected' && (
+                            <View style={styles.offerCardInnerBordered}>
+                                <Text style={styles.offerHeadline}>Offer Declined for {currencySymbol}{item.amount}</Text>
+                                <Text style={styles.offerResolvedSubTitle}>
+                                    <Text style={styles.offerUsernameBold}>{isOfferFromCurrentUser ? (conversation?.seller_name || 'The seller') : 'You'}</Text> declined <Text style={styles.offerUsernameBold}>{item.sender_name}</Text> offer.
+                                </Text>
+                                <Text style={styles.offerResolvedNote}>
+                                    Try negotiating the price or offering more!
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             );
         }
 
         // NEW UI REQUIREMENT: No grey chat bubbles, larger text, larger avatars
+        const isProductUpdateLink = item.message === '[PRODUCT_IMAGES_UPDATE]';
+
+        let imageLinks = null;
+        if (isProductUpdateLink) {
+            try {
+                if (conversation?.advertisement_images) {
+                    imageLinks = JSON.parse(conversation.advertisement_images);
+                    if (!Array.isArray(imageLinks)) imageLinks = [imageLinks];
+                }
+            } catch (e) { }
+        } else if (item.message) {
+            const trimmedMessage = item.message.trim();
+            const urlRegex = /(https?:\/\/[^\s,]+)/gi;
+            const matches = trimmedMessage.match(urlRegex);
+            if (matches && matches.length > 0) {
+                // Check if the message is *only* URLs (ignoring spaces and commas)
+                const textWithoutUrls = trimmedMessage.replace(urlRegex, '').replace(/[\s,]+/g, '');
+                if (textWithoutUrls.length === 0) {
+                    // Make sure they look like images (heuristic)
+                    const isAllImages = matches.every(url => url.match(/\.(jpeg|jpg|gif|png|webp|heic)(\?.*)?$/i) || url.includes('cloudinary') || url.includes('firebasestorage'));
+                    // If we can't be sure, we'll try to render them anyway if the string is ONLY urls
+                    imageLinks = matches;
+                }
+            }
+        }
+
+        const renderImageGrid = (images) => {
+            if (!images || images.length === 0) return null;
+
+            const handlePress = () => {
+                navigation.navigate('ProductImageGalleryScreen', {
+                    advertisementId: advertisementId || conversation?.advertisement_id,
+                    images: images
+                });
+            };
+
+            if (images.length === 1) {
+                return (
+                    <TouchableOpacity style={styles.imageGridSingle} onPress={handlePress}>
+                        <Image source={{ uri: getFullImageUrl(images[0]) }} style={styles.imageGridItemFull} resizeMode="cover" />
+                    </TouchableOpacity>
+                );
+            } else if (images.length === 2) {
+                return (
+                    <TouchableOpacity style={[styles.imageGridDouble, { flexDirection: 'row', gap: 4 }]} onPress={handlePress}>
+                        <Image source={{ uri: getFullImageUrl(images[0]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                        <Image source={{ uri: getFullImageUrl(images[1]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                    </TouchableOpacity>
+                );
+            } else if (images.length === 3) {
+                return (
+                    <TouchableOpacity style={[styles.imageGridTriple, { gap: 4 }]} onPress={handlePress}>
+                        <View style={{ flexDirection: 'row', gap: 4, height: 120 }}>
+                            <Image source={{ uri: getFullImageUrl(images[0]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                            <Image source={{ uri: getFullImageUrl(images[1]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                        </View>
+                        <Image source={{ uri: getFullImageUrl(images[2]) }} style={[styles.imageGridItemFull, { height: 120 }]} resizeMode="cover" />
+                    </TouchableOpacity>
+                );
+            } else {
+                // 4 or more
+                const remainingCount = images.length - 4;
+                return (
+                    <TouchableOpacity style={[styles.imageGridQuad, { gap: 4 }]} onPress={handlePress}>
+                        <View style={{ flexDirection: 'row', gap: 4, height: 120 }}>
+                            <Image source={{ uri: getFullImageUrl(images[0]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                            <Image source={{ uri: getFullImageUrl(images[1]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 4, height: 120 }}>
+                            <Image source={{ uri: getFullImageUrl(images[2]) }} style={styles.imageGridItemHalf} resizeMode="cover" />
+                            <View style={[styles.imageGridItemHalf, { position: 'relative' }]}>
+                                <Image source={{ uri: getFullImageUrl(images[3]) }} style={{ width: '100%', height: '100%', borderRadius: 8 }} resizeMode="cover" />
+                                {remainingCount > 0 && (
+                                    <View style={styles.imageGridOverlay}>
+                                        <Text style={styles.imageGridOverlayText}>+{remainingCount}</Text>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                );
+            }
+        };
+
         return (
             <View style={styles.messageRow}>
                 <View style={styles.avatarContainer}>
@@ -402,7 +488,14 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
                         <Text style={styles.senderName}>{item.sender_name || 'User'}</Text>
                         <Text style={styles.timestampText}>{timestamp}</Text>
                     </View>
-                    <Text style={styles.messageText}>{item.message}</Text>
+                    {imageLinks && imageLinks.length > 0 ? (
+                        <View style={styles.imageGalleryPreviewContainer}>
+                            {isProductUpdateLink && <Text style={styles.galleryPreviewLabel}>Product Images Updated</Text>}
+                            {renderImageGrid(imageLinks)}
+                        </View>
+                    ) : (
+                        <Text style={styles.messageText}>{item.message}</Text>
+                    )}
                 </View>
             </View>
         );
@@ -418,7 +511,7 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <Ionicons name="chevron-back" size={24} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Product Chat: {title || conversation?.advertisement_title || 'Enquiry'}</Text>
+                    <Text style={[styles.headerTitle, { fontSize: 22, fontWeight: 'bold' }]}>Chat: {title || conversation?.advertisement_title || 'Enquiry'}</Text>
                 </View>
 
                 {/* Main Content Area */}
@@ -488,10 +581,17 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
                             </View>
                         </View>
 
-                        {/* Date Divider (Fake for UI similarity to screenshot) */}
+                        {/* Date Divider & Offer History Link */}
                         <View style={styles.dateDivider}>
                             <Text style={styles.dateText}>12 October 2025</Text>
-                            {/* In reality we would dynamically group by date, leaving static to match layout */}
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('OfferHistory', {
+                                    advertisementId: conversation?.advertisement_id,
+                                    advertisementTitle: title || conversation?.advertisement_title
+                                })}
+                            >
+                                <Text style={styles.offerHistoryText}>Offer history</Text>
+                            </TouchableOpacity>
                         </View>
 
                         {/* Message Stream */}
@@ -512,14 +612,16 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
 
                         {/* Input Area */}
                         <View style={styles.bottomSection}>
-                            <View style={styles.warningContainer}>
-                                <Text style={styles.warningText}>
-                                    Stay safe in RoundBuy. Don't share personal data, click on external links, or scan codes.
-                                    <Text style={styles.warningLink} onPress={() => setChatRestrictionsModalVisible(true)}> Read more on Safety Guidelines</Text>
-                                </Text>
-                            </View>
-
                             <View style={styles.inputContainer}>
+                                {isCurrentUserSeller && (
+                                    <TouchableOpacity
+                                        style={styles.cameraButton}
+                                        onPress={handleSelectImage}
+                                        disabled={sending}
+                                    >
+                                        <Ionicons name="camera-outline" size={24} color="#666" />
+                                    </TouchableOpacity>
+                                )}
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Send a message"
@@ -539,6 +641,13 @@ const Step1EnquiryScreen = ({ navigation, route }) => {
                                         <Text style={{ fontSize: 24, color: message.trim() ? '#000' : '#ccc' }}>{'>'}</Text>
                                     )}
                                 </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.warningContainer}>
+                                <Text style={styles.warningText}>
+                                    Stay safe in RoundBuy. Don't share personal data, click on external links, or scan codes.
+                                    <Text style={styles.warningLink} onPress={() => setChatRestrictionsModalVisible(true)}> Read more on Safety Guidelines</Text>
+                                </Text>
                             </View>
                         </View>
                     </View>
@@ -587,16 +696,16 @@ const styles = StyleSheet.create({
     },
     productTopBar: {
         flexDirection: 'row',
-        padding: 16,
+        padding: 12,
         alignItems: 'flex-start',
         borderBottomWidth: 1,
         borderBottomColor: '#f0f0f0',
     },
     topBarImage: {
-        width: 80,
-        height: 100,
-        borderRadius: 8,
-        backgroundColor: '#e0e0e0',
+        width: 100,
+        height: 120,
+        borderRadius: 4,
+        backgroundColor: '#f5f5f5',
     },
     topBarDetails: {
         flex: 1,
@@ -622,10 +731,10 @@ const styles = StyleSheet.create({
     topBarDistance: {
         fontSize: 12,
         color: '#666',
-        marginBottom: 12,
+        marginBottom: 2,
     },
     offerFormContainer: {
-        marginTop: 4,
+        marginTop: 2,
     },
     offerInputWrapper: {
         flexDirection: 'row',
@@ -633,8 +742,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#f0f0f0',
         borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
         marginBottom: 8,
         justifyContent: 'center',
     },
@@ -654,43 +763,54 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        gap: 12, // For react-native 0.71+
+        gap: 8, // For react-native 0.71+
     },
     offerBtnHalf: {
         backgroundColor: '#f5f5f5',
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderRadius: 24,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     offerBtnTextBlack: {
-        fontSize: 18,
-        fontWeight: '500',
+        fontSize: 16,
+        fontWeight: 'bold',
         color: '#000',
     },
     buyBtnHalf: {
         backgroundColor: '#001C64', // Dark blue from the screenshot
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical: 10,
         borderRadius: 24,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     buyBtnTextWhite: {
-        fontSize: 18,
-        fontWeight: '500',
+        fontSize: 16,
+        fontWeight: 'bold',
         color: '#fff',
     },
     makeOfferBtnDisabled: {
         opacity: 0.5,
     },
     dateDivider: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         paddingVertical: 12,
         paddingHorizontal: 16,
+        alignItems: 'center',
     },
     dateText: {
         fontSize: 12,
         color: '#666',
         fontWeight: '600',
+    },
+    offerHistoryText: {
+        fontSize: 14,
+        color: '#0066FF',
+        fontWeight: 'bold',
+        textDecorationLine: 'underline',
     },
     messageList: {
         flex: 1,
@@ -757,18 +877,35 @@ const styles = StyleSheet.create({
         color: '#000',
         lineHeight: 22,
     },
+    galleryLinkButton: {
+        backgroundColor: COLORS.primary,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+        marginTop: 4,
+    },
+    galleryLinkText: {
+        color: COLORS.white,
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 8,
+    },
     bottomSection: {
         padding: 16,
         paddingTop: 8,
         backgroundColor: '#fff',
     },
     warningContainer: {
-        marginBottom: 12,
+        marginTop: 12,
     },
     warningText: {
         fontSize: 11,
         color: '#666',
         lineHeight: 16,
+        textAlign: 'center',
     },
     warningLink: {
         color: COLORS.primary,
@@ -781,7 +918,7 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         borderRadius: 8,
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 4,
     },
     input: {
         flex: 1,
@@ -790,18 +927,25 @@ const styles = StyleSheet.create({
         maxHeight: 100,
         color: '#000',
     },
+    cameraButton: {
+        padding: 8,
+        marginRight: 4,
+    },
     sendButton: {
         padding: 8,
         marginLeft: 8,
     },
     offerCardInner: {
+        width: '100%',
+    },
+    offerCardInnerBordered: {
+        width: '100%',
+        marginTop: 2,
         backgroundColor: '#fff',
         borderRadius: 8,
-        padding: 16,
+        padding: 8,
         borderWidth: 1,
-        borderColor: '#f0f0f0',
-        width: '100%',
-        marginTop: 12,
+        borderColor: '#cececeff',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.03,
@@ -812,100 +956,159 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#000',
-        marginBottom: 12,
-    },
-    offerDetailsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flexWrap: 'wrap',
         marginBottom: 8,
+    },
+    offerTextRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+    },
+    offerActionText: {
+        fontSize: 14,
+        color: '#000',
+        flex: 1,
     },
     offerUsernameBold: {
         fontWeight: 'bold',
-        fontSize: 14,
-        color: '#000',
     },
-    offerDetailsText: {
-        fontSize: 14,
-        color: '#333',
-        marginRight: 'auto',
-    },
-    offerAmountBold: {
+    offerAmountBoldRight: {
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: 16,
         color: '#000',
         marginLeft: 8,
     },
-    offerContextText: {
-        fontSize: 13,
-        color: '#666',
-        marginTop: 4,
-        lineHeight: 18,
-    },
-    offerActionButtons: {
+    offerActionContainer: {
         marginTop: 16,
+    },
+    offerRespondLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 12,
     },
     offerButtonsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        gap: 12,
     },
     offerDeclineBtn: {
         flex: 1,
-        backgroundColor: '#f8f8f8',
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#000',
         borderRadius: 24,
         paddingVertical: 12,
         alignItems: 'center',
-        marginRight: 6,
     },
     offerDeclineBtnText: {
         fontSize: 16,
         color: '#000',
-    },
-    offerCounterBtn: {
-        flex: 1,
-        backgroundColor: '#f8f8f8',
-        borderRadius: 24,
-        paddingVertical: 12,
-        alignItems: 'center',
-        marginLeft: 6,
-    },
-    offerCounterBtnText: {
-        fontSize: 16,
-        color: '#000',
+        fontWeight: 'bold',
     },
     offerAcceptBtn: {
-        backgroundColor: COLORS.primary,
+        flex: 1,
+        backgroundColor: '#001C64', // Dark blue
         borderRadius: 24,
         paddingVertical: 12,
         alignItems: 'center',
     },
     offerAcceptBtnText: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#fff',
     },
     offerBtnDisabled: {
         opacity: 0.5,
     },
-    offerStatusBoxAccepted: {
-        marginTop: 12,
-        backgroundColor: '#32CD32',
-        paddingVertical: 8,
-        alignItems: 'center',
-        borderRadius: 6,
+    offerResolvedContainer: {
+        marginTop: 8,
     },
-    offerStatusBoxDeclined: {
-        marginTop: 12,
-        backgroundColor: '#FF3B30',
-        paddingVertical: 8,
-        alignItems: 'center',
-        borderRadius: 6,
+    offerResolvedTitle: {
+        color: '#000',
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginBottom: 4,
     },
-    offerStatusTextWhite: {
+    offerResolvedSubTitle: {
+        color: '#666',
+        fontSize: 14,
+        marginBottom: 4,
+    },
+    offerResolvedNote: {
+        color: '#999',
+        fontSize: 12,
+        fontStyle: 'italic',
+    },
+    imageGalleryPreviewContainer: {
+        marginTop: 8,
+    },
+    galleryPreviewLabel: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: COLORS.primary,
+        marginBottom: 6,
+    },
+    galleryPreviewTouchable: {
+        width: 200,
+        height: 150,
+        borderRadius: 8,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    galleryPreviewImage: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#f5f5f5',
+    },
+    galleryPreviewOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    galleryPreviewOverlayText: {
         color: '#fff',
         fontWeight: 'bold',
-        fontSize: 14,
+        marginTop: 4,
+    },
+    imageGridSingle: {
+        width: 280,
+        height: 240,
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    imageGridItemFull: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 8,
+        backgroundColor: '#f5f5f5',
+    },
+    imageGridDouble: {
+        width: 280,
+    },
+    imageGridTriple: {
+        width: 280,
+    },
+    imageGridQuad: {
+        width: 280,
+    },
+    imageGridItemHalf: {
+        flex: 1,
+        height: '100%',
+        borderRadius: 8,
+        backgroundColor: '#f5f5f5',
+    },
+    imageGridOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+    },
+    imageGridOverlayText: {
+        color: '#fff',
+        fontSize: 24,
+        fontWeight: 'bold',
     }
 });
 

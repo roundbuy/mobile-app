@@ -93,6 +93,7 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 5, route: 'DefaultLocation', title: 'My locations', icon: 'location-outline' },
       { id: 6, route: 'MyMembership', title: 'Membership', icon: 'card-outline' },
       { id: 3, route: 'SupportResolution', title: 'My Resolutions', icon: 'help-circle-outline', badge: 0 },
+      { id: 15, route: 'ResolutionInbox', title: 'Resolution Inbox', icon: 'mail-outline' },
       { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
       { id: 9, route: 'Rewards', title: 'My Rewards', icon: 'gift-outline' },

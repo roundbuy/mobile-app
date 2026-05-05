@@ -136,9 +136,12 @@ const AttachEvidenceScreen = ({ navigation, route }) => {
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Handshake Icon */}
+                {/* Handshake Icon with Scales */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="file-text-o" size={60} color="#505050" />
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+                        <FontAwesome name="handshake-o" size={50} color="#505050" />
+                    </View>
                 </View>
 
                 {/* Info Message */}
@@ -277,6 +280,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 24,
         backgroundColor: '#FFF',
+    },
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
     },
     infoCard: {
         backgroundColor: '#FFF',

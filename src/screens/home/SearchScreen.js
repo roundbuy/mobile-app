@@ -12,10 +12,10 @@ import favoritesService from '../../services/favoritesService';
 import { advertisementService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
-import CategoryFilterModal from '../../components/CategoryFilterModal';
 import DistanceFilterModal from '../../components/DistanceFilterModal';
 import PriceRangeFilterModal from '../../components/PriceRangeFilterModal';
 import CombinedFiltersModal from '../../components/CombinedFiltersModal';
+import MultiSelectFilterModal from '../../components/MultiSelectFilterModal';
 import SortDropdown from '../../components/SortDropdown';
 import { useFocusEffect } from '@react-navigation/native';
 import { getFullImageUrl } from '../../utils/imageUtils';
@@ -28,6 +28,7 @@ import SectionHeader from '../../components/SectionHeader';
 import PromotionsGrid from '../../components/PromotionsGrid';
 import StandardProductCard from '../../components/StandardProductCard';
 import Hyperlink from '../../components/common/Hyperlink';
+import SearchInstructionsModal from '../../components/SearchInstructionsModal';
 
 const getBadgeConfig = (badge) => {
   const level = badge.level?.toLowerCase();
@@ -83,16 +84,30 @@ const SearchScreen = ({ navigation, route }) => {
   // Filter state
   const [filters, setFilters] = useState({
     search: '',
-    category_id: null,
-    subcategory_id: null,
-    activity_id: null,
-    condition_id: null,
+    category_id: [],
+    subcategory_id: [],
+    activity_id: [],
+    condition_id: [],
+    gender_id: [],
+    age_id: [],
+    size_id: [],
+    color_id: [],
     min_price: null,
     max_price: null,
     radius: 50, // km
     sort: 'views',
     order: 'DESC',
     measurementUnit: 'km' // Default measurement unit
+  });
+
+  const [filterOptions, setFilterOptions] = useState({
+    categories: [],
+    activities: [],
+    conditions: [],
+    genders: [],
+    ages: [],
+    sizes: [],
+    colors: []
   });
 
   // Location state
@@ -119,11 +134,20 @@ const SearchScreen = ({ navigation, route }) => {
 
   // Modal states
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [activityModalVisible, setActivityModalVisible] = useState(false);
+  const [conditionModalVisible, setConditionModalVisible] = useState(false);
   const [distanceModalVisible, setDistanceModalVisible] = useState(false);
   const [priceModalVisible, setPriceModalVisible] = useState(false);
+  const [genderModalVisible, setGenderModalVisible] = useState(false);
+  const [ageModalVisible, setAgeModalVisible] = useState(false);
+  const [sizeModalVisible, setSizeModalVisible] = useState(false);
+  const [colorModalVisible, setColorModalVisible] = useState(false);
+  const [measurementModalVisible, setMeasurementModalVisible] = useState(false);
+
   const [combinedFiltersModalVisible, setCombinedFiltersModalVisible] = useState(false);
   const [disclaimerModalVisible, setDisclaimerModalVisible] = useState(false);
   const [usernameRequiredModalVisible, setUsernameRequiredModalVisible] = useState(false);
+  const [searchInstructionsModalVisible, setSearchInstructionsModalVisible] = useState(false);
 
   // User locations state
   const [userLocations, setUserLocations] = useState([]);
@@ -156,7 +180,19 @@ const SearchScreen = ({ navigation, route }) => {
     console.log('📍 Initial region:', region);
     getLocationAsync();
     fetchUserLocations();
+    fetchFilterOptions();
   }, []);
+
+  const fetchFilterOptions = async () => {
+    try {
+      const response = await advertisementService.getFilters();
+      if (response.success) {
+        setFilterOptions(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching filter options:', err);
+    }
+  };
 
   // Reload user locations when screen comes into focus (after changing location)
   useFocusEffect(
@@ -234,10 +270,10 @@ const SearchScreen = ({ navigation, route }) => {
       // Build filter object
       const searchFilters = {
         search: searchText || filters.search,
-        category_id: filters.category_id,
-        subcategory_id: filters.subcategory_id,
-        activity_id: filters.activity_id,
-        condition_id: filters.condition_id,
+        category_id: filters.category_id?.length ? filters.category_id.join(',') : null,
+        subcategory_id: filters.subcategory_id?.length ? filters.subcategory_id.join(',') : null,
+        activity_id: filters.activity_id?.length ? filters.activity_id.join(',') : null,
+        condition_id: filters.condition_id?.length ? filters.condition_id.join(',') : null,
         min_price: filters.min_price,
         max_price: filters.max_price,
         latitude: searchLatitude,
@@ -524,8 +560,37 @@ const SearchScreen = ({ navigation, route }) => {
   };
 
   // Modal handlers
-  const handleCategorySelect = (category) => {
-    setFilters({ ...filters, category_id: category });
+  const handleCategorySelect = (categoryArray) => {
+    setFilters({ ...filters, category_id: categoryArray });
+  };
+
+  const handleActivitySelect = (activityArray) => {
+    setFilters({ ...filters, activity_id: activityArray });
+  };
+
+  const handleConditionSelect = (conditionArray) => {
+    setFilters({ ...filters, condition_id: conditionArray });
+  };
+
+  const handleGenderSelect = (genderArray) => {
+    setFilters({ ...filters, gender_id: genderArray });
+  };
+
+  const handleAgeSelect = (ageArray) => {
+    setFilters({ ...filters, age_id: ageArray });
+  };
+
+  const handleSizeSelect = (sizeArray) => {
+    setFilters({ ...filters, size_id: sizeArray });
+  };
+
+  const handleColorSelect = (colorArray) => {
+    setFilters({ ...filters, color_id: colorArray });
+  };
+
+  const handleMeasurementSelect = (measurementArray) => { // Treating measurement unit as multi-select for consistency or single string
+    // To match structure, assume taking first selected or keeping array
+    setFilters({ ...filters, measurementUnit: measurementArray.length > 0 ? measurementArray[0] : 'km' });
   };
 
   const handleDistanceSelect = (radius) => {
@@ -790,10 +855,9 @@ const SearchScreen = ({ navigation, route }) => {
             linkKey="search_instructions"
             containerStyle={[styles.instructionsButton, { flexDirection: 'row', alignItems: 'center' }]}
             style={styles.instructionsText}
-            onPress={() => Alert.alert(t('Instructions'), t('Browse advertisements by using the map or list view. Use filters to refine your search and sort options to organize results.'))}
+            onPress={() => setSearchInstructionsModalVisible(true)}
           >
             {t('Instructions')}
-            {/* <Ionicons name="information-circle-outline" size={18} color="#001C64" style={{ marginLeft: 4 }} /> */}
           </Hyperlink>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}
@@ -1274,31 +1338,29 @@ const SearchScreen = ({ navigation, route }) => {
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SearchScreen')}>
           <FontAwesome name="home" size={28} color={COLORS.primary} />
-          <Text style={styles.navLabel}>{t('Home')}</Text>
+          <Text style={styles.navLabel}>{t('Search')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ManageOffers')}>
-          <View style={styles.bookIcon}>
-            <Text style={styles.poundSign}>£</Text>
-          </View>
-          <Text style={styles.navLabel}>{t('Offers')}</Text>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ActionCenterScreen')}>
+          <Ionicons name="time-outline" size={32} color={COLORS.primary} />
+          <Text style={styles.navLabel}>{t('Actions')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={handleMakeAnAd}>
           <View style={styles.plusCircle}>
             <FontAwesome name="plus" size={20} color={COLORS.primary} />
           </View>
-          <Text style={styles.navLabel}>{t('List an item')}</Text>
+          <Text style={styles.navLabel}>{t('List')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PickUpExchange')}>
-          <Ionicons name="time-outline" size={32} color={COLORS.primary} />
-          <Text style={styles.navLabel}>{t('Pick Ups')}</Text>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ActionCenterMessagesScreen')}>
+          <Ionicons name="mail-outline" size={32} color={COLORS.primary} />
+          <Text style={styles.navLabel}>{t('Inbox')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('UserAccount')}>
           <FontAwesome name="user" size={28} color={COLORS.primary} />
-          <Text style={styles.navLabel}>{t('Account')}</Text>
+          <Text style={styles.navLabel}>{t('User')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1311,16 +1373,48 @@ const SearchScreen = ({ navigation, route }) => {
       )}
 
       {/* Filter Modals */}
-      <CategoryFilterModal
+      <MultiSelectFilterModal
         visible={categoryModalVisible}
-        onClose={() => setCategoryModalVisible(false)}
-        selectedCategory={filters.category_id}
-        onSelectCategory={handleCategorySelect}
+        onClose={() => {
+          setCategoryModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Category"
+        options={filterOptions.categories?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.category_id}
+        onApply={handleCategorySelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={activityModalVisible}
+        onClose={() => {
+          setActivityModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Activity"
+        options={filterOptions.activities?.map(a => ({ id: a.id?.toString(), label: a.name })) || []}
+        selectedValues={filters.activity_id}
+        onApply={handleActivitySelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={conditionModalVisible}
+        onClose={() => {
+          setConditionModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Condition"
+        options={filterOptions.conditions?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.condition_id}
+        onApply={handleConditionSelect}
       />
 
       <DistanceFilterModal
         visible={distanceModalVisible}
-        onClose={() => setDistanceModalVisible(false)}
+        onClose={() => {
+          setDistanceModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
         selectedRadius={filters.radius}
         onSelectRadius={handleDistanceSelect}
         userLocation={getSelectedUserLocation()}
@@ -1328,25 +1422,140 @@ const SearchScreen = ({ navigation, route }) => {
 
       <PriceRangeFilterModal
         visible={priceModalVisible}
-        onClose={() => setPriceModalVisible(false)}
+        onClose={() => {
+          setPriceModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
         minPrice={filters.min_price}
         maxPrice={filters.max_price}
         onSelectPriceRange={handlePriceRangeSelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={genderModalVisible}
+        onClose={() => {
+          setGenderModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Gender"
+        options={filterOptions.genders?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.gender_id}
+        onApply={handleGenderSelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={ageModalVisible}
+        onClose={() => {
+          setAgeModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Age"
+        options={filterOptions.ages?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.age_id}
+        onApply={handleAgeSelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={sizeModalVisible}
+        onClose={() => {
+          setSizeModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Size"
+        options={filterOptions.sizes?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.size_id}
+        onApply={handleSizeSelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={colorModalVisible}
+        onClose={() => {
+          setColorModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Colour"
+        options={filterOptions.colors?.map(c => ({ id: c.id?.toString(), label: c.name })) || []}
+        selectedValues={filters.color_id}
+        onApply={handleColorSelect}
+      />
+
+      <MultiSelectFilterModal
+        visible={measurementModalVisible}
+        onClose={() => {
+          setMeasurementModalVisible(false);
+          setTimeout(() => setCombinedFiltersModalVisible(true), 100);
+        }}
+        title="Measurement Unit"
+        options={[
+          { id: 'km', label: 'km' },
+          { id: 'miles', label: 'miles' }
+        ]}
+        selectedValues={filters.measurementUnit ? [filters.measurementUnit] : []}
+        onApply={handleMeasurementSelect}
       />
 
       <CombinedFiltersModal
         visible={combinedFiltersModalVisible}
         onClose={() => setCombinedFiltersModalVisible(false)}
         filters={filters}
+        filterOptions={filterOptions}
         onUpdateFilters={handleCombinedFiltersUpdate}
-        onOpenCategoryModal={() => setCategoryModalVisible(true)}
-        onOpenDistanceModal={() => setDistanceModalVisible(true)}
-        onOpenPriceModal={() => setPriceModalVisible(true)}
+        onOpenCategoryModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setCategoryModalVisible(true), 100);
+        }}
+        onOpenActivityModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setActivityModalVisible(true), 100);
+        }}
+        onOpenConditionModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setConditionModalVisible(true), 100);
+        }}
+        onOpenDistanceModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setDistanceModalVisible(true), 100);
+        }}
+        onOpenPriceModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setPriceModalVisible(true), 100);
+        }}
+        onOpenGenderModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setGenderModalVisible(true), 100);
+        }}
+        onOpenAgeModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setAgeModalVisible(true), 100);
+        }}
+        onOpenSizeModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setSizeModalVisible(true), 100);
+        }}
+        onOpenColorModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setColorModalVisible(true), 100);
+        }}
+        onOpenMeasurementModal={() => {
+          setCombinedFiltersModalVisible(false);
+          setTimeout(() => setMeasurementModalVisible(true), 100);
+        }}
       />
 
       <LocationDisclaimerModal
         visible={disclaimerModalVisible}
         onClose={() => setDisclaimerModalVisible(false)}
+      />
+
+      <SearchInstructionsModal
+        visible={searchInstructionsModalVisible}
+        onClose={() => setSearchInstructionsModalVisible(false)}
+        userLocations={userLocations}
+        selectedLocation={selectedLocation}
+        onLocationSelect={(index) => {
+          setSelectedLocation(index);
+          setSearchInstructionsModalVisible(false);
+        }}
       />
 
       <UsernameRequiredModal

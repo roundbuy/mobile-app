@@ -174,15 +174,54 @@ class DisputeService {
   /**
    * Update dispute status
    */
-  async updateDisputeStatus(disputeId, status, resolutionStatus = null) {
+  async updateDisputeStatus(disputeId, status, confirmation = null) {
     try {
       const response = await api.put(`/disputes/${disputeId}/status`, {
         status,
-        resolution_status: resolutionStatus
+        confirmation
       });
       return response.data;
     } catch (error) {
       console.error('Update dispute status error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Submit a negotiation suggestion for a dispute
+   */
+  async submitDisputeNegotiationSuggestion(disputeId, suggestion) {
+    try {
+      const response = await api.post(`/disputes/${disputeId}/suggestions`, { suggestion });
+      return response.data;
+    } catch (error) {
+      console.error('Submit dispute suggestion error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Submit a negotiation decision for a dispute
+   */
+  async submitDisputeNegotiationDecision(disputeId, decision) {
+    try {
+      const response = await api.post(`/disputes/${disputeId}/decide-negotiation`, { decision });
+      return response.data;
+    } catch (error) {
+      console.error('Submit dispute decision error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Submit per-user resolution decision (Accept/Decline on the Status Resolutions screen)
+   */
+  async submitNegotiationDecision(disputeId, decision) {
+    try {
+      const response = await api.post(`/disputes/${disputeId}/submit-negotiation-decision`, { decision });
+      return response.data;
+    } catch (error) {
+      console.error('Submit negotiation decision error:', error);
       throw error.response?.data || error;
     }
   }
@@ -445,6 +484,32 @@ class DisputeService {
       return response.data;
     } catch (error) {
       console.error('Close issue error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Submit a negotiation suggestion
+   */
+  async submitNegotiationSuggestion(issueId, suggestion) {
+    try {
+      const response = await api.post(`/issues/${issueId}/negotiate/suggestion`, { suggestion });
+      return response.data;
+    } catch (error) {
+      console.error('Submit suggestion error:', error);
+      throw error.response?.data || error;
+    }
+  }
+
+  /**
+   * Submit a negotiation decision
+   */
+  async submitNegotiationDecision(issueId, decision) {
+    try {
+      const response = await api.post(`/issues/${issueId}/negotiate/decision`, { decision });
+      return response.data;
+    } catch (error) {
+      console.error('Submit decision error:', error);
       throw error.response?.data || error;
     }
   }

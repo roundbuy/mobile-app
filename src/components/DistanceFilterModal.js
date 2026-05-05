@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
-import MapView, { Circle, Marker, PROVIDER_GOOGLE } from '../components/MapView';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder, SafeAreaView } from 'react-native';
 import * as Location from 'expo-location';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE } from './MapView';
 import { COLORS, SLIDER_CONFIG } from '../constants/theme';
 
 const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius, userLocation }) => {
@@ -21,9 +20,16 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
   const SLIDER_DECIMAL_PRECISION = SLIDER_CONFIG.decimalPrecision;
   const UNLIMITED_RADIUS = 100000; // Value to represent unlimited
 
-
   const sliderTrackRef = useRef(null);
   const sliderLayout = useRef({ x: 0, width: 0 });
+
+  // Refs for precise relativity tracking
+  const currentRadius = useRef(tempRadius);
+  const initialDragRadius = useRef(tempRadius);
+
+  useEffect(() => {
+    currentRadius.current = tempRadius;
+  }, [tempRadius]);
 
   useEffect(() => {
     if (visible) {
@@ -99,26 +105,21 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
     }
   };
 
-  const updateSliderValue = (pageX) => {
-    const { x, width } = sliderLayout.current;
-    if (width === 0) return;
-
-    const relativeX = pageX - x;
-    const percentage = Math.max(0, Math.min(100, (relativeX / width) * 100));
-    const actualValue = (percentage / 100) * SLIDER_MAX;
-    const roundedValue = parseFloat(actualValue.toFixed(SLIDER_DECIMAL_PRECISION));
-    setTempRadius(roundedValue);
-  };
-
   const sliderPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX);
+      onPanResponderGrant: () => {
+        initialDragRadius.current = currentRadius.current;
       },
-      onPanResponderMove: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX);
+      onPanResponderMove: (evt, gestureState) => {
+        const { width } = sliderLayout.current;
+        if (width === 0) return;
+        const deltaValue = (gestureState.dx / width) * SLIDER_MAX;
+        const rawNewValue = initialDragRadius.current + deltaValue;
+        const newRadiusValue = Math.max(SLIDER_MIN, Math.min(rawNewValue, SLIDER_MAX));
+        const roundedValue = parseFloat(newRadiusValue.toFixed(SLIDER_DECIMAL_PRECISION));
+        setTempRadius(roundedValue);
       },
       onPanResponderRelease: () => { },
     })
@@ -144,75 +145,54 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Distance</Text>
+          <Text style={styles.headerTitle}>DISTANCE</Text>
           <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-            <Text style={styles.clearText}>Clear</Text>
+            <Text style={styles.clearText}>CLEAR</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          {/* Map Section */}
+          <View style={styles.mapContainer}>
+            {location && (
+              <MapView
+                ref={mapRef}
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={region}
+                showsUserLocation={true}
+                showsMyLocationButton={true}
+                zoomEnabled={true}
+                scrollEnabled={true}
+              >
+                <Marker coordinate={location} />
+                {tempRadius < SLIDER_MAX && (
+                  <Circle
+                    center={location}
+                    radius={tempRadius * 1000} // Convert km to meters
+                    fillColor="rgba(26, 26, 26, 0.15)"
+                    strokeColor={COLORS.primary}
+                    strokeWidth={1}
+                  />
+                )}
+              </MapView>
+            )}
+          </View>
+
           <View style={styles.content}>
-            {/* Map Preview with Radius Circle */}
-            <View style={styles.mapContainer}>
-              {location ? (
-                <MapView
-                  ref={mapRef}
-                  provider={PROVIDER_GOOGLE}
-                  style={styles.map}
-                  initialRegion={region}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
-                  rotateEnabled={false}
-                  pitchEnabled={false}
-                  showsUserLocation={false}
-                  showsMyLocationButton={false}
-                  showsCompass={false}
-                  toolbarEnabled={false}
-                >
-                  {/* Radius Circle - only show if not unlimited */}
-                  {tempRadius < SLIDER_MAX && (
-                    <Circle
-                      center={location}
-                      radius={tempRadius * 1000} // Convert km to meters
-                      strokeWidth={2}
-                      strokeColor={COLORS.primary}
-                      fillColor={`${COLORS.primary}20`} // 20% opacity
-                    />
-                  )}
-
-                  {/* Center Marker */}
-                  <Marker
-                    coordinate={location}
-                    anchor={{ x: 0.5, y: 0.5 }}
-                  >
-                    <View style={styles.centerMarker}>
-                      <FontAwesome name="map-marker" size={24} color={COLORS.primary} />
-                    </View>
-                  </Marker>
-                </MapView>
-              ) : (
-                <View style={styles.mapPlaceholder}>
-                  <FontAwesome name="map-marker" size={32} color={COLORS.primary} />
-                  <Text style={styles.placeholderText}>Loading location...</Text>
-                </View>
-              )}
-
-              {/* Distance Overlay */}
-              <View style={styles.distanceOverlay}>
-                <Text style={styles.distanceText}>
+            {/* Slider */}
+            <View style={styles.sliderSection}>
+              <View style={styles.sliderHeaderRow}>
+                <Text style={styles.sliderLabel}>Search radius</Text>
+                <Text style={styles.distanceValueText}>
                   {tempRadius >= SLIDER_MAX ? 'Unlimited' : `${tempRadius.toFixed(SLIDER_DECIMAL_PRECISION)} km`}
                 </Text>
               </View>
-            </View>
-
-            {/* Slider */}
-            <View style={styles.sliderSection}>
-              <Text style={styles.sliderLabel}>Search radius</Text>
               <View
                 style={styles.sliderTrack}
                 ref={sliderTrackRef}
@@ -235,24 +215,16 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
                   ]}
                 />
               </View>
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabelText}>0 km</Text>
-                <Text style={styles.sliderLabelText}>Unlimited</Text>
-              </View>
             </View>
-
-            <Text style={styles.description}>
-              Drag the slider to adjust your search radius. The map shows the area that will be searched.
-            </Text>
           </View>
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply</Text>
+            <Text style={styles.applyButtonText}>Use</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -283,18 +255,19 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   clearButton: {
-    paddingHorizontal: 12,
     paddingVertical: 6,
   },
   clearText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   scrollView: {
     flex: 1,
@@ -307,59 +280,34 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   mapContainer: {
-    height: 250,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 30,
-    backgroundColor: '#f0f0f0',
-    position: 'relative',
+    height: 300,
+    width: '100%',
+    overflow: 'hidden', // Add rounded corners if desired
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   map: {
-    flex: 1,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
-  },
-  placeholderText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#303234',
-  },
-  centerMarker: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  distanceOverlay: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  distanceText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primary,
+    ...StyleSheet.absoluteFillObject,
   },
   sliderSection: {
     marginBottom: 30,
+    marginTop: 20,
+  },
+  sliderHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   sliderLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
-    marginBottom: 20,
-    textAlign: 'center',
+  },
+  distanceValueText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
   sliderTrack: {
     height: 5,
@@ -410,22 +358,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: 16,
-    paddingBottom: 34,
+    paddingBottom: 24,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#f0f0f0',
   },
   applyButton: {
-    height: 54,
-    backgroundColor: COLORS.primary,
-    borderRadius: 27,
+    height: 50,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
   applyButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1a1a1a',
   },
 });
 

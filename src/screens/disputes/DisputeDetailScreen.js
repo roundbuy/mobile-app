@@ -9,729 +9,729 @@ import {
     Alert,
     ActivityIndicator,
     TextInput,
+    RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
+
+// ─────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────
+
+const RadioButton = ({ selected, color = '#808080', size = 22 }) => (
+    <View style={[radioSt.outer, { width: size, height: size, borderRadius: size / 2 }]}>
+        {selected && (
+            <View style={[radioSt.inner, {
+                backgroundColor: color,
+                width: size * 0.55,
+                height: size * 0.55,
+                borderRadius: size * 0.275,
+            }]} />
+        )}
+    </View>
+);
+const radioSt = StyleSheet.create({
+    outer: { borderWidth: 2, borderColor: '#BBBBBB', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F5' },
+    inner: {},
+});
+
+const SectionHeader = ({ title, time }) => (
+    <View style={s.sectionHeader}>
+        <Text style={s.sectionCaps}>{title}</Text>
+        {time ? <Text style={s.sectionTime}>{time}</Text> : null}
+    </View>
+);
+
+const Bubble = ({ text }) => (
+    <View style={s.bubble}>
+        <Text style={s.bubbleText}>{text}</Text>
+    </View>
+);
+
+const ULink = ({ label, onPress }) => (
+    <TouchableOpacity onPress={onPress || (() => { })} activeOpacity={0.7}>
+        <Text style={s.link}>{label}</Text>
+    </TouchableOpacity>
+);
+
+// Clipboard icon with checkmark (matches reference image)
+const DisputeIcon = () => (
+    <View style={s.iconWrap}>
+        <MaterialCommunityIcons name="clipboard-text-outline" size={52} color="#404040" />
+        <View style={s.checkBadge}>
+            <Ionicons name="checkmark-circle" size={22} color="#404040" />
+        </View>
+    </View>
+);
+
+// ─────────────────────────────────────────────
+// Main Screen
+// ─────────────────────────────────────────────
 
 const DisputeDetailScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
     const { disputeId } = route.params || {};
+
     const [loading, setLoading] = useState(true);
-    const [dispute, setDispute] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
+    const [dispute, setDispute] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
 
-    // Seller response states
-    const [sellerResponse, setSellerResponse] = useState('');
-    const [sellerDecision, setSellerDecision] = useState(null); // 'accept' or 'decline'
+    // Form states
+    const [sellerResponseText, setSellerResponseText] = useState('');
+    const [sellerDecisionChoice, setSellerDecisionChoice] = useState(null);
+    const [ackChecked, setAckChecked] = useState(false);
+    const [suggestionText, setSuggestionText] = useState('');
+    const [myResDecision, setMyResDecision] = useState(null);
 
     useEffect(() => {
-        loadCurrentUser();
-        loadDisputeDetails();
+        loadUser().then(loadDispute);
     }, []);
 
-    const loadCurrentUser = async () => {
+    const loadUser = async () => {
         try {
-            console.log('=== LOADING USER FROM STORAGE ===');
-
-            // Try 'user' key first
-            let userStr = await AsyncStorage.getItem('user');
-            console.log('User from "user" key:', userStr);
-
-            // Try 'userData' key
-            if (!userStr) {
-                userStr = await AsyncStorage.getItem('userData');
-                console.log('User from "userData" key:', userStr);
-            }
-
-            // Try 'currentUser' key
-            if (!userStr) {
-                userStr = await AsyncStorage.getItem('currentUser');
-                console.log('User from "currentUser" key:', userStr);
-            }
-
-            // Try '@user' key
-            if (!userStr) {
-                userStr = await AsyncStorage.getItem('@user');
-                console.log('User from "@user" key:', userStr);
-            }
-
-            // Try '@roundbuy:user_data' key (CORRECT KEY!)
-            if (!userStr) {
-                userStr = await AsyncStorage.getItem('@roundbuy:user_data');
-                console.log('User from "@roundbuy:user_data" key:', userStr);
-            }
-
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                console.log('Parsed user:', user);
-                console.log('User ID:', user.id);
-                setCurrentUserId(user.id);
-            } else {
-                console.log('❌ No user found in AsyncStorage!');
-                // List all keys to debug
-                const allKeys = await AsyncStorage.getAllKeys();
-                console.log('All AsyncStorage keys:', allKeys);
-            }
-            console.log('=================================');
-        } catch (error) {
-            console.error('Load user error:', error);
-        }
+            const raw = await AsyncStorage.getItem('@roundbuy:user_data');
+            if (raw) setCurrentUserId(JSON.parse(raw).id);
+        } catch (e) { }
     };
 
-    const loadDisputeDetails = async () => {
+    const loadDispute = async () => {
         try {
-            const response = await disputeService.getDisputeById(disputeId);
-            if (response.success) {
-                setDispute(response.data);
-                console.log('=== DISPUTE DATA FROM API ===');
-                console.log('Full dispute object:', JSON.stringify(response.data, null, 2));
-                console.log('============================');
-                // Pre-fill seller response if exists
-                if (response.data.seller_response) {
-                    setSellerResponse(response.data.seller_response);
-                }
-                if (response.data.seller_decision) {
-                    setSellerDecision(response.data.seller_decision);
-                }
-            }
-        } catch (error) {
-            console.error('Load dispute error:', error);
-            Alert.alert(t('Error'), t('Failed to load dispute details'));
+            const res = await disputeService.getDisputeById(disputeId);
+            if (res?.success) setDispute(res.data);
+        } catch (e) {
+            Alert.alert('Error', 'Failed to load dispute');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        if (diffHours < 1) return 'Just now';
-        if (diffHours < 24) return `${diffHours}h ago`;
-        const diffDays = Math.floor(diffHours / 24);
-        return `${diffDays}d ago`;
+    const onRefresh = () => { setRefreshing(true); loadDispute(); };
+
+    const ago = (d) => {
+        if (!d) return '';
+        const h = Math.floor((Date.now() - new Date(d)) / 3600000);
+        if (h < 1) return 'Just now';
+        if (h < 24) return `${h}h ago`;
+        return `${Math.floor(h / 24)}d ago`;
     };
 
-    const handleSendResponse = async () => {
-        if (!sellerResponse.trim()) {
-            Alert.alert(t('Error'), t('Please enter your response'));
-            return;
-        }
-        if (!sellerDecision) {
-            Alert.alert(t('Error'), t('Please select your decision'));
-            return;
-        }
+    // ── Action handlers ──
 
+    const sendSellerResponse = async () => {
+        if (!sellerResponseText.trim()) return Alert.alert('Error', 'Enter your response');
+        if (!sellerDecisionChoice) return Alert.alert('Error', 'Select a decision');
         setActionLoading(true);
         try {
-            await disputeService.sendSellerResponse(disputeId, {
-                response: sellerResponse,
-                decision: sellerDecision,
-            });
-            Alert.alert(t('Success'), t('Response sent to buyer'));
-            loadDisputeDetails(); // Reload to show updated state
-        } catch (error) {
-            Alert.alert(t('Error'), t('Failed to send response'));
-        } finally {
-            setActionLoading(false);
-        }
+            await disputeService.sendSellerResponse(disputeId, { response: sellerResponseText, decision: sellerDecisionChoice });
+            loadDispute();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to send response');
+        } finally { setActionLoading(false); }
     };
 
-    const handleCloseDispute = () => {
-        Alert.alert(
-            t('Close Dispute'),
-            t('Are you sure you want to close this dispute?'),
-            [
-                { text: t('Cancel'), style: t('cancel') },
-                {
-                    text: t('Close'),
-                    style: t('destructive'),
-                    onPress: async () => {
-                        setActionLoading(true);
-                        try {
-                            await disputeService.closeDispute(disputeId);
-                            Alert.alert(t('Success'), t('Dispute closed successfully'));
-                            navigation.goBack();
-                        } catch (error) {
-                            Alert.alert(t('Error'), t('Failed to close dispute'));
-                        } finally {
-                            setActionLoading(false);
-                        }
-                    },
-                },
-            ]
-        );
+    const sendSuggestion = async () => {
+        if (!suggestionText.trim()) return Alert.alert('Error', 'Enter your suggestion');
+        setActionLoading(true);
+        try {
+            await disputeService.submitDisputeNegotiationSuggestion(disputeId, suggestionText);
+            setSuggestionText('');
+            loadDispute();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to send suggestion');
+        } finally { setActionLoading(false); }
     };
 
-    const handleEscalateToClaim = () => {
-        navigation.navigate('CreateClaim', { dispute });
+    const submitResDecision = async () => {
+        if (!myResDecision) return Alert.alert('Select Decision', 'Please select accept or decline');
+        if (!ackChecked) return Alert.alert('Required', 'Please confirm you have read the recommendation');
+        setActionLoading(true);
+        try {
+            await disputeService.submitNegotiationDecision(disputeId, myResDecision);
+            loadDispute();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to submit decision');
+        } finally { setActionLoading(false); }
     };
 
+    const closeDispute = () => {
+        Alert.alert('Close Dispute', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Close', style: 'destructive', onPress: async () => {
+                    try {
+                        await disputeService.updateDisputeStatus(dispute.id, 'closed');
+                        navigation.goBack();
+                    } catch (e) { Alert.alert('Error', 'Failed to close'); }
+                }
+            },
+        ]);
+    };
+
+    const escalate = () => navigation.navigate('ClaimInformation', { dispute });
+    const showRecommendation = () => navigation.navigate('ResolutionRecommendation', { disputeId, dispute });
+    const proceedToResolution = () => navigation.navigate('ResolutionRecommendation', { disputeId, dispute });
+
+    // ── Loading / error ──
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+            <SafeAreaView style={s.container} edges={['top']}>
+                <View style={s.center}><ActivityIndicator size="large" color="#000" /></View>
             </SafeAreaView>
         );
     }
-
     if (!dispute) {
         return (
-            <SafeAreaView style={styles.container}>
-                <Text style={styles.errorText}>{t('Dispute not found')}</Text>
+            <SafeAreaView style={s.container} edges={['top']}>
+                <View style={s.center}><Text>Dispute not found</Text></View>
             </SafeAreaView>
         );
     }
 
-    // Determine if current user is the seller (respondent)
-    // seller_id is the respondent, user_id is the buyer/issuer
-    const isSeller = currentUserId && dispute.seller_id && currentUserId === dispute.seller_id;
-    const hasSellerResponded = dispute.seller_response && dispute.seller_response.trim() !== '';
+    // ── Derived states ──
+    const isSeller = currentUserId && dispute.seller_id && Number(currentUserId) === Number(dispute.seller_id);
+    const isBuyer = currentUserId && dispute.user_id && Number(currentUserId) === Number(dispute.user_id);
 
-    // Debug logs
-    console.log('=== DISPUTE DEBUG ===');
-    console.log('Current User ID:', currentUserId);
-    console.log('Dispute User ID (Buyer):', dispute.user_id);
-    console.log('Dispute Seller ID:', dispute.seller_id);
-    console.log('Is Seller?', isSeller);
-    console.log('Has Seller Responded?', hasSellerResponded);
-    console.log('Seller Response:', dispute.seller_response);
-    console.log('====================');
+    const sellerDecision = dispute.seller_decision;   // null | 'accept' | 'decline' | 'negotiate'
+    const hasResponded = !!sellerDecision;
+    const isAccept = sellerDecision === 'accept';
+    const isNegotiate = sellerDecision === 'negotiate';
+    const isDecline = sellerDecision === 'decline';
+    const isNegotiating = dispute.status === 'negotiating';
+
+    const buyerSugg = dispute.buyer_suggestion;
+    const sellerSugg = dispute.seller_suggestion;
+    const bothSuggest = !!(buyerSugg && sellerSugg);
+    const mySugg = isBuyer ? buyerSugg : sellerSugg;
+
+    const negBuyerDec = dispute.negotiation_buyer_decision;
+    const negSellerDec = dispute.negotiation_seller_decision;
+    const myNegDec = isBuyer ? negBuyerDec : negSellerDec;
+    const hasMyNegDec = !!myNegDec;
+
+    const isStatusRes = bothSuggest || !!(negBuyerDec || negSellerDec);
+    const bothAccept = negBuyerDec === 'accept' && negSellerDec === 'accept';
+    const anyDecline = negBuyerDec === 'decline' || negSellerDec === 'decline';
+    const showFail = !bothAccept && anyDecline;
+    const isSettled = dispute.status === 'settled' || bothAccept;
+    const isClosed = dispute.status === 'closed';
+
+    const acceptColor = bothAccept ? '#000' : null;
+    const declineColor = null; // No red colour – always neutral
+
+    const headerTitle = `Dispute #${dispute.dispute_number}`;
+
+    // ─────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={s.container} edges={['top']}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={styles.headerBackButton}
-                >
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+            <View style={s.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                    <Ionicons name="chevron-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Dispute #{dispute.dispute_number}</Text>
-                <View style={styles.headerRight} />
+                <Text style={s.headerTitle}>{headerTitle}</Text>
+                <View style={{ width: 32 }} />
             </View>
 
-            <ScrollView style={styles.content}>
-                {/* Icon */}
-                <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#505050" />
-                    <View style={styles.checkBadge}>
-                        <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
-                    </View>
-                </View>
-
-                {/* Creation Message */}
-                <View style={styles.creationMessage}>
-                    <Text style={styles.creationText}>
-                        A Disputed Issue #{dispute.dispute_number} was created
-                    </Text>
-                    <Text style={styles.creationTime}>{formatDate(dispute.created_at)}</Text>
-                </View>
-
-                {/* Product Info */}
-                <View style={styles.infoSection}>
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
-                        <Text style={styles.infoValue}>{dispute.ad_title || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
-                        <Text style={styles.infoValue}>{dispute.user_name || 'N/A'}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
-                        <Text style={styles.infoValue}>{dispute.respondent_name || 'Seller'}</Text>
-                    </View>
-                </View>
-
-                {/* Link to view buyer's issue */}
-                <TouchableOpacity style={styles.linkButton}>
-                    <Text style={styles.linkText}>
-                        To view Buyer's Issue & Request click{' '}
-                        <Text style={styles.linkHighlight}>{t('here')}</Text>
-                    </Text>
-                </TouchableOpacity>
-
-                {/* Buyer's Issue */}
-                <View style={styles.issueSection}>
-                    <View style={styles.issueSectionHeader}>
-                        <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
-                        <Text style={styles.sectionTime}>{formatDate(dispute.created_at)}</Text>
-                    </View>
-
-                    <Text style={styles.fieldLabel}>{t('The Disputed Issue with the product:')}</Text>
-                    <View style={styles.textBox}>
-                        <Text style={styles.textBoxContent}>{dispute.problem_description}</Text>
-                    </View>
-
-                    <Text style={styles.fieldLabel}>{t('Issuers Demand:')}</Text>
-                    <View style={styles.textBox}>
-                        <Text style={styles.textBoxContent}>{dispute.dispute_category || dispute.buyer_demand || 'Full refund requested'}</Text>
-                    </View>
-
-                    {/* Buyer's Evidence */}
-                    <TouchableOpacity style={styles.evidenceLink}>
-                        <Text style={styles.linkText}>
-                            Buyer's Upload evidence in PDF format{' '}
-                            <Text style={styles.linkHighlight}>{t('Chat history.pdf (uploaded) click to view')}</Text>
-                        </Text>
+            <ScrollView
+                style={s.scroll}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+            >
+                <View style={s.iconCenter}>
+                    <DisputeIcon />
+                    <TouchableOpacity style={s.guideCenter} activeOpacity={0.7} onPress={showRecommendation}>
+                        <Text style={s.guideText}>{'ROUNDBUY DISPUTE GUIDELINES & RES. RECOMMENDATION'}</Text>
+                        <Ionicons name="information-circle-outline" size={28} color="#000" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Seller's Response Section */}
-                {isSeller && !hasSellerResponded ? (
-                    // SELLER VIEW - Pending Response (Image 1)
-                    <View style={styles.responseSection}>
-                        <View style={styles.issueSectionHeader}>
-                            <Text style={styles.sectionTitle}>{t("SELLER'S RESPONSE")}</Text>
-                            <Text style={styles.sectionTime}>{formatDate(new Date())}</Text>
-                        </View>
-
-                        <Text style={styles.fieldLabel}>{t('Response to the Disputed Issue:')}</Text>
-                        <TextInput
-                            style={styles.textInput}
-                            multiline
-                            numberOfLines={6}
-                            placeholder={t("Enter your response to the buyer's issue...")}
-                            value={sellerResponse}
-                            onChangeText={setSellerResponse}
-                            textAlignVertical="top"
-                        />
-
-                        <Text style={styles.fieldLabel}>{t("SELLER'S DECISION")}</Text>
-                        <View style={styles.decisionContainer}>
-                            <TouchableOpacity
-                                style={styles.decisionTextRow}
-                                onPress={() => setSellerDecision('accept')}
-                            >
-                                <View style={styles.decisionRowContent}>
-                                    <Ionicons
-                                        name={sellerDecision === 'accept' ? 'checkbox' : 'square-outline'}
-                                        size={20}
-                                        color={sellerDecision === 'accept' ? COLORS.primary : '#303234'}
-                                        style={styles.checkbox}
-                                    />
-                                    <Text style={[
-                                        styles.decisionRowText,
-                                        sellerDecision === 'accept' && styles.decisionRowTextSelected
-                                    ]}>{t('I accept the Demand and Cancel the deal!')}</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={styles.decisionTextRow}
-                                onPress={() => setSellerDecision('decline')}
-                            >
-                                <View style={styles.decisionRowContent}>
-                                    <Ionicons
-                                        name={sellerDecision === 'decline' ? 'checkbox' : 'square-outline'}
-                                        size={20}
-                                        color={sellerDecision === 'decline' ? COLORS.primary : '#303234'}
-                                        style={styles.checkbox}
-                                    />
-                                    <Text style={[
-                                        styles.decisionRowText,
-                                        sellerDecision === 'decline' && styles.decisionRowTextSelected
-                                    ]}>{t('I decline the Demand and keep to the Agreement!')}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Seller Upload Evidence */}
-                        <TouchableOpacity style={styles.evidenceLink}>
-                            <Text style={styles.linkText}>
-                                Seller Upload evidence in PDF format click{' '}
-                                <Text style={styles.linkHighlight}>{t('here')}</Text>
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.evidenceLink}>
-                            <Text style={styles.linkText}>
-                                <Text style={styles.linkHighlight}>{t('My Chat history.pdf (uploaded)')}</Text> click to view
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                ) : hasSellerResponded && (
-                    // SELLER HAS RESPONDED - Show response (Image 2)
-                    <View style={styles.responseSection}>
-                        <View style={styles.issueSectionHeader}>
-                            <Text style={styles.sectionTitle}>{t("SELLER'S RESPONSE")}</Text>
-                            <Text style={styles.sectionTime}>{formatDate(dispute.updated_at)}</Text>
-                        </View>
-
-                        <Text style={styles.fieldLabel}>{t('Response to the Issue:')}</Text>
-                        <View style={styles.textBox}>
-                            <Text style={styles.textBoxContent}>{dispute.seller_response}</Text>
-                        </View>
-
-                        <Text style={styles.fieldLabel}>{t("SELLER'S DECISION")}</Text>
-                        <View style={styles.decisionBox}>
-                            <Text style={styles.decisionText}>
-                                {dispute.seller_decision === 'accept'
-                                    ? 'I accept the Request and Cancel the deal!'
-                                    : 'I decline the Request and keep to the Agreement!'}
-                            </Text>
-                        </View>
-
-                        {/* Seller's Evidence */}
-                        <TouchableOpacity style={styles.evidenceLink}>
-                            <Text style={styles.linkText}>
-                                Seller's Uploaded evidence in PDF format{' '}
-                                <Text style={styles.linkHighlight}>{t('My Chat history.pdf (uploaded) click to view')}</Text>
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-                {/* Info Link */}
-                <View style={styles.infoLinkContainer}>
-                    <Text style={styles.infoLinkText}>
-                        More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
-                    </Text>
-                    <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
+                {/* Created row */}
+                <View style={s.createdRow}>
+                    <Text style={s.createdLabel}>{`Dispute #${dispute.dispute_number} was created`}</Text>
+                    <Text style={s.createdTime}>{ago(dispute.created_at)}</Text>
                 </View>
 
-                {/* Action Buttons */}
-                <View style={styles.actionButtons}>
-                    {isSeller && !hasSellerResponded ? (
-                        // Seller pending response - Show "Send Response to Buyer"
-                        <TouchableOpacity
-                            style={styles.sendResponseButton}
-                            onPress={handleSendResponse}
-                            disabled={actionLoading}
-                        >
-                            <Text style={styles.sendResponseButtonText}>
-                                {actionLoading ? 'Sending...' : 'Send Response to Buyer'}
-                            </Text>
-                        </TouchableOpacity>
-                    ) : isSeller && hasSellerResponded ? (
-                        // Seller has responded - Show confirmation message
-                        <Text style={styles.waitingText}>{t("Your response has been sent to the buyer. Waiting for buyer's action...")}</Text>
-                    ) : !isSeller && hasSellerResponded && dispute.seller_decision === 'decline' ? (
-                        // BUYER view - Seller declined - Show Escalate and Close buttons
-                        <>
-                            <TouchableOpacity
-                                style={styles.escalateButton}
-                                onPress={handleEscalateToClaim}
-                                disabled={actionLoading}
-                            >
-                                <Text style={styles.escalateButtonText}>{t('Escalate to Claim')}</Text>
-                            </TouchableOpacity>
+                {/* Info table */}
+                <View style={s.infoTable}>
+                    {[
+                        ['Item:', dispute.ad_title || 'N/A'],
+                        ['Complainant:', dispute.user_name || 'N/A'],
+                        ['Respondent:', dispute.seller_name || 'N/A'],
+                    ].map(([label, val]) => (
+                        <View style={s.infoRow} key={label}>
+                            <Text style={s.infoLabel}>{label}</Text>
+                            <Text style={s.infoVal}>{val}</Text>
+                        </View>
+                    ))}
+                </View>
 
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={handleCloseDispute}
-                                disabled={actionLoading}
-                            >
-                                <Text style={styles.closeButtonText}>{t('Close the Dispute')}</Text>
+                <View style={s.divider} />
+
+                {/* BUYER'S DISPUTE */}
+                <SectionHeader title={"BUYER'S DISPUTE"} time={ago(dispute.created_at)} />
+                <ULink label="View Dispute & Demand" />
+                <ULink label="View Uploaded evidence" />
+
+                <View style={{ height: 16 }} />
+
+                {/* ═══════════════════════════════════════════
+                    STATE 1 – SELLER PENDING (no response yet)
+                ═══════════════════════════════════════════ */}
+                {isSeller && !hasResponded && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time="" />
+                        <Text style={s.fieldLabel}>{'Response to the Dispute:'}</Text>
+                        <View style={s.bubbleInput}>
+                            <TextInput
+                                style={s.textArea}
+                                placeholder="Enter your response..."
+                                placeholderTextColor="#AAA"
+                                multiline
+                                numberOfLines={5}
+                                value={sellerResponseText}
+                                onChangeText={setSellerResponseText}
+                                maxLength={1000}
+                            />
+                        </View>
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        {[
+                            { k: 'accept', l: 'I Accept the Demand and Cancel the deal!' },
+                            { k: 'decline', l: 'I decline the Demand and keep to the Agreement!' },
+                            { k: 'negotiate', l: 'Continue and Negotiate to find a solution.' },
+                        ].map(({ k, l }) => (
+                            <TouchableOpacity key={k} style={s.radioRow} onPress={() => setSellerDecisionChoice(k)}>
+                                <Text style={s.radioLabel}>{l}</Text>
+                                <RadioButton selected={sellerDecisionChoice === k} color="#505050" />
                             </TouchableOpacity>
-                        </>
-                    ) : !isSeller && hasSellerResponded && dispute.seller_decision === 'accept' ? (
-                        // BUYER view - Seller accepted - Show Close button only
+                        ))}
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+
                         <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={handleCloseDispute}
-                            disabled={actionLoading}
+                            style={[s.btn, (!sellerDecisionChoice || !sellerResponseText.trim()) && s.btnDisabled]}
+                            onPress={sendSellerResponse}
+                            disabled={!sellerDecisionChoice || !sellerResponseText.trim() || actionLoading}
                         >
-                            <Text style={styles.closeButtonText}>{t('Close the Dispute')}</Text>
+                            <Text style={s.btnTxt}>{actionLoading ? 'Sending...' : 'Send Response to Buyer'}</Text>
                         </TouchableOpacity>
-                    ) : !isSeller && !hasSellerResponded ? (
-                        // BUYER view - waiting for seller response
-                        <Text style={styles.waitingText}>{t("Waiting for seller's response...")}</Text>
-                    ) : null}
+                    </>
+                )}
+
+                {/* Buyer waiting state */}
+                {isBuyer && !hasResponded && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time="" />
+                        <Text style={s.statusNeutral}>{'Awaiting seller response...'}</Text>
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        {[
+                            'I Accept the Demand and Cancel the deal!',
+                            'I decline the Demand and keep to the Agreement!',
+                            'Continue and Negotiate to find a solution.',
+                        ].map(l => (
+                            <View key={l} style={s.radioRow}>
+                                <Text style={s.radioLabel}>{l}</Text>
+                                <RadioButton selected={false} />
+                            </View>
+                        ))}
+                        <TouchableOpacity style={[s.btn, s.btnDisabled]} disabled>
+                            <Text style={s.btnTxt}>{'Proceed to Resolution'}</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 2 – SELLER ACCEPTED
+                    (Both buyer and seller see the same view)
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isAccept && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time={ago(dispute.updated_at)} />
+                        <Text style={s.fieldLabel}>{'Response to the Dispute:'}</Text>
+                        <Bubble text={dispute.seller_response || ''} />
+
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>{'I Accept the Demand and Cancel the deal!'}</Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.successTxt}>{'The Disputee has been settled successfully!'}</Text>
+                        <Text style={s.successSub}>{"Buyer's Fee will be returned in 2-4 days to Buyer."}</Text>
+
+                        {isBuyer && (
+                            <TouchableOpacity style={s.btn} onPress={proceedToResolution}>
+                                <Text style={s.btnTxt}>{'Proceed to Resolution'}</Text>
+                            </TouchableOpacity>
+                        )}
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 3 – SELLER NEGOTIATES
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isNegotiate && isNegotiating && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time={ago(dispute.updated_at)} />
+                        <Text style={s.fieldLabel}>{'Response to the Dispute:'}</Text>
+                        <Bubble text={dispute.seller_response || ''} />
+
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>{'Continue and Negotiate to find a solution.'}</Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+
+                        {!mySugg ? (
+                            <>
+                                <Text style={s.fieldLabel}>{isBuyer ? "Buyer's suggestion for settlement:" : "Seller's suggestion for resolution:"}</Text>
+                                <View style={s.bubbleInput}>
+                                    <TextInput
+                                        style={s.textArea}
+                                        placeholder="Describe your suggestion..."
+                                        placeholderTextColor="#AAA"
+                                        multiline
+                                        value={suggestionText}
+                                        onChangeText={setSuggestionText}
+                                    />
+                                </View>
+                                <Text style={s.evidLabel}>{'Additional evidence for the Dispute:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                                <TouchableOpacity
+                                    style={[s.btn, (!suggestionText.trim() || actionLoading) && s.btnDisabled]}
+                                    onPress={sendSuggestion}
+                                    disabled={!suggestionText.trim() || actionLoading}
+                                >
+                                    <Text style={s.btnTxt}>{actionLoading ? 'Sending...' : 'Give your Suggestion'}</Text>
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <View style={s.waitBanner}>
+                                <Text style={s.waitTxt}>{'Your suggestion has been submitted. Waiting for the other party...'}</Text>
+                            </View>
+                        )}
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 4 – STATUS RESOLUTIONS
+                ═══════════════════════════════════════════ */}
+                {isStatusRes && !isSettled && !isClosed && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time={ago(dispute.updated_at)} />
+                        <ULink label="View Response to the Dispute" />
+                        <ULink label="View Uploaded evidence" />
+
+                        {buyerSugg && (
+                            <>
+                                <Text style={s.fieldLabel}>{"Buyer's suggestion for settlement:"}</Text>
+                                <Bubble text={buyerSugg} />
+                                <Text style={s.evidLabel}>{'Additional evidence for the Dispute:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                            </>
+                        )}
+                        {sellerSugg && (
+                            <>
+                                <Text style={s.fieldLabel}>{"Seller's suggestion for resolution:"}</Text>
+                                <Bubble text={sellerSugg} />
+                                <Text style={s.evidLabel}>{'Additional evidence for the Dispute:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                            </>
+                        )}
+
+                        <Text style={s.decisionCaps}>{'DECISIONS BY SELLER AND BUYER'}</Text>
+
+                        {/* Seller's decision row */}
+                        <TouchableOpacity
+                            style={s.radioRow}
+                            onPress={() => !hasMyNegDec && setMyResDecision('accept')}
+                        >
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}
+                                <Text style={s.radioLabelNormal}>
+                                    {negSellerDec === 'accept' ? 'I Accept the negotiated resolution!' :
+                                     negSellerDec === 'decline' ? 'I decline the negotiated resolution!' :
+                                     'Awaiting seller decision...'}
+                                </Text>
+                            </Text>
+                            <RadioButton
+                                selected={!!negSellerDec}
+                                color={'#505050'}
+                            />
+                        </TouchableOpacity>
+
+                        {/* Buyer's decision row */}
+                        <TouchableOpacity
+                            style={s.radioRow}
+                            onPress={() => !hasMyNegDec && isBuyer && setMyResDecision('accept')}
+                        >
+                            <Text style={s.radioLabel}>
+                                {'BUYER: '}
+                                <Text style={s.radioLabelNormal}>
+                                    {negBuyerDec === 'accept' ? 'I Accept the negotiated resolution!' :
+                                     negBuyerDec === 'decline' ? 'I decline the negotiated resolution!' :
+                                     (!hasMyNegDec && isBuyer && myResDecision ? (
+                                         myResDecision === 'accept' ? 'I Accept the negotiated resolution!' : 'I decline the negotiated resolution!'
+                                     ) : 'Awaiting your decision...')}
+                                </Text>
+                            </Text>
+                            <RadioButton
+                                selected={!!(negBuyerDec || (!hasMyNegDec && myResDecision))}
+                                color={'#505050'}
+                            />
+                        </TouchableOpacity>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.decisionCaps}>{'RESOLUTION RECOMMENDATION'}</Text>
+                        <TouchableOpacity style={s.radioRow} onPress={() => setAckChecked(!ackChecked)}>
+                            <Text style={[s.radioLabel, { flex: 1, paddingRight: 12 }]}>
+                                {'I confirm I have read the Resolution Recommendation and made my decision after carefully weighing the best resolution, which is fair for both of the parties.'}
+                            </Text>
+                            <RadioButton selected={ackChecked} color="#505050" />
+                        </TouchableOpacity>
+                        <ULink label="View Resolution Recommendations" onPress={showRecommendation} />
+
+                        {showFail && (
+                            <>
+                                <Text style={s.failTxt}>{'The Issue has not been settled!'}</Text>
+                                <Text style={s.failSub}>{'Consider negotiating'}</Text>
+                            </>
+                        )}
+
+                        {!hasMyNegDec && (
+                            <TouchableOpacity
+                                style={[s.btn, (!myResDecision || actionLoading) && s.btnDisabled]}
+                                onPress={submitResDecision}
+                                disabled={!myResDecision || actionLoading}
+                            >
+                                <Text style={s.btnTxt}>{actionLoading ? 'Submitting...' : 'Give your Suggestion'}</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {isBuyer && showFail && (
+                            <>
+                                <TouchableOpacity style={s.btn} onPress={escalate}>
+                                    <Text style={s.btnTxt}>{'Escalate to Claim'}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[s.btn, s.btnOutline]} onPress={closeDispute}>
+                                    <Text style={s.btnOutlineTxt}>{'Close the Dispute'}</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 4B – BOTH ACCEPTED (settled)
+                ═══════════════════════════════════════════ */}
+                {isSettled && !isClosed && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time={ago(dispute.updated_at)} />
+                        <ULink label="View Response to the Dispute" />
+                        <ULink label="View Uploaded evidence" />
+
+                        <Text style={s.decisionCaps}>{'DECISIONS BY SELLER AND BUYER'}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}<Text style={s.radioLabelNormal}>{'I Accept the negotiated resolution!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#000" />
+                        </View>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'BUYER: '}<Text style={s.radioLabelNormal}>{'I Accept the negotiated resolution!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#000" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.decisionCaps}>{'RESOLUTION RECOMMENDATION'}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={[s.radioLabel, { flex: 1, paddingRight: 12 }]}>
+                                {'I confirm I have read the Resolution Recommendation and made my decision after carefully weighing the best resolution, which is fair for both of the parties.'}
+                            </Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <ULink label="View Resolution Recommendations" onPress={showRecommendation} />
+
+                        <Text style={s.successTxt}>{'The Issue has been settled successfully!'}</Text>
+                        <Text style={s.successSub}>{"Buyer's Fee will be returned in 2-4 days to Buyer."}</Text>
+                        <TouchableOpacity style={s.btn} onPress={closeDispute}>
+                            <Text style={s.btnTxt}>{'Close the Dispute'}</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 5 – SELLER DECLINED
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isDecline && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S RESPONSE"} time={ago(dispute.updated_at)} />
+                        <ULink label="View Response to the Dispute" />
+                        <ULink label="View Uploaded evidence" />
+
+                        {/* Seller DECLINED - show locked decision rows */}
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}<Text style={s.radioLabelNormal}>{'I decline the Demand and keep to the Agreement!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        {isSeller && (
+                            <View style={s.waitBanner}>
+                                <Text style={s.waitTxt}>{'You have declined the demand. The buyer may negotiate or escalate.'}</Text>
+                            </View>
+                        )}
+                        {isBuyer && (
+                            <>
+                                <Text style={s.failTxt}>{'The Issue has not been settled!'}</Text>
+                                <Text style={s.failSub}>{'Consider negotiating'}</Text>
+                                <TouchableOpacity style={s.btn} onPress={escalate}>
+                                    <Text style={s.btnTxt}>{'Escalate to Claim'}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[s.btn, s.btnOutline]} onPress={closeDispute}>
+                                    <Text style={s.btnOutlineTxt}>{'Close the Dispute'}</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </>
+                )}
+
+                {/* Footer */}
+                <View style={s.footer}>
+                    <Text style={s.footerTxt}>
+                        {'More on '}
+                        <Text style={s.footerLink} onPress={showRecommendation}>{'Dispute Resolution'}</Text>
+                    </Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-    },
+// ─────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────
+
+const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#FFF' },
+    scroll: { flex: 1 },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+    // Header
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 16, paddingVertical: 12,
+        borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
     },
-    headerBackButton: {
-        padding: 4,
-        marginRight: 12,
+    backBtn: { padding: 4 },
+    headerTitle: { flex: 1, fontSize: 20, fontWeight: '700', color: '#000', paddingLeft: 8 },
+
+    // Icon
+    iconCenter: { alignItems: 'center', paddingTop: 16, paddingBottom: 8 },
+    iconWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    checkBadge: { position: 'absolute', bottom: -4, right: -8 },
+    guideCenter: { alignItems: 'center', paddingHorizontal: 20, marginTop: 8 },
+    guideText: { fontSize: 12, fontWeight: '700', color: '#404040', letterSpacing: 0.3, textAlign: 'center', marginBottom: 4 },
+
+    // Created
+    createdRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 10, marginBottom: 8 },
+    createdLabel: { fontSize: 14, fontWeight: '600', color: '#000' },
+    createdTime: { fontSize: 12, color: '#808080' },
+
+    // Info table
+    infoTable: { paddingHorizontal: 20, marginBottom: 10 },
+    infoRow: { flexDirection: 'row', marginBottom: 2 },
+    infoLabel: { width: 110, fontSize: 14, fontWeight: '700', color: '#000' },
+    infoVal: { flex: 1, fontSize: 14, color: '#505050' },
+
+    divider: { height: 1, backgroundColor: '#F0F0F0', marginHorizontal: 20, marginVertical: 8 },
+
+    // Section header
+    sectionHeader: {
+        flexDirection: 'row', justifyContent: 'space-between',
+        paddingHorizontal: 20, marginBottom: 6, marginTop: 4,
     },
-    headerTitle: {
-        flex: 1,
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#000',
+    sectionCaps: { fontSize: 13, fontWeight: '800', color: '#000', letterSpacing: 0.5 },
+    sectionTime: { fontSize: 12, color: '#808080' },
+    decisionCaps: {
+        fontSize: 13, fontWeight: '800', color: '#000',
+        letterSpacing: 0.5, paddingHorizontal: 20,
+        marginTop: 16, marginBottom: 6,
     },
-    headerRight: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-        backgroundColor: '#FFF',
-    },
-    iconContainer: {
-        alignItems: 'center',
-        paddingVertical: 24,
-        position: 'relative',
-    },
-    checkBadge: {
-        position: 'absolute',
-        bottom: 20,
-        right: '38%',
-    },
-    creationMessage: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    creationText: {
-        fontSize: 14,
-        color: '#505050',
-    },
-    creationTime: {
-        fontSize: 12,
-        color: '#303234',
-    },
-    infoSection: {
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 6,
-    },
-    infoLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#505050',
-    },
-    infoValue: {
-        fontSize: 14,
-        color: '#000',
-    },
-    linkButton: {
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-    },
-    linkText: {
-        fontSize: 13,
-        color: '#505050',
-    },
-    linkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-    },
-    issueSection: {
-        paddingHorizontal: 24,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    responseSection: {
-        paddingHorizontal: 24,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    issueSectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#505050',
-        letterSpacing: 0.5,
-    },
-    sectionTime: {
-        fontSize: 12,
-        color: '#303234',
-    },
-    fieldLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginTop: 12,
-        marginBottom: 8,
-    },
-    textBox: {
-        backgroundColor: '#F8F8F8',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 8,
-    },
-    textBoxContent: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
-    },
-    textInput: {
-        backgroundColor: '#F8F8F8',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 12,
-        fontSize: 14,
-        color: '#333',
-        minHeight: 120,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    decisionOption: {
-        backgroundColor: '#FFF',
-        borderWidth: 2,
-        borderColor: '#E0E0E0',
-        borderRadius: 8,
-        padding: 14,
-        marginBottom: 12,
-    },
-    decisionOptionSelected: {
-        borderColor: COLORS.primary,
-        backgroundColor: '#E8F4FD',
-    },
-    decisionOptionText: {
-        fontSize: 14,
-        color: '#505050',
-        fontWeight: '500',
-    },
-    decisionOptionTextSelected: {
-        color: '#000',
-        fontWeight: '600',
-    },
-    decisionContainer: {
-        backgroundColor: '#F8F8F8',
-        borderRadius: 8,
-        padding: 12,
-        marginTop: 8,
-        marginBottom: 12,
-    },
-    decisionTextRow: {
-        paddingVertical: 8,
-    },
-    decisionRowContent: {
-        flexDirection: 'row',
+
+    // Links
+    link: { fontSize: 14, color: '#1A4FDB', textDecorationLine: 'underline', paddingHorizontal: 20, marginBottom: 4 },
+
+    // Bubble
+    bubble: { marginHorizontal: 20, backgroundColor: '#F5F5F5', borderRadius: 12, padding: 14, marginBottom: 8 },
+    bubbleText: { fontSize: 16, color: '#333', lineHeight: 22 },
+    bubbleInput: { marginHorizontal: 20, backgroundColor: '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 8 },
+    textArea: { fontSize: 16, color: '#000', minHeight: 90, textAlignVertical: 'top' },
+
+    // Labels
+    fieldLabel: { fontSize: 15, fontWeight: '600', color: '#000', paddingHorizontal: 20, marginTop: 10, marginBottom: 6 },
+    evidLabel: { fontSize: 15, fontWeight: '600', color: '#000', paddingHorizontal: 20, marginTop: 10, marginBottom: 4 },
+    note: { fontSize: 12, color: '#808080', paddingHorizontal: 20, marginBottom: 8 },
+
+    radioRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 9 },
+    radioLabel: { fontSize: 16, fontWeight: '700', color: '#000', flex: 1, paddingRight: 14 },
+    radioLabelNormal: { fontSize: 16, fontWeight: '400', color: '#000' },
+
+    // Status texts
+    statusNeutral: { fontSize: 14, color: '#808080', paddingHorizontal: 20, marginBottom: 10, fontStyle: 'italic' },
+    successTxt: { fontSize: 16, fontWeight: '700', color: '#00C853', textAlign: 'center', marginTop: 16, paddingHorizontal: 20 },
+    successSub: { fontSize: 13, color: '#00C853', textAlign: 'center', marginBottom: 4 },
+    failTxt: { fontSize: 16, fontWeight: '700', color: '#000', textAlign: 'center', marginTop: 16, paddingHorizontal: 20 },
+    failSub: { fontSize: 14, fontWeight: '600', color: '#505050', textAlign: 'center', marginBottom: 4 },
+
+    // Buttons — GRAY as per reference image
+    btn: {
+        backgroundColor: '#D8D8D8',
+        marginHorizontal: 20, marginTop: 14,
+        paddingVertical: 16, borderRadius: 32,
         alignItems: 'center',
     },
-    checkbox: {
-        marginRight: 10,
-    },
-    decisionRowText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#505050',
-        lineHeight: 20,
-    },
-    decisionRowTextSelected: {
-        color: '#000',
-        fontWeight: '600',
-    },
-    decisionBox: {
-        backgroundColor: '#E8F4FD',
-        borderRadius: 8,
-        padding: 12,
-        marginTop: 8,
-    },
-    decisionText: {
-        fontSize: 14,
-        color: '#333',
-        fontWeight: '500',
-    },
-    evidenceLink: {
-        paddingVertical: 8,
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 16,
-        marginTop: 8,
-    },
-    infoLinkText: {
-        fontSize: 13,
-        color: '#505050',
-    },
-    infoLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-    infoIcon: {
-        marginLeft: 6,
-    },
-    actionButtons: {
-        paddingHorizontal: 24,
-        paddingVertical: 16,
-        gap: 12,
-    },
-    sendResponseButton: {
-        backgroundColor: COLORS.primary,
-        paddingVertical: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    sendResponseButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    escalateButton: {
-        backgroundColor: '#FF6B6B',
-        paddingVertical: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    escalateButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    closeButton: {
-        backgroundColor: '#FFF',
-        paddingVertical: 16,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        alignItems: 'center',
-    },
-    closeButtonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-    },
-    waitingText: {
-        fontSize: 14,
-        color: '#303234',
-        textAlign: 'center',
-        fontStyle: 'italic',
-    },
-    errorText: {
-        fontSize: 16,
-        color: '#303234',
-        textAlign: 'center',
-        marginTop: 50,
-    },
+    btnDisabled: { opacity: 0.45 },
+    btnTxt: { color: '#000', fontSize: 17, fontWeight: '700' },
+    btnOutline: { backgroundColor: '#FFF', borderWidth: 1.5, borderColor: '#C0C0C0' },
+    btnOutlineTxt: { color: '#333', fontSize: 15, fontWeight: '700' },
+
+    // Wait banner
+    waitBanner: { backgroundColor: '#F8F8F8', marginHorizontal: 20, borderRadius: 12, padding: 14, marginTop: 10 },
+    waitTxt: { fontSize: 14, color: '#505050', textAlign: 'center' },
+
+    // Footer
+    footer: { alignItems: 'center', paddingTop: 24 },
+    footerTxt: { fontSize: 12, color: '#505050' },
+    footerLink: { color: '#1A4FDB', textDecorationLine: 'underline', fontWeight: '600' },
 });
 
 export default DisputeDetailScreen;

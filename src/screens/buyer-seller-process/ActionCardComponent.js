@@ -3,7 +3,37 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { COLORS } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
-const ActionCardComponent = ({ itemImage, userAvatar, itemTitle, username, statusText, stepNumber, actionText, timestamp, onPress }) => {
+// Type metadata for Issue, Dispute, Claim
+const TYPE_CONFIG = {
+    issue: { icon: 'alert-circle-outline', label: 'ISSUE', color: '#FF9800' },
+    dispute: { icon: 'document-text-outline', label: 'DISPUTE', color: '#1A4FDB' },
+    claim: { icon: 'shield-checkmark-outline', label: 'CLAIM', color: '#9C27B0' },
+};
+
+// Status badge colour mapping
+const STATUS_COLOR = {
+    open: '#FF9800',
+    pending: '#FF9800',
+    negotiating: '#1A4FDB',
+    seller_responded: '#1A4FDB',
+    settled: '#00C853',
+    closed: '#808080',
+    closed_by_buyer: '#808080',
+    escalated_to_dispute: '#9C27B0',
+    escalated: '#9C27B0',
+    admin_review: '#9C27B0',
+    declined: '#505050',
+};
+
+const formatStatus = (status) => {
+    if (!status) return '';
+    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+};
+
+const ActionCardComponent = ({ itemImage, userAvatar, itemTitle, username, statusText, stepNumber, actionText, timestamp, onPress, cardType, statusBadge }) => {
+    const typeConf = TYPE_CONFIG[cardType] || null;
+    const badgeColor = STATUS_COLOR[statusBadge] || '#808080';
+
     return (
         <TouchableOpacity style={styles.cardContainer} onPress={onPress}>
             {/* Left section: Image and Avatar */}
@@ -24,9 +54,28 @@ const ActionCardComponent = ({ itemImage, userAvatar, itemTitle, username, statu
 
             {/* Middle section: Titles and Status */}
             <View style={styles.infoSection}>
+                {/* Type badge row */}
+                {typeConf && (
+                    <View style={styles.typeBadgeRow}>
+                        <Ionicons name={typeConf.icon} size={13} color={typeConf.color} />
+                        <Text style={[styles.typeBadgeText, { color: typeConf.color }]}>{typeConf.label}</Text>
+                    </View>
+                )}
+
                 <Text style={styles.itemTitle} numberOfLines={1}>{itemTitle}</Text>
                 <Text style={styles.username} numberOfLines={1}>{username}</Text>
                 <Text style={styles.statusText} numberOfLines={2}>{statusText}</Text>
+
+                {/* Status badge */}
+                {statusBadge && (
+                    <View style={[styles.statusBadge, { borderColor: badgeColor }]}>
+                        <View style={[styles.statusDot, { backgroundColor: badgeColor }]} />
+                        <Text style={[styles.statusBadgeText, { color: badgeColor }]}>
+                            {formatStatus(statusBadge)}
+                        </Text>
+                    </View>
+                )}
+
                 <Text style={styles.stepNumber}>{stepNumber}</Text>
             </View>
 
@@ -95,6 +144,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
+    typeBadgeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 3,
+    },
+    typeBadgeText: {
+        fontSize: 11,
+        fontWeight: '800',
+        letterSpacing: 0.5,
+        marginLeft: 4,
+    },
     itemTitle: {
         fontSize: 14,
         color: '#444',
@@ -109,6 +169,26 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#444',
         marginTop: 4,
+    },
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        marginTop: 5,
+        alignSelf: 'flex-start',
+    },
+    statusDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        marginRight: 4,
+    },
+    statusBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
     },
     stepNumber: {
         fontSize: 12,

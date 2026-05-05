@@ -1,21 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, PanResponder, SafeAreaView } from 'react-native';
 import { COLORS } from '../constants/theme';
 
 const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectPriceRange }) => {
-  const MAX_PRICE = 100000; // Maximum price limit (₹1,00,000)
-  const MIN_PRICE = 0;
+  const MAX_PRICE = 1000; // Maximum price limit (₹1,00,000)
+  const MIN_PRICE = 10;
 
-  const [tempMinPrice, setTempMinPrice] = useState(minPrice || MIN_PRICE);
-  const [tempMaxPrice, setTempMaxPrice] = useState(maxPrice || MAX_PRICE);
+  // Safely clamp incoming values so old cached filters (e.g. 17521) don't blow past the new 1000 limit
+  const safeMin = Math.min(Math.max(minPrice || MIN_PRICE, MIN_PRICE), MAX_PRICE);
+  const safeMax = Math.min(Math.max(maxPrice || MAX_PRICE, MIN_PRICE), MAX_PRICE);
 
+  const [tempMinPrice, setTempMinPrice] = useState(safeMin);
+  const [tempMaxPrice, setTempMaxPrice] = useState(safeMax);
+
+  // Refs for PanResponders to read the absolute latest state avoiding closure staleness
+  const currentMinPrice = useRef(safeMin);
+  const currentMaxPrice = useRef(safeMax);
   const sliderLayout = useRef({ x: 0, width: 0 });
   const sliderTrackRef = useRef(null);
 
+  // Starting values at the moment a touch drag begins
+  const initialDragMin = useRef(safeMin);
+  const initialDragMax = useRef(safeMax);
+
+  // Sync refs with state
+  useEffect(() => {
+    currentMinPrice.current = tempMinPrice;
+    currentMaxPrice.current = tempMaxPrice;
+  }, [tempMinPrice, tempMaxPrice]);
+
   useEffect(() => {
     if (visible) {
-      setTempMinPrice(minPrice || MIN_PRICE);
-      setTempMaxPrice(maxPrice || MAX_PRICE);
+      const effectSafeMin = Math.min(Math.max(minPrice || MIN_PRICE, MIN_PRICE), MAX_PRICE);
+      const effectSafeMax = Math.min(Math.max(maxPrice || MAX_PRICE, MIN_PRICE), MAX_PRICE);
+      setTempMinPrice(effectSafeMin);
+      setTempMaxPrice(effectSafeMax);
     }
   }, [visible, minPrice, maxPrice]);
 
@@ -33,44 +52,29 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
   };
 
   const formatPrice = (value) => {
-    if (value >= 100000) {
-      return `£${(value / 100000).toFixed(1)}M`;
-    } else if (value >= 1000) {
+    if (value >= 1000) {
       return `£${(value / 1000).toFixed(1)}K`;
     }
     return `£${value}`;
   };
 
-  // Update slider value based on touch position
-  const updateSliderValue = (pageX, isMin) => {
-    const { x, width } = sliderLayout.current;
-    if (width === 0) return;
-
-    const relativeX = pageX - x;
-    const percentage = Math.max(0, Math.min(100, (relativeX / width) * 100));
-    const value = Math.round((percentage / 100) * MAX_PRICE);
-
-    if (isMin) {
-      // Update min price, but don't exceed max price
-      const newMin = Math.min(value, tempMaxPrice - 100);
-      setTempMinPrice(Math.max(MIN_PRICE, newMin));
-    } else {
-      // Update max price, but don't go below min price
-      const newMax = Math.max(value, tempMinPrice + 100);
-      setTempMaxPrice(Math.min(MAX_PRICE, newMax));
-    }
-  };
-
-  // Pan responder for min handle
+  // Pan responder for min handle using robust relative delta tracking (dx)
   const minPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX, true);
+      onPanResponderGrant: () => {
+        initialDragMin.current = currentMinPrice.current;
       },
-      onPanResponderMove: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX, true);
+      onPanResponderMove: (evt, gestureState) => {
+        const { width } = sliderLayout.current;
+        if (width === 0) return;
+        const priceRangeScale = MAX_PRICE - MIN_PRICE;
+        const rawNewValue = initialDragMin.current + (gestureState.dx / width) * priceRangeScale;
+
+        // Clamp: not below MIN_PRICE, not above currentMaxPrice - small gap (10)
+        const newMinClamp = Math.max(MIN_PRICE, Math.min(rawNewValue, currentMaxPrice.current - 10));
+        setTempMinPrice(Math.round(newMinClamp));
       },
       onPanResponderRelease: () => { },
     })
@@ -81,18 +85,28 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX, false);
+      onPanResponderGrant: () => {
+        initialDragMax.current = currentMaxPrice.current;
       },
-      onPanResponderMove: (evt) => {
-        updateSliderValue(evt.nativeEvent.pageX, false);
+      onPanResponderMove: (evt, gestureState) => {
+        const { width } = sliderLayout.current;
+        if (width === 0) return;
+        const priceRangeScale = MAX_PRICE - MIN_PRICE;
+        const rawNewValue = initialDragMax.current + (gestureState.dx / width) * priceRangeScale;
+
+        // Clamp: not above MAX_PRICE, not below currentMinPrice + small gap (10)
+        const newMaxClamp = Math.min(MAX_PRICE, Math.max(rawNewValue, currentMinPrice.current + 10));
+        setTempMaxPrice(Math.round(newMaxClamp));
       },
       onPanResponderRelease: () => { },
     })
   ).current;
 
-  const minPercentage = (tempMinPrice / MAX_PRICE) * 100;
-  const maxPercentage = (tempMaxPrice / MAX_PRICE) * 100;
+  const priceRangeAmount = MAX_PRICE - MIN_PRICE;
+  // Guard against divide by zero or negative percentages
+  const safeRangeAmount = priceRangeAmount > 0 ? priceRangeAmount : 1;
+  const minPercentage = Math.max(0, Math.min(100, ((tempMinPrice - MIN_PRICE) / safeRangeAmount) * 100));
+  const maxPercentage = Math.max(0, Math.min(100, ((tempMaxPrice - MIN_PRICE) / safeRangeAmount) * 100));
 
   return (
     <Modal
@@ -101,27 +115,24 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Price Range</Text>
+          <Text style={styles.headerTitle}>PRICE</Text>
           <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-            <Text style={styles.clearText}>Clear</Text>
+            <Text style={styles.clearText}>CLEAR</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
-            <Text style={styles.description}>
-              Drag the handles to set your preferred price range.
-            </Text>
-
             {/* Price Range Display */}
             <View style={styles.rangePreview}>
+              <Text style={styles.rangeLabel}>Price range</Text>
               <Text style={styles.rangeText}>
-                {formatPrice(tempMinPrice)} - {formatPrice(tempMaxPrice)}
+                £{tempMinPrice} - £{tempMaxPrice >= MAX_PRICE ? `${MAX_PRICE}+` : tempMaxPrice}
               </Text>
             </View>
 
@@ -165,26 +176,16 @@ const PriceRangeFilterModal = ({ visible, onClose, minPrice, maxPrice, onSelectP
                   <View style={styles.thumbInner} />
                 </View>
               </View>
-
-              {/* Labels */}
-              <View style={styles.labelsContainer}>
-                <Text style={styles.labelText}>£0</Text>
-                <Text style={styles.labelText}>£1M</Text>
-              </View>
             </View>
-
-            <Text style={styles.hint}>
-              Drag the handles to adjust minimum and maximum price limits.
-            </Text>
           </View>
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply</Text>
+            <Text style={styles.applyButtonText}>Use</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -215,18 +216,19 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   clearButton: {
-    paddingHorizontal: 12,
     paddingVertical: 6,
   },
   clearText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   scrollView: {
     flex: 1,
@@ -248,16 +250,18 @@ const styles = StyleSheet.create({
   rangePreview: {
     alignItems: 'center',
     paddingVertical: 20,
-    marginBottom: 40,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    marginBottom: 20,
+  },
+  rangeLabel: {
+    fontSize: 14,
+    color: '#1a1a1a',
+    marginBottom: 8,
+    fontWeight: '400',
   },
   rangeText: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '600',
-    color: COLORS.primary,
+    color: '#1a1a1a',
   },
   sliderContainer: {
     marginBottom: 40,
@@ -317,22 +321,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: 16,
-    paddingBottom: 34,
+    paddingBottom: 24,
     paddingHorizontal: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#f0f0f0',
   },
   applyButton: {
-    height: 54,
-    backgroundColor: COLORS.primary,
-    borderRadius: 27,
+    height: 50,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
   applyButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1a1a1a',
   },
 });
 

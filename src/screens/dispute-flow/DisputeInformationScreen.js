@@ -8,7 +8,8 @@ import {
     ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { COLORS } from '../../constants/theme';
 
 const DisputeInformationScreen = ({ navigation }) => {
     const { t } = useTranslation();
@@ -27,11 +28,9 @@ const DisputeInformationScreen = ({ navigation }) => {
             <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
                 {/* Icon */}
                 <View style={styles.iconContainer}>
-                    <View style={styles.iconCircle}>
-                        <Ionicons name="document-text" size={48} color="#4169E1" />
-                        <View style={styles.checkmark}>
-                            <Ionicons name="checkmark-circle" size={32} color="#32CD32" />
-                        </View>
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+                        <FontAwesome name="handshake-o" size={50} color="#505050" />
                     </View>
                 </View>
 
@@ -145,6 +144,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
+    },
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
     },
     checkmark: {
         position: 'absolute',

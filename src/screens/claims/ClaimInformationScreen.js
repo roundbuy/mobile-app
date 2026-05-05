@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
@@ -6,19 +6,18 @@ import {
     TouchableOpacity,
     StyleSheet,
     ScrollView,
-    Alert,
-    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
-import disputeService from '../../services/disputeService';
 
-const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
+const ClaimInformationScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
-    const { issueId, issueNumber } = route.params || {};
-    const [loading, setLoading] = useState(false);
+    const { dispute } = route.params || {};
 
+    const handleNext = () => {
+        navigation.navigate('CreateClaim', { dispute });
+    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -30,88 +29,68 @@ const IssueDisputeEligibilityScreen = ({ navigation, route }) => {
                 >
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('Disputes')}</Text>
+                <Text style={styles.headerTitle}>{t('Claims')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Handshake Icon with Scales */}
+                {/* Claim Folder Icon */}
                 <View style={styles.iconContainer}>
-                    <Ionicons name="clipboard-outline" size={50} color="#000" />
-                    <View style={styles.checkmarkBadge}>
-                        <Ionicons name="checkmark" size={16} color="#FFF" />
+                    <View style={styles.iconWrapper}>
+                        <View style={styles.folderIconContainer}>
+                            <FontAwesome5 name="file-contract" size={60} color="#505050" />
+                            <View style={styles.claimBadge}>
+                                <Text style={styles.claimBadgeText}>CLAIM</Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
 
                 {/* Title */}
-                <Text style={styles.titleLeft}>{t("Seller's Refund Eligibility criteria Buyer-to-Buyer (C2C)")}</Text>
+                <Text style={styles.titleLeft}>{t('Resolution Recommendation')}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.sectionHeader}>{t('Reasons for Transaction Disputes')}</Text>
-                    <Text style={styles.sectionSubHeader}>{t('Find out the eligibility reasons for Buyer-to-Buyer disputes.')}</Text>
-
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Item or transaction not received: the exchange didn't take place or the package never arrived if send.")}</Text>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{t('Resolution Recommendation to the Buyer to end the (C2C) Transaction Dispute')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Significantly different: the item is not what was described (e.g. fake brand, missing parts, wrong color/size).")}</Text>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{t('For Disputes')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Damaged item: the item arrived broken or unable due to shipping.")}</Text>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{t('Eligibility reasons for Buyer-to-Buyer disputes:')}</Text>
+                    </View>
+                    <View style={[styles.bulletPoint, { marginTop: 10 }]}>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Condition Misrepresented: described as better than it was e.g. as 'as new' but arrived 'used'")}</Text>
-                    </View>
-                    <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Unauthorized transaction: the buyer didn't authorize the charge.")}</Text>
-                    </View>
-                    <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>-</Text>
-                        <Text style={styles.bulletText}>{t("Double Charged & Incorrect amount: charged more than once the same transaction, or the wrong price.")}</Text>
+                        <Text style={styles.bullet}>•</Text>
+                        <Text style={styles.bulletText}>{t('Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
                     </View>
                 </View>
 
-                {/* Info Link */}
-                <View style={styles.infoLinkContainer}>
-                    <Text style={styles.infoLinkText}>
-                        More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
-                    </Text>
-                    <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
-                </View>
-
-                {/* Progress Dots */}
+                {/* Progress Dots (Optional if multi-slide, current design shows 4 dots) */}
                 <View style={styles.progressContainer}>
-                    <View key="dot-1" style={styles.dot} />
+                    <View key="dot-1" style={[styles.dot, styles.dotActive]} />
                     <View key="dot-2" style={styles.dot} />
                     <View key="dot-3" style={styles.dot} />
-                    <View key="dot-4" style={[styles.dot, styles.dotActive]} />
+                    <View key="dot-4" style={styles.dot} />
                 </View>
 
-                {/* Send Dispute Button */}
-                <TouchableOpacity
-                    style={styles.readMoreButton}
-                    onPress={() => navigation.navigate('IssueDisputeForm', { issueId, issueNumber })}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#000" />
-                    ) : (
-                        <Text style={styles.readMoreText}>{t('Read more')}</Text>
-                    )}
+                {/* Close Button / Next */}
+                <TouchableOpacity style={styles.readMoreButton} onPress={handleNext}>
+                    <Text style={styles.readMoreText}>{t('Close')}</Text>
                 </TouchableOpacity>
 
                 {/* Footer Link */}
                 <View style={styles.footerInfoLink}>
                     <Text style={styles.footerLinkText}>
                         More on{' '}
-                        <Text style={styles.footerLinkHighlight}>{t('Dispute Resolution')}</Text>
+                        <Text style={styles.footerLinkHighlight}>{t('Claim Resolution')}</Text>
                     </Text>
                     <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.footerIcon} />
                 </View>
@@ -153,24 +132,34 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         alignItems: 'center',
-        paddingVertical: 32,
-        position: 'relative',
+        paddingVertical: 40,
     },
-    checkmarkBadge: {
-        position: 'absolute',
-        bottom: 30,
-        right: '42%',
-        backgroundColor: '#000',
-        borderRadius: 12,
-        width: 24,
-        height: 24,
+    iconWrapper: {
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: '#FFF',
+    },
+    folderIconContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+    claimBadge: {
+        position: 'absolute',
+        bottom: 25,
+        backgroundColor: '#FFF',
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        borderRadius: 2,
+        borderWidth: 1,
+        borderColor: '#505050',
+    },
+    claimBadgeText: {
+        fontSize: 8,
+        fontWeight: '900',
+        color: '#505050',
     },
     titleLeft: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '700',
         color: '#000',
         textAlign: 'left',
@@ -179,17 +168,6 @@ const styles = StyleSheet.create({
     },
     infoSection: {
         paddingHorizontal: 24,
-        marginBottom: 16,
-    },
-    sectionHeader: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#000',
-        marginBottom: 4,
-    },
-    sectionSubHeader: {
-        fontSize: 13,
-        color: '#505050',
         marginBottom: 16,
     },
     bulletPoint: {
@@ -227,9 +205,8 @@ const styles = StyleSheet.create({
     readMoreButton: {
         backgroundColor: '#F8F8F8',
         paddingVertical: 14,
-        paddingHorizontal: 40,
+        paddingHorizontal: 80,
         borderRadius: 24,
-        borderWidth: 0,
         alignSelf: 'center',
         marginBottom: 16,
     },
@@ -257,4 +234,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default IssueDisputeEligibilityScreen;
+export default ClaimInformationScreen;

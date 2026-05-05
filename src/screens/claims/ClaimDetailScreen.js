@@ -3,600 +3,709 @@ import { useTranslation } from '../../context/TranslationContext';
 import {
     View,
     Text,
+    TouchableOpacity,
     StyleSheet,
     ScrollView,
-    TouchableOpacity,
-    ActivityIndicator,
     Alert,
+    ActivityIndicator,
+    TextInput,
+    RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../../constants/theme';
 import claimService from '../../services/claimService';
 
-const ClaimDetailScreen = ({ route, navigation }) => {
+// ─────────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────────
+
+const RadioButton = ({ selected, color = '#808080', size = 22 }) => (
+    <View style={[radioSt.outer, { width: size, height: size, borderRadius: size / 2 }]}>
+        {selected && (
+            <View style={[radioSt.inner, {
+                backgroundColor: color,
+                width: size * 0.55,
+                height: size * 0.55,
+                borderRadius: size * 0.275,
+            }]} />
+        )}
+    </View>
+);
+const radioSt = StyleSheet.create({
+    outer: { borderWidth: 2, borderColor: '#BBBBBB', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F5F5' },
+    inner: {},
+});
+
+const SectionHeader = ({ title, time }) => (
+    <View style={s.sectionHeader}>
+        <Text style={s.sectionCaps}>{title}</Text>
+        {time ? <Text style={s.sectionTime}>{time}</Text> : null}
+    </View>
+);
+
+const Bubble = ({ text }) => (
+    <View style={s.bubble}>
+        <Text style={s.bubbleText}>{text}</Text>
+    </View>
+);
+
+const ULink = ({ label, onPress }) => (
+    <TouchableOpacity onPress={onPress || (() => { })} activeOpacity={0.7}>
+        <Text style={s.link}>{label}</Text>
+    </TouchableOpacity>
+);
+
+// Clipboard icon with checkmark
+const ClaimIcon = () => (
+    <View style={s.iconWrap}>
+        <MaterialCommunityIcons name="clipboard-text-outline" size={52} color="#404040" />
+        <View style={s.checkBadge}>
+            <Ionicons name="checkmark-circle" size={22} color="#404040" />
+        </View>
+    </View>
+);
+
+// ─────────────────────────────────────────────
+// Main Screen
+// ─────────────────────────────────────────────
+
+const ClaimDetailScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
-    const { claimId } = route.params;
-    const [claim, setClaim] = useState(null);
+    const { claimId } = route.params || {};
+
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [claim, setClaim] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
 
+    // Form states
+    const [sellerResponseText, setSellerResponseText] = useState('');
+    const [sellerDecisionChoice, setSellerDecisionChoice] = useState(null);
+    const [ackChecked, setAckChecked] = useState(false);
+    const [suggestionText, setSuggestionText] = useState('');
+    const [myResDecision, setMyResDecision] = useState(null);
+
     useEffect(() => {
-        loadCurrentUser();
-        loadClaimDetails();
+        loadUser().then(loadClaim);
     }, []);
 
-    const loadCurrentUser = async () => {
+    const loadUser = async () => {
         try {
-            const userStr = await AsyncStorage.getItem('@roundbuy:user_data');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                setCurrentUserId(user.id);
-            }
-        } catch (error) {
-            console.error('Load user error:', error);
-        }
+            const raw = await AsyncStorage.getItem('@roundbuy:user_data');
+            if (raw) setCurrentUserId(JSON.parse(raw).id);
+        } catch (e) { }
     };
 
-    const loadClaimDetails = async () => {
+    const loadClaim = async () => {
         try {
-            const response = await claimService.getClaimById(claimId);
-            if (response.success) {
-                setClaim(response.data);
-            }
-        } catch (error) {
-            console.error('Load claim error:', error);
-            Alert.alert(t('Error'), t('Failed to load claim details'));
+            const res = await claimService.getClaimById(claimId);
+            if (res?.success) setClaim(res.data);
+        } catch (e) {
+            Alert.alert('Error', 'Failed to load claim');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+    const onRefresh = () => { setRefreshing(true); loadClaim(); };
 
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-        return date.toLocaleDateString();
+    const ago = (d) => {
+        if (!d) return '';
+        const h = Math.floor((Date.now() - new Date(d)) / 3600000);
+        if (h < 1) return 'Just now';
+        if (h < 24) return `${h}h ago`;
+        return `${Math.floor(h / 24)}d ago`;
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending':
-                return '#FFA726';
-            case 'under_review':
-                return '#42A5F5';
-            case 'resolved':
-                return '#66BB6A';
-            case 'closed':
-                return '#303234';
-            default:
-                return '#303234';
-        }
+    // ── Action handlers ──
+
+    const sendSellerResponse = async () => {
+        if (!sellerResponseText.trim()) return Alert.alert('Error', 'Enter your response');
+        if (!sellerDecisionChoice) return Alert.alert('Error', 'Select a decision');
+        setActionLoading(true);
+        try {
+            await claimService.updateClaimSellerResponse(claimId, sellerResponseText, sellerDecisionChoice);
+            loadClaim();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to send response');
+        } finally { setActionLoading(false); }
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'pending':
-                return 'Pending Review';
-            case 'under_review':
-                return 'Under Review';
-            case 'resolved':
-                return 'Resolved';
-            case 'closed':
-                return 'Closed';
-            default:
-                return status;
-        }
+    const sendSuggestion = async () => {
+        if (!suggestionText.trim()) return Alert.alert('Error', 'Enter your suggestion');
+        setActionLoading(true);
+        try {
+            await claimService.submitNegotiationSuggestion(claimId, suggestionText);
+            setSuggestionText('');
+            loadClaim();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to send suggestion');
+        } finally { setActionLoading(false); }
     };
 
-    const getPriorityColor = (priority) => {
-        switch (priority) {
-            case 'urgent':
-                return '#F44336';
-            case 'high':
-                return '#FF9800';
-            case 'medium':
-                return '#FFC107';
-            case 'low':
-                return '#4CAF50';
-            default:
-                return '#303234';
-        }
+    const submitResDecision = async () => {
+        if (!myResDecision) return Alert.alert('Select Decision', 'Please select accept or decline');
+        if (!ackChecked) return Alert.alert('Required', 'Please confirm you have read the recommendation');
+        setActionLoading(true);
+        try {
+            await claimService.submitNegotiationDecision(claimId, myResDecision);
+            loadClaim();
+        } catch (e) {
+            Alert.alert('Error', 'Failed to submit decision');
+        } finally { setActionLoading(false); }
     };
 
-    const handleViewDispute = () => {
-        if (claim?.dispute_id) {
-            navigation.navigate('DisputeDetail', { disputeId: claim.dispute_id });
-        }
+    const closeClaim = () => {
+        Alert.alert('Close Claim', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+                text: 'Close', style: 'destructive', onPress: async () => {
+                    try {
+                        await claimService.closeClaim(claim.id);
+                        navigation.goBack();
+                    } catch (e) { Alert.alert('Error', 'Failed to close'); }
+                }
+            },
+        ]);
     };
 
+    const showRecommendation = () => navigation.navigate('ResolutionRecommendation', { claimId, claim });
+    const proceedToResolution = () => navigation.navigate('ResolutionRecommendation', { claimId, claim });
+
+    // ── Loading / error ──
     if (loading) {
         return (
-            <SafeAreaView style={styles.container} edges={['top']}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                </View>
+            <SafeAreaView style={s.container} edges={['top']}>
+                <View style={s.center}><ActivityIndicator size="large" color="#000" /></View>
             </SafeAreaView>
         );
     }
-
     if (!claim) {
         return (
-            <SafeAreaView style={styles.container} edges={['top']}>
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{t('Claim not found')}</Text>
-                </View>
+            <SafeAreaView style={s.container} edges={['top']}>
+                <View style={s.center}><Text>Claim not found</Text></View>
             </SafeAreaView>
         );
     }
 
-    const isBuyer = currentUserId && claim.user_id && currentUserId === claim.user_id;
-    const isSeller = currentUserId && claim.seller_id && currentUserId === claim.seller_id;
+    // ── Derived states ──
+    const isSeller = currentUserId && claim.seller_id && Number(currentUserId) === Number(claim.seller_id);
+    const isBuyer = currentUserId && claim.user_id && Number(currentUserId) === Number(claim.user_id);
+
+    const sellerDecision = claim.seller_decision;   // null | 'accept' | 'decline' | 'negotiate'
+    const hasResponded = !!sellerDecision;
+    const isAccept = sellerDecision === 'accept';
+    const isNegotiate = sellerDecision === 'negotiate';
+    const isDecline = sellerDecision === 'decline';
+    const isNegotiating = claim.status === 'negotiating';
+
+    const buyerSugg = claim.buyer_suggestion;
+    const sellerSugg = claim.seller_suggestion;
+    const bothSuggest = !!(buyerSugg && sellerSugg);
+    const mySugg = isBuyer ? buyerSugg : sellerSugg;
+
+    const negBuyerDec = claim.negotiation_buyer_decision;
+    const negSellerDec = claim.negotiation_seller_decision;
+    const myNegDec = isBuyer ? negBuyerDec : negSellerDec;
+    const hasMyNegDec = !!myNegDec;
+
+    const isStatusRes = bothSuggest || !!(negBuyerDec || negSellerDec);
+    const bothAccept = negBuyerDec === 'accept' && negSellerDec === 'accept';
+    const anyDecline = negBuyerDec === 'decline' || negSellerDec === 'decline';
+    const showFail = !bothAccept && anyDecline;
+    const isSettled = claim.status === 'settled' || bothAccept;
+    const isClosed = claim.status === 'closed';
+
+    const acceptColor = bothAccept ? '#000' : (negBuyerDec === 'accept' || negSellerDec === 'accept') ? '#4CAF50' : null;
+    const declineColor = anyDecline ? '#F44336' : null;
+
+    const headerTitle = `Claim #${claim.claim_number?.replace('CLM', '')}`;
+
+    // ─────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={s.container} edges={['top']}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+            <View style={s.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+                    <Ionicons name="chevron-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{t('Claim Details')}</Text>
-                <View style={styles.headerRight} />
+                <Text style={s.headerTitle}>{headerTitle}</Text>
+                <View style={{ width: 32 }} />
             </View>
 
-            <ScrollView style={styles.content}>
-                {/* Claim Number & Status */}
-                <View style={styles.claimHeader}>
-                    <View>
-                        <Text style={styles.claimNumber}>{claim.claim_number}</Text>
-                        <Text style={styles.claimDate}>Created {formatDate(claim.created_at)}</Text>
-                    </View>
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(claim.status) }]}>
-                        <Text style={styles.statusText}>{getStatusText(claim.status)}</Text>
-                    </View>
-                </View>
-
-                {/* Priority Badge */}
-                <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(claim.priority) }]}>
-                    <Ionicons name="flag" size={16} color="#FFF" />
-                    <Text style={styles.priorityText}>{claim.priority?.toUpperCase()} PRIORITY</Text>
-                </View>
-
-                {/* Advertisement Info */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Advertisement')}</Text>
-                    <View style={styles.adInfo}>
-                        <Text style={styles.adTitle}>{claim.ad_title}</Text>
-                        <Text style={styles.adPrice}>${claim.ad_price}</Text>
-                    </View>
-                </View>
-
-                {/* Original Dispute */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Original Dispute')}</Text>
-                    <TouchableOpacity style={styles.disputeLink} onPress={handleViewDispute}>
-                        <Text style={styles.disputeNumber}>{claim.dispute_number}</Text>
-                        <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+            <ScrollView
+                style={s.scroll}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+            >
+                <View style={s.iconCenter}>
+                    <ClaimIcon />
+                    <TouchableOpacity style={s.guideCenter} activeOpacity={0.7} onPress={showRecommendation}>
+                        <Text style={s.guideText}>{'ROUNDBUY CLAIM GUIDELINES & RES. RECOMMENDATION'}</Text>
+                        <Ionicons name="information-circle-outline" size={28} color="#000" />
                     </TouchableOpacity>
-                    {claim.dispute_description && (
-                        <Text style={styles.disputeDescription} numberOfLines={3}>
-                            {claim.dispute_description}
-                        </Text>
-                    )}
                 </View>
 
-                {/* Parties */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Parties Involved')}</Text>
-                    <View style={styles.partiesContainer}>
-                        <View style={styles.party}>
-                            <Text style={styles.partyLabel}>{t('Claimant (Buyer)')}</Text>
-                            <Text style={styles.partyName}>{claim.buyer_name}</Text>
-                            {isBuyer && <Text style={styles.youLabel}>{t('(You)')}</Text>}
-                        </View>
-                        <View style={styles.party}>
-                            <Text style={styles.partyLabel}>{t('Respondent (Seller)')}</Text>
-                            <Text style={styles.partyName}>{claim.seller_name}</Text>
-                            {isSeller && <Text style={styles.youLabel}>{t('(You)')}</Text>}
-                        </View>
-                    </View>
+                {/* Created row */}
+                <View style={s.createdRow}>
+                    <Text style={s.createdLabel}>{`Claim #${claim.claim_number?.replace('CLM', '')} was created`}</Text>
+                    <Text style={s.createdTime}>{ago(claim.created_at)}</Text>
                 </View>
 
-                {/* Claim Reason */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Claim Reason')}</Text>
-                    <View style={styles.textBox}>
-                        <Text style={styles.textBoxContent}>{claim.claim_reason}</Text>
-                    </View>
+                {/* Info table */}
+                <View style={s.infoTable}>
+                    {[
+                        ['Item:', claim.ad_title || 'N/A'],
+                        ['Complainant:', claim.buyer_name || 'N/A'],
+                        ['Respondent:', claim.seller_name || 'N/A'],
+                    ].map(([label, val]) => (
+                        <View style={s.infoRow} key={label}>
+                            <Text style={s.infoLabel}>{label}</Text>
+                            <Text style={s.infoVal}>{val}</Text>
+                        </View>
+                    ))}
                 </View>
 
-                {/* Additional Evidence */}
-                {claim.buyer_additional_evidence && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>{t('Additional Evidence')}</Text>
-                        <View style={styles.textBox}>
-                            <Text style={styles.textBoxContent}>{claim.buyer_additional_evidence}</Text>
+                <View style={s.divider} />
+
+                {/* BUYER'S CLAIM */}
+                <SectionHeader title={"BUYER'S CLAIM"} time={ago(claim.created_at)} />
+                <ULink label="View Claim & Demand" />
+                <ULink label="View Uploaded evidence" />
+
+                <View style={{ height: 16 }} />
+
+                {/* ═══════════════════════════════════════════
+                    STATE 1 – SELLER PENDING (no response yet)
+                ═══════════════════════════════════════════ */}
+                {isSeller && !hasResponded && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time="" />
+                        <Text style={s.fieldLabel}>{'Response to the Claim:'}</Text>
+                        <View style={s.bubbleInput}>
+                            <TextInput
+                                style={s.textArea}
+                                placeholder="Enter your response..."
+                                placeholderTextColor="#AAA"
+                                multiline
+                                numberOfLines={5}
+                                value={sellerResponseText}
+                                onChangeText={setSellerResponseText}
+                                maxLength={1000}
+                            />
                         </View>
-                    </View>
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        {[
+                            { k: 'accept', l: 'I Accept the Demand and Cancel the deal!' },
+                            { k: 'decline', l: 'I decline the Demand and keep to the Agreement!' },
+                            { k: 'negotiate', l: 'Continue and Negotiate to find a solution.' },
+                        ].map(({ k, l }) => (
+                            <TouchableOpacity key={k} style={s.radioRow} onPress={() => setSellerDecisionChoice(k)}>
+                                <Text style={s.radioLabel}>{l}</Text>
+                                <RadioButton selected={sellerDecisionChoice === k} color="#505050" />
+                            </TouchableOpacity>
+                        ))}
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+
+                        <TouchableOpacity
+                            style={[s.btn, (!sellerDecisionChoice || !sellerResponseText.trim()) && s.btnDisabled]}
+                            onPress={sendSellerResponse}
+                            disabled={!sellerDecisionChoice || !sellerResponseText.trim() || actionLoading}
+                        >
+                            <Text style={s.btnTxt}>{actionLoading ? 'Sending...' : 'Send Response to Buyer'}</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
 
-                {/* Admin Decision */}
-                {claim.admin_decision && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>{t('Admin Decision')}</Text>
-                        <View style={[styles.decisionBox, {
-                            backgroundColor: claim.admin_decision === 'favor_buyer' ? '#E8F5E9' :
-                                claim.admin_decision === 'favor_seller' ? '#FFEBEE' : '#FFF3E0'
-                        }]}>
-                            <View style={styles.decisionHeader}>
-                                <Ionicons
-                                    name={claim.admin_decision === 'favor_buyer' ? 'checkmark-circle' :
-                                        claim.admin_decision === 'favor_seller' ? 'close-circle' : 'information-circle'}
-                                    size={24}
-                                    color={claim.admin_decision === 'favor_buyer' ? '#4CAF50' :
-                                        claim.admin_decision === 'favor_seller' ? '#F44336' : '#FF9800'}
-                                />
-                                <Text style={styles.decisionTitle}>
-                                    {claim.admin_decision === 'favor_buyer' ? 'Favor Buyer' :
-                                        claim.admin_decision === 'favor_seller' ? 'Favor Seller' : 'Partial Resolution'}
+                {/* Buyer waiting state */}
+                {isBuyer && !hasResponded && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time="" />
+                        <Text style={s.statusNeutral}>{'Awaiting seller response...'}</Text>
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        {[
+                            'I Accept the Demand and Cancel the deal!',
+                            'I decline the Demand and keep to the Agreement!',
+                            'Continue and Negotiate to find a solution.',
+                        ].map(l => (
+                            <View key={l} style={s.radioRow}>
+                                <Text style={s.radioLabel}>{l}</Text>
+                                <RadioButton selected={false} />
+                            </View>
+                        ))}
+                        <TouchableOpacity style={[s.btn, s.btnDisabled]} disabled>
+                            <Text style={s.btnTxt}>{'Proceed to Resolution'}</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 2 – SELLER ACCEPTED
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isAccept && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time={ago(claim.updated_at)} />
+                        <Text style={s.fieldLabel}>{'Response to the Claim:'}</Text>
+                        <Bubble text={claim.seller_response || ''} />
+
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>{'I Accept the Demand and Cancel the deal!'}</Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.successTxt}>{'The Claim has been settled successfully!'}</Text>
+                        <Text style={s.successSub}>{"Buyer's Fee will be returned in 2-4 days to Buyer."}</Text>
+
+                        {isBuyer && (
+                            <TouchableOpacity style={s.btn} onPress={proceedToResolution}>
+                                <Text style={s.btnTxt}>{'Proceed to Resolution'}</Text>
+                            </TouchableOpacity>
+                        )}
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 3 – SELLER NEGOTIATES
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isNegotiate && isNegotiating && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time={ago(claim.updated_at)} />
+                        <Text style={s.fieldLabel}>{'Response to the Claim:'}</Text>
+                        <Bubble text={claim.seller_response || ''} />
+
+                        <Text style={s.evidLabel}>{'Evidence for the Issue:'}</Text>
+                        <ULink label="Upload evidence" />
+                        <ULink label="Upload evidence" />
+
+                        <Text style={s.decisionCaps}>{"SELLER'S DECISION"}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>{'Continue and Negotiate to find a solution.'}</Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+
+                        {!mySugg ? (
+                            <>
+                                <Text style={s.fieldLabel}>{isBuyer ? "Buyer's suggestion for settlement:" : "Seller's suggestion for resolution:"}</Text>
+                                <View style={s.bubbleInput}>
+                                    <TextInput
+                                        style={s.textArea}
+                                        placeholder="Describe your suggestion..."
+                                        placeholderTextColor="#AAA"
+                                        multiline
+                                        value={suggestionText}
+                                        onChangeText={setSuggestionText}
+                                    />
+                                </View>
+                                <Text style={s.evidLabel}>{'Additional evidence for the Claim:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                                <TouchableOpacity
+                                    style={[s.btn, (!suggestionText.trim() || actionLoading) && s.btnDisabled]}
+                                    onPress={sendSuggestion}
+                                    disabled={!suggestionText.trim() || actionLoading}
+                                >
+                                    <Text style={s.btnTxt}>{actionLoading ? 'Sending...' : 'Give your Suggestion'}</Text>
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <View style={s.waitBanner}>
+                                <Text style={s.waitTxt}>{'Your suggestion has been submitted. Waiting for the other party...'}</Text>
+                            </View>
+                        )}
+                    </>
+                )}
+
+                {/* ═══════════════════════════════════════════
+                    STATE 4 – STATUS RESOLUTIONS
+                ═══════════════════════════════════════════ */}
+                {isStatusRes && !isSettled && !isClosed && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time={ago(claim.updated_at)} />
+                        <ULink label="View Response to the Claim" />
+                        <ULink label="View Uploaded evidence" />
+
+                        {buyerSugg && (
+                            <>
+                                <Text style={s.fieldLabel}>{"Buyer's suggestion for settlement:"}</Text>
+                                <Bubble text={buyerSugg} />
+                                <Text style={s.evidLabel}>{'Additional evidence for the Claim:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                            </>
+                        )}
+                        {sellerSugg && (
+                            <>
+                                <Text style={s.fieldLabel}>{"Seller's suggestion for resolution:"}</Text>
+                                <Bubble text={sellerSugg} />
+                                <Text style={s.evidLabel}>{'Additional evidence for the Claim:'}</Text>
+                                <ULink label="Upload evidence" />
+                                <ULink label="Upload evidence" />
+                            </>
+                        )}
+
+                        <Text style={s.decisionCaps}>{'DECISIONS BY SELLER AND BUYER'}</Text>
+
+                        {/* Seller's decision row */}
+                        <TouchableOpacity
+                            style={s.radioRow}
+                            onPress={() => !hasMyNegDec && setMyResDecision('accept')}
+                        >
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}
+                                <Text style={s.radioLabelNormal}>
+                                    {negSellerDec === 'accept' ? 'I Accept the negotiated resolution!' :
+                                     negSellerDec === 'decline' ? 'I decline the negotiated resolution!' :
+                                     'Awaiting seller decision...'}
                                 </Text>
-                            </View>
-                            {claim.resolution_amount && (
-                                <Text style={styles.resolutionAmount}>
-                                    Refund Amount: ${claim.resolution_amount}
+                            </Text>
+                            <RadioButton selected={!!negSellerDec} color={'#505050'} />
+                        </TouchableOpacity>
+
+                        {/* Buyer's decision row */}
+                        <TouchableOpacity
+                            style={s.radioRow}
+                            onPress={() => !hasMyNegDec && isBuyer && setMyResDecision('accept')}
+                        >
+                            <Text style={s.radioLabel}>
+                                {'BUYER: '}
+                                <Text style={s.radioLabelNormal}>
+                                    {negBuyerDec === 'accept' ? 'I Accept the negotiated resolution!' :
+                                     negBuyerDec === 'decline' ? 'I decline the negotiated resolution!' :
+                                     (!hasMyNegDec && isBuyer && myResDecision ?
+                                         (myResDecision === 'accept' ? 'I Accept the negotiated resolution!' : 'I decline the negotiated resolution!') :
+                                         'Awaiting your decision...')}
                                 </Text>
-                            )}
-                            {claim.admin_notes && (
-                                <Text style={styles.adminNotes}>{claim.admin_notes}</Text>
-                            )}
-                            {claim.admin_name && (
-                                <Text style={styles.adminName}>Decided by: {claim.admin_name}</Text>
-                            )}
-                        </View>
-                    </View>
+                            </Text>
+                            <RadioButton
+                                selected={!!(negBuyerDec || (!hasMyNegDec && myResDecision))}
+                                color={'#505050'}
+                            />
+                        </TouchableOpacity>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.decisionCaps}>{'RESOLUTION RECOMMENDATION'}</Text>
+                        <TouchableOpacity style={s.radioRow} onPress={() => setAckChecked(!ackChecked)}>
+                            <Text style={[s.radioLabel, { flex: 1, paddingRight: 12 }]}>
+                                {'I confirm I have read the Resolution Recommendation and made my decision after carefully weighing the best resolution, which is fair for both of the parties.'}
+                            </Text>
+                            <RadioButton selected={ackChecked} color="#505050" />
+                        </TouchableOpacity>
+                        <ULink label="View Resolution Recommendations" onPress={showRecommendation} />
+
+                        {showFail && (
+                            <>
+                                <Text style={s.failTxt}>{'The Claim has not been settled!'}</Text>
+                                <Text style={s.failSub}>{'Consider further negotiation or admin review'}</Text>
+                            </>
+                        )}
+
+                        {!hasMyNegDec && (
+                            <TouchableOpacity
+                                style={[s.btn, (!myResDecision || actionLoading) && s.btnDisabled]}
+                                onPress={submitResDecision}
+                                disabled={!myResDecision || actionLoading}
+                            >
+                                <Text style={s.btnTxt}>{actionLoading ? 'Submitting...' : 'Give your Suggestion'}</Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {isBuyer && showFail && (
+                            <TouchableOpacity style={[s.btn, s.btnOutline]} onPress={closeClaim}>
+                                <Text style={s.btnOutlineTxt}>{'Close the Claim'}</Text>
+                            </TouchableOpacity>
+                        )}
+                    </>
                 )}
 
-                {/* Assigned Admin */}
-                {claim.admin_name && !claim.admin_decision && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>{t('Assigned To')}</Text>
-                        <View style={styles.adminInfo}>
-                            <Ionicons name="person-circle" size={24} color={COLORS.primary} />
-                            <Text style={styles.adminInfoText}>{claim.admin_name}</Text>
+                {/* ═══════════════════════════════════════════
+                    STATE 4B – BOTH ACCEPTED (settled)
+                ═══════════════════════════════════════════ */}
+                {isSettled && !isClosed && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time={ago(claim.updated_at)} />
+                        <ULink label="View Response to the Claim" />
+                        <ULink label="View Uploaded evidence" />
+
+                        <Text style={s.decisionCaps}>{'DECISIONS BY SELLER AND BUYER'}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}<Text style={s.radioLabelNormal}>{'I Accept the negotiated resolution!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#000" />
                         </View>
-                    </View>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'BUYER: '}<Text style={s.radioLabelNormal}>{'I Accept the negotiated resolution!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#000" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        <Text style={s.decisionCaps}>{'RESOLUTION RECOMMENDATION'}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={[s.radioLabel, { flex: 1, paddingRight: 12 }]}>
+                                {'I confirm I have read the Resolution Recommendation and made my decision after carefully weighing the best resolution, which is fair for both of the parties.'}
+                            </Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <ULink label="View Resolution Recommendations" onPress={showRecommendation} />
+
+                        <Text style={s.successTxt}>{'The Claim has been settled successfully!'}</Text>
+                        <Text style={s.successSub}>{"Buyer's Fee will be returned in 2-4 days to Buyer."}</Text>
+                        <TouchableOpacity style={s.btn} onPress={closeClaim}>
+                            <Text style={s.btnTxt}>{'Close the Claim'}</Text>
+                        </TouchableOpacity>
+                    </>
                 )}
 
-                {/* Timeline */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>{t('Timeline')}</Text>
-                    <View style={styles.timeline}>
-                        <View style={styles.timelineItem}>
-                            <View style={styles.timelineDot} />
-                            <View style={styles.timelineContent}>
-                                <Text style={styles.timelineTitle}>{t('Claim Created')}</Text>
-                                <Text style={styles.timelineDate}>{formatDate(claim.created_at)}</Text>
-                            </View>
-                        </View>
-                        {claim.assigned_at && (
-                            <View style={styles.timelineItem}>
-                                <View style={styles.timelineDot} />
-                                <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>{t('Assigned to Admin')}</Text>
-                                    <Text style={styles.timelineDate}>{formatDate(claim.assigned_at)}</Text>
-                                </View>
-                            </View>
-                        )}
-                        {claim.resolved_at && (
-                            <View style={styles.timelineItem}>
-                                <View style={styles.timelineDot} />
-                                <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>{t('Resolved')}</Text>
-                                    <Text style={styles.timelineDate}>{formatDate(claim.resolved_at)}</Text>
-                                </View>
-                            </View>
-                        )}
-                        {claim.closed_at && (
-                            <View style={styles.timelineItem}>
-                                <View style={[styles.timelineDot, styles.timelineDotLast]} />
-                                <View style={styles.timelineContent}>
-                                    <Text style={styles.timelineTitle}>{t('Closed')}</Text>
-                                    <Text style={styles.timelineDate}>{formatDate(claim.closed_at)}</Text>
-                                </View>
-                            </View>
-                        )}
-                    </View>
-                </View>
+                {/* ═══════════════════════════════════════════
+                    STATE 5 – SELLER DECLINED
+                ═══════════════════════════════════════════ */}
+                {hasResponded && isDecline && !isStatusRes && (
+                    <>
+                        <SectionHeader title={"SELLER'S DEFENCE"} time={ago(claim.updated_at)} />
+                        <ULink label="View Response to the Claim" />
+                        <ULink label="View Uploaded evidence" />
 
-                {/* Info Link */}
-                <View style={styles.infoLinkContainer}>
-                    <Text style={styles.infoLinkText}>
-                        More information on Claims,{' '}
-                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
+                        <View style={s.radioRow}>
+                            <Text style={s.radioLabel}>
+                                {'SELLER: '}<Text style={s.radioLabelNormal}>{'I decline the Demand and keep to the Agreement!'}</Text>
+                            </Text>
+                            <RadioButton selected={true} color="#505050" />
+                        </View>
+                        <Text style={s.note}>{"Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!"}</Text>
+
+                        {isSeller && (
+                            <View style={s.waitBanner}>
+                                <Text style={s.waitTxt}>{'You have declined the claim. The buyer may negotiate or wait for admin review.'}</Text>
+                            </View>
+                        )}
+                        {isBuyer && (
+                            <>
+                                <Text style={s.failTxt}>{'The Claim has not been settled!'}</Text>
+                                <Text style={s.failSub}>{'The support team will review the defense'}</Text>
+                                <TouchableOpacity style={[s.btn, s.btnOutline]} onPress={closeClaim}>
+                                    <Text style={s.btnOutlineTxt}>{'Close the Claim'}</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                    </>
+                )}
+
+                {/* Footer */}
+                <View style={s.footer}>
+                    <Text style={s.footerTxt}>
+                        {'More on '}
+                        <Text style={s.footerLink} onPress={showRecommendation}>{'Claim Resolution'}</Text>
                     </Text>
-                    <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFF',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    errorContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    errorText: {
-        fontSize: 16,
-        color: '#303234',
-    },
+// ─────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────
+
+const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#FFF' },
+    scroll: { flex: 1 },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        flexDirection: 'row', alignItems: 'center',
+        paddingHorizontal: 16, paddingVertical: 12,
+        borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
     },
-    backButton: {
-        padding: 8,
+    backBtn: { padding: 4 },
+    headerTitle: { flex: 1, fontSize: 20, fontWeight: '700', color: '#000', paddingLeft: 8 },
+
+    iconCenter: { alignItems: 'center', paddingTop: 16, paddingBottom: 8 },
+    iconWrap: { position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+    checkBadge: { position: 'absolute', bottom: -4, right: -8 },
+    guideCenter: { alignItems: 'center', paddingHorizontal: 20, marginTop: 8 },
+    guideText: { fontSize: 12, fontWeight: '700', color: '#404040', letterSpacing: 0.3, textAlign: 'center', marginBottom: 4 },
+
+    createdRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 10, marginBottom: 8 },
+    createdLabel: { fontSize: 14, fontWeight: '600', color: '#000' },
+    createdTime: { fontSize: 12, color: '#808080' },
+
+    infoTable: { paddingHorizontal: 20, marginBottom: 10 },
+    infoRow: { flexDirection: 'row', marginBottom: 2 },
+    infoLabel: { width: 110, fontSize: 14, fontWeight: '700', color: '#000' },
+    infoVal: { flex: 1, fontSize: 14, color: '#505050' },
+
+    divider: { height: 1, backgroundColor: '#F0F0F0', marginHorizontal: 20, marginVertical: 8 },
+
+    sectionHeader: {
+        flexDirection: 'row', justifyContent: 'space-between',
+        paddingHorizontal: 20, marginBottom: 6, marginTop: 4,
     },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#000',
+    sectionCaps: { fontSize: 13, fontWeight: '800', color: '#000', letterSpacing: 0.5 },
+    sectionTime: { fontSize: 12, color: '#808080' },
+    decisionCaps: {
+        fontSize: 13, fontWeight: '800', color: '#000',
+        letterSpacing: 0.5, paddingHorizontal: 20,
+        marginTop: 16, marginBottom: 6,
     },
-    headerRight: {
-        width: 40,
-    },
-    content: {
-        flex: 1,
-    },
-    claimHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        padding: 16,
-        backgroundColor: '#F8F9FA',
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
-    },
-    claimNumber: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#000',
-        marginBottom: 4,
-    },
-    claimDate: {
-        fontSize: 14,
-        color: '#505050',
-    },
-    statusBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    priorityBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 4,
-        margin: 16,
-        marginBottom: 8,
-    },
-    priorityText: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#FFF',
-        marginLeft: 6,
-    },
-    section: {
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    sectionTitle: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#505050',
-        textTransform: 'uppercase',
-        marginBottom: 12,
-        letterSpacing: 0.5,
-    },
-    adInfo: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+
+    link: { fontSize: 14, color: '#1A4FDB', textDecorationLine: 'underline', paddingHorizontal: 20, marginBottom: 4 },
+
+    bubble: { marginHorizontal: 20, backgroundColor: '#F5F5F5', borderRadius: 12, padding: 14, marginBottom: 8 },
+    bubbleText: { fontSize: 16, color: '#333', lineHeight: 22 },
+    bubbleInput: { marginHorizontal: 20, backgroundColor: '#F5F5F5', borderRadius: 12, padding: 12, marginBottom: 8 },
+    textArea: { fontSize: 16, color: '#000', minHeight: 90, textAlignVertical: 'top' },
+
+    fieldLabel: { fontSize: 15, fontWeight: '600', color: '#000', paddingHorizontal: 20, marginTop: 10, marginBottom: 6 },
+    evidLabel: { fontSize: 15, fontWeight: '600', color: '#000', paddingHorizontal: 20, marginTop: 10, marginBottom: 4 },
+    note: { fontSize: 12, color: '#808080', paddingHorizontal: 20, marginBottom: 8 },
+
+    radioRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 9 },
+    radioLabel: { fontSize: 16, fontWeight: '700', color: '#000', flex: 1, paddingRight: 14 },
+    radioLabelNormal: { fontSize: 16, fontWeight: '400', color: '#000' },
+
+    statusNeutral: { fontSize: 14, color: '#808080', paddingHorizontal: 20, marginBottom: 10, fontStyle: 'italic' },
+    successTxt: { fontSize: 16, fontWeight: '700', color: '#00C853', textAlign: 'center', marginTop: 16, paddingHorizontal: 20 },
+    successSub: { fontSize: 13, color: '#00C853', textAlign: 'center', marginBottom: 4 },
+    failTxt: { fontSize: 16, fontWeight: '700', color: '#000', textAlign: 'center', marginTop: 16, paddingHorizontal: 20 },
+    failSub: { fontSize: 14, fontWeight: '600', color: '#505050', textAlign: 'center', marginBottom: 4 },
+
+    btn: {
+        backgroundColor: '#D8D8D8',
+        marginHorizontal: 20, marginTop: 14,
+        paddingVertical: 16, borderRadius: 32,
         alignItems: 'center',
     },
-    adTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        flex: 1,
-    },
-    adPrice: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: COLORS.primary,
-    },
-    disputeLink: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 12,
-        backgroundColor: '#F8F9FA',
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    disputeNumber: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: COLORS.primary,
-    },
-    disputeDescription: {
-        fontSize: 14,
-        color: '#505050',
-        lineHeight: 20,
-    },
-    partiesContainer: {
-        gap: 12,
-    },
-    party: {
-        backgroundColor: '#F8F9FA',
-        padding: 12,
-        borderRadius: 8,
-    },
-    partyLabel: {
-        fontSize: 12,
-        color: '#505050',
-        marginBottom: 4,
-    },
-    partyName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-    },
-    youLabel: {
-        fontSize: 12,
-        color: COLORS.primary,
-        fontWeight: '600',
-        marginTop: 4,
-    },
-    textBox: {
-        backgroundColor: '#F8F9FA',
-        padding: 12,
-        borderRadius: 8,
-    },
-    textBoxContent: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
-    },
-    decisionBox: {
-        padding: 16,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    decisionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    decisionTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#000',
-        marginLeft: 8,
-    },
-    resolutionAmount: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#4CAF50',
-        marginBottom: 12,
-    },
-    adminNotes: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
-        marginBottom: 12,
-    },
-    adminName: {
-        fontSize: 12,
-        color: '#505050',
-        fontStyle: 'italic',
-    },
-    adminInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 12,
-        backgroundColor: '#F8F9FA',
-        borderRadius: 8,
-    },
-    adminInfoText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        marginLeft: 8,
-    },
-    timeline: {
-        paddingLeft: 8,
-    },
-    timelineItem: {
-        flexDirection: 'row',
-        marginBottom: 16,
-    },
-    timelineDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: COLORS.primary,
-        marginRight: 12,
-        marginTop: 4,
-    },
-    timelineDotLast: {
-        backgroundColor: '#303234',
-    },
-    timelineContent: {
-        flex: 1,
-    },
-    timelineTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#000',
-        marginBottom: 4,
-    },
-    timelineDate: {
-        fontSize: 12,
-        color: '#505050',
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-        backgroundColor: '#E3F2FD',
-        marginTop: 8,
-    },
-    infoLinkText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#505050',
-    },
-    infoLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-    },
-    infoIcon: {
-        marginLeft: 8,
-    },
+    btnDisabled: { opacity: 0.45 },
+    btnTxt: { color: '#000', fontSize: 17, fontWeight: '700' },
+    btnOutline: { backgroundColor: '#FFF', borderWidth: 1.5, borderColor: '#C0C0C0' },
+    btnOutlineTxt: { color: '#333', fontSize: 15, fontWeight: '700' },
+
+    waitBanner: { backgroundColor: '#F8F8F8', marginHorizontal: 20, borderRadius: 12, padding: 14, marginTop: 10 },
+    waitTxt: { fontSize: 14, color: '#505050', textAlign: 'center' },
+
+    footer: { alignItems: 'center', paddingTop: 24 },
+    footerTxt: { fontSize: 12, color: '#505050' },
+    footerLink: { color: '#1A4FDB', textDecorationLine: 'underline', fontWeight: '600' },
 });
 
 export default ClaimDetailScreen;

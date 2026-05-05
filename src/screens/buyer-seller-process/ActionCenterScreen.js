@@ -276,7 +276,12 @@ const styles = StyleSheet.create({
     actionText: {
         fontSize: 14,
         fontWeight: '700',
-        color: '#45FF4E', // Bright green from user's other screens / designs
+        color: '#000', // Bright green from user's other screens / designs
+    },
+    actionStatus: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#000',
     },
     emptyContainer: {
         alignItems: 'center',

@@ -18,12 +18,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../../constants/theme';
 import disputeService from '../../services/disputeService';
 
+// Custom SVG icon component for the balance scales
+const BalanceScaleIcon = () => (
+    <View style={styles.iconContainer}>
+        <View style={styles.iconWrapper}>
+            <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+            <FontAwesome name="handshake-o" size={50} color="#505050" />
+        </View>
+    </View>
+);
+
 const CreateIssueScreen = ({ navigation, route }) => {
     const { t } = useTranslation();
     const { advertisementId, otherPartyId, adTitle, sellerName } = route.params || {};
 
+    const [currentStep, setCurrentStep] = useState(1);
     const [issueDescription, setIssueDescription] = useState('');
-    const [buyerRequest, setBuyerRequest] = useState('');
     const [loading, setLoading] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
@@ -42,21 +52,17 @@ const CreateIssueScreen = ({ navigation, route }) => {
         }
     };
 
-    const handleSubmit = async () => {
-        console.log('=== CREATE ISSUE SUBMIT ===');
-        console.log('Issue Description:', issueDescription);
-        console.log('Buyer Request:', buyerRequest);
-        console.log('Advertisement ID:', advertisementId);
-        console.log('Other Party ID:', otherPartyId);
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1);
+        } else {
+            navigation.goBack();
+        }
+    };
 
-        // Validation
+    const handleSubmit = async () => {
         if (!issueDescription || issueDescription.trim().length < 10) {
             Alert.alert(t('Error'), 'Please describe the issue (minimum 10 characters)');
-            return;
-        }
-
-        if (!buyerRequest || buyerRequest.trim().length < 10) {
-            Alert.alert(t('Error'), 'Please describe your request (minimum 10 characters)');
             return;
         }
 
@@ -69,16 +75,14 @@ const CreateIssueScreen = ({ navigation, route }) => {
 
         try {
             const issueData = {
-                created_by: currentUser?.id, // Current user ID
+                created_by: currentUser?.id,
                 other_party_id: otherPartyId,
                 advertisement_id: advertisementId,
-                issue_type: 'other', // Default type since we removed selection
+                issue_type: 'other',
                 issue_description: issueDescription.trim(),
-                buyer_request: buyerRequest.trim(),
+                buyer_request: issueDescription.trim(), // Combined request into single field
                 product_name: adTitle || 'Product'
             };
-
-            console.log('Creating issue with data:', issueData);
 
             const response = await disputeService.createIssue(issueData);
 
@@ -91,7 +95,6 @@ const CreateIssueScreen = ({ navigation, route }) => {
                             text: t('OK'),
                             onPress: () => {
                                 navigation.goBack();
-                                // Navigate to issue detail
                                 if (response.data?.id) {
                                     navigation.navigate('IssueDetail', { issueId: response.data.id });
                                 }
@@ -101,22 +104,144 @@ const CreateIssueScreen = ({ navigation, route }) => {
                 );
             }
         } catch (error) {
-            console.error('Create issue error:', error);
-            console.error('Error response:', error.response);
-            console.error('Error data:', error.response?.data);
-
             let errorMessage = 'Failed to create issue. Please try again.';
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.message) {
-                errorMessage = error.message;
             }
-
             Alert.alert(t('Error'), errorMessage);
         } finally {
             setLoading(false);
         }
     };
+
+    const renderSlide1 = () => (
+        <View style={styles.guideContainer}>
+            <Text style={styles.guideTitle}>{t('RoundBuy Negotiation Guidelines for Issues')}</Text>
+            
+            <Text style={styles.guideSubtitle}>{t('How to Negotiate a Compromise')}</Text>
+            <Text style={styles.guideParagraph}>{t('Before the matter gets esclated, try to reach a mutual understanding by negotiating: price reduction, refund or fix of the product or service.')}</Text>
+            <Text style={styles.guideParagraph}>{t('If possible try to prevent disagreement, and an escalation by "Issuing a Dispute".')}</Text>
+            <Text style={styles.guideParagraph}>{t('Key strategies for effective negotiations: be prepared by knowing what you agreed and what was described. Be flexible, explore multiple solutions witn mutual win-win mindset. Know when to walk away, werigh dispute costs (time/energy) gainst the value.')}</Text>
+            <Text style={styles.guideParagraph}>{t('Best prevention for disputes for next time is to research sellers, understand trms, check for fraud.')}</Text>
+            
+            <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <Text style={{fontSize: 13, color:'#000'}}>{t('More on ')}</Text>
+                <Text style={styles.blueLink}>{t('Disputes')}</Text>
+            </View>
+
+            <Text style={styles.guideSubtitle}>{t('RoundBuy Guidelines for compromise')}</Text>
+            <Text style={styles.guideBulletPoint}>{t('• Reduce price as a first choice if the defect is minor')}</Text>
+            <Text style={styles.guideBulletPoint}>{t('• Try to fix the defected item')}</Text>
+            <Text style={styles.guideBulletPoint}>{t('• Make a full refund (receive back the item) & Cancel the deal.')}</Text>
+            
+            <View style={styles.paginationDots}>
+                <View style={[styles.dot, styles.dotActive]} />
+                <View style={styles.dot} />
+            </View>
+            
+            <TouchableOpacity style={styles.readMoreButton} onPress={() => setCurrentStep(2)}>
+                <Text style={styles.readMoreText}>{t('Read more')}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderSlide2 = () => (
+        <View style={styles.guideContainer}>
+            <Text style={styles.guideTitle}>{t('RoundBuy Settlement Suggestions for Issues')}</Text>
+            
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            <Text style={styles.guideBulletPointDark}>{t('• lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum')}</Text>
+            
+            <View style={[styles.paginationDots, {marginTop: 40}]}>
+                <View style={styles.dot} />
+                <View style={[styles.dot, styles.dotActive]} />
+            </View>
+            
+            <TouchableOpacity style={styles.readMoreButton} onPress={() => setCurrentStep(3)}>
+                <Text style={styles.readMoreText}>{t('Read more')}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderSlide3 = () => (
+        <View style={styles.formContainer}>
+            <View style={styles.guidanceBarRow}>
+                <Text style={styles.guidanceBarText}>{t('ROUNDBUY GUIDANCE ON NEGOTIATION & SETTLEMENT')}</Text>
+                <Ionicons name="information-circle-outline" size={18} color="#000" style={{marginLeft: 4}} />
+            </View>
+
+            <View style={styles.statusContainer}>
+                <Text style={styles.statusText}>{t(`An Issue #${advertisementId || '21122'} was created`)}</Text>
+                <Text style={styles.timeText}>{t('just now')}</Text>
+            </View>
+
+            <View style={styles.infoSectionNoBorder}>
+                <View style={styles.infoRowAligned}>
+                    <Text style={styles.infoLabelFixed}>{t('Item:')}</Text>
+                    <Text style={styles.infoValueLeft}>{adTitle || 'Coffee maker'}</Text>
+                </View>
+                <View style={styles.infoRowAligned}>
+                    <Text style={styles.infoLabelFixed}>{t('Issuer:')}</Text>
+                    <Text style={styles.infoValueLeft}>{currentUser?.username || currentUser?.full_name || 'Johnnie8121'}</Text>
+                </View>
+                <View style={styles.infoRowAligned}>
+                    <Text style={styles.infoLabelFixed}>{t('Issued to:')}</Text>
+                    <Text style={styles.infoValueLeft}>{sellerName || 'BMiranda'}</Text>
+                </View>
+            </View>
+
+            <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitleCaps}>{t("BUYER'S ISSUE")}</Text>
+                    <Text style={styles.sectionTime}>{t('just now')}</Text>
+                </View>
+                <Text style={styles.fieldLabelSmall}>{t('The Issue with the item and request:')}</Text>
+                
+                <View style={styles.bubbleInputContainer}>
+                    <TextInput
+                        style={styles.textArea}
+                        placeholder={t("The coffee maker was good upon inspection. However, as I came home and boiled coffee, it leaked water. I didn't drop it, or anything else.\n\nI demand full money back (refund). Can we cancel the deal?")}
+                        placeholderTextColor="#666"
+                        multiline
+                        numberOfLines={8}
+                        textAlignVertical="top"
+                        value={issueDescription}
+                        onChangeText={setIssueDescription}
+                        maxLength={2000}
+                    />
+                </View>
+                
+                <Text style={[styles.fieldLabelSmall, {marginTop: 20, marginBottom: 8}]}>{t('Evidence for the Issue:')}</Text>
+                <View style={styles.evidenceLinkColumn}>
+                    <TouchableOpacity style={{marginBottom: 6}}>
+                        <Text style={styles.evidenceLinkTextBlue}>{t('Upload evidence')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <Text style={styles.evidenceLinkTextBlue}>{t('Upload evidence')}</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <TouchableOpacity
+                style={[
+                    styles.submitButtonRoundedBase,
+                    (issueDescription.length < 10 || loading) && styles.submitButtonDisabledBase,
+                ]}
+                onPress={handleSubmit}
+                disabled={issueDescription.length < 10 || loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#000" />
+                ) : (
+                    <Text style={styles.submitButtonTextBase}>{t('Send Issue to Seller')}</Text>
+                )}
+            </TouchableOpacity>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -124,15 +249,11 @@ const CreateIssueScreen = ({ navigation, route }) => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.keyboardView}
             >
-                {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={styles.backButton}
-                    >
+                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                         <Ionicons name="chevron-back" size={28} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{t('An Issue')}</Text>
+                    <Text style={styles.headerTitle}>{t(`An Issue #${advertisementId || '21122'}`)}</Text>
                     <View style={styles.headerRight} />
                 </View>
 
@@ -141,104 +262,17 @@ const CreateIssueScreen = ({ navigation, route }) => {
                     contentContainerStyle={styles.contentContainer}
                     keyboardShouldPersistTaps="handled"
                 >
-                    {/* Handshake Icon */}
-                    <View style={styles.iconContainer}>
-                        <FontAwesome name="handshake-o" size={80} color="#505050" />
-                    </View>
+                    <BalanceScaleIcon />
 
-                    {/* Status Message */}
-                    <View style={styles.statusContainer}>
-                        <Text style={styles.statusText}>{t('Creating a new issue')}</Text>
-                        <Text style={styles.timeText}>{t('Just now')}</Text>
-                    </View>
+                    {currentStep === 1 && renderSlide1()}
+                    {currentStep === 2 && renderSlide2()}
+                    {currentStep === 3 && renderSlide3()}
 
-                    {/* Product/Buyer/Seller Info */}
-                    <View style={styles.infoSection}>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>{t('Product:')}</Text>
-                            <Text style={styles.infoValue}>{adTitle || 'N/A'}</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
-                            <Text style={styles.infoValue}>{currentUser?.full_name || 'You'}</Text>
-                        </View>
-                        <View style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
-                            <Text style={styles.infoValue}>{sellerName || 'Seller'}</Text>
-                        </View>
-                    </View>
-
-                    {/* Buyer's Issue Section */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
-                            <Text style={styles.sectionTime}>{t('Now')}</Text>
-                        </View>
-                        <Text style={styles.fieldLabel}>{t('The issue with the product:')}</Text>
-                        <TextInput
-                            style={styles.textArea}
-                            placeholder={t("Describe the issue you're experiencing...")}
-                            placeholderTextColor="#303234"
-                            multiline
-                            numberOfLines={6}
-                            textAlignVertical="top"
-                            value={issueDescription}
-                            onChangeText={setIssueDescription}
-                            maxLength={2000}
-                        />
-                        <Text style={styles.charCount}>
-                            {issueDescription.length}/2000 characters
+                    <View style={styles.footerInfoLink}>
+                        <Text style={styles.footerLinkText}>
+                            More on <Text style={styles.footerLinkHighlight}>{t('Issues & Resolution')}</Text>
                         </Text>
                     </View>
-
-                    {/* Issuer's Request Section */}
-                    <View style={styles.section}>
-                        <Text style={styles.fieldLabel}>{t('Issuers Requests:')}</Text>
-                        <TextInput
-                            style={styles.textArea}
-                            placeholder={t('What would you like the seller to do? (e.g., refund, replacement, etc.)')}
-                            placeholderTextColor="#303234"
-                            multiline
-                            numberOfLines={6}
-                            textAlignVertical="top"
-                            value={buyerRequest}
-                            onChangeText={setBuyerRequest}
-                            maxLength={2000}
-                        />
-                        <Text style={styles.charCount}>
-                            {buyerRequest.length}/2000 characters
-                        </Text>
-                    </View>
-
-                    {/* Info Link */}
-                    <View style={styles.infoLinkContainer}>
-                        <Text style={styles.infoLinkText}>
-                            More information on Issues & Disputes,{' '}
-                        </Text>
-                        <TouchableOpacity>
-                            <Text style={styles.infoLink}>{t('click here')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.infoIcon}>
-                            <Ionicons name="information-circle-outline" size={20} color="#505050" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Submit Button */}
-                    <TouchableOpacity
-                        style={[
-                            styles.submitButton,
-                            (issueDescription.length < 10 || buyerRequest.length < 10 || loading) &&
-                            styles.submitButtonDisabled,
-                        ]}
-                        onPress={handleSubmit}
-                        disabled={issueDescription.length < 10 || buyerRequest.length < 10 || loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#FFF" />
-                        ) : (
-                            <Text style={styles.submitButtonText}>{t('Send Issue to Seller')}</Text>
-                        )}
-                    </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -258,16 +292,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
     },
     backButton: {
         padding: 4,
-        marginRight: 12,
+        marginRight: 8,
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: 'bold',
         color: '#000',
         flex: 1,
     },
@@ -278,126 +310,199 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     contentContainer: {
-        padding: 16,
+        padding: 24,
+        paddingBottom: 40,
     },
     iconContainer: {
         alignItems: 'center',
-        marginVertical: 20,
+        paddingVertical: 10,
+    },
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
+    },
+    guideContainer: {
+        flex: 1,
+    },
+    guideTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 16,
+    },
+    guideSubtitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 10,
+    },
+    guideParagraph: {
+        fontSize: 13,
+        color: '#000',
+        marginBottom: 14,
+        lineHeight: 18,
+    },
+    blueLink: {
+        fontSize: 13,
+        color: '#0066CC',
+        textDecorationLine: 'underline',
+    },
+    guideBulletPoint: {
+        fontSize: 13,
+        color: '#888',
+        marginBottom: 8,
+        lineHeight: 18,
+        paddingLeft: 4,
+    },
+    guideBulletPointDark: {
+        fontSize: 13,
+        color: '#000',
+        marginBottom: 10,
+        lineHeight: 18,
+        paddingLeft: 4,
+    },
+    paginationDots: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 24,
+    },
+    dot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: '#ccc',
+        marginHorizontal: 6,
+    },
+    dotActive: {
+        backgroundColor: '#555',
+    },
+    readMoreButton: {
+        backgroundColor: '#F5F5F5',
+        paddingVertical: 14,
+        borderRadius: 24,
+        alignItems: 'center',
+    },
+    readMoreText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    formContainer: {
+        flex: 1,
+    },
+    guidanceBarRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    guidanceBarText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: '#333',
     },
     statusContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 20,
     },
     statusText: {
         fontSize: 14,
-        color: '#505050',
+        fontWeight: 'bold',
+        color: '#000',
     },
     timeText: {
         fontSize: 12,
-        color: '#303234',
+        color: '#888',
     },
-    infoSection: {
-        backgroundColor: '#F8F9FA',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
+    infoSectionNoBorder: {
+        marginBottom: 24,
     },
-    infoRow: {
+    infoRowAligned: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 6,
+        marginBottom: 4,
     },
-    infoLabel: {
+    infoLabelFixed: {
         fontSize: 13,
-        fontWeight: '600',
-        color: '#505050',
+        color: '#303234',
+        width: 100,
     },
-    infoValue: {
+    infoValueLeft: {
         fontSize: 13,
         color: '#000',
-        fontWeight: '500',
         flex: 1,
-        textAlign: 'right',
     },
     section: {
-        marginBottom: 20,
+        marginBottom: 24,
     },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 14,
     },
-    sectionTitle: {
+    sectionTitleCaps: {
         fontSize: 13,
-        fontWeight: '700',
-        color: '#000',
+        fontWeight: 'bold',
+        color: '#303234',
         letterSpacing: 0.5,
     },
     sectionTime: {
         fontSize: 12,
+        color: '#888',
+    },
+    fieldLabelSmall: {
+        fontSize: 13,
+        fontWeight: 'bold',
         color: '#303234',
+        marginBottom: 10,
     },
-    fieldLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
-    },
-    textArea: {
+    bubbleInputContainer: {
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        borderRadius: 8,
-        padding: 12,
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    textArea: {
+        padding: 14,
         fontSize: 14,
         color: '#000',
-        minHeight: 120,
-        backgroundColor: '#FAFAFA',
+        minHeight: 140,
+        backgroundColor: '#FFF',
     },
-    charCount: {
-        fontSize: 12,
-        color: '#303234',
-        textAlign: 'right',
-        marginTop: 4,
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-        flexWrap: 'wrap',
-    },
-    infoLinkText: {
-        fontSize: 12,
-        color: '#505050',
-    },
-    infoLink: {
-        fontSize: 12,
-        color: '#4169E1',
+    evidenceLinkTextBlue: {
+        fontSize: 13,
+        color: '#0066CC',
         textDecorationLine: 'underline',
     },
-    infoIcon: {
-        marginLeft: 4,
-    },
-    submitButton: {
+    submitButtonRoundedBase: {
         backgroundColor: '#F5F5F5',
-        padding: 16,
-        borderRadius: 8,
+        paddingVertical: 14,
+        borderRadius: 24,
         alignItems: 'center',
-        marginBottom: 16,
     },
-    submitButtonDisabled: {
-        backgroundColor: '#E0E0E0',
+    submitButtonDisabledBase: {
+        opacity: 0.5,
     },
-    submitButtonText: {
+    submitButtonTextBase: {
         fontSize: 16,
-        fontWeight: '600',
         color: '#000',
+    },
+    footerInfoLink: {
+        marginTop: 40,
+        alignItems: 'center',
+    },
+    footerLinkText: {
+        fontSize: 12,
+        color: '#333',
+    },
+    footerLinkHighlight: {
+        color: '#0066CC',
+        textDecorationLine: 'underline',
     },
 });
 

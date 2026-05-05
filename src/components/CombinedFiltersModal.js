@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, SafeAreaView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
@@ -9,97 +9,111 @@ const CombinedFiltersModal = ({
   filters,
   onUpdateFilters,
   onOpenCategoryModal,
+  onOpenSubcategoryModal,
+  onOpenActivityModal,
+  onOpenConditionModal,
   onOpenDistanceModal,
-  onOpenPriceModal
+  onOpenPriceModal,
+  onOpenGenderModal,
+  onOpenAgeModal,
+  onOpenSizeModal,
+  onOpenColorModal,
+  onOpenMeasurementModal,
+  filterOptions = {},
 }) => {
-  const [tempFilters, setTempFilters] = useState({
-    buy: false,
-    sell: false,
-    wanted: false,
-    service: false,
-    community: false,
-    giveaway: false,
-  });
+  // Extract summary text for UI
+  const getSummaryText = (item, optionsArray = [], defaultText = 'All') => {
+    if (!item || item.length === 0) return defaultText;
 
-  useEffect(() => {
-    if (visible) {
-      // Initialize with current filter values
-      setTempFilters({
-        buy: filters.activity_id === 'buy',
-        sell: filters.activity_id === 'sell',
-        wanted: filters.activity_id === 'wanted',
-        service: filters.activity_id === 'service',
-        community: filters.activity_id === 'community',
-        giveaway: filters.activity_id === 'giveaway',
-      });
+    let labels = [];
+    if (Array.isArray(item)) {
+      labels = item.map(i => optionsArray?.find(o => o.id?.toString() === i?.toString())?.name || i);
+    } else if (typeof item === 'string') {
+      const parts = item.split(',').filter(p => p.trim());
+      labels = parts.map(i => optionsArray?.find(o => o.id?.toString() === i?.toString())?.name || i);
+    } else {
+      labels = [optionsArray?.find(o => o.id?.toString() === item?.toString())?.name || item];
     }
-  }, [visible, filters]);
 
-  const handleActivityToggle = (activity) => {
-    setTempFilters(prev => ({
-      ...prev,
-      [activity]: !prev[activity]
-    }));
+    const joined = labels.join(', ');
+    if (joined.length > 15) {
+      return joined.substring(0, 15) + '...';
+    }
+    return joined;
+  };
+
+  const getPriceSummaryText = () => {
+    if (filters.min_price || filters.max_price) {
+      return `£${filters.min_price || '0'} - ${filters.max_price ? `£${filters.max_price}` : 'No limit'}`;
+    }
+    return 'All';
+  };
+
+  const getDistanceSummaryText = () => {
+    if (filters.radius && filters.radius < 100000) { // 100000 is our UNLIMITED_RADIUS constant
+      return `${filters.radius} km`;
+    }
+    return 'All';
+  };
+
+  const hasActiveFilters = () => {
+    return filters.activity_id ||
+      filters.category_id ||
+      filters.subcategory_id ||
+      filters.condition_id ||
+      filters.min_price ||
+      filters.max_price ||
+      (filters.radius && filters.radius !== 50); // assuming 50 is base default if not explicitly selected
   };
 
   const handleClearAll = () => {
-    // Clear activity toggles
-    setTempFilters({
-      buy: false,
-      sell: false,
-      wanted: false,
-      service: false,
-      community: false,
-      giveaway: false,
-    });
-
-    // Clear all other filters and apply immediately
     onUpdateFilters({
       ...filters,
-      activity_id: null,
-      category_id: null,
-      subcategory_id: null,
-      condition_id: null,
+      activity_id: [],
+      category_id: [],
+      subcategory_id: [],
+      condition_id: [],
+      gender_id: [],
+      age_id: [],
+      size_id: [],
+      color_id: [],
       min_price: null,
       max_price: null,
-      radius: 50, // Reset to default
+      radius: 100000,
     });
-
-    onClose();
+    // Can auto close or stay open
   };
 
   const handleApply = () => {
-    // Convert activity toggles to activity_id
-    const activeActivities = Object.keys(tempFilters).filter(key => tempFilters[key]);
-    const activity_id = activeActivities.length === 1 ? activeActivities[0] : null;
-
-    onUpdateFilters({
-      ...filters,
-      activity_id,
-    });
+    // Current state is passed immediately from modals to SearchScreen, 
+    // so simply closing this modal implicitly "applies" the current SearchScreen filter state.
     onClose();
   };
 
-  const FilterOption = ({ label, value, onToggle }) => (
-    <View style={styles.filterOption}>
-      <Text style={styles.filterLabel}>{label}</Text>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{ false: '#d1d1d6', true: COLORS.primary }}
-        thumbColor='#ffffff'
-        ios_backgroundColor="#d1d1d6"
-      />
-    </View>
-  );
+  const FilterRow = ({ label, value, onPress, isSelected }) => (
+    <TouchableOpacity style={styles.filterRow} onPress={onPress}>
+      {/* Left Column - Fixed Label */}
+      <View style={styles.leftColumn}>
+        <Text style={styles.filterLabel}>{label}</Text>
+      </View>
 
-  const hasActiveFilters = () => {
-    return Object.values(tempFilters).some(value => value) ||
-      filters.category_id ||
-      filters.min_price ||
-      filters.max_price ||
-      (filters.radius && filters.radius !== 50);
-  };
+      {/* Middle Column - Selected Value or 'All' */}
+      <View style={styles.middleColumn}>
+        <Text
+          style={[styles.filterValue, isSelected && styles.filterValueActive]}
+          numberOfLines={1}
+        >
+          {value || 'All'}
+        </Text>
+      </View>
+
+      {/* Right Column - Arrow */}
+      <View style={styles.rightColumn}>
+        {/* <Text style={styles.rightLabel}>{label}</Text> */}
+        <FontAwesome name="chevron-right" size={14} color="#1a1a1a" style={styles.chevron} />
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <Modal
@@ -108,150 +122,99 @@ const CombinedFiltersModal = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Text style={styles.backArrow}>✕</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>FILTERS</Text>
-          {hasActiveFilters() && (
-            <TouchableOpacity onPress={handleClearAll} style={styles.clearButton}>
-              <Text style={styles.clearText}>Clear all</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={styles.headerTitle}>FILTER</Text>
+          <TouchableOpacity onPress={handleClearAll} style={styles.clearButton}>
+            <Text style={styles.clearText}>CLEAR</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-          {/* Activity Filters */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Activity Type</Text>
-            <View style={styles.filterList}>
-              <FilterOption
-                label="Buy"
-                value={tempFilters.buy}
-                onToggle={() => handleActivityToggle('buy')}
-              />
-              <FilterOption
-                label="Sell"
-                value={tempFilters.sell}
-                onToggle={() => handleActivityToggle('sell')}
-              />
-              <FilterOption
-                label="Wanted"
-                value={tempFilters.wanted}
-                onToggle={() => handleActivityToggle('wanted')}
-              />
-              <FilterOption
-                label="Service"
-                value={tempFilters.service}
-                onToggle={() => handleActivityToggle('service')}
-              />
-              <FilterOption
-                label="Community"
-                value={tempFilters.community}
-                onToggle={() => handleActivityToggle('community')}
-              />
-              <FilterOption
-                label="Giveaway"
-                value={tempFilters.giveaway}
-                onToggle={() => handleActivityToggle('giveaway')}
-              />
-            </View>
-          </View>
 
-          {/* Other Filters */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Other Filters</Text>
+            <FilterRow
+              label="Activity"
+              value={getSummaryText(filters.activity_id, filterOptions.activities)}
+              isSelected={filters.activity_id && filters.activity_id.length > 0}
+              onPress={onOpenActivityModal}
+            />
 
-            <TouchableOpacity
-              style={styles.additionalFilter}
-              onPress={() => {
-                onClose();
-                onOpenCategoryModal();
-              }}
-            >
-              <View style={styles.filterInfo}>
-                <Text style={styles.additionalFilterText}>Category</Text>
-                {filters.category_id && (
-                  <Text style={styles.filterValue}>{filters.category_id}</Text>
-                )}
-              </View>
-              <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
-            </TouchableOpacity>
+            <FilterRow
+              label="Category"
+              value={getSummaryText(filters.category_id, filterOptions.categories)}
+              isSelected={filters.category_id && filters.category_id.length > 0}
+              onPress={onOpenCategoryModal}
+            />
 
-            <TouchableOpacity
-              style={styles.additionalFilter}
-              onPress={() => {
-                onClose();
-                onOpenDistanceModal();
-              }}
-            >
-              <View style={styles.filterInfo}>
-                <Text style={styles.additionalFilterText}>Distance</Text>
-                {filters.radius && filters.radius !== 50 && (
-                  <Text style={styles.filterValue}>{filters.radius} km</Text>
-                )}
-              </View>
-              <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
-            </TouchableOpacity>
+            <FilterRow
+              label="Distance"
+              value={getDistanceSummaryText()}
+              isSelected={filters.radius && filters.radius < 100000}
+              onPress={onOpenDistanceModal}
+            />
 
-            <TouchableOpacity
-              style={styles.additionalFilter}
-              onPress={() => {
-                onClose();
-                onOpenPriceModal();
-              }}
-            >
-              <View style={styles.filterInfo}>
-                <Text style={styles.additionalFilterText}>Price Range</Text>
-                {(filters.min_price || filters.max_price) && (
-                  <Text style={styles.filterValue}>
-                    ₹{filters.min_price || '0'} - {filters.max_price ? `₹${filters.max_price}` : 'No limit'}
-                  </Text>
-                )}
-              </View>
-              <FontAwesome name="chevron-right" size={14} color="#6a6a6a" />
-            </TouchableOpacity>
+            <FilterRow
+              label="Price"
+              value={getPriceSummaryText()}
+              isSelected={filters.min_price || filters.max_price}
+              onPress={onOpenPriceModal}
+            />
 
-            {/* Measurement Unit */}
-            <View style={styles.measurementSection}>
-              <Text style={styles.measurementTitle}>Measurement Unit</Text>
-              <View style={styles.measurementOptions}>
-                <TouchableOpacity
-                  style={[styles.measurementOption, filters.measurementUnit === 'km' && styles.selectedMeasurement]}
-                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'km' })}
-                >
-                  <Text style={[styles.measurementText, filters.measurementUnit === 'km' && styles.selectedMeasurementText]}>
-                    km
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.measurementOption, filters.measurementUnit === 'mi' && styles.selectedMeasurement]}
-                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'mi' })}
-                >
-                  <Text style={[styles.measurementText, filters.measurementUnit === 'mi' && styles.selectedMeasurementText]}>
-                    mi
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.measurementOption, filters.measurementUnit === 'm' && styles.selectedMeasurement]}
-                  onPress={() => onUpdateFilters({ ...filters, measurementUnit: 'm' })}
-                >
-                  <Text style={[styles.measurementText, filters.measurementUnit === 'm' && styles.selectedMeasurementText]}>
-                    m
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <FilterRow
+              label="Condition"
+              value={getSummaryText(filters.condition_id, filterOptions.conditions)}
+              isSelected={filters.condition_id && filters.condition_id.length > 0}
+              onPress={onOpenConditionModal}
+            />
+
+            <FilterRow
+              label="Gender"
+              value={getSummaryText(filters.gender_id, filterOptions.genders)}
+              isSelected={filters.gender_id && filters.gender_id.length > 0}
+              onPress={onOpenGenderModal}
+            />
+
+            <FilterRow
+              label="Age"
+              value={getSummaryText(filters.age_id, filterOptions.ages)}
+              isSelected={filters.age_id && filters.age_id.length > 0}
+              onPress={onOpenAgeModal}
+            />
+
+            <FilterRow
+              label="Size"
+              value={getSummaryText(filters.size_id, filterOptions.sizes)}
+              isSelected={filters.size_id && filters.size_id.length > 0}
+              onPress={onOpenSizeModal}
+            />
+
+            <FilterRow
+              label="Colour"
+              value={getSummaryText(filters.color_id, filterOptions.colors)}
+              isSelected={filters.color_id && filters.color_id.length > 0}
+              onPress={onOpenColorModal}
+            />
+
+            <FilterRow
+              label="Measurement unit"
+              value={filters.measurementUnit || "km"}
+              isSelected={false}
+              onPress={onOpenMeasurementModal}
+            />
+
           </View>
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply Filters</Text>
+            <Text style={styles.applyButtonText}>Show results</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -268,13 +231,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#f0f0f0',
   },
   backButton: {
     width: 44,
     height: 44,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   backArrow: {
     fontSize: 24,
@@ -282,140 +245,91 @@ const styles = StyleSheet.create({
     color: '#1a1a1a',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
     color: '#1a1a1a',
     letterSpacing: 0.5,
   },
   clearButton: {
-    paddingHorizontal: 12,
     paddingVertical: 6,
   },
   clearText: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingBottom: 20,
+    paddingTop: 10,
   },
   section: {
     paddingHorizontal: 20,
-    marginBottom: 24,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 16,
-    letterSpacing: -0.1,
-  },
-  filterList: {
-    marginBottom: 8,
-  },
-  filterOption: {
+  filterRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  leftColumn: {
+    flex: 2,
   },
   filterLabel: {
-    fontSize: 15,
-    fontWeight: '400',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#1a1a1a',
-    letterSpacing: -0.1,
   },
-  additionalFilter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  filterInfo: {
+  middleColumn: {
     flex: 1,
-  },
-  additionalFilterText: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: '#1a1a1a',
-    letterSpacing: -0.1,
+    alignItems: 'flex-start',
+    paddingRight: 0,
   },
   filterValue: {
-    fontSize: 13,
-    color: COLORS.primary,
-    marginTop: 2,
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#1a1a1a',
+  },
+  filterValueActive: {
+    color: COLORS.blue, // Highlighting selected options in blue to match mockup
+  },
+  rightColumn: {
+    flex: 1.2,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  rightLabel: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#1a1a1a',
+    marginRight: 12,
+  },
+  chevron: {
+    marginLeft: 4,
   },
   footer: {
     paddingTop: 16,
-    paddingBottom: 34,
+    paddingBottom: 24,
     paddingHorizontal: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  applyButton: {
-    height: 54,
-    backgroundColor: COLORS.primary,
-    borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  applyButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#ffffff',
-    letterSpacing: 0.3,
-  },
-  measurementSection: {
-    marginTop: 16,
-    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
   },
-  measurementTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 12,
-  },
-  measurementOptions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  measurementOption: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
-    backgroundColor: '#fff',
+  applyButton: {
+    height: 50,
+    backgroundColor: '#f5f5f5', // Pale grey background
+    borderRadius: 25,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  selectedMeasurement: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#f5f8ff',
-  },
-  measurementText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#505050',
-  },
-  selectedMeasurementText: {
-    color: COLORS.primary,
+  applyButtonText: {
+    fontSize: 16,
     fontWeight: '600',
+    color: '#1a1a1a', // Black text
   },
 });
 

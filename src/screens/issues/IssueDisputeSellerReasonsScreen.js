@@ -29,70 +29,51 @@ const IssueDisputeSellerReasonsScreen = ({ navigation, route }) => {
                 >
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Dispute {issueNumber}</Text>
+                <Text style={styles.headerTitle}>{t('Disputes')}</Text>
                 <View style={styles.headerRight} />
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Icon */}
+                {/* Handshake Icon with Scales */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#505050" />
-                    <View style={styles.checkBadge}>
-                        <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
+                    <Ionicons name="clipboard-outline" size={50} color="#000" />
+                    <View style={styles.checkmarkBadge}>
+                        <Ionicons name="checkmark" size={16} color="#FFF" />
                     </View>
                 </View>
 
                 {/* Title */}
-                <Text style={styles.title}>{t('Reason for Seller Disputes')}</Text>
-
-                {/* Subtitle */}
-                <Text style={styles.subtitle}>{t('Find out the eligibility criteria for Buyer to Buyer Disputes')}</Text>
+                <Text style={styles.titleLeft}>{t("Seller's Refund Eligibility criteria Buyer-to-Buyer (C2C)")}</Text>
 
                 {/* Information List */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.sectionHeader}>{t('The buyer can escalate the exchange into a dispute if:')}</Text>
+                    <Text style={styles.sectionHeader}>{t('Reasons for Seller Disputes')}</Text>
+                    <Text style={styles.sectionSubHeader}>{t('Find out the eligibility reasons for Buyer-to-Buyer disputes.')}</Text>
 
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('The buyer has not responded to the exchange request within the specified timeframe (e.g., 3 days).')}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Item or transaction not received: the exchange didn't take place or the package never arrived if send.")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Significantly different: The item is not as what was described in the exchange listing.')}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Significantly different: the item is not what was described (e.g. fake brand, missing parts, wrong color/size).")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t("The buyer's response does not address the seller's concerns or is not satisfactory.")}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Damaged item: the item arrived broken or unable due to shipping.")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Condition Mismatched: Received an item that is in a significantly worse condition than it was described in the exchange listing.')}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Condition Misrepresented: described as better than it was e.g. as 'as new' but arrived 'used'")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Communication breakdown: The buyer is unresponsive or unwilling to cooperate in resolving the issue.')}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Unauthorized transaction: the buyer didn't authorize the charge.")}</Text>
                     </View>
                     <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Evidence of fraud or misrepresentation by the buyer.')}</Text>
+                        <Text style={styles.bullet}>-</Text>
+                        <Text style={styles.bulletText}>{t("Double Charged & Incorrect amount: charged more than once the same transaction, or the wrong price.")}</Text>
                     </View>
-                    <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('The seller has provided all necessary evidence and documentation to support their claim.')}</Text>
-                    </View>
-                    <View style={styles.bulletPoint}>
-                        <Text style={styles.bullet}>•</Text>
-                        <Text style={styles.bulletText}>{t('Escalate Delayed & Incorrect product: Allegations where the seller did not receive the item or received an item that was not as described.')}</Text>
-                    </View>
-                </View>
-
-                {/* Info Link */}
-                <View style={styles.infoLinkContainer}>
-                    <Text style={styles.infoLinkText}>
-                        More information on Issues & Disputes,{' '}
-                        <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
-                    </Text>
-                    <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
                 </View>
 
                 {/* Progress Dots */}
@@ -108,8 +89,14 @@ const IssueDisputeSellerReasonsScreen = ({ navigation, route }) => {
                     <Text style={styles.readMoreText}>{t('Read more')}</Text>
                 </TouchableOpacity>
 
-                {/* Note */}
-                <Text style={styles.note}>{t('Only one is shown for dispute escalation shown in the')}</Text>
+                {/* Footer Link */}
+                <View style={styles.footerInfoLink}>
+                    <Text style={styles.footerLinkText}>
+                        More on{' '}
+                        <Text style={styles.footerLinkHighlight}>{t('Dispute Resolution')}</Text>
+                    </Text>
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.footerIcon} />
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -151,39 +138,45 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
         position: 'relative',
     },
-    checkBadge: {
+    checkmarkBadge: {
         position: 'absolute',
-        bottom: 28,
-        right: '38%',
+        bottom: 30,
+        right: '42%',
+        backgroundColor: '#000',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFF',
     },
-    title: {
-        fontSize: 18,
-        fontWeight: '600',
+    titleLeft: {
+        fontSize: 16,
+        fontWeight: '700',
         color: '#000',
-        textAlign: 'center',
+        textAlign: 'left',
         paddingHorizontal: 24,
-        marginBottom: 8,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: '#505050',
-        textAlign: 'center',
-        paddingHorizontal: 24,
-        marginBottom: 24,
+        marginBottom: 16,
     },
     infoSection: {
         paddingHorizontal: 24,
         marginBottom: 16,
     },
     sectionHeader: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 12,
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#000',
+        marginBottom: 4,
+    },
+    sectionSubHeader: {
+        fontSize: 13,
+        color: '#505050',
+        marginBottom: 16,
     },
     bulletPoint: {
         flexDirection: 'row',
-        marginBottom: 10,
+        marginBottom: 12,
     },
     bullet: {
         fontSize: 16,
@@ -193,28 +186,9 @@ const styles = StyleSheet.create({
     },
     bulletText: {
         flex: 1,
-        fontSize: 13,
+        fontSize: 14,
         color: '#505050',
-        lineHeight: 18,
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        marginBottom: 24,
-    },
-    infoLinkText: {
-        fontSize: 13,
-        color: '#505050',
-    },
-    infoLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-    infoIcon: {
-        marginLeft: 6,
+        lineHeight: 20,
     },
     progressContainer: {
         flexDirection: 'row',
@@ -233,12 +207,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#505050',
     },
     readMoreButton: {
-        backgroundColor: '#FFF',
+        backgroundColor: '#F8F8F8',
         paddingVertical: 14,
-        paddingHorizontal: 32,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
+        paddingHorizontal: 40,
+        borderRadius: 24,
+        borderWidth: 0,
         alignSelf: 'center',
         marginBottom: 16,
     },
@@ -247,12 +220,22 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#333',
     },
-    note: {
+    footerInfoLink: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    footerLinkText: {
         fontSize: 12,
         color: '#303234',
-        textAlign: 'center',
-        paddingHorizontal: 24,
-        marginBottom: 24,
+    },
+    footerLinkHighlight: {
+        color: '#003366',
+        textDecorationLine: 'underline',
+    },
+    footerIcon: {
+        marginLeft: 6,
     },
 });
 

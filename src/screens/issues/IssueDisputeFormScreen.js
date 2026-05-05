@@ -23,7 +23,6 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
     const [issueData, setIssueData] = useState(null);
     const [currentUser, setCurrentUser] = useState(null);
     const [disputeDescription, setDisputeDescription] = useState('');
-    const [disputeDemand, setDisputeDemand] = useState('');
 
     useEffect(() => {
         loadIssueData();
@@ -48,7 +47,6 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 setIssueData(response.data);
                 // Initialize editable fields with issue data
                 setDisputeDescription(response.data.issue_description || '');
-                setDisputeDemand(response.data.buyer_request || '');
             }
         } catch (error) {
             console.error('Load issue error:', error);
@@ -61,16 +59,11 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
             Alert.alert(t('Error'), t('Please describe the disputed issue'));
             return;
         }
-        if (!disputeDemand.trim()) {
-            Alert.alert(t('Error'), t('Please specify your demand'));
-            return;
-        }
 
         setLoading(true);
         try {
             const response = await disputeService.escalateIssueToDispute(issueId, {
-                dispute_description: disputeDescription.trim(),
-                dispute_demand: disputeDemand.trim()
+                dispute_description: disputeDescription.trim()
             });
 
             if (response.success) {
@@ -130,42 +123,42 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Icon */}
+                {/* Handshake Icon with Scales */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="clipboard" size={60} color="#505050" />
-                    <View style={styles.checkBadge}>
-                        <Ionicons name="checkmark-circle" size={24} color="#32CD32" />
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+                        <FontAwesome name="handshake-o" size={50} color="#505050" />
                     </View>
                 </View>
 
                 {/* Guidelines Link */}
                 <TouchableOpacity style={styles.guidelinesLink}>
-                    <Text style={styles.guidelinesText}>{t('Read RoundBuy Guidelines for Disputes')}</Text>
+                    <Text style={styles.guidelinesText}>{t('ROUNDBUY DISPUTE GUIDELINES')}</Text>
                     <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} />
                 </TouchableOpacity>
 
                 {/* Creation Message */}
                 <View style={styles.creationMessage}>
                     <Text style={styles.creationText}>
-                        A Disputed Issue #{issueNumber} was created
+                        {t('Dispute #')}{issueNumber} {t('was created')}
                     </Text>
                     <Text style={styles.creationTime}>
                         {formatDate(issueData.created_at)}
                     </Text>
                 </View>
 
-                {/* Product Info */}
+0                {/* Product Info */}
                 <View style={styles.infoSection}>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
+                        <Text style={styles.infoLabel}>{t('Item:')}</Text>
                         <Text style={styles.infoValue}>{issueData.product_name || issueData.ad_title}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Issuer:')}</Text>
+                        <Text style={styles.infoLabel}>{t('Complainant:')}</Text>
                         <Text style={styles.infoValue}>{currentUser?.full_name || 'You'}</Text>
                     </View>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
+                        <Text style={styles.infoLabel}>{t('Respondent:')}</Text>
                         <Text style={styles.infoValue}>{issueData.other_party_name}</Text>
                     </View>
                 </View>
@@ -173,31 +166,19 @@ const IssueDisputeFormScreen = ({ navigation, route }) => {
                 {/* Buyer's Issue */}
                 <View style={styles.issueSection}>
                     <View style={styles.issueSectionHeader}>
-                        <Text style={styles.sectionTitle}>{t("BUYER'S ISSUE")}</Text>
+                        <Text style={styles.sectionTitle}>{t("COMPLAINANT'S DISPUTE")}</Text>
                         <Text style={styles.sectionTime}>{formatDate(issueData.created_at)}</Text>
                     </View>
 
-                    <Text style={styles.fieldLabel}>{t('The Disputed Issue with the product:')}</Text>
+                    <Text style={styles.fieldLabel}>{t('The dispute with the Note and chat is:')}</Text>
                     <TextInput
                         style={styles.textInput}
-                        placeholder={t('Describe the disputed issue...')}
+                        placeholder={t('Describe the dispute and what you demand...')}
                         placeholderTextColor="#303234"
                         multiline
-                        numberOfLines={4}
+                        numberOfLines={8}
                         value={disputeDescription}
                         onChangeText={setDisputeDescription}
-                        textAlignVertical="top"
-                    />
-
-                    <Text style={styles.fieldLabel}>{t('Issuers Demand:')}</Text>
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder={t('What do you demand from the seller?')}
-                        placeholderTextColor="#303234"
-                        multiline
-                        numberOfLines={4}
-                        value={disputeDemand}
-                        onChangeText={setDisputeDemand}
                         textAlignVertical="top"
                     />
                 </View>
@@ -284,12 +265,14 @@ const styles = StyleSheet.create({
     iconContainer: {
         alignItems: 'center',
         paddingVertical: 24,
-        position: 'relative',
     },
-    checkBadge: {
-        position: 'absolute',
-        bottom: 20,
-        right: '38%',
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
     },
     guidelinesLink: {
         flexDirection: 'row',

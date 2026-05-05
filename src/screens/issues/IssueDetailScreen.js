@@ -31,8 +31,12 @@ const IssueDetailScreen = ({ navigation, route }) => {
     const [currentUserId, setCurrentUserId] = useState(null);
 
     // Seller response state
-    const [sellerDecision, setSellerDecision] = useState(null); // 'accept' or 'decline'
+    const [sellerDecision, setSellerDecision] = useState(null); // 'accept' or 'decline' or 'negotiate'
     const [sellerResponseText, setSellerResponseText] = useState('');
+
+    // Negotiation state
+    const [suggestionText, setSuggestionText] = useState('');
+    const [negotiationDecision, setNegotiationDecision] = useState(null);
 
     useEffect(() => {
         loadCurrentUser();
@@ -105,6 +109,38 @@ const IssueDetailScreen = ({ navigation, route }) => {
             }
         } catch (error) {
             Alert.alert(t('Error'), error.message || t('Failed to send response'));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Negotiation commands
+    const handleSendSuggestion = async () => {
+        if (!suggestionText.trim()) return;
+        setActionLoading(true);
+        try {
+            const response = await disputeService.submitNegotiationSuggestion(issueId, suggestionText.trim());
+            if (response.success) {
+                setSuggestionText('');
+                loadIssueDetails();
+            }
+        } catch (error) {
+            Alert.alert(t('Error'), error.message || t('Failed to submit suggestion'));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleNegotiationDecision = async () => {
+        if (!negotiationDecision) return;
+        setActionLoading(true);
+        try {
+            const response = await disputeService.submitNegotiationDecision(issueId, negotiationDecision);
+            if (response.success) {
+                loadIssueDetails();
+            }
+        } catch (error) {
+            Alert.alert(t('Error'), error.message || t('Failed to submit decision'));
         } finally {
             setActionLoading(false);
         }
@@ -253,8 +289,12 @@ const IssueDetailScreen = ({ navigation, route }) => {
     const isSeller = issue.other_party_id === currentUserId;
     const isBuyer = issue.created_by === currentUserId;
     const canRespond = isSeller && issue.status === 'open';
-    const sellerHasResponded = ['seller_responded', 'settled'].includes(issue.status);
-    const canBuyerAct = isBuyer && !['closed_by_buyer', 'escalated_to_dispute'].includes(issue.status);
+    const sellerHasResponded = !!issue.seller_decision;
+    const canBuyerAct = isBuyer && !['closed_by_buyer', 'escalated_to_dispute', 'negotiating'].includes(issue.status);
+
+    const isNegotiating = issue.status === 'negotiating' || issue.seller_decision === 'negotiate';
+    const mySuggestionSubmitted = isBuyer ? !!issue.buyer_suggestion : !!issue.seller_suggestion;
+    const bothSuggestionsSubmitted = !!issue.buyer_suggestion && !!issue.seller_suggestion;
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
@@ -264,11 +304,14 @@ const IssueDetailScreen = ({ navigation, route }) => {
                     onPress={() => navigation.goBack()}
                     style={styles.headerBackButton}
                 >
-                    <Ionicons name="chevron-back" size={28} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color="#000" />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
-                    <Text style={styles.headerTitle}>An Issue #{issue.issue_number}</Text>
-                    <Text style={styles.headerSubtitle}>{issue.issue_number}</Text>
+                    <Text style={styles.headerTitle}>
+                        {issue.seller_confirmed && issue.buyer_confirmed
+                            ? t('Settled Issue #') + issue.issue_number
+                            : t('An Issue #') + issue.issue_number}
+                    </Text>
                 </View>
                 <View style={styles.headerRight} />
             </View>
@@ -279,9 +322,12 @@ const IssueDetailScreen = ({ navigation, route }) => {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }
             >
-                {/* Handshake Icon */}
+                {/* Handshake Icon with Scales */}
                 <View style={styles.iconContainer}>
-                    <FontAwesome name="handshake-o" size={60} color="#505050" />
+                    <View style={styles.iconWrapper}>
+                        <FontAwesome name="balance-scale" size={30} color="#505050" style={styles.balanceIcon} />
+                        <FontAwesome name="handshake-o" size={50} color="#505050" />
+                    </View>
                 </View>
 
                 {/* Creation Message */}
@@ -290,15 +336,14 @@ const IssueDetailScreen = ({ navigation, route }) => {
                         An Issue #{issue.issue_number} was created
                     </Text>
                     <Text style={styles.creationTime}>
-                        {formatDate(issue.created_at)}
+                        {calculateTimeRemaining(issue.created_at) || '2h ago'}
                     </Text>
                 </View>
 
-                {/* Status Card */}
-                <View style={styles.statusCard}>
-                    {/* Product Info */}
+                {/* Info Card - Simplified for Screenshot match */}
+                <View style={styles.infoCard}>
                     <View style={styles.infoRow}>
-                        <Text style={styles.infoLabel}>{t('Product:')}</Text>
+                        <Text style={styles.infoLabel}>{t('Item:')}</Text>
                         <Text style={styles.infoValue}>{issue.product_name || issue.ad_title}</Text>
                     </View>
                     <View style={styles.infoRow}>
@@ -309,245 +354,407 @@ const IssueDetailScreen = ({ navigation, route }) => {
                         <Text style={styles.infoLabel}>{t('Issued to:')}</Text>
                         <Text style={styles.infoValue}>{isSeller ? 'You' : issue.other_party_name}</Text>
                     </View>
+                </View>
 
-                    {/* For Seller: Show link to view buyer's issue */}
-                    {isSeller ? (
-                        <>
-                            <Text style={styles.sectionTitle}>{t("Buyer's Issue")}</Text>
+                {/* Buyer's Issue Section */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitleCaps}>{t("BUYER'S ISSUE")}</Text>
+                        <Text style={styles.sectionTime}>{t('1h ago')}</Text>
+                    </View>
+
+                    {sellerHasResponded || isNegotiating ? (
+                        <View>
                             <TouchableOpacity
-                                style={styles.viewIssueLink}
+                                style={styles.viewIssueLinkSimple}
                                 onPress={() => navigation.navigate('AttachEvidence', {
                                     issueId: issue.id,
                                     issueNumber: issue.issue_number,
-                                    userRole: 'seller',
+                                    userRole: isBuyer ? 'buyer' : 'seller',
                                     showIssueDetails: true
                                 })}
                             >
-                                <Text style={styles.viewIssueLinkText}>
-                                    To view Buyer's Issue & Request click{' '}
-                                    <Text style={styles.viewIssueLinkHighlight}>{t('here')}</Text>
-                                </Text>
+                                <Text style={styles.viewIssueLinkTextSimple}>{t('View Issue & Request')}</Text>
                             </TouchableOpacity>
-                        </>
+                            <TouchableOpacity
+                                style={styles.viewIssueLinkSimple}
+                                onPress={() => navigation.navigate('AttachEvidence', { issueId: issue.id, userRole: 'buyer', readOnly: true })}
+                            >
+                                <Text style={styles.viewIssueLinkTextSimple}>{t('View Uploaded evidence')}</Text>
+                            </TouchableOpacity>
+                        </View>
                     ) : (
                         <>
-                            {/* For Buyer: Show full issue details */}
-                            <Text style={styles.sectionTitle}>{t("Buyer's Issue:")}</Text>
-                            <Text style={styles.fieldLabel}>{t('The issue with the product:')}</Text>
-                            <Text style={styles.issueDescription}>{issue.issue_description}</Text>
+                            <Text style={styles.fieldLabelSmall}>{t('The Issue with the item:')}</Text>
+                            <View style={styles.bubbleMessage}>
+                                <Text style={styles.issueDescription}>{issue.issue_description}</Text>
+                            </View>
 
                             {issue.buyer_request && (
                                 <>
-                                    <Text style={styles.fieldLabel}>{t('Issuers Requests:')}</Text>
-                                    <Text style={styles.issueDescription}>{issue.buyer_request}</Text>
+                                    <Text style={styles.fieldLabelSmall}>{t('Issuers Requests:')}</Text>
+                                    <View style={styles.bubbleMessage}>
+                                        <Text style={styles.issueDescription}>{issue.buyer_request}</Text>
+                                    </View>
                                 </>
                             )}
-
-                            {/* Attach Evidence Button for Buyer */}
-                            <TouchableOpacity
-                                style={styles.attachEvidenceButton}
-                                onPress={() => navigation.navigate('AttachEvidence', {
-                                    issueId: issue.id,
-                                    issueNumber: issue.issue_number,
-                                    userRole: 'buyer'
-                                })}
-                            >
-                                <Ionicons name="attach" size={18} color={COLORS.primary} />
-                                <Text style={styles.attachEvidenceText}>{t('Attach Evidence')}</Text>
-                            </TouchableOpacity>
                         </>
                     )}
-
-                    <Text style={styles.createdDate}>
-                        Created: {formatDate(issue.created_at)}
-                    </Text>
                 </View>
 
                 {/* Seller Response Section (for seller to respond) */}
                 {canRespond && !actionLoading && (
-                    <View style={styles.sellerResponseSection}>
-                        <Text style={styles.sectionTitle}>{t("Seller's Response")}</Text>
-                        <Text style={styles.sectionSubtitle}>{t('Response to the issue:')}</Text>
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitleCaps}>{t("SELLER'S RESPONSE")}</Text>
+                            <Text style={styles.sectionTime}>{t('1h ago')}</Text>
+                        </View>
+                        <Text style={styles.fieldLabelSmall}>{t('Response to the Issue:')}</Text>
 
                         {/* Response text */}
-                        <TextInput
-                            style={styles.responseTextArea}
-                            placeholder={t('Explain your decision...')}
-                            placeholderTextColor="#303234"
-                            multiline
-                            numberOfLines={4}
-                            value={sellerResponseText}
-                            onChangeText={setSellerResponseText}
-                            maxLength={1000}
-                        />
+                        <View style={styles.bubbleInputContainer}>
+                            <TextInput
+                                style={styles.responseTextArea}
+                                placeholder={t('Explain your decision...')}
+                                placeholderTextColor="#303234"
+                                multiline
+                                numberOfLines={4}
+                                value={sellerResponseText}
+                                onChangeText={setSellerResponseText}
+                                maxLength={1000}
+                            />
+                        </View>
 
                         {/* Decision checkboxes */}
-                        <Text style={styles.sectionSubtitle}>{t("Seller's Decision:")}</Text>
-                        <TouchableOpacity
-                            style={styles.checkboxRow}
-                            onPress={() => setSellerDecision('accept')}
-                        >
-                            <View style={[
-                                styles.checkbox,
-                                sellerDecision === 'accept' && styles.checkboxChecked
-                            ]}>
-                                {sellerDecision === 'accept' && (
-                                    <Ionicons name="checkmark" size={16} color="#FFF" />
-                                )}
-                            </View>
-                            <Text style={styles.checkboxLabel}>{t('I Accept the Request and Cancel the deal!')}</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.sectionTitleCaps}>{t("SELLER'S DECISION")}</Text>
 
-                        <TouchableOpacity
-                            style={styles.checkboxRow}
-                            onPress={() => setSellerDecision('decline')}
-                        >
-                            <View style={[
-                                styles.checkbox,
-                                sellerDecision === 'decline' && styles.checkboxChecked
-                            ]}>
-                                {sellerDecision === 'decline' && (
-                                    <Text style={styles.checkboxX}>{t('X')}</Text>
-                                )}
-                            </View>
-                            <Text style={styles.checkboxLabel}>{t('I decline the Request and keep to the Agreement!')}</Text>
-                        </TouchableOpacity>
+                        <View style={styles.decisionOptions}>
+                            <TouchableOpacity
+                                style={styles.checkboxOption}
+                                onPress={() => setSellerDecision('accept')}
+                            >
+                                <Text style={styles.checkboxLabel}>{t('I Accept the Request and Cancel the deal!')}</Text>
+                                <View style={[
+                                    styles.radioCircle,
+                                    sellerDecision === 'accept' && styles.radioCircleSelectedBlack
+                                ]} />
+                            </TouchableOpacity>
 
-                        {/* Info Link */}
-                        <View style={styles.infoLinkContainer}>
-                            <Text style={styles.infoLinkText}>
-                                More information on Issues & Disputes,{' '}
-                                <Text style={styles.infoLinkHighlight}>{t('click here')}</Text>
-                            </Text>
-                            <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} style={styles.infoIcon} />
+                            <TouchableOpacity
+                                style={styles.checkboxOption}
+                                onPress={() => setSellerDecision('decline')}
+                            >
+                                <Text style={styles.checkboxLabel}>{t('I decline the Request and keep to the Agreement!')}</Text>
+                                <View style={[
+                                    styles.radioCircle,
+                                    sellerDecision === 'decline' && styles.radioCircleSelectedGray
+                                ]} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.checkboxOptionNoBorder}
+                                onPress={() => setSellerDecision('negotiate')}
+                            >
+                                <Text style={styles.checkboxLabel}>{t('Continue and Negotiate to find a solution.')}</Text>
+                                <View style={[
+                                    styles.radioCircle,
+                                    sellerDecision === 'negotiate' && styles.radioCircleSelectedGray
+                                ]} />
+                            </TouchableOpacity>
                         </View>
+
+                        <Text style={styles.subtextSmall}>
+                            {sellerDecision === 'accept' || sellerDecision === null
+                                ? t("Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!")
+                                : t("Please note! Cancellation returns Buyer's Fee to Buyer!")}
+                        </Text>
 
                         {/* Send Response Button */}
                         <TouchableOpacity
                             style={[
-                                styles.sendResponseButton,
+                                styles.sendResponseButtonRounded,
                                 (!sellerDecision || !sellerResponseText.trim()) && styles.buttonDisabled
                             ]}
                             onPress={handleSendResponse}
                             disabled={!sellerDecision || !sellerResponseText.trim()}
                         >
-                            <Text style={styles.sendResponseButtonText}>{t('Send Response to')}</Text>
+                            <Text style={styles.sendResponseButtonTextGray}>{t('Send Response to')}</Text>
                         </TouchableOpacity>
                     </View>
                 )}
 
-                {/* Display Seller's Response (for buyer to see) */}
-                {sellerHasResponded && issue.seller_response_text && (
-                    <View style={styles.sellerResponseDisplay}>
-                        <Text style={styles.sectionTitle}>{t("Seller's Response")}</Text>
-                        <Text style={styles.responseText}>{issue.seller_response_text}</Text>
-
-                        <View style={styles.decisionDisplay}>
-                            <Text style={styles.decisionLabel}>{t("Seller's Decision:")}</Text>
-                            <View style={styles.decisionBadge}>
-                                <Ionicons
-                                    name={issue.seller_decision === 'accept' ? 'checkmark-circle' : 'close-circle'}
-                                    size={16}
-                                    color={issue.seller_decision === 'accept' ? '#32CD32' : '#DC143C'}
-                                />
-                                <Text style={[
-                                    styles.decisionText,
-                                    { color: issue.seller_decision === 'accept' ? '#32CD32' : '#DC143C' }
-                                ]}>
-                                    {issue.seller_decision === 'accept' ? 'Accepted' : 'Declined'}
-                                </Text>
-                            </View>
+                {/* Display Seller's Response (Post-Response View) */}
+                {sellerHasResponded && (
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitleCaps}>{t("SELLER'S RESPONSE")}</Text>
+                            <Text style={styles.sectionTime}>{t('1h ago')}</Text>
                         </View>
-                    </View>
-                )}
 
-                {/* Buyer Action Buttons */}
-                {canBuyerAct && !actionLoading && (
-                    <View style={styles.buyerActions}>
-                        {sellerHasResponded && (
-                            <TouchableOpacity
-                                style={[styles.actionButton, styles.disputeButton]}
-                                onPress={handleDisputeIssue}
-                            >
-                                <Ionicons name="alert-circle" size={20} color="#FFF" />
-                                <Text style={styles.actionButtonText}>{t('Dispute the Issue')}</Text>
-                            </TouchableOpacity>
+                        {isNegotiating ? (
+                            <View>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('View Response to the Issue')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('View Uploaded evidence')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            isSeller ? (
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('View Response to the Issue')}</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <>
+                                    <Text style={styles.fieldLabelSmall}>{t('Response to the Issue:')}</Text>
+                                    <View style={styles.bubbleMessage}>
+                                        <Text style={styles.issueDescription}>{issue.seller_response_text || t('No response text provided.')}</Text>
+                                    </View>
+                                </>
+                            )
                         )}
 
-                        <TouchableOpacity
-                            style={[styles.actionButton, styles.closeButton]}
-                            onPress={handleCloseIssue}
-                        >
-                            <Ionicons name="checkmark-circle" size={20} color="#FFF" />
-                            <Text style={styles.actionButtonText}>{t('Close the Issue')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                        {!isNegotiating && (
+                            <>
+                                {/* SELLER'S DECISION display */}
+                                <View style={styles.decisionDisplayRow}>
+                                    <Text style={styles.sectionTitleCaps}>{t("DECISIONS BY SELLER AND BUYER")}</Text>
+                                </View>
 
-                {actionLoading && (
-                    <View style={styles.actionLoadingContainer}>
-                        <ActivityIndicator size="small" color={COLORS.primary} />
-                        <Text style={styles.actionLoadingText}>{t('Processing...')}</Text>
-                    </View>
-                )}
-
-                {/* Messages Section */}
-                <View style={styles.messagesSection}>
-                    <Text style={styles.sectionTitle}>{t('Messages')}</Text>
-                    {messages.length === 0 ? (
-                        <View style={styles.noMessages}>
-                            <Ionicons name="chatbubbles-outline" size={48} color="#CCC" />
-                            <Text style={styles.noMessagesText}>{t('No messages yet')}</Text>
-                        </View>
-                    ) : (
-                        messages.map((message) => (
-                            <View
-                                key={message.id}
-                                style={[
-                                    styles.messageCard,
-                                    message.is_system_message && styles.systemMessage,
-                                ]}
-                            >
-                                {!message.is_system_message && (
-                                    <Text style={styles.messageSender}>
-                                        {message.full_name || 'User'}
+                                {/* Seller row */}
+                                <View style={styles.checkboxOptionInline}>
+                                    <Text style={styles.checkboxLabelInline}>
+                                        <Text style={{ fontWeight: '700' }}>SELLER: </Text>
+                                        {issue.seller_decision === 'accept'
+                                            ? t('I Accept the Request and Cancel the deal!')
+                                            : issue.seller_decision === 'decline'
+                                                ? t('I decline the Request and keep to the original Deal!')
+                                                : t('Continue and Negotiate to find a solution.')}
                                     </Text>
-                                )}
-                                <Text style={styles.messageText}>{message.message}</Text>
-                                <Text style={styles.messageTime}>
-                                    {formatDate(message.created_at)}
+                                    <View style={[
+                                        styles.radioCircle,
+                                        styles.radioCircleSelectedBlack
+                                    ]} />
+                                </View>
+
+                                {/* Buyer row (awaiting) */}
+                                <View style={styles.checkboxOptionInline}>
+                                    <Text style={styles.checkboxLabelInline}>
+                                        <Text style={{ fontWeight: '700' }}>BUYER: </Text>
+                                        {t('Awaiting buyer decision...')}
+                                    </Text>
+                                    <View style={styles.radioCircle} />
+                                </View>
+
+                                <Text style={styles.subtextSmall}>
+                                    {issue.seller_decision === 'accept'
+                                        ? t("Please note! Accepting cancels the deal and returns Buyer's Fee to Buyer!")
+                                        : t("Please note! Cancellation returns Buyer's Fee to Buyer!")}
                                 </Text>
+                            </>
+                        )}
+
+                        {/* Evidence and Chat Links (Added for Settled/Responded state) */}
+                        <View style={styles.evidenceLinksRow}>
+                            <View style={styles.linkColumn}>
+                                <TouchableOpacity onPress={() => navigation.navigate('AttachEvidence', { issueId: issue.id, userRole: 'seller', readOnly: true })}>
+                                    <Text style={styles.evidenceLinkText}>{t('Seller evidence')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => navigation.navigate('ActionCenterMessagesScreen', { conversationId: issue.conversation_id || issue.id })}>
+                                    <Text style={styles.evidenceLinkText}>{t('My Chat history')}</Text>
+                                </TouchableOpacity>
                             </View>
-                        ))
-                    )}
+                            <View style={styles.linkColumn}>
+                                <TouchableOpacity onPress={() => navigation.navigate('AttachEvidence', { issueId: issue.id, userRole: 'buyer', readOnly: true })}>
+                                    <Text style={styles.evidenceLinkText}>{t('Buyer evidence')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => navigation.navigate('ActionCenterMessagesScreen', { conversationId: issue.conversation_id || issue.id })}>
+                                    <Text style={styles.evidenceLinkText}>{t('My Chat history')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
+                {/* NEGOTIATING FLOW */}
+                {isNegotiating && (
+                    <View style={styles.section}>
+                        {!bothSuggestionsSubmitted && !mySuggestionSubmitted && (
+                            <View>
+                                <Text style={styles.fieldLabelSmall}>{isBuyer ? t("Buyer's suggestion for settlement:") : t("Seller's suggestion for settlement:")}</Text>
+                                <View style={styles.bubbleInputContainer}>
+                                    <TextInput
+                                        style={styles.responseTextArea}
+                                        placeholder={t('Let us settle the matter...')}
+                                        placeholderTextColor="#303234"
+                                        multiline
+                                        numberOfLines={4}
+                                        value={suggestionText}
+                                        onChangeText={setSuggestionText}
+                                        maxLength={1000}
+                                    />
+                                </View>
+                                <Text style={styles.fieldLabelSmall}>{t('Evidence for the issue:')}</Text>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.sendResponseButtonRounded,
+                                        (!suggestionText.trim()) && styles.buttonDisabled
+                                    ]}
+                                    onPress={handleSendSuggestion}
+                                    disabled={!suggestionText.trim() || actionLoading}
+                                >
+                                    <Text style={styles.sendResponseButtonTextGray}>{t('Give Suggestion')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        {!bothSuggestionsSubmitted && mySuggestionSubmitted && (
+                            <View>
+                                <Text style={styles.fieldLabelSmall}>{t('Waiting for the other party to provide their suggestion...')}</Text>
+                            </View>
+                        )}
+                        {bothSuggestionsSubmitted && (
+                            <View>
+                                <Text style={styles.fieldLabelSmall}>{t("Buyer's suggestion for settlement:")}</Text>
+                                <View style={styles.bubbleMessage}>
+                                    <Text style={styles.issueDescription}>{issue.buyer_suggestion}</Text>
+                                </View>
+                                <Text style={styles.fieldLabelSmall}>{t('Evidence for the issue:')}</Text>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+
+                                <Text style={[styles.fieldLabelSmall, { marginTop: 20 }]}>{t("Seller's suggestion for settlement:")}</Text>
+                                <View style={styles.bubbleMessage}>
+                                    <Text style={styles.issueDescription}>{issue.seller_suggestion}</Text>
+                                </View>
+                                <Text style={styles.fieldLabelSmall}>{t('Evidence for the issue:')}</Text>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.viewIssueLinkSimple}>
+                                    <Text style={styles.viewIssueLinkTextSimple}>{t('Upload evidence')}</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.decisionDisplayRow}>
+                                    <Text style={styles.sectionTitleCaps}>{t("DECISIONS BY SELLER AND BUYER")}</Text>
+                                </View>
+
+                                <View style={styles.decisionOptions}>
+                                    <TouchableOpacity style={styles.checkboxOption} onPress={() => setNegotiationDecision('accept')}>
+                                        <Text style={styles.checkboxLabel}>{t('Accept the negotiated settlement!')}</Text>
+                                        <View style={[styles.radioCircle, negotiationDecision === 'accept' && styles.radioCircleSelectedGray]} />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.checkboxOption} onPress={() => setNegotiationDecision('decline')}>
+                                        <Text style={styles.checkboxLabel}>{t('I decline the negotiated settlement!')}</Text>
+                                        <View style={[styles.radioCircle, negotiationDecision === 'decline' && styles.radioCircleSelectedGray]} />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.checkboxOptionNoBorder} onPress={() => { }}>
+                                        <Text style={styles.checkboxLabel}>{t('Continue and Negotiate to find a solution.')}</Text>
+                                        <View style={[styles.radioCircle]} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TouchableOpacity
+                                    style={[styles.sendResponseButtonRounded, (!negotiationDecision) && styles.buttonDisabled]}
+                                    onPress={handleNegotiationDecision}
+                                    disabled={!negotiationDecision || actionLoading}
+                                >
+                                    <Text style={styles.sendResponseButtonTextGray}>{t('Give Decision')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                {/* STATUS & ACTION BUTTONS */}
+                {(issue.status === 'settled' || (issue.status === 'seller_responded' && issue.seller_decision === 'accept')) && (
+                    <View style={styles.statusBlock}>
+                        <Text style={styles.statusGreenBold}>{t('The Issue has been settled successfully!')}</Text>
+                        <Text style={styles.statusGreenSmall}>{t("Buyer's Fee will be returned in 2-4 days to Buyer.")}</Text>
+
+                        <View style={styles.actionButtonsContainer}>
+                            <TouchableOpacity style={styles.actionButtonRoundedLarge} onPress={handleCloseIssue} disabled={actionLoading}>
+                                <Text style={styles.actionButtonTextGrayLarge}>{t('Close the Issue')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {issue.status === 'seller_responded' && issue.seller_decision === 'decline' && (
+                    <View style={styles.statusBlock}>
+                        <Text style={styles.statusRedBold}>{t('The Issue has not been settled!')}</Text>
+                        <Text style={styles.statusBlackBold}>{t('Consider negotiating')}</Text>
+
+                        <View style={styles.actionButtonsContainer}>
+                            <TouchableOpacity style={styles.actionButtonRoundedLarge} onPress={handleDisputeIssue} disabled={actionLoading}>
+                                <Text style={styles.actionButtonTextGrayLarge}>{t('Dispute the Issue')}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.actionButtonRoundedLarge} onPress={handleCloseIssue} disabled={actionLoading}>
+                                <Text style={styles.actionButtonTextGrayLarge}>{t('Close the Issue')}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.actionButtonRoundedLarge} onPress={() => { /* Placeholder */ }} disabled={actionLoading}>
+                                <Text style={styles.actionButtonTextGrayLarge}>{t('Continue Negotiating')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {issue.status === 'escalated_to_dispute' && (
+                    <View style={styles.statusBlock}>
+                        <Text style={styles.statusRedBold}>{t('This Issue has been escalated to a dispute.')}</Text>
+                        <View style={styles.actionButtonsContainer}>
+                            <TouchableOpacity style={styles.actionButtonRoundedLarge} onPress={() => { /* Navigate to Dispute detail later */ }}>
+                                <Text style={styles.actionButtonTextGrayLarge}>{t('View Dispute')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
+                {issue.status === 'closed_by_buyer' && (
+                    <View style={styles.statusBlock}>
+                        <Text style={styles.statusBlackBold}>{t('This Issue has been closed.')}</Text>
+                    </View>
+                )}
+
+                {/* Footer Info Link */}
+                <View style={styles.footerInfoLink}>
+                    <Text style={styles.footerLinkText}>
+                        More on{' '}
+                        <Text style={styles.footerLinkHighlight}>{t('Dispute Resolution')}</Text>
+                    </Text>
+                    <Ionicons name="information-circle-outline" size={20} color="#505050" style={styles.footerIcon} />
                 </View>
 
-                {/* Message Input */}
-                {!['closed_by_buyer', 'escalated_to_dispute'].includes(issue.status) && (
-                    <View style={styles.messageInputContainer}>
-                        <TextInput
-                            style={styles.messageInput}
-                            placeholder={t('Type a message...')}
-                            placeholderTextColor="#303234"
-                            value={newMessage}
-                            onChangeText={setNewMessage}
-                            multiline
-                            maxLength={500}
-                        />
-                        <TouchableOpacity
-                            style={[
-                                styles.sendButton,
-                                (!newMessage.trim() || sendingMessage) && styles.sendButtonDisabled,
-                            ]}
-                            onPress={handleSendMessage}
-                            disabled={!newMessage.trim() || sendingMessage}
-                        >
-                            {sendingMessage ? (
-                                <ActivityIndicator size="small" color="#FFF" />
-                            ) : (
-                                <Ionicons name="send" size={20} color="#FFF" />
-                            )}
-                        </TouchableOpacity>
+                {/* Messages Section - Optional based on design match */}
+                {!['settled', 'closed_by_buyer', 'escalated_to_dispute'].includes(issue.status) && (
+                    <View style={styles.messagesSection}>
+                        <Text style={styles.sectionTitle}>{t('Messages')}</Text>
+                        {messages.length === 0 ? (
+                            <View style={styles.noMessages}>
+                                <Text style={styles.noMessagesText}>{t('No messages yet')}</Text>
+                            </View>
+                        ) : (
+                            messages.map((message) => (
+                                <View key={message.id} style={styles.messageCard}>
+                                    <Text style={styles.messageText}>{message.message}</Text>
+                                </View>
+                            ))
+                        )}
                     </View>
                 )}
             </ScrollView>
@@ -558,29 +765,7 @@ const IssueDetailScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    loadingText: {
-        marginTop: 12,
-        fontSize: 14,
-        color: '#505050',
-    },
-    errorContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 32,
-    },
-    errorText: {
-        fontSize: 16,
-        color: '#505050',
-        marginTop: 16,
-        marginBottom: 24,
+        backgroundColor: '#FFF',
     },
     header: {
         flexDirection: 'row',
@@ -589,396 +774,320 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         backgroundColor: '#FFF',
         borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
+        borderBottomColor: '#F0F0F0',
     },
     headerBackButton: {
         padding: 4,
-        marginRight: 12,
     },
     headerTitleContainer: {
         flex: 1,
+        alignItems: 'center',
     },
     headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 17,
+        fontWeight: '700',
         color: '#000',
     },
-    headerSubtitle: {
-        fontSize: 12,
-        color: '#505050',
-        marginTop: 2,
-    },
     headerRight: {
-        width: 40,
+        width: 32,
     },
     content: {
         flex: 1,
     },
     iconContainer: {
         alignItems: 'center',
-        paddingVertical: 20,
-        backgroundColor: '#FFF',
+        paddingVertical: 30,
+    },
+    iconWrapper: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    balanceIcon: {
+        marginBottom: -10,
+        zIndex: 1,
     },
     creationMessage: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        marginBottom: 20,
     },
     creationText: {
         fontSize: 14,
         color: '#505050',
-        fontWeight: '500',
     },
     creationTime: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#303234',
     },
-    statusCard: {
-        backgroundColor: '#FFF',
-        padding: 16,
-        marginBottom: 8,
-    },
-    statusHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    statusBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#FFF',
-    },
-    deadlineContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    deadlineText: {
-        fontSize: 12,
-        color: '#FF6347',
-        fontWeight: '600',
-        marginLeft: 4,
+    infoCard: {
+        paddingHorizontal: 16,
+        marginBottom: 24,
     },
     infoRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        paddingVertical: 4,
     },
     infoLabel: {
         fontSize: 14,
         fontWeight: '600',
         color: '#505050',
+        width: 80,
     },
     infoValue: {
         fontSize: 14,
         color: '#000',
+        fontWeight: '500',
+    },
+    section: {
+        paddingHorizontal: 16,
+        marginBottom: 24,
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+        paddingTop: 16,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    sectionTitleCaps: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#000',
+        letterSpacing: 0.5,
+    },
+    sectionTime: {
+        fontSize: 12,
+        color: '#303234',
+    },
+    fieldLabelSmall: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#505050',
+        marginBottom: 8,
+    },
+    bubbleMessage: {
+        backgroundColor: '#FFF',
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    issueDescription: {
+        fontSize: 14,
+        color: '#303234',
+        lineHeight: 20,
+    },
+    viewIssueLinkSimple: {
+        marginBottom: 8,
+    },
+    viewIssueLinkTextSimple: {
+        fontSize: 14,
+        color: '#003366',
+        fontWeight: '600',
+        textDecorationLine: 'underline',
+    },
+    decisionDisplayRow: {
+        marginTop: 8,
+        marginBottom: 12,
+    },
+    checkboxOptionInline: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 8,
+    },
+    checkboxLabelInline: {
+        fontSize: 14,
+        color: '#303234',
         flex: 1,
-        textAlign: 'right',
+    },
+    checkboxOptionNoBorder: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+    },
+    subtextSmall: {
+        fontSize: 10,
+        color: '#888',
+        marginTop: 4,
+        marginBottom: 8,
+    },
+    radioCircle: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#000',
+        backgroundColor: '#FFF',
+    },
+    radioCircleSelectedBlack: {
+        backgroundColor: '#000',
+        borderWidth: 4,
+        borderColor: '#000',
+    },
+    radioCircleSelectedGray: {
+        backgroundColor: '#CCC',
+        borderWidth: 0,
+    },
+    statusBlock: {
+        alignItems: 'center',
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    statusGreenBold: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#00C853',
+        marginBottom: 4,
+    },
+    statusGreenSmall: {
+        fontSize: 11,
+        color: '#00C853',
+        marginBottom: 20,
+    },
+    statusRedBold: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 4,
+    },
+    statusBlackBold: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 20,
+    },
+    statusX: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#000',
+    },
+    successMessageContainer: {
+        marginTop: 30,
+        marginBottom: 10,
+        alignItems: 'center',
+    },
+    successMessageText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#00C853',
+        textAlign: 'center',
+    },
+    actionButtonsContainer: {
+        width: '100%',
+        paddingHorizontal: 16,
+        marginBottom: 20,
+    },
+    actionButtonRoundedLarge: {
+        backgroundColor: '#F2F2F2',
+        paddingVertical: 14,
+        borderRadius: 24,
+        alignItems: 'center',
+        marginBottom: 12,
+        width: '100%',
+    },
+    actionButtonTextGrayLarge: {
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#303234',
+    },
+    footerInfoLink: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    footerLinkText: {
+        fontSize: 12,
+        color: '#303234',
+    },
+    footerLinkHighlight: {
+        color: '#003366',
+        textDecorationLine: 'underline',
+    },
+    footerIcon: {
+        marginLeft: 6,
+    },
+    messagesSection: {
+        padding: 16,
+        backgroundColor: '#FAFAFA',
     },
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
         color: '#000',
-        marginTop: 16,
-        marginBottom: 8,
-    },
-    sectionSubtitle: {
-        fontSize: 13,
-        color: '#505050',
-        marginBottom: 8,
-    },
-    fieldLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#333',
-        marginTop: 12,
-        marginBottom: 6,
-    },
-    issueDescription: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
         marginBottom: 12,
     },
-    createdDate: {
-        fontSize: 12,
-        color: '#303234',
-        marginTop: 8,
+    noMessagesText: {
+        fontSize: 13,
+        color: '#999',
     },
-    viewIssueLink: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#F8F8F8',
-        borderRadius: 8,
-        marginTop: 8,
-    },
-    viewIssueLinkText: {
-        fontSize: 14,
-        color: '#505050',
-    },
-    viewIssueLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-    attachEvidenceButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#F0F7FF',
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: COLORS.primary,
-        marginTop: 12,
-    },
-    attachEvidenceText: {
-        fontSize: 14,
-        color: COLORS.primary,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    sellerResponseSection: {
+    messageCard: {
+        padding: 10,
         backgroundColor: '#FFF',
-        padding: 16,
+        borderRadius: 8,
         marginBottom: 8,
     },
-    responseTextArea: {
+    messageText: {
+        fontSize: 14,
+        color: '#333',
+    },
+    bubbleInputContainer: {
+        backgroundColor: '#FFF',
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 8,
+        borderColor: '#F0F0F0',
+        padding: 4,
+        marginBottom: 16,
+    },
+    responseTextArea: {
         padding: 12,
         fontSize: 14,
         color: '#000',
         minHeight: 100,
-        backgroundColor: '#FAFAFA',
-        marginBottom: 16,
         textAlignVertical: 'top',
     },
-    checkboxRow: {
+    decisionOptions: {
+        marginTop: 12,
+    },
+    checkboxOption: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 12,
-    },
-    checkbox: {
-        width: 20,
-        height: 20,
-        borderRadius: 4,
-        borderWidth: 2,
-        borderColor: '#CCC',
-        marginRight: 12,
         alignItems: 'center',
-        justifyContent: 'center',
-    },
-    checkboxChecked: {
-        backgroundColor: COLORS.primary,
-        borderColor: COLORS.primary,
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
     },
     checkboxLabel: {
         fontSize: 14,
         color: '#333',
         flex: 1,
-        lineHeight: 20,
     },
-    checkboxX: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#FFF',
-    },
-    infoIcon: {
-        marginLeft: 6,
-    },
-    infoLinkContainer: {
-        flexDirection: 'row',
+    sendResponseButtonRounded: {
+        backgroundColor: '#F2F2F2',
+        paddingVertical: 14,
+        borderRadius: 24,
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        marginTop: 8,
+        marginTop: 20,
     },
-    infoLinkText: {
-        fontSize: 13,
-        color: '#505050',
-    },
-    infoLinkHighlight: {
-        color: COLORS.primary,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
-    },
-    sendResponseButton: {
-        backgroundColor: COLORS.primary,
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    sendResponseButtonText: {
+    sendResponseButtonTextGray: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#FFF',
+        color: '#303234',
     },
     buttonDisabled: {
-        backgroundColor: '#CCC',
-    },
-    sellerResponseDisplay: {
-        backgroundColor: '#FFF',
-        padding: 16,
-        marginBottom: 8,
-    },
-    responseText: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
-        marginBottom: 12,
-    },
-    decisionDisplay: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginTop: 8,
-    },
-    decisionLabel: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#505050',
-    },
-    decisionBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    decisionText: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 4,
-    },
-    buyerActions: {
-        padding: 16,
-        backgroundColor: '#FFF',
-        marginBottom: 8,
-    },
-    actionButton: {
-        flexDirection: 'row',
-        padding: 14,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-    },
-    disputeButton: {
-        backgroundColor: '#DC143C',
-    },
-    closeButton: {
-        backgroundColor: '#32CD32',
-    },
-    actionButtonText: {
-        fontSize: 15,
-        fontWeight: '600',
-        color: '#FFF',
-        marginLeft: 6,
-    },
-    actionLoadingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 16,
-        backgroundColor: '#FFF',
-        marginBottom: 8,
-    },
-    actionLoadingText: {
-        fontSize: 14,
-        color: '#505050',
-        marginLeft: 8,
-    },
-    messagesSection: {
-        backgroundColor: '#FFF',
-        padding: 16,
-        marginBottom: 8,
-    },
-    noMessages: {
-        alignItems: 'center',
-        padding: 32,
-    },
-    noMessagesText: {
-        fontSize: 14,
-        color: '#303234',
-        marginTop: 12,
-    },
-    messageCard: {
-        backgroundColor: '#F5F5F5',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 8,
-    },
-    systemMessage: {
-        backgroundColor: '#E3F2FD',
-    },
-    messageSender: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#505050',
-        marginBottom: 4,
-    },
-    messageText: {
-        fontSize: 14,
-        color: '#000',
-        lineHeight: 18,
-    },
-    messageTime: {
-        fontSize: 11,
-        color: '#303234',
-        marginTop: 4,
-    },
-    messageInputContainer: {
-        flexDirection: 'row',
-        padding: 16,
-        backgroundColor: '#FFF',
-        borderTopWidth: 1,
-        borderTopColor: '#E0E0E0',
-        alignItems: 'flex-end',
-    },
-    messageInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        fontSize: 14,
-        maxHeight: 100,
-        marginRight: 8,
-    },
-    sendButton: {
-        backgroundColor: COLORS.primary,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    sendButtonDisabled: {
-        backgroundColor: '#CCC',
-    },
-    backButton: {
-        backgroundColor: COLORS.primary,
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
-    },
-    backButtonText: {
-        color: '#FFF',
-        fontSize: 14,
-        fontWeight: '600',
+        opacity: 0.5,
     },
 });
 

@@ -15,6 +15,7 @@ const GlobalHeader = ({
     onBackPress,
     navigation,
     showIcons = true,
+    rightContent,
 }) => {
     const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -79,7 +80,9 @@ const GlobalHeader = ({
 
                 {/* Right Side - Icons */}
                 <View style={styles.rightSection}>
-                    {showIcons && (
+                    {rightContent ? (
+                        rightContent
+                    ) : showIcons ? (
                         <>
                             {/* Notification Icon with Badge */}
                             <TouchableOpacity
@@ -89,12 +92,6 @@ const GlobalHeader = ({
                             >
                                 <View style={styles.iconWrapper}>
                                     <Ionicons name="notifications-outline" size={24} color="#000" />
-                                    {/* Badge - can be controlled via props if needed */}
-                                    {/* Uncomment to show badge:
-                                    <View style={styles.notificationBadge}>
-                                        <Text style={styles.badgeText}>3</Text>
-                                    </View>
-                                    */}
                                 </View>
                             </TouchableOpacity>
 
@@ -125,7 +122,7 @@ const GlobalHeader = ({
                                 <Ionicons name="menu" size={28} color="#000" />
                             </TouchableOpacity>
                         </>
-                    )}
+                    ) : null}
                 </View>
             </View>
 

@@ -76,7 +76,8 @@ export default {
                 {
                     "provider": "google",
                     "useGoogleMaps": true,
-                    "googleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
+                    "googleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE",
+                    "iosGoogleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
                 }
             ],
             "@react-native-community/datetimepicker"

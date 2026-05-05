@@ -116,7 +116,7 @@ const CampaignNotificationPopup = ({ notification, onClose, navigation }) => {
     } = notification;
 
     // Collapsed State - Small banner at top
-    if (state === 'collapsed') {
+    if (state === 'collapsed' && collapsed_title && collapsed_message) {
         const iconBgColor = collapsed_icon_bg_color || '#10B981';
 
         return (
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     unreadCard: {
         backgroundColor: '#F0F9FF',
         borderLeftWidth: 4,
-        borderLeftColor: '#001C64'
+        borderLeftColor: '#f7f8faff'
     },
     collapsedContent: {
         flexDirection: 'row',

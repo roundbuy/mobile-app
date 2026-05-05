@@ -143,9 +143,6 @@ class ClaimService {
         }
     }
 
-    /**
-     * Close claim
-     */
     async closeClaim(claimId) {
         try {
             console.log(`🚀 API Request: PUT /claims/${claimId}/close`);
@@ -154,6 +151,58 @@ class ClaimService {
             return response.data;
         } catch (error) {
             console.error('❌ Close claim error:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Update claim with seller's response (accept/decline/negotiate)
+     */
+    async updateClaimSellerResponse(claimId, response, decision) {
+        try {
+            console.log(`🚀 API Request: POST /claims/${claimId}/seller-response`);
+            const res = await api.post(`/claims/${claimId}/seller-response`, {
+                response,
+                decision
+            });
+            console.log('✅ API Response:', res.status);
+            return res.data;
+        } catch (error) {
+            console.error('❌ Seller response error:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Submit per-user negotiation decision
+     */
+    async submitNegotiationDecision(claimId, decision) {
+        try {
+            console.log(`🚀 API Request: POST /claims/${claimId}/submit-negotiation-decision`);
+            const res = await api.post(`/claims/${claimId}/submit-negotiation-decision`, {
+                decision
+            });
+            console.log('✅ API Response:', res.status);
+            return res.data;
+        } catch (error) {
+            console.error('❌ Submit decision error:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Submit negotiation suggestion
+     */
+    async submitNegotiationSuggestion(claimId, suggestion) {
+        try {
+            console.log(`🚀 API Request: POST /claims/${claimId}/submit-negotiation-suggestion`);
+            const res = await api.post(`/claims/${claimId}/submit-negotiation-suggestion`, {
+                suggestion
+            });
+            console.log('✅ API Response:', res.status);
+            return res.data;
+        } catch (error) {
+            console.error('❌ Submit suggestion error:', error.response?.data || error.message);
             throw error;
         }
     }

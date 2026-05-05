@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
+import api from '../../services/api';
 
 const SingleItemActionScreen = ({ navigation, route }) => {
     const {
@@ -20,9 +21,28 @@ const SingleItemActionScreen = ({ navigation, route }) => {
 
     if (!conversationId) return <View />;
 
-    // TODO: We need to pull dynamic step info, but currently we default to 1
-    // A future step will pass down or fetch the actual live status.
-    let currentStepIndex = 1;
+    const [actionStatus, setActionStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (conversationId) {
+            fetchActionStatus();
+        }
+    }, [conversationId]);
+
+    const fetchActionStatus = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get(`/buyer-seller/action-status/${conversationId}`);
+            if (res.data.success) {
+                setActionStatus(res.data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch action status:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const activeTab = type || 'buying';
     const displayRole = activeTab === 'selling' ? 'SELLING' : 'BUYING';
@@ -31,32 +51,60 @@ const SingleItemActionScreen = ({ navigation, route }) => {
 
     const buyingSteps = [
         { id: 1, title: 'Buyer enquiries', actionDesc: 'Action ask photos or info!', route: 'Step1EnquiryScreen' },
-        { id: 2, title: 'Make a Buyer Offer', actionDesc: 'Action make an offer', route: 'Step2OfferScreen' },
+        { id: 2, title: 'Make a Buyer Offer', actionDesc: 'Action make an offer', route: 'Step1EnquiryScreen' },
         { id: 3, title: 'Buyer pays the item', actionDesc: 'Action Buy the item', route: 'Step3DeliverySelectionScreen' },
         { id: 4, title: 'Schedule a Pick Up', actionDesc: 'Action chat & Schedule meet up', route: 'Step4ScheduleScreen' },
         { id: 5, title: 'Deal confirmation', actionDesc: 'Action pick up, inspect & confirm', route: 'Step5DealConfirmationScreen' },
-        { id: 6, title: 'Give Feedback', actionDesc: 'Action rate & give feedback', route: 'Step5DealConfirmationScreen' }
+        { id: 6, title: 'Give Feedback', actionDesc: 'Action rate & give feedback', route: 'GiveFeedbackForm' }
     ];
 
     const sellingSteps = [
         { id: 1, title: 'Seller responses', actionDesc: 'Action provide photos or info!', route: 'Step1EnquiryScreen' },
-        { id: 2, title: 'Accept, Decline an Offer', actionDesc: 'Action provide photos or info!', route: 'Step2OfferScreen' },
+        { id: 2, title: 'Accept, Decline an Offer', actionDesc: 'Action provide photos or info!', route: 'Step1EnquiryScreen' },
         { id: 3, title: 'Sold the item (escrow)', actionDesc: 'Action ? Wait until Bought', route: 'Step3DeliverySelectionScreen' },
         { id: 4, title: 'Schedule a Pick Up', actionDesc: 'Action chat & schedule meet up', route: 'Step4ScheduleScreen' },
         { id: 5, title: 'Deal confirmation', actionDesc: 'Action pick up, inspect & confirm', route: 'Step5DealConfirmationScreen' },
-        { id: 6, title: 'Give Feedback', actionDesc: 'Action rate & give feedback', route: 'Step5DealConfirmationScreen' }
+        { id: 6, title: 'Give Feedback', actionDesc: 'Action rate & give feedback', route: 'GiveFeedbackForm' }
     ];
 
     const stepsList = activeTab === 'selling' ? sellingSteps : buyingSteps;
 
     const handleStepPress = (step) => {
+        // Validation: Step 4 (Schedule Pick Up) is only available if 'pickup' was selected
+        if (step.id === 4 && actionStatus?.meta?.deliveryOption && actionStatus.meta.deliveryOption !== 'pickup') {
+            Alert.alert(
+                "Pick Up Unavailable",
+                "This order was checked out using a different delivery method (e.g. Courier), so pick up scheduling is disabled."
+            );
+            return;
+        }
+
+        // Validation: Rule 7 (Step 6 is locked until Step 5 is complete)
+        if (step.id === 6 && actionStatus && !actionStatus.step5) {
+            Alert.alert(
+                "Action Required",
+                "You cannot leave feedback until the Deal Confirmation (Step 5) is completed by both parties."
+            );
+            return;
+        }
+
         // We will pass the required data to the individual step screens
         const baseParams = {
             conversationId,
             advertisementId,
             title: itemTitle,
-            offerAmount: itemPrice
+            offerAmount: itemPrice,
+            itemImage,
+            role: activeTab, // 'buying' or 'selling'
+            otherUserName,
+            // Mapped attributes for legacy screens (Step 4 and Step 6)
+            offerId: actionStatus?.meta?.offerId,
+            advertisementTitle: itemTitle,
+            reviewedUserId: activeTab === 'buying' ? actionStatus?.meta?.sellerId : actionStatus?.meta?.buyerId,
+            transactionType: activeTab === 'buying' ? 'buy' : 'sell',
+            images: [itemImage]
         };
+
         navigation.navigate(step.route, baseParams);
     };
 
@@ -71,56 +119,62 @@ const SingleItemActionScreen = ({ navigation, route }) => {
             </View>
 
             <ScrollView style={styles.content}>
-                {/* Product Info */}
-                <View style={styles.productHeader}>
-                    <Image source={{ uri: itemImage || 'https://via.placeholder.com/80' }} style={styles.productImage} />
-                    <View style={styles.productDetails}>
-                        <Text style={styles.productTitle} numberOfLines={2}>{itemTitle}</Text>
-                        <Text style={styles.productPrice}>£{itemPrice || '0.00'}</Text>
-                        <Text style={styles.productUser}>{otherUserRole}: {otherUserName}</Text>
-                    </View>
-                </View>
+                {loading ? (
+                    <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
+                ) : (
+                    <>
+                        {/* Product Info */}
+                        <View style={styles.productHeader}>
+                            <Image source={{ uri: itemImage || 'https://via.placeholder.com/80' }} style={styles.productImage} />
+                            <View style={styles.productDetails}>
+                                <Text style={styles.productTitle} numberOfLines={2}>{itemTitle}</Text>
+                                <Text style={styles.productPrice}>£{itemPrice || '0.00'}</Text>
+                                <Text style={styles.productUser}>{otherUserRole}: {otherUserName}</Text>
+                            </View>
+                        </View>
 
-                {/* Role Label */}
-                <Text style={styles.roleLabel}>{displayRole}</Text>
+                        {/* Role Label */}
+                        <Text style={styles.roleLabel}>{displayRole}</Text>
 
-                {/* Steps List */}
-                <View style={styles.stepsContainer}>
-                    {stepsList.map((step) => {
-                        // For mockup purposes, if id < currentStepIndex it's Done, else Undone.
-                        const isDone = step.id < currentStepIndex;
-                        const statusColor = isDone ? '#45FF4E' : 'red'; // Done in light green, Undone in red
-                        const statusText = isDone ? 'Done' : 'Undone';
+                        {/* Steps List */}
+                        <View style={styles.stepsContainer}>
+                            {stepsList.map((step) => {
+                                // Dynamically resolve if the step is done using the API data
+                                const isDone = actionStatus ? actionStatus[`step${step.id}`] : false;
+                                const statusColor = isDone ? '#45FF4E' : 'red'; // Done in light green, Undone in red
+                                const statusText = isDone ? 'Done' : 'Undone';
 
-                        return (
-                            <TouchableOpacity
-                                key={step.id}
-                                style={styles.stepCard}
-                                onPress={() => handleStepPress(step)}
-                                activeOpacity={0.7}
-                            >
-                                <View style={styles.stepNumberContainer}>
-                                    <View style={styles.stepBadge}>
-                                        <Text style={styles.stepNumber}>{step.id}.</Text>
-                                        <Text style={styles.stepTextSmall}>Step</Text>
-                                    </View>
-                                </View>
+                                return (
+                                    <TouchableOpacity
+                                        key={step.id}
+                                        style={styles.stepCard}
+                                        onPress={() => handleStepPress(step)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.stepNumberContainer}>
+                                            <View style={styles.stepBadge}>
+                                                <Text style={styles.stepNumber}>{step.id}.</Text>
+                                                <Text style={styles.stepTextSmall}>Step</Text>
+                                            </View>
+                                        </View>
 
-                                <View style={styles.stepInfoContainer}>
-                                    <Text style={styles.stepTitle}>{step.title}</Text>
-                                    <Text style={styles.stepDesc}>{step.actionDesc}</Text>
-                                    <Text style={styles.stepStatus}>
-                                        Action status: <Text style={{ color: statusColor, fontWeight: 'bold' }}>{statusText}</Text>
-                                    </Text>
-                                </View>
+                                        <View style={styles.stepInfoContainer}>
+                                            <Text style={styles.stepTitle}>{step.title}</Text>
+                                            <Text style={styles.stepDesc}>{step.actionDesc}</Text>
+                                            <Text style={styles.stepStatus}>
+                                                Action status: <Text style={{ color: statusColor, fontWeight: 'bold' }}>{statusText}</Text>
+                                            </Text>
+                                        </View>
 
-                                <View style={styles.stepArrow}>
-                                    <Ionicons name="chevron-forward" size={32} color="#000" />
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </View>
+                                        <View style={styles.stepArrow}>
+                                            <Ionicons name="chevron-forward" size={32} color="#000" />
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </>
+                )}
 
                 <View style={styles.footerContainer}>
                     <Text style={styles.footerText}>

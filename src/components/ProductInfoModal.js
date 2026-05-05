@@ -6,6 +6,7 @@ import {
     Modal,
     TouchableOpacity,
     ScrollView,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
@@ -18,35 +19,42 @@ const ProductInfoModal = ({ visible, onClose, title, content }) => {
             animationType="fade"
             onRequestClose={onClose}
         >
-            <TouchableOpacity
-                style={styles.overlay}
-                activeOpacity={1}
-                onPress={onClose}
-            >
-                <TouchableOpacity
-                    style={styles.modalContainer}
-                    activeOpacity={1}
-                    onPress={(e) => e.stopPropagation()}
-                >
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.title}>{title}</Text>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#505050" />
-                        </TouchableOpacity>
-                    </View>
+            <TouchableWithoutFeedback onPress={onClose}>
+                <View style={styles.overlay}>
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalContainer}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <Text style={styles.title}>{title}</Text>
+                                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                    <Ionicons name="close" size={24} color="#505050" />
+                                </TouchableOpacity>
+                            </View>
 
-                    {/* Content */}
-                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                        <Text style={styles.contentText}>{content}</Text>
-                    </ScrollView>
+                            {/* Content */}
+                            <ScrollView
+                                style={styles.content}
+                                contentContainerStyle={{ paddingBottom: 20 }}
+                                showsVerticalScrollIndicator={true}
+                                bounces={true}
+                            >
+                                {content.split('**').map((part, index) => {
+                                    if (index % 2 !== 0) {
+                                        // Odd indexes are the parts inside the asterisks
+                                        return <Text key={index} style={[styles.contentText, { fontWeight: 'bold' }]}>{part}</Text>;
+                                    }
+                                    return <Text key={index} style={styles.contentText}>{part}</Text>;
+                                })}
+                            </ScrollView>
 
-                    {/* Close Button */}
-                    <TouchableOpacity style={styles.okButton} onPress={onClose}>
-                        <Text style={styles.okButtonText}>Got it</Text>
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            </TouchableOpacity>
+                            {/* Close Button */}
+                            <TouchableOpacity style={styles.okButton} onPress={onClose}>
+                                <Text style={styles.okButtonText}>Got it</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </View>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 };
@@ -64,7 +72,8 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         width: '100%',
         maxWidth: 400,
-        maxHeight: '80%',
+        maxHeight: '90%', // Expand allowable screen usage
+        flexShrink: 1, // Allow the container to shrink to fit screen if needed
     },
     header: {
         flexDirection: 'row',
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 20,
-        maxHeight: 400,
+        // Removed the hardcoded 400 maxHeight so the View flexes correctly inside the 90% screen height constraint
     },
     contentText: {
         fontSize: 15,
