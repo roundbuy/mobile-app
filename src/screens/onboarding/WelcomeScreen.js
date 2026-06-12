@@ -76,9 +76,9 @@ const WelcomeScreen = ({ navigation, route }) => {
               <Text style={styles.greenSubtitle}>{t('Find out what we offer to you?')}</Text>
 
               <View style={styles.listContainer}>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Buy & sell second-hand locally')}</Text>
+                <Text style={styles.listItem}>• {t('Reduce waste, protect the planet')}</Text>
+                <Text style={styles.listItem}>• {t('Connect with buyers near you')}</Text>
               </View>
 
               <TouchableOpacity
@@ -162,30 +162,29 @@ const WelcomeScreen = ({ navigation, route }) => {
           slides={[
             {
               title: 'Onboard 1',
-              heading: 'Welcome Location',
-              description: 'Location: Lorem ipsum dolores est. Lorem ipsum dolores est. Default location is your... Product location...',
-              // Image can be added if assets exist
+              heading: 'Set Your Location',
+              description: 'RoundBuy uses your location to show second-hand items available near you. Your default location is where listings and search results are centred.',
             },
             {
               title: 'Onboard 2',
               heading: 'Create Listings',
-              description: 'Listing: Lorem ipsum dolores est. Lorem ipsum dolores est.'
+              description: 'List any second-hand item in minutes. Add photos, set your price, and choose a pickup location that works for you.',
             },
             {
               title: 'Onboard 3',
               heading: 'Start Shopping',
-              description: 'Shopping: Lorem ipsum dolores est. Lorem ipsum dolores est. Sell & Buy around you. Up to 5 locations.'
+              description: 'Browse and buy pre-loved items from sellers in your area. Save money and give products a second life — up to 5 search locations.',
             },
             {
               title: 'Onboard 4',
               heading: 'Schedule Exchanges',
-              description: 'Schedule Exchange: Lorem ipsum dolores est. Lorem ipsum dolores est.'
+              description: 'Agree on a time and place with the seller. RoundBuy makes coordinating local handoffs simple and safe.',
             },
             {
               title: 'Onboard 5',
               heading: 'Flexible Pickup',
-              description: 'Pick it Up Yourself: Lorem ipsum dolores est. Lorem ipsum dolores est.',
-              buttonText: 'Choose your plan'
+              description: 'Pick up items yourself or arrange a drop-off. Every exchange is local, fast, and carbon-friendly.',
+              buttonText: 'Choose your plan',
             }
           ]}
         />

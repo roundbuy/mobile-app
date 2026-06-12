@@ -14,6 +14,9 @@ import offersService from './offersService';
 import feedbackService from './feedbackService';
 import platformReviewService from './platformReviewService';
 import walletService from './walletService';
+import kycService from './kycService';
+import postageService from './postageService';
+import eventService from './eventService';
 import apiClient, { storage, apiRequest, isAuthenticated } from './api';
 import { API_CONFIG, API_ENDPOINTS, ERROR_CODES } from '../config/api.config';
 
@@ -30,6 +33,9 @@ export {
   feedbackService,
   platformReviewService,
   walletService,
+  kycService,
+  postageService,
+  eventService,
   apiClient,
   storage,
   apiRequest,
@@ -52,6 +58,9 @@ export default {
   feedback: feedbackService,
   platformReview: platformReviewService,
   wallet: walletService,
+  kyc: kycService,
+  postage: postageService,
+  events: eventService,
   storage,
   apiRequest,
   isAuthenticated,

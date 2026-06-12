@@ -8,8 +8,8 @@ const DistanceFilterModal = ({ visible, onClose, selectedRadius, onSelectRadius,
   const [tempRadius, setTempRadius] = useState(selectedRadius || SLIDER_CONFIG.defaultValue);
   const [location, setLocation] = useState(userLocation || null);
   const [region, setRegion] = useState({
-    latitude: userLocation?.latitude || 26.77777,
-    longitude: userLocation?.longitude || 81.0817,
+    latitude: userLocation?.latitude || 51.875462,
+    longitude: userLocation?.longitude || -0.372755,
     latitudeDelta: 0.1,
     longitudeDelta: 0.1,
   });

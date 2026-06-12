@@ -13,98 +13,98 @@ const VisibilityBoostInfoScreen = ({ navigation }) => {
         {
             id: 'rise_to_top',
             title: t('Rise to Top'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Move your item back to the top'),
             steps: [
                 {
-                    title: t('1. Feature 1'),
-                    text: t('Description for Rise to Top feature 1.')
+                    title: t('1. Select Item'),
+                    text: t('Choose the active listing you want to boost.')
                 },
                 {
-                    title: t('2. Feature 2'),
-                    text: t('Description for Rise to Top feature 2.')
+                    title: t('2. One-Tap Boost'),
+                    text: t('Instantly move your item to the top of the search gallery.')
                 },
                 {
-                    title: t('3. Feature 3'),
-                    text: t('Description for Rise to Top feature 3.')
+                    title: t('3. Maximum Visibility'),
+                    text: t('Your item will appear as a fresh listing to local buyers.')
                 }
             ]
         },
         {
             id: 'top_spot',
             title: t('Top Spot'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Keep your item at the very top'),
             steps: [
                 {
-                    title: t('1. Feature 1'),
-                    text: t('Description for Top Spot feature 1.')
+                    title: t('1. Premium Placement'),
+                    text: t('Secure a dedicated slot at the top of your category.')
                 },
                 {
-                    title: t('2. Feature 2'),
-                    text: t('Description for Top Spot feature 2.')
+                    title: t('2. Extended Duration'),
+                    text: t('Stay visible in the top spot for a fixed duration.')
                 },
                 {
-                    title: t('3. Feature 3'),
-                    text: t('Description for Top Spot feature 3.')
+                    title: t('3. Higher Click-through'),
+                    text: t('Items in Top Spots receive significantly more views.')
                 }
             ]
         },
         {
             id: 'targeted_ad',
             title: t('Targeted ad'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Reach the right buyers'),
             steps: [
                 {
-                    title: t('1. Feature 1'),
-                    text: t('Description for Targeted ad feature 1.')
+                    title: t('1. Smart Matching'),
+                    text: t('We show your ad to users searching for similar items.')
                 },
                 {
-                    title: t('2. Feature 2'),
-                    text: t('Description for Targeted ad feature 2.')
+                    title: t('2. Local Targeting'),
+                    text: t('Focus on buyers within your specified walking distance.')
                 },
                 {
-                    title: t('3. Feature 3'),
-                    text: t('Description for Targeted ad feature 3.')
+                    title: t('3. Better Conversion'),
+                    text: t('Connect with buyers who are already interested.')
                 }
             ]
         },
         {
             id: 'fast_ad',
             title: t('Fast ad'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Sell your item quickly'),
             steps: [
                 {
-                    title: t('1. Feature 1'),
-                    text: t('Description for Fast ad feature 1.')
+                    title: t('1. Rapid Promotion'),
+                    text: t('Get your listing processed and promoted instantly.')
                 },
                 {
-                    title: t('2. Feature 2'),
-                    text: t('Description for Fast ad feature 2.')
+                    title: t('2. High Intensity'),
+                    text: t('Increased frequency of display in search results.')
                 },
                 {
-                    title: t('3. Feature 3'),
-                    text: t('Description for Fast ad feature 3.')
+                    title: t('3. Quick Turnaround'),
+                    text: t('Ideal for items you need to sell today.')
                 }
             ]
         },
         {
             id: 'show_casing',
             title: t('Show casing'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Feature your item prominently'),
             steps: [
                 {
-                    title: t('1. Feature 1'),
-                    text: t('Description for Show casing feature 1.')
+                    title: t('1. Gallery Feature'),
+                    text: t('Your item appears in the home page showcase gallery.')
                 },
                 {
-                    title: t('2. Feature 2'),
-                    text: t('Description for Show casing feature 2.')
+                    title: t('2. Visual Highlight'),
+                    text: t('Stand out with a premium border and highlight.')
                 },
                 {
-                    title: t('3. Feature 3'),
-                    text: t('Description for Show casing feature 3.')
+                    title: t('3. Brand Exposure'),
+                    text: t('Build trust with a professional-looking listing.')
                 }
             ]
-        }
+        },
     ];
 
     const handleBoostPress = (boost) => {
@@ -113,9 +113,9 @@ const VisibilityBoostInfoScreen = ({ navigation }) => {
             title: boost.title,
             steps: boost.steps,
             benefits: [
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' },
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' },
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' }
+                { title: t('Increased reach'), text: t('Reach up to 10x more potential buyers.') },
+                { title: t('Faster sales'), text: t('Most boosted items sell within 48 hours.') },
+                { title: t('Priority display'), text: t('Stand out from the crowd with a premium badge.') }
             ]
         });
     };
@@ -130,10 +130,10 @@ const VisibilityBoostInfoScreen = ({ navigation }) => {
 
             <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                 <Text style={styles.mainTitle}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('Boost your visibility and sell faster.')}
                 </Text>
                 <Text style={styles.mainDescription}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('Choose from our premium options to get your items in front of more local buyers.')}
                 </Text>
                 <Text style={styles.mainDescription}>
                     {t('Choose one from below:')}

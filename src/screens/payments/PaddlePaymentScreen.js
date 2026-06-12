@@ -30,11 +30,16 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
   const [processing, setProcessing] = useState(false);
   const [checkoutHtml, setCheckoutHtml] = useState('');
   const [transactionId, setTransactionId] = useState(null);
+  // Capture tracking consent into state after initialization so the WebView
+  // prop is stable and reflects the user's actual ATT decision.
+  const [trackingAllowed, setTrackingAllowed] = useState(false);
   const webViewRef = useRef(null);
 
   useEffect(() => {
     const init = async () => {
       await trackingService.initialize();
+      // Snapshot tracking status AFTER initialize() so it reflects the user's ATT choice
+      setTrackingAllowed(trackingService.canTrackUser());
       initializePaddleCheckout();
     };
     init();
@@ -355,7 +360,9 @@ const PaddlePaymentScreen = ({ navigation, route }) => {
           javaScriptEnabled={true}
           domStorageEnabled={true}
           startInLoadingState={true}
-          incognito={!trackingService.canTrackUser()} // Enforce no tracking if not allowed
+          // incognito=true isolates this WebView's cookie jar when tracking is denied,
+          // preventing Paddle cookies from persisting or being shared. (Apple 5.1.1iv)
+          incognito={!trackingAllowed}
           renderLoading={() => (
             <View style={styles.webViewLoading}>
               <ActivityIndicator size="large" color={COLORS.primary} />

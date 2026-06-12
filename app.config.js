@@ -1,11 +1,11 @@
-// app.config.js - Expo configuration with environment variable support
+// app.config.js - Consolidated Expo configuration
 export default {
     expo: {
         name: "RoundBuy",
         slug: "roundbuy",
         version: "2.0.1",
         orientation: "portrait",
-        icon: "./assets/logo-crop.png",
+        icon: "./assets/appleicon.png",
         userInterfaceStyle: "light",
         splash: {
             image: "./assets/logo-crop.png",
@@ -19,7 +19,6 @@ export default {
             supportsTablet: true,
             bundleIdentifier: "com.buyaround.roundbuy",
             buildNumber: "1",
-            deploymentTarget: "13.4",
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
                 NSUserTrackingUsageDescription: "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you.",
@@ -37,10 +36,7 @@ export default {
                 }
             },
             config: {
-                // Testing with old API key
                 googleMapsApiKey: "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
-                // googleMapsApiKey: "AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0"
-                // Current key (might have restrictions): AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE
             }
         },
         android: {
@@ -59,7 +55,6 @@ export default {
             ],
             config: {
                 googleMaps: {
-                    // Old API key: AIzaSyCHDy59MC8-BniPHZ32X4szqh9kXSOBsi0
                     apiKey: "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
                 }
             }
@@ -70,26 +65,24 @@ export default {
         },
         plugins: [
             "expo-font",
+            "expo-apple-authentication",
             "expo-localization",
+            "expo-web-browser",
             [
-                "react-native-maps",
+                "expo-tracking-transparency",
                 {
-                    "provider": "google",
-                    "useGoogleMaps": true,
-                    "googleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE",
-                    "iosGoogleMapsApiKey": "AIzaSyA7xDzwDpKqHknfWZdIm2yUcKIBtpPk4UE"
+                    "userTrackingPermission": "RoundBuy would like permission to track your activity across apps and websites owned by other companies. Your data will be used to deliver personalized ads to you."
                 }
             ],
             "@react-native-community/datetimepicker"
-            // Custom plugin removed - the official react-native-maps plugin above
-            // handles all iOS Google Maps configuration including Podfile and AppDelegate
+            // Note: react-native-maps is configured via ios/Podfile (react-native-google-maps pod)
+            // and ios/RoundBuy/AppDelegate.swift (GMSServices.provideAPIKey). No app.plugin.js.
         ],
         scheme: "roundbuy",
         extra: {
             eas: {
                 projectId: "e99b7176-13bb-4556-b403-08d45d1ec1fe"
             },
-            // Environment variables for API configuration
             apiUrl: process.env.EXPO_PUBLIC_API_URL,
             localIp: process.env.EXPO_PUBLIC_LOCAL_IP
         }

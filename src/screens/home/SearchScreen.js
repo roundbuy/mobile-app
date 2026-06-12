@@ -29,6 +29,34 @@ import PromotionsGrid from '../../components/PromotionsGrid';
 import StandardProductCard from '../../components/StandardProductCard';
 import Hyperlink from '../../components/common/Hyperlink';
 import SearchInstructionsModal from '../../components/SearchInstructionsModal';
+import api from '../../services/api';
+
+const MOCK_GALLERIES = [
+  { id: 1, name: 'Streetwear Essentials', hero_image_url: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=400&q=80', description: 'The hottest urban outfits.' },
+  { id: 2, name: 'Cozy Knitwear & Jackets', hero_image_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80', description: 'Stay warm and stylish.' },
+  { id: 3, name: 'Vintage & Retro Finds', hero_image_url: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=400&q=80', description: 'Timeless denim and tees.' }
+];
+
+const MOCK_FEED = {
+  general: [
+    { id: 't1', title: 'Retro Denim Jacket', price: 2999.00, trending_score: 185, images: ['https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=400&q=80'] },
+    { id: 't2', title: 'Chelsea Boots', price: 4499.00, trending_score: 142, images: ['https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=400&q=80'] }
+  ],
+  women: [
+    { id: 'w1', title: 'Floral Silk Midi Dress', price: 3499.00, trending_score: 176, images: ['https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=400&q=80'] }
+  ],
+  men: [
+    { id: 'm1', title: 'Hooded Windbreaker', price: 3999.00, trending_score: 154, images: ['https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=400&q=80'] }
+  ],
+  children: [
+    { id: 'c1', title: 'Kids Waterproof Rainboots', price: 899.00, trending_score: 77, images: ['https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=400&q=80'] }
+  ]
+};
+
+const MOCK_EVENTS = [
+  { id: 1, title: 'Summer Thrift Pop-up', start_time: '2026-07-15T18:00:00Z', organizer: 'VintageCo', image_url: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=400&q=80', viewers_count: 45 },
+  { id: 2, title: 'Sneaker Head Bidding Room', start_time: '2026-07-16T20:00:00Z', organizer: 'SoleSupply', image_url: 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=400&q=80', viewers_count: 120 }
+];
 
 const getBadgeConfig = (badge) => {
   const level = badge.level?.toLowerCase();
@@ -81,6 +109,13 @@ const SearchScreen = ({ navigation, route }) => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Trending section & Social Clubs states
+  const [trendingGalleries, setTrendingGalleries] = useState([]);
+  const [trendingFeed, setTrendingFeed] = useState([]);
+  const [activePopularTab, setActivePopularTab] = useState('all');
+  const [trendingLoading, setTrendingLoading] = useState(false);
+  const [homeEvents, setHomeEvents] = useState([]);
+
   // Filter state
   const [filters, setFilters] = useState({
     search: '',
@@ -112,7 +147,7 @@ const SearchScreen = ({ navigation, route }) => {
 
   // Location state
   const [location, setLocation] = useState(null);
-  const defaultLocation = { latitude: 26.77777, longitude: 81.0817 };
+  const defaultLocation = { latitude: 51.875462, longitude: -0.372755 };
   const [region, setRegion] = useState({
     latitude: defaultLocation.latitude,
     longitude: defaultLocation.longitude,
@@ -181,7 +216,53 @@ const SearchScreen = ({ navigation, route }) => {
     getLocationAsync();
     fetchUserLocations();
     fetchFilterOptions();
+    fetchHomeEvents();
   }, []);
+
+  const fetchTrendingData = async () => {
+    try {
+      setTrendingLoading(true);
+      const galleriesRes = await api.get('/trending/galleries');
+      if (galleriesRes.data?.success) {
+        setTrendingGalleries(galleriesRes.data.data.galleries || []);
+      } else {
+        setTrendingGalleries(MOCK_GALLERIES);
+      }
+
+      const fetchType = activePopularTab === 'all' ? 'general' : activePopularTab;
+      const feedRes = await api.get(`/trending/feed?type=${fetchType}&limit=6`);
+      if (feedRes.data?.success) {
+        setTrendingFeed(feedRes.data.data.items || []);
+      } else {
+        setTrendingFeed(MOCK_FEED[fetchType] || MOCK_FEED.general);
+      }
+    } catch (e) {
+      console.error('Error fetching trending data:', e);
+      setTrendingGalleries(MOCK_GALLERIES);
+      const fetchType = activePopularTab === 'all' ? 'general' : activePopularTab;
+      setTrendingFeed(MOCK_FEED[fetchType] || MOCK_FEED.general);
+    } finally {
+      setTrendingLoading(false);
+    }
+  };
+
+  const fetchHomeEvents = async () => {
+    try {
+      const res = await api.get('/events?status=upcoming');
+      if (res.data?.success && res.data?.data?.events) {
+        setHomeEvents(res.data.data.events.slice(0, 3));
+      } else {
+        setHomeEvents(MOCK_EVENTS);
+      }
+    } catch (e) {
+      console.error('Error fetching home events:', e);
+      setHomeEvents(MOCK_EVENTS);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrendingData();
+  }, [activePopularTab]);
 
   const fetchFilterOptions = async () => {
     try {
@@ -876,6 +957,111 @@ const SearchScreen = ({ navigation, route }) => {
             <FlatList
               data={advertisements}
               renderItem={renderListItem}
+              ListHeaderComponent={() => {
+                if (searchText && searchText.trim() !== '') return null;
+                return (
+                  <View style={styles.popularContainer}>
+                    <Text style={styles.popularHeaderTitle}>POPULAR ON ROUNDBUY</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.popularTabBar}
+                      contentContainerStyle={styles.popularTabBarContent}
+                    >
+                      {['all', 'women', 'men', 'children'].map((tab) => (
+                        <TouchableOpacity
+                          key={tab}
+                          style={[
+                            styles.popularTabButton,
+                            activePopularTab === tab && styles.popularActiveTabButton,
+                          ]}
+                          onPress={() => setActivePopularTab(tab)}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              styles.popularTabButtonText,
+                              activePopularTab === tab && styles.popularActiveTabButtonText,
+                            ]}
+                          >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+
+                    <Text style={styles.popularSubtitle}>TOP SELLING COLLECTIONS THIS WEEK</Text>
+                    {trendingLoading ? (
+                      <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
+                    ) : (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.popularCollectionsSlider}
+                      >
+                        {trendingGalleries.map((gallery) => (
+                          <TouchableOpacity
+                            key={gallery.id}
+                            style={styles.popularCollectionCard}
+                            onPress={() => navigation.navigate('TrendingGallery', { galleryId: gallery.id, gallery })}
+                            activeOpacity={0.8}
+                          >
+                            <Image
+                              source={{ uri: gallery.hero_image_url || 'https://placehold.co/600x800' }}
+                              style={styles.popularCollectionImage}
+                            />
+                            <View style={styles.popularCollectionOverlay}>
+                              <Text style={styles.popularCollectionName} numberOfLines={1}>{gallery.name}</Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
+
+                    <Text style={styles.popularSubtitle}>TRENDING RIGHT NOW</Text>
+                    {trendingLoading ? (
+                      <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
+                    ) : (
+                      <View style={styles.popularFeedGrid}>
+                        {trendingFeed.map((item) => {
+                          const imageUrl = item.images && item.images.length > 0 ? getFullImageUrl(item.images[0]) : 'https://placehold.co/400';
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={styles.popularFeedCard}
+                              onPress={() => handleProductPress(item)}
+                              activeOpacity={0.8}
+                            >
+                              <View style={styles.popularFeedImageContainer}>
+                                <Image source={{ uri: imageUrl }} style={styles.popularFeedImage} />
+                                {item.trending_score && (
+                                  <View style={styles.popularScoreBadge}>
+                                    <Text style={styles.popularScoreText}>🔥 {item.trending_score}</Text>
+                                  </View>
+                                )}
+                              </View>
+                              <View style={styles.popularFeedInfo}>
+                                <Text style={styles.popularFeedTitle} numberOfLines={1}>{item.title}</Text>
+                                <Text style={styles.popularFeedPrice}>₹{parseFloat(item.price).toFixed(2)}</Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )}
+
+                    <View style={styles.popularViewAllContainer}>
+                      <TouchableOpacity
+                        style={styles.popularViewAllButton}
+                        onPress={() => navigation.navigate('TrendingHub')}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.popularViewAllText}>Explore All Curated Galleries & Feeds</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              }}
               keyExtractor={(item, index) => {
                 if (item.type === 'promotions') return `promotions-grid-${index}`;
                 if (item.type === 'showcase') return `showcase-${item.showcase_group_id}-${index}`;
@@ -905,11 +1091,59 @@ const SearchScreen = ({ navigation, route }) => {
                   </View>
                 )
               }
-              ListFooterComponent={
-                loading && page > 1 && (
-                  <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
-                )
-              }
+              ListFooterComponent={() => {
+                if (loading && page > 1) {
+                  return <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />;
+                }
+                if (searchText && searchText.trim() !== '') {
+                  return null;
+                }
+                return (
+                  <View style={styles.eventsSection}>
+                    <Text style={styles.eventsSectionTitle}>Social Clubs & Livestream Events</Text>
+                    <Text style={styles.eventsSectionSub}>Join live stream rooms to chat and place bids on featured products</Text>
+
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.eventsSlider}
+                    >
+                      {homeEvents.map((event) => (
+                        <TouchableOpacity
+                          key={event.id}
+                          style={styles.eventCard}
+                          onPress={() => navigation.navigate('SocialClubs')}
+                          activeOpacity={0.8}
+                        >
+                          <Image source={{ uri: event.image_url || 'https://placehold.co/400' }} style={styles.eventImage} />
+                          <View style={styles.eventOverlay}>
+                            <View style={styles.eventBadgeRow}>
+                              <View style={styles.liveIndicator}>
+                                <View style={styles.liveDot} />
+                                <Text style={styles.liveText}>LIVE</Text>
+                              </View>
+                              <View style={styles.viewersBadge}>
+                                <Ionicons name="eye-outline" size={12} color="#FFF" />
+                                <Text style={styles.viewersText}>{event.viewers_count || 0}</Text>
+                              </View>
+                            </View>
+                            <Text style={styles.eventTitle} numberOfLines={1}>{event.title}</Text>
+                            <Text style={styles.eventOrganizer} numberOfLines={1}>by {event.organizer || 'Seller'}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+
+                    <TouchableOpacity
+                      style={styles.viewAllClubsButton}
+                      onPress={() => navigation.navigate('SocialClubs')}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.viewAllClubsText}>View All Social Clubs</Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }}
             />
           </>
         )}
@@ -2154,6 +2388,261 @@ const styles = StyleSheet.create({
     color: '#e0e0e0ff',
     fontWeight: '600',
     marginLeft: 6,
+  },
+  popularContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  popularHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#000000',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    letterSpacing: -0.5,
+  },
+  popularSubtitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#303030',
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 10,
+    letterSpacing: 0.2,
+  },
+  popularTabBar: {
+    paddingHorizontal: 16,
+    marginVertical: 4,
+  },
+  popularTabBarContent: {
+    paddingRight: 32,
+  },
+  popularTabButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F7',
+    marginRight: 8,
+  },
+  popularActiveTabButton: {
+    backgroundColor: '#000000',
+  },
+  popularTabButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#606060',
+  },
+  popularActiveTabButtonText: {
+    color: '#FFFFFF',
+  },
+  popularCollectionsSlider: {
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
+  popularCollectionCard: {
+    width: 140,
+    height: 180,
+    marginRight: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#F0F0F0',
+  },
+  popularCollectionImage: {
+    width: '100%',
+    height: '100%',
+  },
+  popularCollectionOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    padding: 8,
+  },
+  popularCollectionName: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  popularFeedGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+  },
+  popularFeedCard: {
+    width: (Dimensions.get('window').width - 36) / 2,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
+  },
+  popularFeedImageContainer: {
+    width: '100%',
+    height: (Dimensions.get('window').width - 36) / 2,
+    backgroundColor: '#F7F7F9',
+  },
+  popularFeedImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  popularScoreBadge: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  popularScoreText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#E65100',
+  },
+  popularFeedInfo: {
+    padding: 8,
+  },
+  popularFeedTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#303030',
+    marginBottom: 2,
+  },
+  popularFeedPrice: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  popularViewAllContainer: {
+    paddingHorizontal: 16,
+    marginVertical: 12,
+  },
+  popularViewAllButton: {
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  popularViewAllText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  eventsSection: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 20,
+    borderTopWidth: 8,
+    borderTopColor: '#F2F2F7',
+  },
+  eventsSectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+    paddingHorizontal: 16,
+  },
+  eventsSectionSub: {
+    fontSize: 12,
+    color: '#606060',
+    paddingHorizontal: 16,
+    marginTop: 2,
+    marginBottom: 12,
+  },
+  eventsSlider: {
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
+  eventCard: {
+    width: 220,
+    height: 140,
+    marginRight: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#303030',
+  },
+  eventImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  eventOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'space-between',
+    padding: 12,
+  },
+  eventBadgeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF3B30',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+    marginRight: 4,
+  },
+  liveText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  viewersBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  viewersText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '600',
+    marginLeft: 3,
+  },
+  eventTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 3,
+  },
+  eventOrganizer: {
+    color: '#E0E0E0',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  viewAllClubsButton: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewAllClubsText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 

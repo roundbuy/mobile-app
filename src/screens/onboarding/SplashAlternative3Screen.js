@@ -24,7 +24,7 @@ const SplashAlternative3Screen = ({ navigation }) => {
       } else {
         navigation.replace('ATTPrompt');
       }
-    }, 2000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [navigation, isLoading, isAuthenticated]);

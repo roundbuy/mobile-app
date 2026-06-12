@@ -48,9 +48,9 @@ const RegistrationScreen = ({ navigation }) => {
               <Text style={styles.greenSubtitle}>{t('Find out what we offer to you?')}</Text>
 
               <View style={styles.listContainer}>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
-                <Text style={styles.listItem}>• {t('Lorem ipsum')}</Text>
+                <Text style={styles.listItem}>• {t('Buy & sell second-hand locally')}</Text>
+                <Text style={styles.listItem}>• {t('Reduce waste, protect the planet')}</Text>
+                <Text style={styles.listItem}>• {t('Connect with buyers near you')}</Text>
               </View>
 
               <TouchableOpacity
@@ -133,20 +133,20 @@ const RegistrationScreen = ({ navigation }) => {
             {
               title: 'Onboard 1',
               heading: 'Location Benefits',
-              description: 'Location: Lorem ipsum dolores est. Lorem ipsum dolores est. Default location is your... Product location...',
-              list: ['Value Propostion 1', 'Value Propostion 2', 'Value Propostion 3']
+              description: 'RoundBuy connects you with buyers and sellers in your neighbourhood. Your location helps surface the most relevant listings right around you.',
+              list: ['Shop locally, save on delivery', 'Find items available today', 'Support your local community'],
             },
             {
               title: 'Onboard 2',
               heading: 'Listing Features',
-              description: 'Listing: Lorem ipsum dolores est. Lorem ipsum dolores est.',
-              list: ['Value Propostion 1', 'Value Propostion 2', 'Value Propostion 3']
+              description: 'Selling is quick and easy. Create a listing in under a minute — add photos, a description, and your asking price.',
+              list: ['List in under 60 seconds', 'Reach local buyers instantly', 'Manage all your listings in one place'],
             },
             {
               title: 'Onboard 3',
-              heading: 'Mission Statement',
-              description: 'Our Mission statement: lorum ipsum dolores est, lorum ipsum dolores est.',
-              buttonText: 'Sign Up now!'
+              heading: 'Our Mission',
+              description: 'RoundBuy is built to extend the life of everyday items. Every second-hand sale is a step toward a more sustainable future.',
+              buttonText: 'Sign Up now!',
             }
           ]}
         />

@@ -14,53 +14,38 @@ import Constants from 'expo-constants';
  * 3. Production URL
  */
 const getApiUrl = () => {
-  // TEMPORARY HARDCODE: Bypass environment variable caching in native builds
-  // TODO: Remove this hardcode once native build is updated
-  // const hardcodedUrl = 'http://192.168.1.2:5001/api/v1/mobile-app';
-  const hardcodedUrl = 'http://localhost:5001/api/v1/mobile-app';
-  // const hardcodedUrl = 'https://apheliotropically-uncandid-holden.ngrok-free.dev/api/v1/mobile-app';
-  // const hardcodedUrl = 'https://api.roundbuy.com/backend/api/v1/mobile-app';
-  console.log('⚠️  USING HARDCODED API URL (temporary fix):', hardcodedUrl);
-  return hardcodedUrl;
-
-  // Check for environment variable first (highest priority)
-  const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
-
-  console.log('🔍 API URL Detection:');
-  console.log('  Constants.expoConfig?.extra?.apiUrl:', Constants.expoConfig?.extra?.apiUrl);
-  console.log('  process.env.EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
-  console.log('  envApiUrl:', envApiUrl);
-
-  if (envApiUrl) {
-    console.log('📡 Using API URL from environment:', envApiUrl);
-    return envApiUrl;
-  }
-
-  // Development mode - auto-detect platform
+  // Use local server routes in development mode so we can test local backend changes
   if (__DEV__) {
-    // Get local IP from environment variable if set
+    const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
+    if (envApiUrl) {
+      console.log('📡 Using API URL from environment:', envApiUrl);
+      return envApiUrl;
+    }
+
     const localIp = Constants.expoConfig?.extra?.localIp || process.env.EXPO_PUBLIC_LOCAL_IP;
 
     if (Platform.OS === 'ios') {
-      // iOS Simulator can use localhost
       const url = localIp ? `http://${localIp}:5001/api/v1/mobile-app` : 'http://localhost:5001/api/v1/mobile-app';
       console.log('📱 iOS Development - Using:', url);
       return url;
     } else if (Platform.OS === 'android') {
-      // Android Emulator uses special IP
-      // 10.0.2.2 maps to host machine's localhost
       const url = localIp ? `http://${localIp}:5001/api/v1/mobile-app` : 'http://10.0.2.2:5001/api/v1/mobile-app';
       console.log('🤖 Android Development - Using:', url);
       return url;
     } else if (Platform.OS === 'web') {
-      // Web can use localhost
       const url = 'http://localhost:5001/api/v1/mobile-app';
       console.log('🌐 Web Development - Using:', url);
       return url;
     }
   }
 
-  // Production mode
+  // Production/Release builds
+  const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
+  if (envApiUrl) {
+    console.log('📡 Using API URL from environment:', envApiUrl);
+    return envApiUrl;
+  }
+
   const productionUrl = 'https://api.roundbuy.com/backend/api/v1/mobile-app';
   console.log('🚀 Production - Using:', productionUrl);
   return productionUrl;
@@ -92,6 +77,9 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     CHANGE_PASSWORD: '/auth/change-password',
+    APPLE_LOGIN: '/auth/apple-login',
+    GOOGLE_LOGIN: '/auth/google-login',
+    INSTAGRAM_LOGIN: '/auth/instagram-login',
   },
 
   // Subscriptions
@@ -139,6 +127,33 @@ export const API_ENDPOINTS = {
   // Upload
   UPLOAD: {
     IMAGES: '/upload/images',
+  },
+
+  // KYC/KYB
+  KYC: {
+    STATUS: '/kyc/status',
+    DOCUMENT_TYPES: '/kyc/document-types',
+    SUBMIT: '/kyc/submit',
+  },
+
+  // Postage
+  POSTAGE: {
+    CARRIERS: '/postage/carriers',
+    ZONES: '/postage/zones',
+    CALCULATE: '/postage/calculate',
+    SHIPMENTS: '/postage/shipments',
+    SHIPMENT_BY_ID: (id) => `/postage/shipments/${id}`,
+  },
+
+  // Events
+  EVENTS: {
+    ALL: '/events',
+    SUBSCRIBE: (id) => `/events/${id}/subscribe`,
+    FOLLOW: (id) => `/events/${id}/follow`,
+    JOIN: (id) => `/events/${id}/join`,
+    ROOM: (id) => `/events/${id}/room`,
+    ROOM_BIDS: (id) => `/events/${id}/room/bids`,
+    ROOM_CHAT: (id) => `/events/${id}/room/chat`,
   }
 };
 

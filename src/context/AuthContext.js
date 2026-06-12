@@ -75,6 +75,73 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Sign in with Apple
+   * @param {Object} appleCredential - Credential from expo-apple-authentication
+   * @returns {Promise<Object>} Login response
+   */
+  const appleLogin = async (appleCredential) => {
+    try {
+      const response = await authService.appleLogin(appleCredential);
+
+      if (response.success && response.data && response.data.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
+
+      return response;
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
+    }
+  };
+
+  /**
+   * Sign in with Google
+   * @param {string} idToken - ID Token from Google
+   * @param {string|null} fullName - User's name
+   * @returns {Promise<Object>} Login response
+   */
+  const googleLogin = async (idToken, fullName) => {
+    try {
+      const response = await authService.googleLogin(idToken, fullName);
+
+      if (response.success && response.data && response.data.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
+
+      return response;
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
+    }
+  };
+
+  /**
+   * Sign in with Instagram
+   * @param {string} code - Auth code from Instagram
+   * @returns {Promise<Object>} Login response
+   */
+  const instagramLogin = async (code) => {
+    try {
+      const response = await authService.instagramLogin(code);
+
+      if (response.success && response.data && response.data.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
+
+      return response;
+    } catch (error) {
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
+    }
+  };
+
+  /**
    * Register new user
    * @param {Object} userData - Registration data
    * @returns {Promise<Object>} Registration response
@@ -213,6 +280,9 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
+    appleLogin,
+    googleLogin,
+    instagramLogin,
     register,
     verifyEmail,
     completeRegistration,

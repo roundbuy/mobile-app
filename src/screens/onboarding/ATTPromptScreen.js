@@ -10,27 +10,28 @@ import * as Location from 'expo-location';
 
 const ATTPromptScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const handleAllowTracking = async () => {
-    try {
-      // 1. Request ATT Permission via Service
-      const status = await trackingService.requestPermission();
-      console.log('ATT permission status:', status);
+  const [requesting, setRequesting] = React.useState(false);
 
-      // 2. Request Location Permission (as requested to be on this screen)
+  // Single action: always proceed to the native iOS ATT dialog.
+  // The user's tracking choice is made on the system prompt — not here.
+  const handleContinue = async () => {
+    if (requesting) return;
+    setRequesting(true);
+    try {
+      // Triggers the native iOS App Tracking Transparency dialog.
+      // Whatever the user selects there (Allow / Ask App Not to Track)
+      // is stored and applied by TrackingService automatically.
+      await trackingService.requestPermission();
+
+      // Request Location Permission on the same screen as agreed in UX spec
       const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
       console.log('Location permission status:', locationStatus);
-
     } catch (error) {
       console.error('Error requesting permissions:', error);
     } finally {
+      setRequesting(false);
       navigation.replace('NotificationPermission');
     }
-  };
-
-  const handleAskAppNotToTrack = async () => {
-    // Explicitly set to false in service
-    await trackingService.setTrackingPreference(false);
-    navigation.replace('NotificationPermission');
   };
 
   const handlePatentInfo = () => {
@@ -43,11 +44,19 @@ const ATTPromptScreen = ({ navigation }) => {
     <SafeScreenContainer>
       {/* Header with Logo and Patent Info */}
       <View style={styles.header}>
-        <Image
-          source={IMAGES.logoMain}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <View style={styles.headerTop}>
+          <Image
+            source={IMAGES.logoMain}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <TouchableOpacity 
+            style={styles.skipButton}
+            onPress={() => navigation.replace('NotificationPermission')}
+          >
+            <Text style={[styles.skipText, { color: colors.link }]}>{t('Skip')}</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
@@ -67,23 +76,16 @@ const ATTPromptScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      {/* Footer with Action Buttons */}
+      {/* Footer — single "Continue" button that leads to the native ATT dialog.
+           Apple Guideline 5.1.1(iv): no persuasive wording, no early opt-out. */}
       <View style={styles.footer}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.button}
-            onPress={handleAllowTracking}
+            style={[styles.button, requesting && styles.buttonDisabled]}
+            onPress={handleContinue}
+            disabled={requesting}
           >
-            <Text style={[styles.buttonText, { color: colors.link }]}>{t('Allow Tracking')}</Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider} />
-
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleAskAppNotToTrack}
-          >
-            <Text style={[styles.buttonText, { color: colors.link }]}>{t('Ask App Not to Track')}</Text>
+            <Text style={[styles.buttonText, { color: colors.link }]}>{t('Continue')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -101,6 +103,19 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     marginTop: 10,
     paddingHorizontal: 20,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  },
+  skipButton: {
+    padding: 10,
+  },
+  skipText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   logo: {
     width: 150,
@@ -150,9 +165,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     fontSize: 20,

@@ -17,15 +17,15 @@ const LaunchOnboardingScreen = () => {
             backgroundColor: '#001C64', // Dark Blue
             image: IMAGES.logoGreen,
             title: 'RoundBuy',
-            heading: 'Lorem ipsum dolores est lorem ipsum dolores est:',
+            heading: 'Your Sustainable Local Marketplace:',
             align: 'left', // Left alignment
             list: [
-                '1. LOREM IPSUM',
-                '2. LOREM IPSUM',
-                '3. LOREM IPSUM',
-                '4. LOREM IPSUM',
+                '1. Buy & Sell locally',
+                '2. Save on every purchase',
+                '3. Support your community',
+                '4. Eco-friendly shopping',
             ],
-            description: 'Free 1 year Green membership.\n\nLorem ipsum dolores est lorem ipsum dolores est.\n\nLorem ipsum dolores est lorem ipsum dolores est.\n\nLorem ipsum dolores est lorem ipsum dolores est.',
+            description: 'Free 1 year Green membership for early adopters.\n\nConnect with sellers in your neighborhood.\n\nSecure payments and verified users.\n\nStart your sustainable journey today.',
             buttons: [
                 { text: 'Get Started', action: 'next', style: 'primary', textColor: '#000000', backgroundColor: '#FFFFFF' },
                 { text: 'Skip', action: 'skip', style: 'secondary', textColor: '#000000', backgroundColor: '#FFFFFF' }
@@ -37,11 +37,11 @@ const LaunchOnboardingScreen = () => {
             backgroundColor: '#FFFFFF',
             image: IMAGES.logoGreen,
             stepLabel: '1.',
-            title: 'LOREM IPSUM',
+            title: 'Find Local Deals',
             list: [
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre'
+                'Browse products near you',
+                'Filter by category and price',
+                'Real-time availability updates'
             ]
         },
         {
@@ -50,11 +50,11 @@ const LaunchOnboardingScreen = () => {
             backgroundColor: '#FFFFFF',
             image: IMAGES.logoGreen,
             stepLabel: '2.',
-            title: 'LOREM IPSUM',
+            title: 'Secure Transactions',
             list: [
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre'
+                'Safe in-app payments',
+                'Buyer protection guaranteed',
+                'Verified seller ratings'
             ]
         },
         {
@@ -63,11 +63,11 @@ const LaunchOnboardingScreen = () => {
             backgroundColor: '#FFFFFF',
             image: IMAGES.logoGreen,
             stepLabel: '3.',
-            title: 'LOREM IPSUM',
+            title: 'Eco-Friendly Choice',
             list: [
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre'
+                'Reduce your carbon footprint',
+                'Support local businesses',
+                'Sustainable shopping made easy'
             ]
         },
         {
@@ -76,11 +76,11 @@ const LaunchOnboardingScreen = () => {
             backgroundColor: '#FFFFFF',
             image: IMAGES.logoGreen,
             stepLabel: '4.',
-            title: 'LOREM IPSUM',
+            title: 'Join the Community',
             list: [
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre',
-                'Lorem ipsum dolores est sempre'
+                'Complete your profile',
+                'Start browsing now',
+                'Enjoy your Green membership'
             ],
             buttonText: "Let's get Started"
         }

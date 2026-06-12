@@ -13,7 +13,7 @@ const HowItWorksScreen = ({ navigation }) => {
         {
             id: 'shop',
             title: t('Shop around you'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Find amazing local bargains'),
             steps: [
                 {
                     title: t('1. Set location'),
@@ -32,7 +32,7 @@ const HowItWorksScreen = ({ navigation }) => {
         {
             id: 'sell',
             title: t('Sell'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Turn your clutter into cash'),
             steps: [
                 {
                     title: t('1. List your item'),
@@ -51,7 +51,7 @@ const HowItWorksScreen = ({ navigation }) => {
         {
             id: 'buy',
             title: t('Buy'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Save money and the planet'),
             steps: [
                 {
                     title: t('1. Discover'),
@@ -70,7 +70,7 @@ const HowItWorksScreen = ({ navigation }) => {
         {
             id: 'pickup',
             title: t('Pick it Up'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Easy local collection'),
             steps: [
                 {
                     title: t('1. Schedule Exchange'),
@@ -95,9 +95,9 @@ const HowItWorksScreen = ({ navigation }) => {
             steps: category.steps,
             // Pass standard benefits or specific ones if needed
             benefits: [
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' },
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' },
-                { title: 'Lorem ipsum', text: 'Dolores est 100%' }
+                { title: t('Eco-friendly'), text: t('Save resources by buying second-hand.') },
+                { title: t('Local'), text: t('Reduce transport emissions by shopping nearby.') },
+                { title: t('Community'), text: t('Build trust with verified local sellers.') }
             ]
         });
     };
@@ -112,10 +112,10 @@ const HowItWorksScreen = ({ navigation }) => {
 
             <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                 <Text style={styles.mainTitle}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('Discover how RoundBuy works for you and the environment.')}
                 </Text>
                 <Text style={styles.mainDescription}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('Join our community and start making sustainable choices today.')}
                 </Text>
                 <Text style={styles.mainDescription}>
                     {t('Choose one from below:')}

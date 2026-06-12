@@ -12,6 +12,7 @@ let MapView = null;
 let Marker = null;
 let Circle = null;
 let Callout = null;
+let Polyline = null;
 let PROVIDER_GOOGLE = null;
 
 try {
@@ -21,6 +22,7 @@ try {
     Marker = Maps.Marker;
     Circle = Maps.Circle;
     Callout = Maps.Callout;
+    Polyline = Maps.Polyline;
     PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
 } catch (error) {
     console.warn('react-native-maps not available. Using fallback component.');
@@ -88,6 +90,16 @@ const SafeCallout = (props) => {
     return null;
 };
 
+/**
+ * Safe Polyline Component
+ */
+const SafePolyline = (props) => {
+    if (Polyline) {
+        return <Polyline {...props} />;
+    }
+    return null;
+};
+
 const styles = StyleSheet.create({
     fallbackContainer: {
         backgroundColor: '#f5f5f5',
@@ -141,5 +153,5 @@ const styles = StyleSheet.create({
 
 // Export the safe components
 export default SafeMapView;
-export { SafeMarker as Marker, SafeCircle as Circle, SafeCallout as Callout, PROVIDER_GOOGLE };
+export { SafeMarker as Marker, SafeCircle as Circle, SafeCallout as Callout, SafePolyline as Polyline, PROVIDER_GOOGLE };
 export const isMapAvailable = MapView !== null;

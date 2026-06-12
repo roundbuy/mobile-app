@@ -138,6 +138,110 @@ export const logout = async () => {
 };
 
 /**
+ * Sign in with Apple
+ * @param {Object} appleCredential - Credential from expo-apple-authentication
+ * @param {string} appleCredential.identityToken - JWT issued by Apple
+ * @param {string} appleCredential.authorizationCode - One-time auth code
+ * @param {string|null} appleCredential.fullName - User's name (only on first login)
+ * @param {string|null} appleCredential.email - User's email (only on first login)
+ * @returns {Promise<Object>} Login response with tokens and user data
+ */
+export const appleLogin = async ({ identityToken, authorizationCode, fullName, email }) => {
+  try {
+    const payload = {
+      identity_token: identityToken,
+      authorization_code: authorizationCode,
+      full_name: fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : null,
+      email: email || null,
+    };
+
+    const response = await apiRequest('POST', API_ENDPOINTS.AUTH.APPLE_LOGIN, payload);
+
+    if (response.success && response.data) {
+      const access_token = response.data.access_token || response.data.accessToken;
+      const refresh_token = response.data.refresh_token || response.data.refreshToken;
+      const user = response.data.user;
+
+      if (access_token && refresh_token) {
+        await storage.saveTokens(access_token, refresh_token);
+      }
+      if (user) {
+        await storage.saveUserData(user);
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Apple login error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Sign in with Google
+ * @param {string} idToken - ID Token from Google
+ * @param {string|null} fullName - User's name (optional)
+ * @returns {Promise<Object>} Login response
+ */
+export const googleLogin = async (idToken, fullName = null) => {
+  try {
+    const payload = {
+      id_token: idToken,
+      full_name: fullName,
+    };
+
+    const response = await apiRequest('POST', API_ENDPOINTS.AUTH.GOOGLE_LOGIN, payload);
+
+    if (response.success && response.data) {
+      const access_token = response.data.access_token || response.data.accessToken;
+      const refresh_token = response.data.refresh_token || response.data.refreshToken;
+      const user = response.data.user;
+
+      if (access_token && refresh_token) {
+        await storage.saveTokens(access_token, refresh_token);
+      }
+      if (user) {
+        await storage.saveUserData(user);
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Google login error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Sign in with Instagram
+ * @param {string} code - Auth code from Instagram
+ * @returns {Promise<Object>} Login response
+ */
+export const instagramLogin = async (code) => {
+  try {
+    const response = await apiRequest('POST', API_ENDPOINTS.AUTH.INSTAGRAM_LOGIN, { code });
+
+    if (response.success && response.data) {
+      const access_token = response.data.access_token || response.data.accessToken;
+      const refresh_token = response.data.refresh_token || response.data.refreshToken;
+      const user = response.data.user;
+
+      if (access_token && refresh_token) {
+        await storage.saveTokens(access_token, refresh_token);
+      }
+      if (user) {
+        await storage.saveUserData(user);
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Instagram login error:', error);
+    throw error;
+  }
+};
+
+/**
  * Request password reset
  * @param {string} email - User's email
  * @returns {Promise<Object>} Response
@@ -252,6 +356,9 @@ export default {
   verifyEmail,
   resendVerification,
   login,
+  appleLogin,
+  googleLogin,
+  instagramLogin,
   logout,
   refreshToken,
   forgotPassword,

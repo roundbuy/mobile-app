@@ -78,6 +78,9 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 5, route: 'Wallet', title: t('account.wallet', 'My Wallet'), icon: 'wallet-outline' },
       { id: 6, route: 'CustomerSupport', title: t('account.support', 'Customer support'), icon: 'help-circle-outline' },
       { id: 7, route: 'CountrySettings', title: t('account.country_settings', 'Country settings'), icon: 'globe-outline' },
+      { id: 12, route: 'MeasurementSettings', title: t('account.measurement_settings', 'Measurement Settings'), icon: 'globe-outline' },
+      { id: 13, route: 'KYCVerification', title: t('account.kyc_verification', 'KYC Verification'), icon: 'shield-outline', params: { type: 'kyc' } },
+      { id: 14, route: 'KYCVerification', title: t('account.kyb_verification', 'KYB Verification'), icon: 'business-outline', params: { type: 'kyb' } },
       { id: 8, route: 'Notifications', title: t('profile.notifications', 'Notifications'), icon: 'notifications-outline' },
       { id: 9, route: 'ContactSupport', title: t('account.report_content', 'Report content'), icon: 'flag-outline' },
       { id: 10, route: 'LegalInfo', title: t('account.legal_info', 'Legal info'), icon: 'document-text-outline' },
@@ -94,6 +97,8 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 6, route: 'MyMembership', title: 'Membership', icon: 'card-outline' },
       { id: 3, route: 'SupportResolution', title: 'My Resolutions', icon: 'help-circle-outline', badge: 0 },
       { id: 15, route: 'ResolutionInbox', title: 'Resolution Inbox', icon: 'mail-outline' },
+      { id: 16, route: 'Postage', title: 'Postage & Shipping', icon: 'cube-outline' },
+      { id: 17, route: 'SocialClubs', title: 'Social Clubs', icon: 'people-outline' },
       { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
       { id: 9, route: 'Rewards', title: 'My Rewards', icon: 'gift-outline' },
@@ -107,7 +112,7 @@ const UserAccountScreen = ({ navigation }) => {
       if (item.isLogout) {
         handleLogout();
       } else if (item.route) {
-        navigation.navigate(item.route);
+        navigation.navigate(item.route, item.params);
       } else {
         console.log('Navigate to:', item.title);
       }

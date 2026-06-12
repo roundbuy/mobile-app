@@ -12,43 +12,43 @@ const GreenVisionScreen = ({ navigation }) => {
         {
             id: 'used-goods',
             title: t('Used goods'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Give items a second life'),
             pages: [
                 {
                     title: t('Used goods'),
                     items: [
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores')
+                        t('Reduce landfill waste'),
+                        t('Save raw materials'),
+                        t('Lower manufacturing energy'),
+                        t('Promote reuse culture')
                     ],
-                    bottomText: t('Lorem ipsum est')
+                    bottomText: t('Every second-hand purchase helps the planet.')
                 },
                 {
                     title: t('Quality & Value'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('RoundBuy is committed to creating a world where every item has a second home. By choosing used goods, you are directly reducing the carbon footprint of manufacturing and shipping new products. Our platform makes it easy to find quality items in your neighborhood, fostering a culture of reuse and sustainability.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Eco-friendly choices'),
+                        t('Sustainable living'),
+                        t('Carbon footprint reduction')
                     ]
                 },
                 {
                     title: t('Sustainability'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('Sustainability is at the heart of everything we do. We believe that by connecting buyers and sellers locally, we can significantly reduce the environmental impact of commerce. Our mission is to provide the tools and community support needed to make sustainable shopping the most attractive option for everyone.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Support local'),
+                        t('Reduce waste'),
+                        t('Community action')
                     ]
                 },
                 {
                     title: t('Impact'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('The impact of your choices on RoundBuy is real and measurable. Every transaction helps divert items from landfills and conserves the energy required to produce new goods. Together, we are building a more resilient and sustainable local economy that benefits both people and the planet.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Measurable change'),
+                        t('Environment first'),
+                        t('Global vision, local action')
                     ]
                 }
             ]
@@ -56,43 +56,43 @@ const GreenVisionScreen = ({ navigation }) => {
         {
             id: 'get-yourself',
             title: t('Get yourself'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Personal growth and community impact'),
             pages: [
                 {
                     title: t('Get yourself'),
                     items: [
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores')
+                        t('Build local connections'),
+                        t('Develop sustainable habits'),
+                        t('Support circular economy'),
+                        t('Earn green rewards')
                     ],
-                    bottomText: t('Lorem ipsum est')
+                    bottomText: t('Small actions lead to big changes.')
                 },
                 {
                     title: t('Personal Growth'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('Sustainable living is a journey of personal growth. By being mindful of your consumption and choosing to reuse, you are developing habits that lead to a more fulfilling and responsible lifestyle. RoundBuy is here to support you with resources and a community of like-minded individuals.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Mindful consumption'),
+                        t('Responsible lifestyle'),
+                        t('Habit formation')
                     ]
                 },
                 {
                     title: t('Your Journey'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('Your journey with RoundBuy is about more than just buying and selling. It is about becoming an active participant in your local economy and a steward of the environment. Every trade you make is a step towards a more sustainable and connected future for yourself and your neighborhood.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Active participation'),
+                        t('Environmental stewardship'),
+                        t('Local connection')
                     ]
                 },
                 {
                     title: t('Join Us'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('We invite you to join us in this mission. By using RoundBuy, you are joining a movement of thousands of people who believe that a better, more sustainable way of living is possible. Together, we can make local reuse the new standard for a greener world.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Global movement'),
+                        t('Sustainable standard'),
+                        t('Greener world')
                     ]
                 }
             ]
@@ -100,43 +100,43 @@ const GreenVisionScreen = ({ navigation }) => {
         {
             id: 'shop-around-you',
             title: t('Shop around you'),
-            description: t('Lorem ipsum dolores est'),
+            description: t('Reduce carbon footprint by shopping local'),
             pages: [
                 {
                     title: t('Shop around you'),
                     items: [
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores'),
-                        t('Lorem ipsum dolores')
+                        t('Minimize transport distance'),
+                        t('Zero packaging waste'),
+                        t('Support local livelihoods'),
+                        t('Strengthen neighborhood bonds')
                     ],
-                    bottomText: t('Lorem ipsum est')
+                    bottomText: t('Shopping local is shopping green.')
                 },
                 {
                     title: t('Local Shopping'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('Shopping locally on RoundBuy means you are supporting your neighbors and reducing the environmental cost of long-distance shipping. Our platform connects you with sellers within walking distance, making it easy to find what you need without the need for cars or heavy transport.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Zero shipping'),
+                        t('Walking distance'),
+                        t('Local support')
                     ]
                 },
                 {
                     title: t('Community'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('A strong community is a sustainable community. By trading locally, you are building trust and connections with the people who live near you. RoundBuy is designed to strengthen these bonds, creating a network of support that goes beyond just commerce.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Build trust'),
+                        t('Local network'),
+                        t('Stronger bonds')
                     ]
                 },
                 {
                     title: t('Get Started'),
-                    content: t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu. Nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do. Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'),
+                    content: t('Getting started on RoundBuy is easy and rewarding. Simply set your location, browse the items near you, and start making sustainable choices today. Whether you are buying or selling, every action you take contributes to a greener and more connected community.'),
                     bottomItems: [
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est'),
-                        t('Lorem ipsum est')
+                        t('Easy to use'),
+                        t('Instant rewards'),
+                        t('Start today')
                     ]
                 }
             ]
@@ -161,10 +161,10 @@ const GreenVisionScreen = ({ navigation }) => {
 
             <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                 <Text style={styles.mainTitle}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('Our commitment to a sustainable future.')}
                 </Text>
                 <Text style={styles.mainDescription}>
-                    {t('RoundBuy Lorem ipsum dolores lorem ipsum dolores est lorem ipsum est')}
+                    {t('RoundBuy is built on the principles of the circular economy. We believe in extending the life of products and reducing waste.')}
                 </Text>
                 <Text style={styles.mainDescription}>
                     {t('Choose one from below:')}

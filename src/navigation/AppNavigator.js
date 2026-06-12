@@ -255,6 +255,15 @@ import PlatformMenuScreen from '../screens/info/PlatformMenuScreen';
 import GreenVisionScreen from '../screens/info/GreenVisionScreen';
 import GreenVisionDetailScreen from '../screens/info/GreenVisionDetailScreen';
 
+// New mobile parity screens
+import TrendingHubScreen from '../screens/home/TrendingHubScreen';
+import TrendingGalleryScreen from '../screens/home/TrendingGalleryScreen';
+import ProductDirectionsScreen from '../screens/products/ProductDirectionsScreen';
+import KYCVerificationScreen from '../screens/user-account/kyc/KYCVerificationScreen';
+import PostageScreen from '../screens/user-account/postage/PostageScreen';
+import SocialClubsScreen from '../screens/social-clubs/SocialClubsScreen';
+import EventRoomScreen from '../screens/social-clubs/EventRoomScreen';
+
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = React.forwardRef((props, ref) => {
@@ -633,6 +642,62 @@ const AppNavigator = React.forwardRef((props, ref) => {
               }
             },
           })}
+        />
+        <Stack.Screen
+          name="TrendingHub"
+          component={TrendingHubScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="TrendingGallery"
+          component={TrendingGalleryScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ProductDirections"
+          component={ProductDirectionsScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="KYCVerification"
+          component={KYCVerificationScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Postage"
+          component={PostageScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="SocialClubs"
+          component={SocialClubsScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="EventRoom"
+          component={EventRoomScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
         />
         <Stack.Screen
           name="FilterScreen"

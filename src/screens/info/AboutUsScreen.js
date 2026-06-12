@@ -52,10 +52,10 @@ const AboutUsScreen = ({ navigation }) => {
                 />
 
                 <Text style={styles.textParagraph}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.')}
+                    {t('Edward Bonny founded RoundBuy with a simple yet powerful vision: to make local, sustainable shopping the norm rather than the exception.')}
                 </Text>
                 <Text style={styles.textParagraph}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.')}
+                    {t('With years of experience in the circular economy, Edward is committed to building a platform that empowers communities to reduce waste and save money.')}
                 </Text>
 
                 <View style={styles.signatureContainer}>
@@ -72,23 +72,23 @@ const AboutUsScreen = ({ navigation }) => {
         <View style={styles.slide}>
             <View style={styles.contentContainer}>
                 <Text style={styles.textParagraph}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.')}
+                    {t('Our journey began in a small neighborhood, noticing how many perfectly good items were being discarded simply because there was no easy way to find a local buyer.')}
                 </Text>
                 <Text style={styles.textParagraph}>
-                    {t('Incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis.')}
+                    {t('We started with a prototype that focused on walking-distance transactions, eliminating the need for expensive shipping and wasteful packaging.')}
                 </Text>
                 <Text style={styles.textParagraph}>
-                    {t('Nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.')}
+                    {t('Today, RoundBuy is a growing movement of people who care about their local environment and their neighbors.')}
                 </Text>
                 <Text style={styles.textParagraph}>
-                    {t('Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.')}
+                    {t('We continue to innovate with features like our patent-pending location system that protects your privacy while enabling local trades.')}
                 </Text>
                 <Text style={styles.textParagraph}>
-                    {t('Nulla pariatur. Excepteur sint occaecat cupidatat non proident.')}
+                    {t('Every item listed on RoundBuy is a step towards a cleaner, more connected world.')}
                 </Text>
 
                 <Text style={styles.highlightText}>
-                    {t('RoundBuy Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.')}
+                    {t('RoundBuy: Built for the community, by the community, for a sustainable future.')}
                 </Text>
             </View>
         </View>
@@ -99,30 +99,30 @@ const AboutUsScreen = ({ navigation }) => {
         <View style={styles.slide}>
             <View style={styles.contentContainer}>
                 <Text style={styles.textParagraph}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis. Nostrud exercitation ullamco laboris nisi!')}
+                    {t('To accelerate the transition to a circular economy by making local reuse the most convenient and rewarding way to shop.')}
                 </Text>
 
                 {/* Stats Row */}
                 <View style={styles.statsRow}>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem Ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
+                        <Text style={styles.statLabel}>{t('Local')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Neighborhood focused')}</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statValue}>0%</Text>
+                        <Text style={styles.statLabel}>{t('Waste')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Circular economy')}</Text>
                     </View>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem Ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
-                    </View>
-                    <View style={styles.statItem}>
-                        <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem Ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
+                        <Text style={styles.statLabel}>{t('Secure')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Privacy protected')}</Text>
                     </View>
                 </View>
 
                 <Text style={styles.bottomHighlightText}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.')}
+                    {t('Joining RoundBuy means joining a global community committed to local change.')}
                 </Text>
 
             </View>
@@ -135,50 +135,50 @@ const AboutUsScreen = ({ navigation }) => {
             <View style={styles.contentContainer}>
                 {/* List of values */}
                 <Text style={styles.greenListText}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do Incididunt ut labore et dolore magna aliqua.')}
+                    {t('Convenience: Shop and sell within walking distance.')}
                 </Text>
                 <Text style={styles.greenListText}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit.')}
+                    {t('Sustainability: Reduce your carbon footprint with every trade.')}
                 </Text>
                 <Text style={styles.greenListText}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do Incididunt ut labore et dolore magna aliqua.')}
+                    {t('Trust: Verified users and secure, in-person exchanges.')}
                 </Text>
                 <Text style={styles.greenListText}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do Incididunt ut labore.')}
+                    {t('Savings: Find incredible deals right in your neighborhood.')}
                 </Text>
 
-                <Text style={[styles.textParagraph, { fontWeight: 'bold', marginTop: 20 }]}>
-                    {t('Lorem ipsum dolor sit amet')}
+                <Text style={styles.textParagraph, { fontWeight: 'bold', marginTop: 20 }}>
+                    {t('Our Value to You')}
                 </Text>
 
                 {/* Stats Row */}
                 <View style={styles.statsRow}>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
+                        <Text style={styles.statLabel}>{t('Growth')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Community expansion')}</Text>
                     </View>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
+                        <Text style={styles.statLabel}>{t('Impact')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Waste reduction')}</Text>
                     </View>
                     <View style={styles.statItem}>
                         <Text style={styles.statValue}>100%</Text>
-                        <Text style={styles.statLabel}>{t('Lorem ipsum')}</Text>
-                        <Text style={styles.statSubLabel}>{t('Dolores est')}</Text>
+                        <Text style={styles.statLabel}>{t('Savings')}</Text>
+                        <Text style={styles.statSubLabel}>{t('Local bargains')}</Text>
                     </View>
                 </View>
 
                 {/* Additional Stats Row if needed or just single stat block as per image */}
                 <View style={styles.singleStatContainer}>
                     <Text style={styles.statValueSmall}>100%</Text>
-                    <Text style={styles.statLabelSmall}>{t('Lorem ipsum')}</Text>
-                    <Text style={styles.statSubLabelSmall}>{t('Dolores est')}</Text>
+                    <Text style={styles.statLabelSmall}>{t('Committed')}</Text>
+                    <Text style={styles.statSubLabelSmall}>{t('To a green planet')}</Text>
                 </View>
 
                 <Text style={styles.bottomHighlightTextSmall}>
-                    {t('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.')}
+                    {t('Join Edward and the RoundBuy team in making local trading sustainable for everyone.')}
                 </Text>
             </View>
         </View>

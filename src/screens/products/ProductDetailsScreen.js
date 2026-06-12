@@ -371,6 +371,8 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         memberSince: ad.seller?.member_since,
         membership: ad.seller?.membership, // Add membership data here
       },
+      latitude: ad.latitude,
+      longitude: ad.longitude,
       favorites: 0, // This would need a separate API call
       location: {
         city: ad.city,
@@ -782,6 +784,30 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               <Ionicons name="shield-checkmark-outline" size={12} color="#505050" style={{ marginLeft: 4 }} />
             </View>
           </View>
+
+          {/* Distance & Directions Row */}
+          <View style={styles.distanceDirectionsRow}>
+            <View style={styles.distanceDirectionsInfo}>
+              <Ionicons name="location" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
+              <Text style={styles.distanceDirectionsText}>
+                {productData.distanceMeters || productData.distance || '1.2 km'} ({Math.round(parseFloat(productData.distance || 1.2) * 20)} mins walk)
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.getDirectionsButton}
+              onPress={() => {
+                navigation.navigate('ProductDirections', {
+                  product: productData,
+                  latitude: productData.latitude || 51.875462,
+                  longitude: productData.longitude || -0.372755,
+                });
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.getDirectionsText}>Get Directions</Text>
+              <Ionicons name="navigate-outline" size={14} color="#FFF" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Description & Product Details */}
@@ -812,11 +838,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.cardSection}>
           <Text style={styles.sectionTitleSmall}>{t('User statistics')}</Text>
           <Text style={styles.descriptionText} numberOfLines={2}>
-            Lorem: Lorem ipsum dolores est, lorem ipsum.
-            Lorem: Lorem ipsum dolores est, lorem ipsum.
-            Lorem: Lorem ipsum dolores est, lorem ipsum.
-            Lorem: Lorem ipsum dolores est, lorem ipsum.
-            Lorem: Lorem ipsum dolores est, lorem ipsum.
+            {t('Verified seller with a high response rate and successful pickup history. Building a trustful local community.')}
           </Text>
           <TouchableOpacity onPress={() => setIsUserStatsExpanded(!isUserStatsExpanded)} style={styles.moreInfoButton}>
             <Text style={[styles.linkTextBlue, { marginBottom: 10 }]}>{isUserStatsExpanded ? t('hide info') : t('more info')}</Text>
@@ -871,8 +893,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.cardSection}>
           <Text style={styles.sectionTitleSmall}>{t('Resale Disclaimer')}</Text>
           <Text style={styles.descriptionText} numberOfLines={2}>
-            Lorem ipsum dolores est, lorem ipsum dolores es, lorem ipsum dolores est, lorem ipsum...
-            + Refund Policy + Consumer Act for secondd hand C2C and B2C.
+            {t('All items are sold as-is by private sellers. Please inspect the item carefully during pickup. Transactions are governed by our local community guidelines.')}
           </Text>
           <TouchableOpacity style={styles.moreInfoButton}>
             <Text style={styles.linkTextBlue}>{t('more info')}</Text>
@@ -883,7 +904,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         <View style={styles.cardSection}>
           <Text style={styles.sectionTitleSmall}>{t("Buyer's Fee")}</Text>
           <Text style={styles.descriptionText} numberOfLines={2}>
-            Lorem ipsum dolores est, lorem ipsum dolores es, lorem ipsum dolores est, lorem ipsum...
+            {t("The buyer's fee is a small flat charge that helps us maintain the platform, provide secure messaging, and support our sustainable mission.")}
           </Text>
           <TouchableOpacity style={styles.moreInfoButton}>
             <Text style={styles.linkTextBlue}>{t('more info')}</Text>
@@ -1907,6 +1928,38 @@ const styles = StyleSheet.create({
   menuDivider: {
     height: 1,
     backgroundColor: '#e0e0e0',
+  },
+  distanceDirectionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  distanceDirectionsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  distanceDirectionsText: {
+    fontSize: 14,
+    color: '#303030',
+    fontWeight: '500',
+  },
+  getDirectionsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  getDirectionsText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
 

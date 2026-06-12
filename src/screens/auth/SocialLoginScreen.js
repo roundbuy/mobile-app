@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { IMAGES } from '../../assets/images';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator, Platform } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
@@ -10,12 +16,13 @@ import { useTranslation } from '../../context/TranslationContext';
 
 const SocialLoginScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, appleLogin, googleLogin, instagramLogin } = useAuth();
   const { email: paramEmail, message } = route.params || {};
   const [email, setEmail] = useState(paramEmail || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
 
   // Show message if provided (from registration/payment completion)
   useEffect(() => {
@@ -23,6 +30,13 @@ const SocialLoginScreen = ({ navigation, route }) => {
       Alert.alert(t('Welcome!'), message);
     }
   }, [message]);
+
+  // Check Apple Sign In availability (iOS 13+ only)
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      AppleAuthentication.isAvailableAsync().then(setAppleAuthAvailable);
+    }
+  }, []);
 
   const handleSignIn = async () => {
     // Validate inputs
@@ -107,13 +121,118 @@ const SocialLoginScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleAppleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const response = await appleLogin({
+        identityToken: credential.identityToken,
+        authorizationCode: credential.authorizationCode,
+        fullName: credential.fullName,
+        email: credential.email,
+      });
+
+      if (response && response.requires_subscription) {
+        navigation.reset({ index: 0, routes: [{ name: 'AllMemberships' }] });
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'SearchScreen' }] });
+      }
+    } catch (error) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        // User cancelled — do nothing
+        return;
+      }
+      console.error('Apple login error:', error);
+      Alert.alert(
+        t('Sign in Failed'),
+        t('Unable to sign in with Apple. Please try again or use email and password.'),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google Auth Request
+  const [googleRequest, googleResponse, promptGoogleAsync] = Google.useAuthRequest({
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+
+  // Handle Google Response
+  useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const { authentication } = googleResponse;
+      handleGoogleAuth(authentication.idToken);
+    }
+  }, [googleResponse]);
+
+  const handleGoogleAuth = async (idToken) => {
+    try {
+      setLoading(true);
+      const response = await googleLogin(idToken);
+      handleSocialLoginSuccess(response);
+    } catch (error) {
+      console.error('Google login error:', error);
+      Alert.alert(t('Sign in Failed'), t('Unable to sign in with Google. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInstagramLogin = async () => {
+    try {
+      setLoading(true);
+      const instagramRedirect = AuthSession.makeRedirectUri({ scheme: 'roundbuy' });
+      const authUrl = `https://api.instagram.com/oauth/authorize?client_id=${process.env.EXPO_PUBLIC_INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(instagramRedirect)}&scope=user_profile,user_media&response_type=code`;
+      
+      const result = await AuthSession.startAsync({ authUrl });
+      
+      if (result.type === 'success' && result.params.code) {
+        const response = await instagramLogin(result.params.code);
+        handleSocialLoginSuccess(response);
+      }
+    } catch (error) {
+      console.error('Instagram login error:', error);
+      Alert.alert(t('Sign in Failed'), t('Unable to sign in with Instagram. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLoginSuccess = (response) => {
+    if (response && response.requires_subscription) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'AllMemberships' }],
+      });
+    } else {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SearchScreen' }],
+      });
+    }
+  };
+
   const handleSocialLogin = (provider) => {
-    // TODO: Implement OAuth flow for social login
-    Alert.alert(
-      t('Coming Soon'),
-      `${provider} login will be available in the next update.`,
-      [{ text: t('OK') }]
-    );
+    if (provider === 'Google') {
+      promptGoogleAsync();
+    } else if (provider === 'Instagram') {
+      handleInstagramLogin();
+    } else {
+      Alert.alert(
+        t('Coming Soon'),
+        `${provider} login will be available in the next update.`,
+        [{ text: t('OK') }]
+      );
+    }
   };
 
   const handleForgotPassword = () => {
@@ -238,13 +357,17 @@ const SocialLoginScreen = ({ navigation, route }) => {
           <Text style={styles.socialButtonText}>{t('Sign up with google')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.socialButton}
-          onPress={() => handleSocialLogin('Apple')}
-        >
-          <FontAwesome name="apple" size={20} color="#000000" style={styles.socialIcon} />
-          <Text style={styles.socialButtonText}>{t('Sign up with apple')}</Text>
-        </TouchableOpacity>
+        {/* Sign in with Apple — rendered only when available (iOS 13+).
+             Uses Apple's native button to satisfy App Store requirements. */}
+        {appleAuthAvailable && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={24}
+            style={styles.appleButton}
+            onPress={handleAppleLogin}
+          />
+        )}
 
         <TouchableOpacity
           style={styles.socialButton}
@@ -401,6 +524,10 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#6a6a6a',
     marginHorizontal: 12,
+  },
+  appleButton: {
+    height: 48,
+    marginBottom: 10,
   },
   socialButton: {
     flexDirection: 'row',
