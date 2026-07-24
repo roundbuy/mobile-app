@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    ActivityIndicator,
-    SafeAreaView,
-    TouchableOpacity,
-    Image,
-    Linking
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
@@ -17,296 +16,284 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
-const ActionCenterScreen = ({ navigation }) => {
-    const { t } = useTranslation();
-    const { userCurrency } = useAuth();
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('buying'); // 'buying' or 'selling'
-    const [buyerMessages, setBuyerMessages] = useState([]);
-    const [sellerMessages, setSellerMessages] = useState([]);
+const ActionCenterScreen = ({ navigation, route }) => {
+  const { t } = useTranslation();
+  const { userCurrency } = useAuth();
+  const [buyingTab, setBuyingTab] = useState('buying');
+  const [loading, setLoading] = useState(false);
+  const [buyerMessages, setBuyerMessages] = useState([]);
+  const [sellerMessages, setSellerMessages] = useState([]);
 
-    const currencySymbol = userCurrency === 'USD' ? '$' :
-        userCurrency === 'EUR' ? '€' : '£';
+  const currencySymbol = userCurrency === 'USD' ? '$' : userCurrency === 'EUR' ? '€' : '£';
 
-    useEffect(() => {
-        const fetchMessages = async () => {
-            setLoading(true);
-            try {
-                const response = await api.get(`/buyer-seller/action-center?type=${activeTab}`);
-                if (response.data?.success) {
-                    if (activeTab === 'buying') {
-                        setBuyerMessages(response.data.data);
-                    } else {
-                        setSellerMessages(response.data.data);
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch action center messages', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+  useEffect(() => {
+    fetchMessages();
+  }, [buyingTab]);
 
-        fetchMessages();
-    }, [activeTab]);
+  const fetchMessages = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/buyer-seller/action-center?type=${buyingTab}`);
+      if (res.data?.success) {
+        buyingTab === 'buying'
+          ? setBuyerMessages(res.data.data)
+          : setSellerMessages(res.data.data);
+      }
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  };
 
-    const handleItemPress = (item) => {
-        navigation.navigate('SingleItemActionScreen', {
-            conversationId: item.conversationId,
-            advertisementId: item.advertisementId,
-            itemTitle: item.itemTitle,
-            itemPrice: item.itemPrice,
-            itemImage: item.itemImage,
-            otherUserName: item.username,
-            type: activeTab
-        });
-    };
+  const handleSubTab = (tab) => {
+    setBuyingTab(tab);
+  };
 
-    const renderActionCard = ({ item }) => {
-        // Handle Action Text mapping based on the mockups.
-        // We replace "Action: " with nothing, just use the raw text and color it green.
-        let dynamicActionText = item.actionText.replace('Action: ', '');
+  const handleActionPress = (item) => navigation.navigate('SingleItemActionScreen', {
+    conversationId: item.conversationId,
+    advertisementId: item.advertisementId,
+    itemTitle: item.itemTitle,
+    itemPrice: item.itemPrice,
+    itemImage: item.itemImage,
+    otherUserName: item.username,
+    type: buyingTab,
+  });
 
-        // Custom mapping to match screenshot exactly
-        if (dynamicActionText === 'Provide item info!') dynamicActionText = 'Answer Buyer enquiries!';
-        if (dynamicActionText === 'Make a new Offer!') dynamicActionText = 'Make a Buyer Offer!';
-        if (dynamicActionText === 'See Offer!') dynamicActionText = 'Make a Buyer Offer!';
-        if (dynamicActionText === 'Pay to confirm Deal!') dynamicActionText = 'Purchase Item!';
+  const resolveActionText = (text) => {
+    let out = (text || '').replace('Action: ', '');
+    if (out === 'Provide item info!')   out = 'Answer buyer enquiry';
+    if (out === 'Make a new Offer!')    out = 'Make a buyer offer';
+    if (out === 'See Offer!')           out = 'Review incoming offer';
+    if (out === 'Pay to confirm Deal!') out = 'Purchase item';
+    return out;
+  };
 
+  const getUniqueItems = (messages) => {
+    const unique = [];
+    const seen = new Set();
+    for (const item of messages) {
+      if (!seen.has(item.advertisementId)) {
+        seen.add(item.advertisementId);
+        unique.push(item);
+      }
+    }
+    return unique;
+  };
+
+  const uniqueBuyerItems = getUniqueItems(buyerMessages);
+  const uniqueSellerItems = getUniqueItems(sellerMessages);
+  const activeUniqueItems = buyingTab === 'buying' ? uniqueBuyerItems : uniqueSellerItems;
+
+  const getStatusColor = (status) => {
+    switch ((status || '').toLowerCase()) {
+      case 'active':    return { backgroundColor: '#e8f5e9' };
+      case 'sold':
+      case 'bought':    return { backgroundColor: '#e3f2fd' };
+      case 'offers':    return { backgroundColor: '#fff3e0' };
+      case 'scheduled': return { backgroundColor: '#f3e5f5' };
+      default:          return { backgroundColor: '#f5f5f5' };
+    }
+  };
+
+  // ─── Sub-tabs ──────────────────────────────────────────────────────────────
+  const renderSubTabs = () => (
+    <View style={styles.subTabBar}>
+      {['buying', 'selling'].map((tab) => {
+        const count = tab === 'buying' ? uniqueBuyerItems.length : uniqueSellerItems.length;
+        const isActive = buyingTab === tab;
         return (
-            <TouchableOpacity style={styles.cardContainer} onPress={() => handleItemPress(item)}>
-                <Image
-                    source={item.itemImage ? { uri: getFullImageUrl(item.itemImage) } : { uri: 'https://via.placeholder.com/100' }}
-                    style={styles.cardImage}
-                    resizeMode="cover"
-                />
-
-                <View style={styles.cardContent}>
-                    <View style={styles.cardTopRow}>
-                        <Text style={styles.itemTitle} numberOfLines={1}>{item.itemTitle || 'Item'}</Text>
-                        <Text style={styles.stepText}>{item.stepNumber}</Text>
-                    </View>
-
-                    <View style={styles.cardMiddleRow}>
-                        <Text style={styles.itemPrice}>{currencySymbol}{item.itemPrice || '0.00'}</Text>
-                        <Ionicons name="chevron-forward" size={24} color="#000" style={styles.chevronIcon} />
-                    </View>
-
-                    <Text style={styles.statusLabel}>Current action status:</Text>
-                    <Text style={styles.actionText}>{dynamicActionText}</Text>
-                </View>
-            </TouchableOpacity>
+          <TouchableOpacity
+            key={tab}
+            style={[styles.subTab, isActive && styles.subTabActive]}
+            onPress={() => handleSubTab(tab)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.subTabInner}>
+              {count > 0 && !isActive && <View style={styles.unreadDot} />}
+              <Text style={[styles.subTabText, isActive && styles.subTabTextActive]}>
+                {tab === 'buying' ? 'Buying' : 'Selling'}
+              </Text>
+              <View style={[styles.countBadge, isActive && styles.countBadgeActive]}>
+                <Text style={[styles.countBadgeText, isActive && styles.countBadgeTextActive]}>
+                  {count}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         );
-    };
+      })}
+    </View>
+  );
 
-    const dataToRender = activeTab === 'buying' ? buyerMessages : sellerMessages;
+  // ─── Action card ───────────────────────────────────────────────────────────
+  const renderActionCard = ({ item }) => (
+    <TouchableOpacity style={styles.actionCard} onPress={() => handleActionPress(item)} activeOpacity={0.8}>
+      <Image
+        source={item.itemImage ? { uri: getFullImageUrl(item.itemImage) } : { uri: 'https://via.placeholder.com/100' }}
+        style={styles.actionThumb}
+        resizeMode="cover"
+      />
+      <View style={styles.actionContent}>
+        <View style={styles.actionTopRow}>
+          <Text style={styles.actionTitle} numberOfLines={1}>{item.itemTitle || 'Item'}</Text>
+        </View>
+        <Text style={styles.actionPrice}>{currencySymbol}{item.itemPrice || '0.00'}</Text>
+        <View style={styles.actionStatusRow}>
+          <View style={[styles.statusPill, getStatusColor(item.statusText)]}>
+            <Text style={styles.statusPillText}>{item.statusText || 'Active'}</Text>
+          </View>
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color="#ccc" />
+    </TouchableOpacity>
+  );
 
-    return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
-                    <Text style={styles.headerTitle}>Action Center</Text>
-                </TouchableOpacity>
-            </View>
+  const EmptyActions = () => (
+    <View style={styles.empty}>
+      <View style={styles.emptyIcon}>
+        <Ionicons name="checkmark-circle-outline" size={40} color="#ccc" />
+      </View>
+      <Text style={styles.emptyTitle}>All clear!</Text>
+      <Text style={styles.emptySubtitle}>
+        {buyingTab === 'buying'
+          ? "Items you're buying that need action will appear here."
+          : "Items you're selling that need action will appear here."}
+      </Text>
+    </View>
+  );
 
-            {/* Segmented Tab Navigation */}
-            <View style={styles.tabContainer}>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'buying' && styles.activeTab]}
-                    onPress={() => setActiveTab('buying')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'buying' && styles.activeTabText]}>
-                        Buying
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={[styles.tab, activeTab === 'selling' && styles.activeTab]}
-                    onPress={() => setActiveTab('selling')}
-                >
-                    <Text style={[styles.tabText, activeTab === 'selling' && styles.activeTabText]}>
-                        Selling
-                    </Text>
-                </TouchableOpacity>
-            </View>
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={26} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Action Center</Text>
+        <View style={{ width: 26 }} />
+      </View>
 
-            {loading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={COLORS.primary} />
-                </View>
-            ) : (
-                <FlatList
-                    data={dataToRender}
-                    renderItem={renderActionCard}
-                    keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
-                    ListEmptyComponent={
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="folder-open-outline" size={60} color="#ccc" />
-                            <Text style={styles.emptyText}>
-                                {t('No active items in Action Center.')}
-                            </Text>
-                        </View>
-                    }
-                    ListFooterComponent={
-                        dataToRender.length > 0 && (
-                            <View style={styles.footerContainer}>
-                                <Text style={styles.footerText}>
-                                    Read our <Text style={styles.footerLink} onPress={() => {/* link */ }}>Safety Guidelines & Disclaimers</Text>
-                                </Text>
-                            </View>
-                        )
-                    }
-                />
-            )}
-        </SafeAreaView>
-    );
+      {/* Sub-tabs */}
+      {renderSubTabs()}
+
+      {/* Content */}
+      {loading ? (
+        <View style={styles.loaderWrap}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={activeUniqueItems}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderActionCard}
+          contentContainerStyle={styles.list}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          ListEmptyComponent={<EmptyActions />}
+        />
+      )}
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    header: {
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#fff',
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#000',
-        marginLeft: 8,
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderBottomWidth: 3,
-        borderBottomColor: 'transparent',
-    },
-    activeTab: {
-        borderBottomColor: '#000',
-    },
-    tabText: {
-        fontSize: 16,
-        color: '#888',
-        fontWeight: '700',
-    },
-    activeTabText: {
-        color: '#000',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    listContent: {
-        padding: 16,
-    },
-    cardContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        borderRadius: 4,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
-        overflow: 'hidden',
-    },
-    cardImage: {
-        width: 100,
-        height: '100%',
-        backgroundColor: '#f5f5f5',
-    },
-    cardContent: {
-        flex: 1,
-        padding: 12,
-        paddingRight: 4,
-    },
-    cardTopRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 4,
-    },
-    itemTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#000',
-        flex: 1,
-    },
-    stepText: {
-        fontSize: 14,
-        color: '#666',
-        marginRight: 8,
-    },
-    cardMiddleRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    itemPrice: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: '#000',
-    },
-    chevronIcon: {
-        marginRight: 4,
-    },
-    statusLabel: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 2,
-    },
-    actionText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#000', // Bright green from user's other screens / designs
-    },
-    actionStatus: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#000',
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 40,
-    },
-    emptyText: {
-        marginTop: 12,
-        fontSize: 16,
-        color: '#888',
-    },
-    footerContainer: {
-        alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 40,
-    },
-    footerText: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#000',
-    },
-    footerLink: {
-        color: '#007AFF', // Standard iOS blue or custom blue
-        textDecorationLine: 'underline',
-    }
+  container: { flex: 1, backgroundColor: '#fff' },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#000' },
+
+  subTabBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  subTab: {
+    flex: 1,
+    paddingBottom: 10,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  subTabActive: { borderBottomColor: COLORS.primary },
+  subTabInner: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  subTabText: { fontSize: 14, fontWeight: '600', color: '#aaa' },
+  subTabTextActive: { color: '#000' },
+  unreadDot: {
+    width: 7, height: 7, borderRadius: 4,
+    backgroundColor: '#FF3B30',
+  },
+  countBadge: {
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    minWidth: 22,
+    alignItems: 'center',
+  },
+  countBadgeActive: { backgroundColor: COLORS.primary },
+  countBadgeText: { fontSize: 11, fontWeight: '700', color: '#888' },
+  countBadgeTextActive: { color: '#fff' },
+
+  list: { paddingVertical: 8 },
+  separator: { height: 1, backgroundColor: '#f5f5f5', marginLeft: 84 },
+  loaderWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
+  actionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  actionThumb: {
+    width: 68,
+    height: 68,
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
+    flexShrink: 0,
+  },
+  actionContent: { flex: 1 },
+  actionTopRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
+  actionTitle: { fontSize: 14, fontWeight: '700', color: '#1a1a1a', flex: 1, marginRight: 8 },
+  actionStep: { fontSize: 12, color: '#aaa' },
+  actionPrice: { fontSize: 16, fontWeight: '800', color: '#000', marginBottom: 6 },
+  actionStatusRow: { flexDirection: 'row', alignItems: 'center' },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+  },
+  statusPillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  empty: {
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#333', marginBottom: 8 },
+  emptySubtitle: { fontSize: 14, color: '#aaa', textAlign: 'center', lineHeight: 20 },
 });
 
 export default ActionCenterScreen;

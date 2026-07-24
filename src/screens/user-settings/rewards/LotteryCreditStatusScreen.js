@@ -26,7 +26,7 @@ const LotteryCreditStatusScreen = ({ navigation }) => {
 
     const handleBuyAd = () => {
         // Navigate to purchase visibility ad screen
-        navigation.navigate('PurchaseVisibility');
+        navigation.navigate('ExtensionShop');
     };
 
     return (

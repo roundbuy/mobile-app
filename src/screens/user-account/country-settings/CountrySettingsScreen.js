@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../../context/TranslationContext';
+import { useAuth } from '../../../context/AuthContext';
 import {
   View,
   Text,
@@ -18,6 +19,7 @@ import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
 const CountrySettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [userPreferences, setUserPreferences] = useState({
     currency_name: '',
@@ -121,6 +123,21 @@ const CountrySettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Preferred Country */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('CountrySelection')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.menuItemContent}>
+            <Text style={styles.menuItemText}>{t('Preferred Country')}</Text>
+            <Text style={styles.menuItemValue}>
+              {user?.preferred_country || 'International'}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#303234" />
+        </TouchableOpacity>
+
         {/* Currency */}
         <TouchableOpacity
           style={styles.menuItem}

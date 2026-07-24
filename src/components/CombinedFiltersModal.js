@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, SafeAreaView } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../constants/theme';
+
+const QUALITY_OPTIONS = [
+  { id: 'high', name: 'High Quality' },
+  { id: 'medium', name: 'Medium Quality' },
+  { id: 'low', name: 'Low Quality' },
+];
 
 const CombinedFiltersModal = ({
   visible,
@@ -10,8 +17,10 @@ const CombinedFiltersModal = ({
   onUpdateFilters,
   onOpenCategoryModal,
   onOpenSubcategoryModal,
-  onOpenActivityModal,
+  listingTypeFilter,
+  onOpenListingTypeModal,
   onOpenConditionModal,
+  onOpenQualityModal,
   onOpenDistanceModal,
   onOpenPriceModal,
   onOpenGenderModal,
@@ -21,18 +30,54 @@ const CombinedFiltersModal = ({
   onOpenMeasurementModal,
   filterOptions = {},
 }) => {
+  const [activeSizeSystem, setActiveSizeSystem] = useState('intl');
+
+  useEffect(() => {
+    const loadSavedSystem = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@roundbuy:active_size_system');
+        if (saved && ['intl', 'us', 'uk', 'eu'].includes(saved)) {
+          setActiveSizeSystem(saved);
+        }
+      } catch (e) {
+        console.error('Error loading size system:', e);
+      }
+    };
+    if (visible) {
+      loadSavedSystem();
+    }
+  }, [visible]);
+
   // Extract summary text for UI
-  const getSummaryText = (item, optionsArray = [], defaultText = 'All') => {
+  const getSummaryText = (item, optionsArray = [], defaultText = 'All', isSize = false) => {
     if (!item || item.length === 0) return defaultText;
+
+    const resolveSizeLabel = (o) => {
+      if (!isSize) return o.name;
+      switch (activeSizeSystem) {
+        case 'us': return o.us_size ? `US ${o.us_size}` : o.name;
+        case 'uk': return o.uk_size ? `UK ${o.uk_size}` : o.name;
+        case 'eu': return o.euro_size ? `EU ${o.euro_size}` : o.name;
+        case 'intl':
+        default: return o.intl_size ? `Intl ${o.intl_size}` : o.name;
+      }
+    };
 
     let labels = [];
     if (Array.isArray(item)) {
-      labels = item.map(i => optionsArray?.find(o => o.id?.toString() === i?.toString())?.name || i);
+      labels = item.map(i => {
+        const o = optionsArray?.find(opt => opt.id?.toString() === i?.toString());
+        return o ? resolveSizeLabel(o) : i;
+      });
     } else if (typeof item === 'string') {
       const parts = item.split(',').filter(p => p.trim());
-      labels = parts.map(i => optionsArray?.find(o => o.id?.toString() === i?.toString())?.name || i);
+      labels = parts.map(i => {
+        const o = optionsArray?.find(opt => opt.id?.toString() === i?.toString());
+        return o ? resolveSizeLabel(o) : i;
+      });
     } else {
-      labels = [optionsArray?.find(o => o.id?.toString() === item?.toString())?.name || item];
+      const o = optionsArray?.find(opt => opt.id?.toString() === item?.toString());
+      labels = [o ? resolveSizeLabel(o) : item];
     }
 
     const joined = labels.join(', ');
@@ -56,23 +101,32 @@ const CombinedFiltersModal = ({
     return 'All';
   };
 
+  const LISTING_TYPE_LABELS = {
+    all: 'All on sale listings',
+    garage_sales: 'Garage-Sales',
+    showcasing: 'ShowCasing',
+    quickfinds: 'QuickFinds',
+  };
+
   const hasActiveFilters = () => {
-    return filters.activity_id ||
+    return (listingTypeFilter && listingTypeFilter !== 'all') ||
       filters.category_id ||
       filters.subcategory_id ||
       filters.condition_id ||
+      (filters.quality && filters.quality.length > 0) ||
       filters.min_price ||
       filters.max_price ||
-      (filters.radius && filters.radius !== 50); // assuming 50 is base default if not explicitly selected
+      (filters.radius && filters.radius !== 50);
   };
 
   const handleClearAll = () => {
+    if (onOpenListingTypeModal) onUpdateFilters({ ...filters }); // signal reset via parent
     onUpdateFilters({
       ...filters,
-      activity_id: [],
       category_id: [],
       subcategory_id: [],
       condition_id: [],
+      quality: [],
       gender_id: [],
       age_id: [],
       size_id: [],
@@ -137,10 +191,10 @@ const CombinedFiltersModal = ({
           <View style={styles.section}>
 
             <FilterRow
-              label="Activity"
-              value={getSummaryText(filters.activity_id, filterOptions.activities)}
-              isSelected={filters.activity_id && filters.activity_id.length > 0}
-              onPress={onOpenActivityModal}
+              label="Listing Type"
+              value={LISTING_TYPE_LABELS[listingTypeFilter] || 'All listings'}
+              isSelected={listingTypeFilter && listingTypeFilter !== 'all'}
+              onPress={onOpenListingTypeModal}
             />
 
             <FilterRow
@@ -172,6 +226,13 @@ const CombinedFiltersModal = ({
             />
 
             <FilterRow
+              label="Quality"
+              value={getSummaryText(filters.quality, QUALITY_OPTIONS)}
+              isSelected={filters.quality && filters.quality.length > 0}
+              onPress={onOpenQualityModal}
+            />
+
+            <FilterRow
               label="Gender"
               value={getSummaryText(filters.gender_id, filterOptions.genders)}
               isSelected={filters.gender_id && filters.gender_id.length > 0}
@@ -187,7 +248,7 @@ const CombinedFiltersModal = ({
 
             <FilterRow
               label="Size"
-              value={getSummaryText(filters.size_id, filterOptions.sizes)}
+              value={getSummaryText(filters.size_id, filterOptions.sizes, 'All', true)}
               isSelected={filters.size_id && filters.size_id.length > 0}
               onPress={onOpenSizeModal}
             />

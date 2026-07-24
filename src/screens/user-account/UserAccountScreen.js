@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,9 +18,16 @@ import GlobalHeader from '../../components/GlobalHeader';
 import SuggestionsFooter from '../../components/SuggestionsFooter';
 
 const UserAccountScreen = ({ navigation }) => {
-  const { logout, user } = useAuth();
+  const { logout, user, refreshUser } = useAuth();
   const { t, currentLanguage } = useTranslation();
   const [activeTab, setActiveTab] = useState('account'); // 'account' or 'settings'
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshUser?.().catch(err => console.error('Failed to refresh user profile on focus:', err));
+    });
+    return unsubscribe;
+  }, [navigation, refreshUser]);
 
   // Use real user data from AuthContext
   const userData = {
@@ -87,19 +94,20 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 11, route: 'logout', title: t('auth.logout', 'Logout'), icon: 'log-out-outline', isLogout: true },
     ],
     settings: [
-      { id: 1, route: 'MyAds', title: 'My Listings', icon: 'megaphone-outline' },
+      { id: 13, route: 'Inbox', title: 'Inbox', icon: 'chatbubbles-outline' },
+      { id: 19, route: 'ActionCenterScreen', title: 'Action Center', icon: 'flash-outline' },
+      { id: 1, route: 'MyAds', title: 'My Items', icon: 'basket-outline' },
+      { id: 22, route: 'MyServicesList', title: 'My Services', icon: 'construct-outline' },
       { id: 2, route: 'ManageOffers', title: 'Manage offers', icon: 'pricetag-outline' },
-      { id: 14, route: 'ActionCenterMessagesScreen', title: 'Action Inbox', icon: 'mail-unread-outline' },
-      { id: 13, route: 'ActionCenterScreen', title: 'Action Center', icon: 'chatbubbles-outline', badge: 2 }, // Added badge for demo purposes
       { id: 12, route: 'PickUpExchange', title: 'Pick Ups', icon: 'calendar-outline' },
-      { id: 4, route: 'PurchaseVisibility', title: 'Visibility Boosts', icon: 'eye-outline' },
+      { id: 4, route: 'ExtensionShop', title: 'Extensions & Boosts', icon: 'eye-outline' },
       { id: 5, route: 'DefaultLocation', title: 'My locations', icon: 'location-outline' },
-      { id: 6, route: 'MyMembership', title: 'Membership', icon: 'card-outline' },
       { id: 3, route: 'SupportResolution', title: 'My Resolutions', icon: 'help-circle-outline', badge: 0 },
       { id: 15, route: 'ResolutionInbox', title: 'Resolution Inbox', icon: 'mail-outline' },
       { id: 16, route: 'Postage', title: 'Postage & Shipping', icon: 'cube-outline' },
       { id: 17, route: 'SocialClubs', title: 'Social Clubs', icon: 'people-outline' },
       { id: 7, route: 'Feedbacks', title: t('account.feedbacks', 'Feedbacks'), icon: 'chatbubble-outline' },
+      { id: 18, route: 'Interests', title: 'My Interests', icon: 'sparkles-outline' },
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
       { id: 9, route: 'Rewards', title: 'My Rewards', icon: 'gift-outline' },
       { id: 10, route: 'Review', title: t('account.review', 'Review'), icon: 'star-outline' },
@@ -198,7 +206,36 @@ const UserAccountScreen = ({ navigation }) => {
 
       {/* Menu Items */}
       <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>
-        {menuItems[activeTab].map((item) => renderMenuItem(item))}
+        {(() => {
+          console.log('👤 Profile user data:', {
+            id: user?.id,
+            email: user?.email,
+            user_type: user?.user_type,
+            cumulative_earnings: user?.cumulative_earnings,
+            subscription_plan_slug: user?.subscription_plan_slug
+          });
+
+          const isBusiness = user?.user_type === 'business' || 
+                             user?.subscription_plan_slug?.toLowerCase()?.includes('business') || 
+                             user?.subscription_plan_slug?.toLowerCase()?.includes('pro');
+          const hasReachedLimit = parseFloat(user?.cumulative_earnings || 0) >= 1000;
+
+          const filteredItems = activeTab === 'settings' 
+            ? menuItems.settings 
+            : menuItems.account.filter((item) => {
+                if (item.id === 13) {
+                  // Personal KYC: Only for non-business users who have reached the 1000 limit
+                  return !isBusiness && hasReachedLimit;
+                }
+                if (item.id === 14) {
+                  // Business KYB: Only for business users
+                  return isBusiness;
+                }
+                return true;
+              });
+
+          return filteredItems.map((item) => renderMenuItem(item));
+        })()}
 
         {/* Footer Information (only on account tab) */}
         {activeTab === 'account' && (

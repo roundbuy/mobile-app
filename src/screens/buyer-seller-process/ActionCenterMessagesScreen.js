@@ -81,7 +81,7 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={24} color="#000" />
-                    <Text style={styles.headerTitle}>{t('Action center')}</Text>
+                    <Text style={styles.headerTitle}>{t('Action Inbox')}</Text>
                 </TouchableOpacity>
             </View>
 

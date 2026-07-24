@@ -10,7 +10,7 @@ import authService from '../../services/authService';
 const EmailVerificationScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
   const { verifyEmail } = useAuth();
-  const { email } = route.params || {};
+  const { email, account_type } = route.params || {};
   const [code, setCode] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -47,8 +47,11 @@ const EmailVerificationScreen = ({ route, navigation }) => {
       const response = await verifyEmail(email, verificationCode);
 
       if (response.success) {
-        // Navigate to Account Verified screen
-        navigation.navigate('AccountVerified', { email });
+        if (account_type === 'business') {
+          navigation.navigate('BusinessVerification');
+        } else {
+          navigation.navigate('AccountVerified', { email, account_type });
+        }
       }
     } catch (error) {
       console.error('Email verification error:', error);

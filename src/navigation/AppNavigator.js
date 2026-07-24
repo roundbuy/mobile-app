@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,6 +30,8 @@ import PolicyUpdatesScreen from '../screens/legal/PolicyUpdatesScreen';
 import RegistrationScreen from '../screens/auth/RegistrationScreen';
 import SocialLoginScreen from '../screens/auth/SocialLoginScreen';
 import CreateAccountScreen from '../screens/auth/CreateAccountScreen';
+import BusinessCreateAccountScreen from '../screens/auth/BusinessCreateAccountScreen';
+import BusinessVerificationScreen from '../screens/auth/BusinessVerificationScreen';
 import PasswordGuidelinesScreen from '../screens/auth/PasswordGuidelinesScreen';
 import EmailVerificationScreen from '../screens/auth/EmailVerificationScreen';
 import AccountVerifiedScreen from '../screens/auth/AccountVerifiedScreen';
@@ -44,6 +46,8 @@ import ActivityFilterScreen from '../screens/home/ActivityFilterScreen';
 import CategoryFilterScreen from '../screens/home/CategoryFilterScreen';
 import DistanceFilterScreen from '../screens/home/DistanceFilterScreen';
 import PriceFilterScreen from '../screens/home/PriceFilterScreen';
+import ServiceListScreen from '../screens/home/ServiceListScreen';
+import ServiceDetailsScreen from '../screens/products/ServiceDetailsScreen';
 
 // Demo screen
 import DemoScreen from '../screens/demo/DemoScreen';
@@ -73,6 +77,8 @@ import AdPaymentMethodScreen from '../screens/advertisements/AdPaymentMethodScre
 import AdCartScreen from '../screens/advertisements/AdCartScreen';
 import AdTransactionScreen from '../screens/advertisements/AdTransactionScreen';
 import PublishAdScreen from '../screens/advertisements/PublishAdScreen';
+import SellServiceScreen from '../screens/advertisements/SellServiceScreen';
+import MyServicesScreen from '../screens/user-settings/purchase-visibility/MyServicesScreen';
 
 // Product screens
 import ProductDetailsScreen from '../screens/products/ProductDetailsScreen';
@@ -103,8 +109,10 @@ import WalletWithdrawalScreen from '../screens/wallet/WalletWithdrawalScreen';
 import LegalInfoScreen from '../screens/user-account/legal-info/LegalInfoScreen';
 import CountrySettingsScreen from '../screens/user-account/country-settings/CountrySettingsScreen';
 import MeasurementSettingsScreen from '../screens/user-account/MeasurementSettingsScreen';
+import InterestScreen from '../screens/user-account/interests/InterestScreen';
 import CurrencySelectionScreen from '../screens/user-account/country-settings/CurrencySelectionScreen';
 import LanguageSelectionScreen from '../screens/user-account/country-settings/LanguageSelectionScreen';
+import CountrySelectionScreen from '../screens/user-account/country-settings/CountrySelectionScreen';
 import CustomerSupportScreen from '../screens/user-account/customer-support/CustomerSupportScreen';
 import HelpFAQScreen from '../screens/user-account/customer-support/HelpFAQScreen';
 import FAQSubCategoriesScreen from '../screens/user-account/customer-support/FAQSubCategoriesScreen';
@@ -135,14 +143,20 @@ import ScheduledPickUpDetailScreen from '../screens/pickups/ScheduledPickUpDetai
 import PickUpPaymentScreen from '../screens/pickups/PickUpPaymentScreen';
 import ReschedulePickUpScreen from '../screens/pickups/ReschedulePickUpScreen';
 import MyAdsScreen from '../screens/user-settings/my-ads/MyAdsScreen';
+import MyServicesListScreen from '../screens/user-settings/my-ads/MyServicesListScreen';
 import MyAdsDetailScreen from '../screens/user-settings/my-ads/MyAdsDetailScreen';
 import EditAdLocationsScreen from '../screens/user-settings/my-ads/EditAdLocationsScreen';
+import ExtensionShopScreen from '../screens/user-settings/purchase-visibility/ExtensionShopScreen';
 import PurchaseVisibilityScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityScreen';
 import PurchaseVisibilityAdsListScreen from '../screens/user-settings/purchase-visibility/PurchaseVisibilityAdsListScreen';
 import VisibilityAdChoicesScreen from '../screens/user-settings/purchase-visibility/VisibilityAdChoicesScreen';
 import ShowcaseProductSelectorScreen from '../screens/user-settings/purchase-visibility/ShowcaseProductSelectorScreen';
 import VisibilityCartScreen from '../screens/user-settings/purchase-visibility/VisibilityCartScreen';
 import VisibilityPaymentScreen from '../screens/user-settings/purchase-visibility/VisibilityPaymentScreen';
+import ExtensionCheckoutScreen from '../screens/user-settings/purchase-visibility/ExtensionCheckoutScreen';
+import ExtensionLocationsScreen from '../screens/user-settings/purchase-visibility/ExtensionLocationsScreen';
+import ExtensionSocialClubsScreen from '../screens/user-settings/purchase-visibility/ExtensionSocialClubsScreen';
+import ExtensionBoostsScreen from '../screens/user-settings/purchase-visibility/ExtensionBoostsScreen';
 import VisibilityTransactionSuccessScreen from '../screens/user-settings/purchase-visibility/VisibilityTransactionSuccessScreen';
 import DefaultLocationScreen from '../screens/user-settings/location/DefaultLocationScreen';
 import SetLocationMapScreen from '../screens/user-settings/location/SetLocationMapScreen';
@@ -189,6 +203,7 @@ import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagin
 // Buyer-Seller Process screens
 import ActionCenterScreen from '../screens/buyer-seller-process/ActionCenterScreen';
 import ActionCenterMessagesScreen from '../screens/buyer-seller-process/ActionCenterMessagesScreen';
+import InboxScreen from '../screens/buyer-seller-process/InboxScreen';
 import Step1EnquiryScreen from '../screens/buyer-seller-process/Step1EnquiryScreen';
 import ChatUploadImagesScreen from '../screens/buyer-seller-process/ChatUploadImagesScreen';
 import ProductImageGalleryScreen from '../screens/buyer-seller-process/ProductImageGalleryScreen';
@@ -249,6 +264,7 @@ import CreateTicketScreen from '../screens/support/CreateTicketScreen';
 import AboutUsScreen from '../screens/info/AboutUsScreen';
 import HowItWorksScreen from '../screens/info/HowItWorksScreen';
 import HowItWorksDetailScreen from '../screens/info/HowItWorksDetailScreen';
+import QualityInfoScreen from '../screens/info/QualityInfoScreen';
 import VisibilityBoostInfoScreen from '../screens/info/VisibilityBoostInfoScreen';
 import GenericInfoScreen from '../screens/info/GenericInfoScreen';
 import PlatformMenuScreen from '../screens/info/PlatformMenuScreen';
@@ -266,8 +282,75 @@ import EventRoomScreen from '../screens/social-clubs/EventRoomScreen';
 
 const Stack = createNativeStackNavigator();
 
+const NavigationGuard = () => {
+  const { isAuthenticated, user } = useAuth();
+  const navigation = useNavigation();
+  // Ref to prevent redirect storms when user state is updating
+  const isRedirectingRef = React.useRef(false);
+  const redirectTimerRef = React.useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const isBusiness = user.user_type === 'business' || 
+                       (user.subscription_plan_slug && 
+                        (user.subscription_plan_slug.toLowerCase().includes('business') || 
+                         user.subscription_plan_slug.toLowerCase().includes('pro')));
+    const isVerified = user.kyc_status === 'verified' || user.kyc_status === 'approved' || user.kyc_completed === 1;
+
+    // If user is now verified or not a business user, clear any redirect lock and bail
+    if (!isBusiness || isVerified) {
+      isRedirectingRef.current = false;
+      return;
+    }
+
+    const checkAndRedirect = () => {
+      // Skip if we're already in the middle of a redirect to avoid loops
+      if (isRedirectingRef.current) return;
+      try {
+        const state = navigation.getState();
+        if (!state) return;
+        const currentRouteName = state.routes[state.index]?.name;
+        const allowedRoutes = ['BusinessVerification', 'EmailVerification', 'AccountVerified', 'PatentPending'];
+        if (currentRouteName && !allowedRoutes.includes(currentRouteName)) {
+          console.log(`🔒 NavigationGuard: Redirecting unverified business user from ${currentRouteName} to BusinessVerification`);
+          isRedirectingRef.current = true;
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'BusinessVerification' }],
+          });
+          // Release the redirect lock after navigation settles
+          redirectTimerRef.current = setTimeout(() => {
+            isRedirectingRef.current = false;
+          }, 1000);
+        }
+      } catch (err) {
+        console.error('Error in checkAndRedirect:', err);
+      }
+    };
+
+    // Run check initially (with small delay to let navigation settle after user state update)
+    redirectTimerRef.current = setTimeout(checkAndRedirect, 100);
+
+    // Listen for navigation state changes
+    const unsubscribe = navigation.addListener('state', checkAndRedirect);
+    return () => {
+      unsubscribe();
+      if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
+    };
+  }, [isAuthenticated, user, navigation]);
+
+  return null;
+};
+
 const AppNavigator = React.forwardRef((props, ref) => {
-  const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   // Determine initial route based on authentication status
   const getInitialRouteName = () => {
@@ -285,20 +368,24 @@ const AppNavigator = React.forwardRef((props, ref) => {
       return 'Registration';
     }
 
-    const hasSubscription = hasActiveSubscription();
-    console.log('   hasActiveSubscription:', hasSubscription);
+    const isBusiness = user?.user_type === 'business' || 
+                       (user?.subscription_plan_slug && 
+                        (user.subscription_plan_slug.toLowerCase().includes('business') || 
+                         user.subscription_plan_slug.toLowerCase().includes('pro')));
+    const isVerified = user?.kyc_status === 'verified' || user?.kyc_status === 'approved' || user?.kyc_completed === 1;
 
-    if (!hasSubscription) {
-      console.log('   → Showing AllMemberships (no subscription)');
-      return 'AllMemberships';
+    if (isBusiness && !isVerified) {
+      console.log('   → Showing BusinessVerification (restricted business user)');
+      return 'BusinessVerification';
     }
 
-    console.log('   → Showing SearchScreen (authenticated + subscription)');
+    console.log('   → Showing SearchScreen (authenticated)');
     return 'SearchScreen';
   };
 
   return (
     <NavigationContainer ref={ref}>
+      <NavigationGuard />
       <Stack.Navigator
         initialRouteName={getInitialRouteName()}
         screenOptions={{
@@ -320,6 +407,14 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="ActionCenterMessagesScreen"
           component={ActionCenterMessagesScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Inbox"
+          component={InboxScreen}
           options={{
             animationEnabled: true,
             headerShown: false,
@@ -557,6 +652,21 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="BusinessCreateAccount"
+          component={BusinessCreateAccountScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="BusinessVerification"
+          component={BusinessVerificationScreen}
+          options={{
+            animationEnabled: true,
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
           name="PasswordGuidelines"
           component={PasswordGuidelinesScreen}
           options={{
@@ -642,6 +752,22 @@ const AppNavigator = React.forwardRef((props, ref) => {
               }
             },
           })}
+        />
+        <Stack.Screen
+          name="ServiceList"
+          component={ServiceListScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ServiceDetails"
+          component={ServiceDetailsScreen}
+          options={{
+            animationEnabled: true,
+            headerShown: false,
+          }}
         />
         <Stack.Screen
           name="TrendingHub"
@@ -805,6 +931,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="MakeAnAd"
           component={MakeAnAdScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="SellService"
+          component={SellServiceScreen}
           options={{
             animationEnabled: true,
           }}
@@ -1077,6 +1210,11 @@ const AppNavigator = React.forwardRef((props, ref) => {
 
         {/* Info Screens */}
         <Stack.Screen
+          name="QualityInfo"
+          component={QualityInfoScreen}
+          options={{ animationEnabled: true }}
+        />
+        <Stack.Screen
           name="AboutUs"
           component={AboutUsScreen}
           options={{
@@ -1142,8 +1280,22 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="Interests"
+          component={InterestScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="CurrencySelection"
           component={CurrencySelectionScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="CountrySelection"
+          component={CountrySelectionScreen}
           options={{
             animationEnabled: true,
           }}
@@ -1325,6 +1477,13 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="MyServicesList"
+          component={MyServicesListScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="MyAdsDetail"
           component={MyAdsDetailScreen}
           options={{
@@ -1334,6 +1493,18 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="EditAdLocations"
           component={EditAdLocationsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ExtensionShop"
+          component={ExtensionShopScreen}
+          options={{ animationEnabled: true }}
+        />
+        <Stack.Screen
+          name="MyServices"
+          component={MyServicesScreen}
           options={{
             animationEnabled: true,
           }}
@@ -1376,6 +1547,34 @@ const AppNavigator = React.forwardRef((props, ref) => {
         <Stack.Screen
           name="VisibilityPayment"
           component={VisibilityPaymentScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ExtensionCheckout"
+          component={ExtensionCheckoutScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ExtensionLocations"
+          component={ExtensionLocationsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ExtensionSocialClubs"
+          component={ExtensionSocialClubsScreen}
+          options={{
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="ExtensionBoosts"
+          component={ExtensionBoostsScreen}
           options={{
             animationEnabled: true,
           }}

@@ -225,6 +225,7 @@ const EditAnAdScreen = ({ navigation, route }) => {
                 subcategory_id: adData.subcategory_id,
                 activity_id: adData.activity_id,
                 condition_id: adData.condition_id,
+                quality: adData.quality || null,
                 price: adData.price ? adData.price.toString() : '',
                 gender_id: adData.gender_id,
                 // Additional attributes for next screens

@@ -13,11 +13,11 @@ import { COLORS, SPACING } from '../../../constants/theme';
 
 const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { ad, type, duration, distance, total = '0.00' } = route.params || {};
+  const { ad, type, duration, distance, total = '0.00', cardLastFour } = route.params || {};
 
   const handleDone = () => {
     // Navigate back to Purchase Visibility main screen
-    navigation.navigate('PurchaseVisibility');
+    navigation.navigate('ExtensionShop');
   };
 
   const handleViewDetails = () => {
@@ -68,27 +68,37 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
             </Text>
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('Product')}</Text>
-            <Text style={styles.detailValue}>{ad.title}</Text>
-          </View>
+          {ad?.title ? (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('Product')}</Text>
+              <Text style={styles.detailValue}>{ad.title}</Text>
+            </View>
+          ) : null}
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Visibility Type')}</Text>
             <Text style={[styles.detailValue, { textTransform: 'capitalize' }]}>
-              {type} Ad
+              {(type || '').replace(/_/g, ' ') || 'Extension'}
             </Text>
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('Duration')}</Text>
-            <Text style={styles.detailValue}>{duration.label}</Text>
-          </View>
+          {(duration?.label || duration?.name || duration?.duration_label) ? (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('Duration')}</Text>
+              <Text style={styles.detailValue}>
+                {duration?.label || duration?.name || duration?.duration_label}
+              </Text>
+            </View>
+          ) : null}
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('Distance')}</Text>
-            <Text style={styles.detailValue}>{distance.label}</Text>
-          </View>
+          {(distance?.label || distance?.distance_km) ? (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('Distance')}</Text>
+              <Text style={styles.detailValue}>
+                {distance?.label || (distance?.is_unlimited ? 'Unlimited' : `${distance.distance_km} km`)}
+              </Text>
+            </View>
+          ) : null}
 
           <View style={styles.divider} />
 
@@ -99,7 +109,7 @@ const VisibilityTransactionSuccessScreen = ({ navigation, route }) => {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('Payment Method')}</Text>
-            <Text style={styles.detailValue}>{t('Card •••• 4242')}</Text>
+            <Text style={styles.detailValue}>Card •••• {cardLastFour || '••••'}</Text>
           </View>
 
           <View style={styles.detailRow}>

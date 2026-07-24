@@ -47,7 +47,7 @@ const PurchaseVisibilityAdsListScreen = ({ navigation, route }) => {
   };
 
   const handlePurchaseNow = (ad) => {
-    navigation.navigate('VisibilityCart', {
+    navigation.navigate('ExtensionCheckout', {
       ad,
       type: planType,
       duration: selectedPlan,

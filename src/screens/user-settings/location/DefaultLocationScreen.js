@@ -169,7 +169,7 @@ const DefaultLocationScreen = ({ navigation }) => {
   };
 
   const handleUpgrade = () => {
-    navigation.navigate('AllMemberships');
+    navigation.navigate('ExtensionShop');
   };
 
   const renderLocationButton = (title, description, locationType, disabled = false) => {
@@ -306,19 +306,17 @@ const DefaultLocationScreen = ({ navigation }) => {
         )}
 
         {/* Note / Upgrade Section */}
-        {membershipPlan !== 'gold' && (
+        {locations.length < 5 && (
           <View style={styles.noteSection}>
-            <Text style={styles.noteTitle}>{t('Note:')}</Text>
+            <Text style={styles.noteTitle}>{t('Want to reach more buyers?')}</Text>
             <Text style={styles.noteText}>
-              {membershipPlan === 'green'
-                ? t('With the Green membership you have 1 location (Centre-point). Upgrade to Orange for 3 locations or Gold for 5.')
-                : t('With the Orange membership you have 3 locations. Upgrade to Gold for 5 locations.')}
+              {t('Add more display locations to show your listings to buyers in different areas. Up to 5 locations available.')}
             </Text>
             <TouchableOpacity style={styles.upgradeLink} onPress={handleUpgrade} activeOpacity={0.7}>
-              <Text style={styles.upgradeLinkText}>{t('Upgrade membership for more locations!')}</Text>
+              <Text style={styles.upgradeLinkText}>{t('Add more display locations')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade} activeOpacity={0.7}>
-              <Text style={styles.upgradeButtonText}>{t('Upgrade Membership')}</Text>
+              <Text style={styles.upgradeButtonText}>{t('Purchase Display Locations')}</Text>
             </TouchableOpacity>
           </View>
         )}

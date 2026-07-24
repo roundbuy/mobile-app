@@ -100,6 +100,8 @@ export const API_ENDPOINTS = {
     FILTERS: '/advertisements/filters',
     BROWSE: '/advertisements/browse',
     FEATURED: '/advertisements/featured',
+    QUICKFINDS: '/advertisements/quickfinds',
+    SEARCH_SUGGESTIONS: '/advertisements/search-suggestions',
     VIEW: (id) => `/advertisements/view/${id}`,
     LOCATIONS: '/advertisements/locations',
     CREATE: '/advertisements',

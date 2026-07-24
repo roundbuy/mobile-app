@@ -17,13 +17,13 @@ const NotificationPermissionScreen = ({ navigation }) => {
         } catch (error) {
             console.error('Error requesting notification permissions:', error);
         } finally {
-            navigation.navigate('LicenseAgreement');
+            navigation.navigate('CookiesConsent');
         }
     };
 
     const handleDontAllow = () => {
         console.log('User denied notifications (skipped request)');
-        navigation.navigate('LicenseAgreement');
+        navigation.navigate('CookiesConsent');
     };
 
     const handlePatentInfo = () => {

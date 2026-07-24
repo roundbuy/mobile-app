@@ -37,7 +37,7 @@ export const kycService = {
       const response = await api.get('/kyc/status');
       return response.data;
     } catch (error) {
-      console.error('Get KYC status error:', error);
+      console.warn('Get KYC status error:', error);
       throw error;
     }
   }

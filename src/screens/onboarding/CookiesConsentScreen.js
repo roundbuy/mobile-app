@@ -13,7 +13,7 @@ const CookiesConsentScreen = ({ navigation }) => {
     // Save cookie preferences and proceed to registration
     await trackingService.setTrackingPreference(true);
     console.log('Cookies accepted');
-    navigation.replace('LaunchOnboarding');
+    navigation.replace('Welcome');
   };
 
   const handleMoreInfo = () => {

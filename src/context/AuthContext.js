@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
+import userService from '../services/userService';
 
 /**
  * Authentication Context
@@ -149,7 +150,11 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
-      // Don't set user as authenticated yet - they need to verify email first
+      // Set user as authenticated immediately so business users can upload KYB docs
+      if (response.success && response.data?.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
       return response;
     } catch (error) {
       throw error;
@@ -165,7 +170,10 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (email, token) => {
     try {
       const response = await authService.verifyEmail(email, token);
-      // Email verified, but user still needs to purchase subscription
+      if (response.success && response.data?.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+      }
       return response;
     } catch (error) {
       throw error;
@@ -226,10 +234,21 @@ export const AuthProvider = ({ children }) => {
    */
   const refreshUser = async () => {
     try {
+      const authenticated = await authService.isAuthenticated();
+      if (authenticated) {
+        const res = await userService.getUserProfile();
+        if (res.success && res.data?.user) {
+          const freshUser = res.data.user;
+          await authService.updateStoredUserData(freshUser);
+          setUser(freshUser);
+          setIsAuthenticated(true);
+          return freshUser;
+        }
+      }
       await loadUserData();
     } catch (error) {
-      console.error('Error refreshing user:', error);
-      throw error;
+      console.error('Error refreshing user from API:', error);
+      await loadUserData();
     }
   };
 

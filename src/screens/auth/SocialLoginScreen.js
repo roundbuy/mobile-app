@@ -58,31 +58,10 @@ const SocialLoginScreen = ({ navigation, route }) => {
       // Call login API through AuthContext
       const response = await login(email, password);
 
-      // Check if user needs subscription
-      if (response && response.requires_subscription) {
-        // User is verified but has no active subscription
-        Alert.alert(
-          t('Subscription Required'),
-          t('Please select a subscription plan to continue.'),
-          [
-            {
-              text: t('Choose Plan'),
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'AllMemberships' }],
-                });
-              }
-            }
-          ]
-        );
-      } else {
-        // Success - User has subscription, navigate to main app
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'SearchScreen' }],
-        });
-      }
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'SearchScreen' }],
+      });
     } catch (error) {
       console.error('Login error:', error);
 
@@ -139,11 +118,7 @@ const SocialLoginScreen = ({ navigation, route }) => {
         email: credential.email,
       });
 
-      if (response && response.requires_subscription) {
-        navigation.reset({ index: 0, routes: [{ name: 'AllMemberships' }] });
-      } else {
-        navigation.reset({ index: 0, routes: [{ name: 'SearchScreen' }] });
-      }
+      navigation.reset({ index: 0, routes: [{ name: 'SearchScreen' }] });
     } catch (error) {
       if (error.code === 'ERR_REQUEST_CANCELED') {
         // User cancelled — do nothing
@@ -208,17 +183,10 @@ const SocialLoginScreen = ({ navigation, route }) => {
   };
 
   const handleSocialLoginSuccess = (response) => {
-    if (response && response.requires_subscription) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'AllMemberships' }],
-      });
-    } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'SearchScreen' }],
-      });
-    }
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'SearchScreen' }],
+    });
   };
 
   const handleSocialLogin = (provider) => {

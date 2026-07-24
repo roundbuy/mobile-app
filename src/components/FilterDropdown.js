@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,18 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../constants/theme';
 
 const { width, height } = Dimensions.get('window');
+
+const SIZING_SYSTEMS = [
+  { key: 'intl', label: 'Intl' },
+  { key: 'us', label: 'US' },
+  { key: 'uk', label: 'UK' },
+  { key: 'eu', label: 'EU' }
+];
 
 const FilterDropdown = ({
   label,
@@ -20,14 +29,61 @@ const FilterDropdown = ({
   placeholder = 'Select an option',
   disabled = false,
   isColorPicker = false,
+  onInfoPress,
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeSystem, setActiveSystem] = useState('intl');
+
+  const isSizeDropdown = label?.toLowerCase()?.includes('size');
+
+  useEffect(() => {
+    const loadSavedSystem = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@roundbuy:active_size_system');
+        if (saved && ['intl', 'us', 'uk', 'eu'].includes(saved)) {
+          setActiveSystem(saved);
+        }
+      } catch (e) {
+        console.error('Error loading size system:', e);
+      }
+    };
+    if (modalVisible && isSizeDropdown) {
+      loadSavedSystem();
+    }
+  }, [modalVisible, isSizeDropdown]);
+
+  const handleSystemChange = async (system) => {
+    setActiveSystem(system);
+    try {
+      await AsyncStorage.setItem('@roundbuy:active_size_system', system);
+    } catch (e) {
+      console.error('Error saving size system:', e);
+    }
+  };
 
   const selectedOption = options?.find(option => option.id === value);
 
   const handleSelect = (option) => {
     onSelect(option.id);
     setModalVisible(false);
+  };
+
+  const getOptionLabel = (option) => {
+    if (!option) return '';
+    if (!isSizeDropdown) {
+      return option.name;
+    }
+    switch (activeSystem) {
+      case 'us':
+        return option.us_size ? `US ${option.us_size}` : option.name;
+      case 'uk':
+        return option.uk_size ? `UK ${option.uk_size}` : option.name;
+      case 'eu':
+        return option.euro_size ? `EU ${option.euro_size}` : option.name;
+      case 'intl':
+      default:
+        return option.intl_size ? `Intl ${option.intl_size}` : option.name;
+    }
   };
 
   const renderOption = ({ item }) => (
@@ -41,7 +97,7 @@ const FilterDropdown = ({
           <Text style={styles.optionText}>{item.name}</Text>
         </View>
       ) : (
-        <Text style={styles.optionText}>{item.name}</Text>
+        <Text style={styles.optionText}>{getOptionLabel(item)}</Text>
       )}
     </TouchableOpacity>
   );
@@ -67,10 +123,21 @@ const FilterDropdown = ({
         onPress={() => !disabled && setModalVisible(true)}
         disabled={disabled}
       >
-        <Text style={styles.label}>{label}</Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>{label}</Text>
+          {onInfoPress && (
+            <TouchableOpacity
+              onPress={onInfoPress}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={styles.infoBtn}
+            >
+              <Ionicons name="information-circle-outline" size={18} color="#505050" />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.valueContainer}>
           <Text style={[styles.value, !selectedOption && styles.placeholder]}>
-            {selectedOption ? selectedOption.name : placeholder}
+            {selectedOption ? getOptionLabel(selectedOption) : placeholder}
           </Text>
           <Text style={styles.arrow}>▼</Text>
         </View>
@@ -93,6 +160,28 @@ const FilterDropdown = ({
                 <Text style={styles.closeText}>✕</Text>
               </TouchableOpacity>
             </View>
+
+            {isSizeDropdown && (
+              <View style={styles.tabsContainer}>
+                {SIZING_SYSTEMS.map((system) => (
+                  <TouchableOpacity
+                    key={system.key}
+                    style={[
+                      styles.tabButton,
+                      activeSystem === system.key && styles.activeTabButton
+                    ]}
+                    onPress={() => handleSystemChange(system.key)}
+                  >
+                    <Text style={[
+                      styles.tabText,
+                      activeSystem === system.key && styles.activeTabText
+                    ]}>
+                      {system.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             <FlatList
               data={options}
@@ -121,10 +210,18 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   label: {
     fontSize: 15,
     color: '#000',
-    marginBottom: 8,
+    flex: 1,
+  },
+  infoBtn: {
+    padding: 2,
   },
   valueContainer: {
     flexDirection: 'row',
@@ -204,6 +301,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#505050',
     marginTop: 2,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 20,
+    marginHorizontal: 4,
+  },
+  activeTabButton: {
+    borderColor: COLORS.primary || '#1a1a1a',
+    backgroundColor: COLORS.primary || '#1a1a1a',
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#666666',
+  },
+  activeTabText: {
+    color: '#ffffff',
+    fontWeight: '600',
   },
 });
 

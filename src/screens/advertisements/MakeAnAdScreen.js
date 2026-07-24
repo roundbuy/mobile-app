@@ -1,18 +1,26 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from '@react-navigation/native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS } from '../../constants/theme';
 import { uploadImages } from '../../services/advertisementService';
 import { checkMultipleFields, formatModerationError } from '../../services/moderationService';
+import { userService } from '../../services';
 
 import { useTranslation } from '../../context/TranslationContext';
 import { rewardsService } from '../../services/rewardsService';
+
+const LISTING_TYPES = [
+  { id: 'sell',    label: 'Sell Item',    icon: '🏷️' },
+  { id: 'service', label: 'Sell Service', icon: '🛠️' },
+];
 
 const MakeAnAdScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { initialTitle, initialReferralCode } = route.params || {};
 
+  const [listingType, setListingType] = useState('sell');
   const [title, setTitle] = useState(initialTitle || '');
   const [description, setDescription] = useState('');
   const [displayTime, setDisplayTime] = useState('60days');
@@ -24,6 +32,24 @@ const MakeAnAdScreen = ({ navigation, route }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [moderationError, setModerationError] = useState('');
+  const [extensions, setExtensions] = useState({});
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchExtensions();
+    }, [])
+  );
+
+  const fetchExtensions = async () => {
+    try {
+      const res = await userService.getSocialClubExtensionStatus();
+      if (res?.success && res?.data) {
+        setExtensions(res.data);
+      }
+    } catch (e) {
+      console.log('Error loading extensions for MakeAnAdScreen:', e);
+    }
+  };
 
   // Validate initial referral code if present
   React.useEffect(() => {
@@ -203,7 +229,8 @@ const MakeAnAdScreen = ({ navigation, route }) => {
         description,
         displayTime,
         images: uploadedImageUrls,
-        referralCode, // Pass referral code to next screen
+        referralCode,
+        listingType,
       });
     } catch (error) {
       console.error('Error:', error);
@@ -231,6 +258,41 @@ const MakeAnAdScreen = ({ navigation, route }) => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('List an Item')}</Text>
           {/* <Text style={styles.stepIndicator}>1/8</Text> */}
+        </View>
+
+        {/* Listing Type Selector */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('What are you listing?')}</Text>
+          <View style={styles.listingTypeGrid}>
+            {LISTING_TYPES.map((lt) => {
+              const isLockedService = lt.id === 'service' && !extensions.service_listings_active;
+              return (
+                <TouchableOpacity
+                  key={lt.id}
+                  style={[styles.listingTypeBtn, listingType === lt.id && styles.listingTypeBtnActive]}
+                  onPress={() => {
+                    if (lt.id === 'service') {
+                      if (isLockedService) {
+                        navigation.navigate('ExtensionShop', { initialExtension: 'service_listings' });
+                      } else {
+                        navigation.navigate('SellService');
+                      }
+                    } else {
+                      setListingType(lt.id);
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.simpleBtnContent}>
+                    <Text style={styles.listingTypeIcon}>{lt.icon}</Text>
+                    <Text style={[styles.listingTypeLabel, listingType === lt.id && styles.listingTypeLabelActive]}>
+                      {lt.label} {isLockedService && '🔒'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         {/* Choose Images Section */}
@@ -412,6 +474,43 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: 20,
     marginBottom: 24,
+  },
+  listingTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  listingTypeBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listingTypeBtnActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: '#f0f8ff',
+  },
+  simpleBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listingTypeIcon: {
+    fontSize: 20,
+    marginRight: 6,
+  },
+  listingTypeLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  listingTypeLabelActive: {
+    color: COLORS.primary,
   },
   sectionTitle: {
     fontSize: 16,

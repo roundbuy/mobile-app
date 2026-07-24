@@ -123,7 +123,7 @@ const VisibilityBoostInfoScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <GlobalHeader
-                title={t('Visibility Boosts')}
+                title={t('Extensions & Boosts')}
                 navigation={navigation}
                 showBackButton={true}
             />

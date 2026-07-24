@@ -22,10 +22,10 @@ import { advertisementService } from '../../../services';
 import GlobalHeader from '../../../components/GlobalHeader';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
 
-const MyAdsScreen = ({ navigation }) => {
+const MyServicesListScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'active', 'inactive'
-  const [listingTypeToggle, setListingTypeToggle] = useState('items'); // 'items', 'services'
+  const [listingTypeToggle, setListingTypeToggle] = useState('services'); // 'items', 'services'
   const [ads, setAds] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -44,12 +44,11 @@ const MyAdsScreen = ({ navigation }) => {
       }
 
       const options = {
-        limit: 50, // Get more ads for better UX
+        limit: 50,
       };
 
       // Only add status filter if not 'all'
       if (activeTab !== 'all') {
-        // Map frontend tab names to database status values
         if (activeTab === 'active') {
           options.status = 'published';
         } else if (activeTab === 'inactive') {
@@ -89,18 +88,14 @@ const MyAdsScreen = ({ navigation }) => {
     fetchAds(true);
   };
 
-  // Filter ads based on active tab (client-side filtering for better UX)
+  // Filter ads based on active tab
   const getFilteredAds = () => {
     let filtered = ads;
 
-    // 1. Filter by listing type toggle
-    if (listingTypeToggle === 'services') {
-      filtered = filtered.filter(ad => ad.activity_name?.toLowerCase() === 'services' || ad.activity_id === 4);
-    } else {
-      filtered = filtered.filter(ad => ad.activity_name?.toLowerCase() !== 'services' && ad.activity_id !== 4);
-    }
+    // Filter by services only
+    filtered = filtered.filter(ad => ad.activity_name?.toLowerCase() === 'services' || ad.activity_id === 4);
 
-    // 2. Filter by status tab
+    // Filter by status tab
     if (activeTab !== 'all') {
       const statusMap = {
         'active': 'published',
@@ -113,7 +108,6 @@ const MyAdsScreen = ({ navigation }) => {
   };
 
   const renderAdItem = ({ item }) => {
-    // Map API data to display format
     let imageSource = IMAGES.chair1;
     try {
       const images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
@@ -124,7 +118,7 @@ const MyAdsScreen = ({ navigation }) => {
     } catch (e) {
       console.log('Error parsing ad image:', e);
     }
-    const activityType = item.activity_name || 'SELL'; // Default to SELL if no activity
+    const activityType = item.activity_name || 'SELL';
 
     return (
       <View style={styles.adCard}>
@@ -172,23 +166,23 @@ const MyAdsScreen = ({ navigation }) => {
       <View style={styles.toggleOuterContainer}>
         <View style={styles.toggleInnerContainer}>
           <TouchableOpacity
-            style={[styles.toggleButton, styles.toggleButtonActive]}
+            style={[styles.toggleButton, styles.toggleButtonInactive]}
+            onPress={() => {
+              navigation.replace('MyAds');
+            }}
             activeOpacity={0.8}
           >
-            <Ionicons name="basket-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text style={[styles.toggleButtonText, styles.toggleButtonTextActive]}>
+            <Ionicons name="basket-outline" size={16} color="#555555" style={{ marginRight: 6 }} />
+            <Text style={styles.toggleButtonText}>
               {t('My Items')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.toggleButton, styles.toggleButtonInactive]}
-            onPress={() => {
-              navigation.replace('MyServicesList');
-            }}
+            style={[styles.toggleButton, styles.toggleButtonActive]}
             activeOpacity={0.8}
           >
-            <Ionicons name="construct-outline" size={16} color="#555555" style={{ marginRight: 6 }} />
-            <Text style={styles.toggleButtonText}>
+            <Ionicons name="construct-outline" size={16} color="#ffffff" style={{ marginRight: 6 }} />
+            <Text style={[styles.toggleButtonText, styles.toggleButtonTextActive]}>
               {t('My Services')}
             </Text>
           </TouchableOpacity>
@@ -221,7 +215,7 @@ const MyAdsScreen = ({ navigation }) => {
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>{t('Loading your ads...')}</Text>
+          <Text style={styles.loadingText}>{t('Loading your services...')}</Text>
         </View>
       ) : (
         <FlatList
@@ -234,9 +228,9 @@ const MyAdsScreen = ({ navigation }) => {
           onRefresh={handleRefresh}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="megaphone-outline" size={64} color="#ccc" />
+              <Ionicons name="construct-outline" size={64} color="#ccc" />
               <Text style={styles.emptyText}>
-                {isLoading ? 'Loading...' : `No ${activeTab} ads found`}
+                {isLoading ? 'Loading...' : `No ${activeTab} services found`}
               </Text>
               {!isLoading && (
                 <TouchableOpacity style={styles.retryButton} onPress={() => fetchAds()}>
@@ -245,7 +239,7 @@ const MyAdsScreen = ({ navigation }) => {
               )}
             </View>
           }
-          ListFooterComponent={<SuggestionsFooter sourceRoute="MyAds" />}
+          ListFooterComponent={<SuggestionsFooter sourceRoute="MyServicesList" />}
         />
       )}
     </SafeAreaView>
@@ -257,7 +251,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-
   tabContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
@@ -404,11 +397,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 21,
   },
-  toggleButtonActive: {
-    backgroundColor: COLORS.primary,
-  },
   toggleButtonInactive: {
     backgroundColor: 'transparent',
+  },
+  toggleButtonActive: {
+    backgroundColor: COLORS.primary,
   },
   toggleButtonText: {
     fontSize: 14,
@@ -421,4 +414,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MyAdsScreen;
+export default MyServicesListScreen;

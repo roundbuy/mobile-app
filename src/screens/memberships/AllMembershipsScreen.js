@@ -6,6 +6,9 @@ import { subscriptionService, authService } from '../../services';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 
+// TODO (spring 2027): Activate membership purchase flow. Currently these screens are
+// retained but membership selection is bypassed at registration. When ready, remove the
+// bypass in the registration flow and enable plan selection + payment here.
 const AllMembershipsScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { completeRegistration } = useAuth();

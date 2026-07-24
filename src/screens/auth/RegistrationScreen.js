@@ -117,7 +117,14 @@ const RegistrationScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.copyright}>{t('© 2020-2025 RoundBuy Inc ®')}</Text>
+          <TouchableOpacity
+            style={styles.businessLink}
+            onPress={() => navigation.navigate('BusinessCreateAccount')}
+          >
+            <Text style={styles.businessLinkText}>{t('Pro Seller & Business Ads')}</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
         </View>
 
         <OnboardingModal
@@ -317,6 +324,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  businessLink: {
+    marginBottom: 16,
+  },
+  businessLinkText: {
+    fontSize: 14,
+    color: '#0056b3',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+    textAlign: 'center',
   },
   copyright: {
     fontSize: 12,

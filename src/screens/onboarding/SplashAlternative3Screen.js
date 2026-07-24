@@ -8,21 +8,16 @@ import { useAuth } from '../../context/AuthContext';
 
 const SplashAlternative3Screen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, isLoading, hasActiveSubscription } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     if (isLoading) return;
 
-    // Navigate based on auth state after 2 seconds
     const timer = setTimeout(() => {
       if (isAuthenticated) {
-        if (hasActiveSubscription()) {
-          navigation.replace('SearchScreen');
-        } else {
-          navigation.replace('AllMemberships');
-        }
+        navigation.replace('SearchScreen');
       } else {
-        navigation.replace('ATTPrompt');
+        navigation.replace('Registration');
       }
     }, 4000);
 

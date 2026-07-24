@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     dropdownButtonText: {
-        fontSize: 14,
-        fontWeight: '400',
+        fontSize: 13,
+        fontWeight: '500',
         color: '#1a1a1a',
     },
     modalOverlay: {

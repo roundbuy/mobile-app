@@ -2,24 +2,38 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
-import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS } from '../../constants/theme';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 import { ONBOARDING_THEME } from '../../constants/theme';
 
-const CreateAccountScreen = ({ navigation }) => {
+const BusinessCreateAccountScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { register } = useAuth();
+
+  // Personal fields
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Business fields
+  const [companyName, setCompanyName] = useState('');
+  const [vatNumber, setVatNumber] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
+
+  // Errors
   const [fullNameError, setFullNameError] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [companyNameError, setCompanyNameError] = useState('');
+  const [businessAddressError, setBusinessAddressError] = useState('');
+
+  // Checkboxes
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const validateFullName = (name) => {
@@ -58,6 +72,24 @@ const CreateAccountScreen = ({ navigation }) => {
     return true;
   };
 
+  const validateCompanyName = (value) => {
+    if (value.trim().length < 2) {
+      setCompanyNameError('Company name must be at least 2 characters');
+      return false;
+    }
+    setCompanyNameError('');
+    return true;
+  };
+
+  const validateBusinessAddress = (value) => {
+    if (value.trim().length < 5) {
+      setBusinessAddressError('Please enter a valid business address');
+      return false;
+    }
+    setBusinessAddressError('');
+    return true;
+  };
+
   const getPasswordStrength = () => {
     if (!password) return { strength: '', checks: [] };
     const checks = [
@@ -78,7 +110,7 @@ const CreateAccountScreen = ({ navigation }) => {
   const passwordInfo = getPasswordStrength();
 
   const handleSignUp = async () => {
-    if (!fullName || !username || !email || !password) {
+    if (!fullName || !username || !email || !password || !companyName || !businessAddress) {
       Alert.alert(t('Error'), t('Please fill all required fields'));
       return;
     }
@@ -86,8 +118,10 @@ const CreateAccountScreen = ({ navigation }) => {
     const isNameValid = validateFullName(fullName);
     const isUsernameValid = validateUsername(username);
     const isEmailValid = validateEmail(email);
+    const isCompanyValid = validateCompanyName(companyName);
+    const isAddressValid = validateBusinessAddress(businessAddress);
 
-    if (!isNameValid || !isUsernameValid || !isEmailValid) return;
+    if (!isNameValid || !isUsernameValid || !isEmailValid || !isCompanyValid || !isAddressValid) return;
 
     if (passwordInfo.strength === 'weak') {
       Alert.alert(t('Weak Password'), t('Please create a stronger password'));
@@ -107,18 +141,18 @@ const CreateAccountScreen = ({ navigation }) => {
         email: email,
         password: password,
         marketing_opt_in: marketingOptIn,
+        account_type: 'business',
+        company_name: companyName,
+        vat_number: vatNumber || null,
+        business_address: businessAddress,
         language: 'en',
       });
 
       if (response.success) {
-        Alert.alert(
-          t('Success'),
-          t('Registration successful! Please check your email for verification code.'),
-          [{ text: t('OK'), onPress: () => navigation.navigate('EmailVerification', { email }) }]
-        );
+        navigation.navigate('BusinessVerification');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Business registration error:', error);
       Alert.alert(
         t('Registration Failed'),
         error.message || t('An error occurred during registration. Please try again.')
@@ -126,10 +160,6 @@ const CreateAccountScreen = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSocialLogin = (provider) => {
-    navigation.navigate('SocialLogin');
   };
 
   return (
@@ -146,8 +176,11 @@ const CreateAccountScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.title}>{t('Create Account')}</Text>
-        <Text style={styles.subtitle}>{t('Create a profile, buy & sell safely')}</Text>
+        <Text style={styles.title}>{t('Pro Seller & Business Ads')}</Text>
+        <Text style={styles.subtitle}>{t('Create a business profile to access pro selling tools')}</Text>
+
+        {/* ── Personal Details ─────────────────────────────── */}
+        <Text style={styles.sectionLabel}>{t('Personal details')}</Text>
 
         {/* Full Name */}
         <View style={styles.inputContainer}>
@@ -193,7 +226,7 @@ const CreateAccountScreen = ({ navigation }) => {
           <Text style={styles.label}>{t('Email')}</Text>
           <TextInput
             style={[styles.input, emailError ? styles.inputError : null]}
-            placeholder={t('example@gmail.com')}
+            placeholder={t('example@company.com')}
             placeholderTextColor="#c7c7cc"
             value={email}
             onChangeText={(text) => {
@@ -253,18 +286,65 @@ const CreateAccountScreen = ({ navigation }) => {
               ))}
             </View>
           )}
+        </View>
 
-          <View style={styles.passwordHelp}>
-            <TouchableOpacity onPress={() => navigation.navigate('PasswordGuidelines')}>
-              <Text style={styles.passwordGuidelineLink}>{t('Password guideline')}</Text>
-            </TouchableOpacity>
-            <Text style={styles.checkMark}>✓</Text>
-          </View>
+        {/* ── Business Details ──────────────────────────────── */}
+        <Text style={styles.sectionLabel}>{t('Business details')}</Text>
+
+        {/* Company Name */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>{t('Company name')} <Text style={styles.required}>*</Text></Text>
+          <TextInput
+            style={[styles.input, companyNameError ? styles.inputError : null]}
+            placeholder={t('e.g. Round Enterprises Ltd')}
+            placeholderTextColor="#c7c7cc"
+            value={companyName}
+            onChangeText={(text) => {
+              setCompanyName(text);
+              if (text.trim()) validateCompanyName(text);
+              else setCompanyNameError('');
+            }}
+            autoCapitalize="words"
+          />
+          {companyNameError ? <Text style={styles.errorText}>{companyNameError}</Text> : null}
+        </View>
+
+        {/* VAT Number (optional) */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>{t('VAT number')} <Text style={styles.optional}>({t('optional')})</Text></Text>
+          <TextInput
+            style={styles.input}
+            placeholder={t('e.g. GB123456789')}
+            placeholderTextColor="#c7c7cc"
+            value={vatNumber}
+            onChangeText={setVatNumber}
+            autoCapitalize="characters"
+            autoCorrect={false}
+          />
+        </View>
+
+        {/* Business Address */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>{t('Business address')} <Text style={styles.required}>*</Text></Text>
+          <TextInput
+            style={[styles.input, styles.addressInput, businessAddressError ? styles.inputError : null]}
+            placeholder={t('e.g. 123 High Street, London, EC1A 1BB')}
+            placeholderTextColor="#c7c7cc"
+            value={businessAddress}
+            onChangeText={(text) => {
+              setBusinessAddress(text);
+              if (text.trim()) validateBusinessAddress(text);
+              else setBusinessAddressError('');
+            }}
+            multiline
+            numberOfLines={2}
+            autoCapitalize="words"
+          />
+          {businessAddressError ? <Text style={styles.errorText}>{businessAddressError}</Text> : null}
         </View>
 
         {/* Policy Checkboxes */}
         <View style={styles.checkboxSection}>
-          {/* Marketing opt-in (optional) */}
           <TouchableOpacity style={styles.checkboxRow} onPress={() => setMarketingOptIn(!marketingOptIn)} activeOpacity={0.7}>
             <View style={[styles.checkbox, marketingOptIn && styles.checkboxChecked]}>
               {marketingOptIn && <Text style={styles.checkboxTick}>✓</Text>}
@@ -274,7 +354,6 @@ const CreateAccountScreen = ({ navigation }) => {
             </Text>
           </TouchableOpacity>
 
-          {/* Terms acceptance (required) */}
           <TouchableOpacity style={styles.checkboxRow} onPress={() => setTermsAccepted(!termsAccepted)} activeOpacity={0.7}>
             <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
               {termsAccepted && <Text style={styles.checkboxTick}>✓</Text>}
@@ -285,16 +364,16 @@ const CreateAccountScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Sign Up Button */}
+        {/* Create Business Account Button */}
         <TouchableOpacity
           style={[styles.signUpButton, (loading || !termsAccepted) && styles.signUpButtonDisabled]}
           onPress={handleSignUp}
           disabled={loading || !termsAccepted}
         >
           {loading ? (
-            <ActivityIndicator color="#1a1a1a" />
+            <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.signUpButtonText}>{t('Sign up')}</Text>
+            <Text style={styles.signUpButtonText}>{t('Create business account')}</Text>
           )}
         </TouchableOpacity>
 
@@ -306,35 +385,6 @@ const CreateAccountScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>{t('Or')}</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* Social Login */}
-        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Google')}>
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="google" size={22} color="#DB4437" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>{t('Sign up with google')}</Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Apple')}>
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="apple" size={22} color="#000000" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>{t('Sign up with apple')}</Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Instagram')}>
-          <View style={styles.socialButtonContent}>
-            <FontAwesome name="instagram" size={22} color="#E4405F" style={styles.socialIcon} />
-            <Text style={styles.socialButtonText}>{t('Sign up with instagram')}</Text>
-          </View>
-        </TouchableOpacity>
-
         <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
       </ScrollView>
     </SafeScreenContainer>
@@ -343,14 +393,25 @@ const CreateAccountScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  scrollContent: { paddingBottom: 30 },
+  scrollContent: { paddingBottom: 40 },
   header: { marginBottom: 12 },
   backButton: { width: 44, height: 44, justifyContent: 'center' },
   backArrow: { fontSize: 32, fontWeight: '300', color: '#1a1a1a' },
   title: { fontSize: 24, fontWeight: '700', color: '#1a1a1a', marginBottom: 4, letterSpacing: -0.3 },
   subtitle: { fontSize: 15, fontWeight: '400', color: '#6a6a6a', marginBottom: 20, letterSpacing: -0.1 },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6a6a6a',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 12,
+    marginTop: 8,
+  },
   inputContainer: { marginBottom: 16 },
   label: { fontSize: 14, fontWeight: '600', color: '#1a1a1a', marginBottom: 6, letterSpacing: -0.1 },
+  required: { color: '#ff3b30' },
+  optional: { color: '#8a8a8a', fontWeight: '400' },
   hintText: { fontSize: 11, color: '#8a8a8a', marginTop: 4, marginLeft: 2 },
   input: {
     height: 48,
@@ -359,6 +420,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 14,
     color: '#1a1a1a',
+  },
+  addressInput: {
+    height: 72,
+    paddingTop: 14,
+    textAlignVertical: 'top',
   },
   inputError: { borderWidth: 1, borderColor: '#ff3b30' },
   errorText: { fontSize: 11, color: '#ff3b30', marginTop: 4, marginLeft: 4 },
@@ -389,14 +455,6 @@ const styles = StyleSheet.create({
   strongText: { color: '#34c759' },
   checkItem: { fontSize: 11, color: '#ff3b30', marginBottom: 4, lineHeight: 16 },
   checkPassed: { color: '#34c759' },
-  passwordHelp: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 6 },
-  passwordGuidelineLink: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: ONBOARDING_THEME.colors.link,
-    textDecorationLine: 'underline',
-  },
-  checkMark: { fontSize: 14, color: '#34c759', fontWeight: '700' },
   checkboxSection: { marginBottom: 20, gap: 14 },
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   checkbox: {
@@ -415,36 +473,25 @@ const styles = StyleSheet.create({
   checkboxLabel: { flex: 1, fontSize: 13, color: '#3a3a3a', lineHeight: 18 },
   checkboxLink: { color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' },
   signUpButton: {
-    height: 48,
+    height: 52,
     backgroundColor: COLORS.primary,
-    borderRadius: 24,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signUpButtonDisabled: { opacity: 0.4 },
   signUpButtonText: { fontSize: 16, fontWeight: '600', color: '#ffffff', letterSpacing: 0.2 },
   loginContainer: { flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginBottom: 16 },
   loginText: { fontSize: 15, fontWeight: '400', color: '#000000' },
   loginLink: { fontSize: 15, fontWeight: '500', color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#e0e0e0' },
-  dividerText: { fontSize: 13, fontWeight: '400', color: '#6a6a6a', marginHorizontal: 12 },
-  socialButton: {
-    height: 48,
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    marginBottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-  },
-  socialButtonContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  socialIcon: { marginRight: 12 },
-  socialButtonText: { fontSize: 15, fontWeight: '500', color: '#1a1a1a', letterSpacing: 0.1 },
   copyright: { fontSize: 12, color: '#000000', textAlign: 'center', fontWeight: 'bold', marginTop: 16 },
 });
 
-export default CreateAccountScreen;
+export default BusinessCreateAccountScreen;

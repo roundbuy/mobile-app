@@ -80,7 +80,7 @@ const ShowcaseProductSelectorScreen = ({ navigation, route }) => {
         }
 
         // Navigate to cart with selected products
-        navigation.navigate('VisibilityCart', {
+        navigation.navigate('ExtensionCheckout', {
             planType,
             selectedPlan,
             selectedDistance,

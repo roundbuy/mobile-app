@@ -18,6 +18,16 @@ import { API_ENDPOINTS } from '../config/api.config';
 export const register = async (userData) => {
   try {
     const response = await apiRequest('POST', API_ENDPOINTS.AUTH.REGISTER, userData);
+    if (response.success && response.data) {
+      const access_token = response.data.access_token;
+      const refresh_token = response.data.refresh_token;
+      if (access_token && refresh_token) {
+        await storage.saveTokens(access_token, refresh_token);
+      }
+      if (response.data.user) {
+        await storage.saveUserData(response.data.user);
+      }
+    }
     return response;
   } catch (error) {
     throw error;
@@ -36,6 +46,18 @@ export const verifyEmail = async (email, token) => {
       email,
       token,
     });
+
+    if (response.success && response.data) {
+      const access_token = response.data.access_token || response.data.accessToken;
+      const refresh_token = response.data.refresh_token || response.data.refreshToken;
+      if (access_token && refresh_token) {
+        await storage.saveTokens(access_token, refresh_token);
+      }
+      if (response.data.user) {
+        await storage.saveUserData(response.data.user);
+      }
+    }
+
     return response;
   } catch (error) {
     throw error;

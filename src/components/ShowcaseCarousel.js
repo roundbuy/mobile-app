@@ -1,12 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import { COLORS } from '../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { getFullImageUrl } from '../utils/imageUtils';
+
+// Shared card dimensions — keep in sync with HomeMarketCarousel
+const CARD_WIDTH = 160;
+const IMAGE_HEIGHT = 155;
 
 /**
  * ShowcaseCarousel Component
- * Displays a horizontal scrollable carousel of products using the exact same design as SearchScreen product cards
+ * Horizontal scrollable carousel for ShowCasing listings.
+ * Card size: 160 × 155px image, matching HomeMarketCarousel.
  */
 const ShowcaseCarousel = ({ showcase, onProductPress }) => {
     if (!showcase || !showcase.products || showcase.products.length < 4) {
@@ -14,22 +18,18 @@ const ShowcaseCarousel = ({ showcase, onProductPress }) => {
     }
 
     const { products, seller_name, showcase_group_id } = showcase;
-    console.log('Showcase Carousel Products:', products);
+
     return (
-        <View style={styles.showcaseContainer}>
-            {/* Showcase Label */}
-            <View style={styles.labelContainer}>
-                {/* <Ionicons name="diamond" size={16} color="#673AB7" /> */}
-                <Text style={styles.label}>ShowCasing</Text>
+        <View style={styles.container}>
+            {/* Section Header */}
+            <View style={styles.sectionHeader}>
+                <View style={styles.sectionAccent} />
+                <Text style={styles.sectionTitle}>ShowCasing</Text>
+                {seller_name ? (
+                    <Text style={styles.sellerName}>  by {seller_name}</Text>
+                ) : null}
             </View>
-            {/* Top Border */}
-            <View style={styles.topBorder} />
-            {/* Seller Name */}
-            <View style={styles.labelContainer}>
-                {seller_name && (
-                    <Text style={styles.sellerNameBelow}>by {seller_name}</Text>
-                )}
-            </View>
+
             {/* Horizontal Carousel */}
             <ScrollView
                 horizontal
@@ -40,12 +40,12 @@ const ShowcaseCarousel = ({ showcase, onProductPress }) => {
                 {products.map((product, index) => (
                     <TouchableOpacity
                         key={product.id}
-                        style={styles.productCard}
+                        style={styles.card}
                         onPress={() => onProductPress(product, index, showcase_group_id)}
-                        activeOpacity={0.7}
+                        activeOpacity={0.75}
                     >
-                        {/* Image Container - Exact copy from SearchScreen */}
-                        <View style={styles.imageContainer}>
+                        {/* Image */}
+                        <View style={styles.imageWrap}>
                             {product.images && product.images.length > 0 ? (
                                 <Image
                                     source={{ uri: getFullImageUrl(product.images[0]) }}
@@ -53,164 +53,116 @@ const ShowcaseCarousel = ({ showcase, onProductPress }) => {
                                     resizeMode="cover"
                                 />
                             ) : (
-                                <View style={[styles.image, styles.placeholder]}>
-                                    <Text style={styles.placeholderText}>No Image</Text>
+                                <View style={[styles.image, styles.imageFallback]}>
+                                    <Ionicons name="image-outline" size={28} color="#ccc" />
                                 </View>
                             )}
-
-                            {/* ShowCase Badge - replaces visibility badges */}
-                            {/* <View style={styles.badgesWrapper}>
-                                <View style={styles.showcaseBadge}>
-                                    <Ionicons name="diamond" size={10} color="#fff" style={{ marginRight: 4 }} />
-                                    <Text style={styles.badgeText}>SHOWCASE</Text>
-                                </View>
-                            </View> */}
                         </View>
 
-                        {/* Product Info - Exact copy from SearchScreen */}
-                        <View style={styles.itemInfo}>
-                            <Text style={styles.title} numberOfLines={1}>
+                        {/* Product Info */}
+                        <View style={styles.info}>
+                            <Text style={styles.title} numberOfLines={2}>
                                 {product.title}
                             </Text>
-                            <Text style={styles.distanceText} numberOfLines={1}>
-                                Distance: 0 m / 0 min walk
-                            </Text>
-                            <Text style={styles.priceText}>
+                            {product.distance != null && (
+                                <Text style={styles.distance}>
+                                    {Math.round((product.distance || 0) * 1000)}m away
+                                </Text>
+                            )}
+                            <Text style={styles.price}>
                                 £{parseFloat(product.price).toFixed(2)}
                             </Text>
                         </View>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
-
-            {/* Bottom Border */}
-            {/* <View style={styles.bottomBorder} /> */}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    showcaseContainer: {
-        marginVertical: 1,
-        paddingVertical: 1,
-        backgroundColor: 'transparent',
+    container: {
+        marginVertical: 6,
+        paddingVertical: 4,
+        backgroundColor: '#fff',
     },
-    topBorder: {
-        height: 2,
-        backgroundColor: '#e0e0e0ff',
-        marginHorizontal: 5,
-        marginBottom: 12,
-        width: 395,
-    },
-    bottomBorder: {
-        height: 2,
-        backgroundColor: '#e0e0e0ff',
-        marginTop: 12,
-        marginHorizontal: 5,
-        marginBottom: 12,
-        width: 395,
-    },
-    labelContainer: {
+    sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         marginBottom: 12,
     },
-    label: {
-        fontSize: 14,
-        color: '#e0e0e0ff',
-        fontWeight: '600',
-        marginLeft: 16,
+    sectionAccent: {
+        width: 4,
+        height: 20,
+        borderRadius: 2,
+        backgroundColor: '#673AB7',
+        marginRight: 10,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1a1a1a',
+        letterSpacing: -0.3,
     },
     sellerName: {
         fontSize: 12,
-        color: '#e0e0e0ff',
-        marginLeft: 8,
-        fontStyle: 'italic',
-    },
-    sellerNameBelow: {
-        fontSize: 12,
         color: '#888',
-        marginLeft: 16,
-        marginBottom: 8,
         fontStyle: 'italic',
+        marginLeft: 4,
+        flex: 1,
     },
     scrollContent: {
         paddingLeft: 16,
-        paddingRight: 16,
+        paddingRight: 8,
+        paddingBottom: 8,
     },
-    // EXACT COPY OF SearchScreen gridItem styles
-    productCard: {
-        width: 170, // Fixed width for horizontal scroll
-        marginHorizontal: 8,
-        marginBottom: 0,
+    card: {
+        width: CARD_WIDTH,
+        marginRight: 10,
         backgroundColor: '#fff',
         borderRadius: 12,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.08,
+        shadowRadius: 5,
         elevation: 3,
+        borderWidth: 1,
+        borderColor: '#f0f0f0',
     },
-    imageContainer: {
-        position: 'relative',
+    imageWrap: {
+        width: '100%',
+        height: IMAGE_HEIGHT,
     },
     image: {
         width: '100%',
-        height: 150,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        margin: 8,
-        width: 'calc(100% - 16px)',
+        height: '100%',
+        backgroundColor: '#f5f5f5',
     },
-    placeholder: {
-        justifyContent: 'center',
+    imageFallback: {
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    placeholderText: {
-        fontSize: 14,
-        color: '#888888',
-    },
-    itemInfo: {
-        padding: 8,
-        paddingTop: 0,
+    info: {
+        padding: 10,
     },
     title: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '600',
         color: '#1a1a1a',
         marginBottom: 4,
+        lineHeight: 18,
     },
-    priceText: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1a1a1a',
-    },
-    distanceText: {
-        color: '#303234',
-        fontSize: 12,
+    distance: {
+        fontSize: 11,
+        color: '#888',
         marginBottom: 4,
     },
-    badgesWrapper: {
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        flexDirection: 'column',
-        gap: 4,
-    },
-    showcaseBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 1,
-        backgroundColor: '#a5a5a5ff',
-    },
-    badgeText: {
-        color: '#fff',
-        fontSize: 10,
-        fontWeight: '700',
+    price: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#1a1a1a',
     },
 });
 

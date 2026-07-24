@@ -5,9 +5,11 @@ import { COLORS } from '../../constants/theme';
 import FilterDropdown from '../../components/FilterDropdown';
 import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ChooseRestFiltersScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [filters, setFilters] = useState({
     age_id: route.params?.age_id || null,
     size_id: route.params?.size_id || null,
@@ -32,6 +34,30 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     { id: 'dimensions', name: t('Dimension') },
     { id: 'clothing', name: t('Clothe Size') },
   ];
+
+  const getLocalizedSizeName = (option, preferredCountry) => {
+    const country = preferredCountry || 'International';
+    switch (country) {
+      case 'USA':
+        return option.us_size ? `US ${option.us_size}` : option.name;
+      case 'UK':
+        return option.uk_size ? `UK ${option.uk_size}` : option.name;
+      case 'FR':
+        return option.fr_size ? `FR ${option.fr_size}` : option.name;
+      case 'IT':
+        return option.it_size ? `IT ${option.it_size}` : option.name;
+      case 'JP':
+        return option.jp_size ? `JP ${option.jp_size}` : option.name;
+      case 'International':
+      default:
+        return option.intl_size ? `Intl ${option.intl_size}` : option.name;
+    }
+  };
+
+  const formattedSizes = (filterOptions.sizes || []).map(s => ({
+    ...s,
+    name: getLocalizedSizeName(s, user?.preferred_country)
+  }));
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -116,7 +142,7 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
     let sizeName = null;
 
     if (filters.size_type === 'clothing' && filters.size_id) {
-      sizeName = filterOptions.sizes.find(s => s.id === filters.size_id)?.name;
+      sizeName = formattedSizes.find(s => s.id === filters.size_id)?.name;
     } else if (filters.size_type === 'dimensions') {
       sizeName = `${filters.dim_height}x${filters.dim_width}x${filters.dim_length} ${filters.dim_unit}`;
     } else if (filters.size_type === 'not_applicable') {
@@ -186,7 +212,7 @@ const ChooseRestFiltersScreen = ({ navigation, route }) => {
       <FilterDropdown
         label={t('Size *')}
         value={filters.size_id}
-        options={filterOptions.sizes}
+        options={formattedSizes}
         onSelect={(value) => handleFilterChange('size_id', value)}
         placeholder={t('Select size')}
       />

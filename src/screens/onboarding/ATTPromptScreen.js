@@ -44,19 +44,11 @@ const ATTPromptScreen = ({ navigation }) => {
     <SafeScreenContainer>
       {/* Header with Logo and Patent Info */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Image
-            source={IMAGES.logoMain}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <TouchableOpacity 
-            style={styles.skipButton}
-            onPress={() => navigation.replace('NotificationPermission')}
-          >
-            <Text style={[styles.skipText, { color: colors.link }]}>{t('Skip')}</Text>
-          </TouchableOpacity>
-        </View>
+        <Image
+          source={IMAGES.logoMain}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
@@ -103,19 +95,6 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     marginTop: 10,
     paddingHorizontal: 20,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  skipButton: {
-    padding: 10,
-  },
-  skipText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   logo: {
     width: 150,

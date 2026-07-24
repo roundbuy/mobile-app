@@ -19,6 +19,7 @@ const PreviewAdScreen = ({ navigation, route }) => {
     subcategory_id,
     activity_id,
     condition_id,
+    quality,
     age_id,
     size_id,
     color_id,
@@ -48,6 +49,7 @@ const PreviewAdScreen = ({ navigation, route }) => {
         subcategory_id,
         activity_id,
         condition_id,
+        quality: quality || null,
         gender_id,
         age_id,
         size_id,
@@ -240,6 +242,14 @@ const PreviewAdScreen = ({ navigation, route }) => {
                 <View style={styles.filterItem}>
                   <Text style={styles.filterLabel}>{t('Condition:')}</Text>
                   <Text style={styles.filterValue}>{route.params.conditionName}</Text>
+                </View>
+              )}
+
+              {/* Quality */}
+              {route.params?.qualityName && (
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>{t('Quality:')}</Text>
+                  <Text style={styles.filterValue}>{route.params.qualityName}</Text>
                 </View>
               )}
 

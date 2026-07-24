@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { getFullImageUrl } from '../utils/imageUtils';
 import { COLORS } from '../constants/theme';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const H_PAD = 16;      // matches PromotionsGrid
+const CARD_GAP = 10;   // matches PromotionsGrid
+const CARD_WIDTH = (SCREEN_WIDTH - H_PAD * 2 - CARD_GAP) / 2;
+const IMAGE_HEIGHT = Math.round(CARD_WIDTH * 1.15);
+
 const getBadgeConfig = (badge) => {
     const level = badge.level?.toLowerCase();
     const type = badge.type?.toLowerCase();
-
-    // Membership Badges
     if (type === 'membership') {
         switch (level) {
             case 'gold': return { color: '#FFD700', icon: 'star', label: 'Gold' };
@@ -17,8 +21,6 @@ const getBadgeConfig = (badge) => {
             default: return { color: COLORS.primary, icon: 'user', label: 'Member' };
         }
     }
-
-    // Reward Badges
     if (type === 'reward') {
         switch (level) {
             case 'lottery': return { color: '#9C27B0', icon: 'ticket', label: 'Lottery' };
@@ -27,8 +29,6 @@ const getBadgeConfig = (badge) => {
             default: return { color: COLORS.primary, icon: 'gift', label: 'Reward' };
         }
     }
-
-    // Visibility Plans
     switch (level) {
         case 'rise_to_top': return { color: '#FF5722', icon: 'rocket', label: 'Rise Up' };
         case 'top_spot': return { color: '#E91E63', icon: 'trophy', label: 'Top Spot' };
@@ -41,226 +41,245 @@ const getBadgeConfig = (badge) => {
     }
 };
 
+const parseImages = (images) => {
+    if (typeof images === 'string') {
+        try { return JSON.parse(images); } catch { return []; }
+    }
+    return Array.isArray(images) ? images : [];
+};
+
 const StandardProductCard = ({ products, onProductPress }) => {
     const [favorites, setFavorites] = useState(new Set());
 
-    if (!products || products.length === 0) {
-        return null;
-    }
+    const toggleFavorite = (id) => {
+        setFavorites(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
 
-    const renderProducts = ({ item }) => {
+    // Empty-state: always render the section (never return null)
+    const isEmpty = !products || products.length === 0;
+
+    const renderCard = (item, index) => {
+        const images = parseImages(item.images);
         return (
             <TouchableOpacity
-                style={styles.gridItem}
+                key={item.id}
+                style={styles.card}
                 onPress={() => onProductPress(item)}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
             >
-                <View style={styles.imageContainer}>
-                    {(() => {
-                        let images = item.images;
-                        if (typeof images === 'string') {
-                            try {
-                                images = JSON.parse(images);
-                            } catch (e) {
-                                images = [];
-                            }
-                        }
-
-                        if (images && images.length > 0) {
-                            return (
-                                <Image
-                                    source={{ uri: getFullImageUrl(images[0]) }}
-                                    style={styles.image}
-                                />
-                            );
-                        } else {
-                            return (
-                                <View style={[styles.image, styles.placeholder]}>
-                                    <Text style={styles.placeholderText}>No Image</Text>
-                                </View>
-                            );
-                        }
-                    })()}
+                <View style={styles.imageWrap}>
+                    {images.length > 0 ? (
+                        <Image
+                            source={{ uri: getFullImageUrl(images[0]) }}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+                    ) : (
+                        <View style={[styles.image, styles.imageFallback]}>
+                            <FontAwesome name="image" size={32} color="#ccc" />
+                        </View>
+                    )}
                     <TouchableOpacity
-                        style={styles.favoriteButton}
-                        onPress={(e) => {
-                            e.stopPropagation();
-                            setFavorites(prev => {
-                                const newFavorites = new Set(prev);
-                                if (newFavorites.has(item.id)) {
-                                    newFavorites.delete(item.id);
-                                } else {
-                                    newFavorites.add(item.id);
-                                }
-                                return newFavorites;
-                            });
-                        }}
+                        style={styles.heartBtn}
+                        onPress={() => toggleFavorite(item.id)}
+                        hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
                     >
                         <FontAwesome
-                            name={favorites.has(item.id) ? "heart" : "heart-o"}
-                            size={24}
-                            color="#333"
+                            name={favorites.has(item.id) ? 'heart' : 'heart-o'}
+                            size={16}
+                            color={favorites.has(item.id) ? '#E91E63' : '#fff'}
                         />
                     </TouchableOpacity>
+                    {item.badges && item.badges
+                        .filter(b => b.type === 'visibility')
+                        .map((badge, i) => {
+                            const cfg = getBadgeConfig(badge);
+                            if (!cfg) return null;
+                            return (
+                                <View key={i} style={[styles.badge, { backgroundColor: cfg.color, top: 8 + i * 22 }]}>
+                                    <Ionicons name={cfg.icon} size={9} color="#fff" style={{ marginRight: 3 }} />
+                                    <Text style={styles.badgeText}>{cfg.label}</Text>
+                                </View>
+                            );
+                        })}
                 </View>
-
-                <View style={styles.itemInfo}>
-                    <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-                    <Text style={styles.distanceText} numberOfLines={1}>
-                        Distance: {Math.round((item.distance || 0) * 1000)} m / {Math.round((item.distance || 0) * 20)} min walk
-                    </Text>
-                    <Text style={styles.priceText}>£{item.price}</Text>
+                <View style={styles.info}>
+                    <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+                    <View style={styles.priceRow}>
+                        <Text style={styles.price}>£{parseFloat(item.price || 0).toFixed(2)}</Text>
+                        {item.distance != null && (
+                            <Text style={styles.distance}>{Math.round((item.distance || 0) * 1000)}m</Text>
+                        )}
+                    </View>
                 </View>
             </TouchableOpacity>
-        )
+        );
     };
+
+    // Build rows of 2
+    const rows = [];
+    if (!isEmpty) {
+        for (let i = 0; i < products.length; i += 2) {
+            rows.push(products.slice(i, i + 2));
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <View style={styles.labelContainer}>
-                <Text style={styles.label}>Standard</Text>
+            <View style={styles.sectionHeader}>
+                <View style={styles.sectionAccent} />
+                <Text style={styles.sectionTitle}>Recommended Listings</Text>
             </View>
-            {/* Top Border */}
-            <View style={styles.topBorder} />
-
-            <View style={styles.gridContainer}>
-                {products.map((item) => (
-                    <React.Fragment key={item.id}>
-                        {renderProducts({ item })}
-                    </React.Fragment>
-                ))}
-            </View>
+            {isEmpty ? (
+                <View style={styles.emptyState}>
+                    <Ionicons name="search-outline" size={36} color="#ccc" />
+                    <Text style={styles.emptyTitle}>No listings yet</Text>
+                    <Text style={styles.emptySubtitle}>Check back soon — new items are added regularly near you.</Text>
+                </View>
+            ) : (
+                rows.map((row, rowIdx) => (
+                    <View key={rowIdx} style={styles.row}>
+                        {row.map((item, colIdx) => renderCard(item, rowIdx * 2 + colIdx))}
+                        {row.length === 1 && <View style={{ width: CARD_WIDTH }} />}
+                    </View>
+                ))
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        width: '90%',
-        paddingHorizontal: 16,
+        width: SCREEN_WIDTH,
+        paddingHorizontal: H_PAD,
+        paddingTop: 16,
+        paddingBottom: 8,
+        backgroundColor: '#fff',
     },
-    topBorder: {
-        height: 2,
-        backgroundColor: '#e0e0e0ff',
-        marginHorizontal: 5,
-        marginBottom: 12,
-        marginLeft: -10,
-        width: 395,
-    },
-    bottomBorder: {
-        height: 2,
-        backgroundColor: '#e0e0e0ff',
-        marginTop: 12,
-        marginHorizontal: 5,
-        marginBottom: 12,
-        width: 395,
-    },
-    labelContainer: {
+    sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 1,
-        marginBottom: 12,
+        marginBottom: 14,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
     },
-    label: {
-        fontSize: 14,
-        color: '#e0e0e0ff',
-        fontWeight: '600',
-        marginLeft: 6,
+    sectionAccent: {
+        width: 4,
+        height: 20,
+        borderRadius: 2,
+        backgroundColor: '#1a73e8',
+        marginRight: 10,
+    },
+    sectionTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: '#1a1a1a',
+        letterSpacing: -0.3,
     },
     row: {
-        justifyContent: 'space-between',
-        marginBottom: 0,
-    },
-    gridContainer: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
         justifyContent: 'space-between',
+        marginBottom: 10,
     },
-    gridItem: {
-        width: '42%',
-        marginBottom: 16,
-        marginLeft: 10,
-        marginRight: 12,
-        backgroundColor: '#f9f9f9', // DEBUG: distinguish from white spacing
-        // borderRadius: 12,
-        // overflow: 'hidden',
-        // shadowColor: '#000',
-        // shadowOffset: { width: 0, height: 2 },
-        // shadowOpacity: 0.1,
-        // shadowRadius: 4,
-        // elevation: 3,
-        // borderWidth: 2,         // DEBUG: verify item boundary
-        // borderColor: 'red',     // DEBUG: verify item boundary
+    card: {
+        width: CARD_WIDTH,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 5,
+        elevation: 2,
+        borderWidth: 1,
+        borderColor: '#efefef',
     },
-    imageContainer: {
+    imageWrap: {
         position: 'relative',
+        width: '100%',
+        height: IMAGE_HEIGHT,
     },
     image: {
         width: '100%',
-        height: 150,
-        // backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        margin: 8,
+        height: '100%',
     },
-    placeholder: {
-        justifyContent: 'center',
+    imageFallback: {
+        backgroundColor: '#f5f5f5',
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    placeholderText: {
-        fontSize: 14,
-        // color: '#888888',
-    },
-    itemInfo: {
-        padding: 8,
-        paddingTop: 0,
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#1a1a1a',
-        marginBottom: 4,
-    },
-    priceText: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#1a1a1a',
-    },
-    distanceText: {
-        color: '#303234',
-        marginBottom: 4,
-    },
-    favoriteButton: {
+    heartBtn: {
         position: 'absolute',
-        top: 16,
-        right: 16,
-        padding: 8,
+        top: 8,
+        right: 8,
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    badgeContainer: {
+    badge: {
+        position: 'absolute',
+        left: 8,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 1,
-        alignSelf: 'flex-start',
+        paddingHorizontal: 6,
+        paddingVertical: 3,
+        borderRadius: 4,
     },
     badgeText: {
         color: '#fff',
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '700',
     },
-    badgesWrapper: {
-        position: 'absolute',
-        top: 8,
-        left: 8,
-        flexDirection: 'column',
-        gap: 0,
+    info: {
+        padding: 10,
     },
-    badgesWrapperBottomLeft: {
-        position: 'absolute',
-        bottom: 16,
-        left: 16,
-        flexDirection: 'column',
-        gap: 0,
+    title: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#1a1a1a',
+        marginBottom: 6,
+        lineHeight: 18,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    price: {
+        fontSize: 15,
+        fontWeight: '800',
+        color: '#1a1a1a',
+    },
+    distance: {
+        fontSize: 11,
+        color: '#888',
+    },
+    emptyState: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 32,
+        paddingHorizontal: 24,
+    },
+    emptyTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#aaa',
+        marginTop: 12,
+        marginBottom: 6,
+    },
+    emptySubtitle: {
+        fontSize: 13,
+        color: '#bbb',
+        textAlign: 'center',
+        lineHeight: 20,
     },
 });
 

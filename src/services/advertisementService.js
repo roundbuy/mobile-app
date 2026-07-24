@@ -292,6 +292,23 @@ export const uploadImages = async (images) => {
   }
 };
 
+export const getQuickFinds = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+        queryParams.append(key, params[key]);
+      }
+    });
+    const qs = queryParams.toString();
+    const url = `${API_ENDPOINTS.ADVERTISEMENT.QUICKFINDS}${qs ? '?' + qs : ''}`;
+    const response = await apiRequest('GET', url);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   getAdvertisementPlans,
   getFilters,
@@ -309,4 +326,5 @@ export default {
   deleteLocation,
   setDefaultLocation,
   uploadImages,
+  getQuickFinds,
 };

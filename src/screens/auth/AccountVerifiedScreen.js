@@ -1,19 +1,32 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, TYPOGRAPHY, SPACING, TOUCH_TARGETS, BORDER_RADIUS } from '../../constants/theme';
 import { IMAGES } from '../../assets/images';
 import { ONBOARDING_THEME } from '../../constants/theme';
 import { useTranslation } from '../../context/TranslationContext';
+import { useAuth } from '../../context/AuthContext';
 
 const AccountVerifiedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { email } = route.params || {};
+  const { user } = useAuth();
+  // account_type from params is the authoritative source (avoids stale closure)
+  const accountType = route.params?.account_type || user?.account_type;
+  const accountTypeRef = useRef(accountType);
+  accountTypeRef.current = accountType;
 
   const handleDone = () => {
-    // Navigate to Welcome screen first, passing the email
-    navigation.replace('Welcome', { userEmail: email, showOnboarding: true });
+    if (accountTypeRef.current === 'business') {
+      navigation.replace('BusinessVerification');
+    } else {
+      navigation.replace('ATTPrompt');
+    }
   };
+
+  useEffect(() => {
+    const timer = setTimeout(handleDone, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handlePatentInfo = () => {
     navigation.navigate('PatentPending');
@@ -21,7 +34,6 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
 
   return (
     <SafeScreenContainer>
-      {/* Header with Logo and Patent Info */}
       {/* Header with Logo and Patent Info */}
       <View style={styles.logoContainer}>
         <Image
@@ -32,31 +44,30 @@ const AccountVerifiedScreen = ({ navigation, route }) => {
         <Text style={styles.patentText}>{t('Patents Pending')}</Text>
         <TouchableOpacity onPress={handlePatentInfo}>
           <Text style={styles.infoLink}>
-            {t('Read more about')} <Text style={[styles.infoLink, { color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' }]}>{t('patents')}</Text>
+            {t('Read more about')}{' '}
+            <Text style={[styles.infoLink, { color: ONBOARDING_THEME.colors.link, textDecorationLine: 'underline' }]}>
+              {t('patents')}
+            </Text>
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Center Content */}
       <View style={styles.content}>
-        {/* Success Icon */}
         <View style={styles.successCircle}>
           <Text style={styles.checkmark}>✓</Text>
         </View>
 
-        <Text style={styles.title}>{t('Account verified')}</Text>
+        <Text style={styles.title}>{t('Your account is created')}</Text>
         <Text style={styles.subtitle}>
-          Congrats, now you're a verified{'\n'}member of RoundBuy
+          Welcome to RoundBuy —{'\n'}you're all set!
         </Text>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.doneButton}
-          onPress={handleDone}
-        >
-          <Text style={styles.doneButtonText}>{t('Done')}</Text>
+        <TouchableOpacity style={styles.doneButton} onPress={handleDone}>
+          <Text style={styles.doneButtonText}>{t('Continue')}</Text>
         </TouchableOpacity>
 
         <Text style={styles.copyright}>{t('© 2020-2026 RoundBuy Inc ®')}</Text>
@@ -84,11 +95,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#001C64',
-  },
-  clickHere: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
-    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -132,7 +138,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     height: 54,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.primary,
     borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
@@ -140,8 +146,8 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#ffffff',
     letterSpacing: 0.2,
   },
   copyright: {

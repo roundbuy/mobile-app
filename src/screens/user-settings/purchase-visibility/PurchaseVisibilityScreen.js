@@ -1,188 +1,113 @@
-
-import React, { useState, useEffect } from 'react';
-import advertisementService from '../../../services/advertisementService';
-import { useTranslation } from '../../../context/TranslationContext';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  ImageBackground
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
+import { COLORS } from '../../../constants/theme';
+import { useAuth } from '../../../context/AuthContext';
 import SuggestionsFooter from '../../../components/SuggestionsFooter';
+import { userService } from '../../../services';
 
 const PurchaseVisibilityScreen = ({ navigation }) => {
-  const { t } = useTranslation();
-  const handleBack = () => {
-    navigation.goBack();
-  };
+  const { user } = useAuth();
+  const isBusiness = user?.user_type === 'business';
+  const servicePriceStr = isBusiness ? '£5.00 / 6 months' : '£2.00 / 6 months';
 
-  const [plans, setPlans] = useState([]);
-  const [distancePlans, setDistancePlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [extensions, setExtensions] = useState({});
 
-  useEffect(() => {
-    fetchPlans();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchExtensions();
+    }, [])
+  );
 
-  const fetchPlans = async () => {
+  const fetchExtensions = async () => {
     try {
-      setLoading(true);
-      const response = await advertisementService.getAdvertisementPlans();
-      if (response && response.data) {
-        if (response.data.plans) setPlans(response.data.plans);
-        if (response.data.distance_plans) setDistancePlans(response.data.distance_plans);
+      const res = await userService.getSocialClubExtensionStatus();
+      if (res?.success && res?.data) {
+        setExtensions(res.data);
       }
-    } catch (error) {
-      console.error('Error fetching plans:', error);
-      Alert.alert(t('Error'), t('Failed to load advertisement plans'));
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      console.log('Error loading extensions for PurchaseVisibilityScreen:', e);
     }
   };
 
-  const handleTypePress = (type, typePlans) => {
-    navigation.navigate('VisibilityAdChoices', {
-      planType: type,
-      plans: typePlans,
-      distancePlans: distancePlans
-    });
-  };
-
-  const getGroupedPlans = () => {
-    const grouped = {};
-    plans.forEach(plan => {
-      const type = plan.plan_type || 'other';
-      if (!grouped[type]) {
-        grouped[type] = [];
-      }
-      grouped[type].push(plan);
-    });
-    return grouped;
-  };
-
-  const getTypeDisplayName = (type) => {
-    switch (type) {
-      case 'rise_to_top': return t('Rise to Top');
-      case 'top_spot': return t('TopSpot');
-      case 'show_casing': return t('ShowCasing');
-      case 'home_market': return t('HomeMarket');
-      case 'garage_sales': return t('GarageSales');
-      case 'targeted': return t('Targeted Ad');
-      case 'fast': return t('Fast Ad');
-      default: return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-  };
-
-  const getTypeDescription = (type) => {
-    switch (type) {
-      case 'rise_to_top': return t('Get noticed first! Your listing is risen to the top of search results once in a day.');
-      case 'top_spot': return t('Secure the #1 spot in search results for maximum visibility.');
-      case 'show_casing': return t('Premium placement on homepage and category pages.');
-      case 'targeted': return t('Reach your specific audience with location-based targeting.');
-      case 'fast': return t('Quick boost for urgent sales.');
-      default: return t('Boost your ad visibility');
-    }
-  };
-
-  const renderTypeCard = (type, typePlans) => {
-    // Calculate ranges
-    const prices = typePlans.map(p => parseFloat(p.discounted_price || p.price || 0));
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-
-    // Sort plans by duration to get min/max days
-    const sortedByDuration = [...typePlans].sort((a, b) => a.duration_days - b.duration_days);
-    const minDuration = sortedByDuration[0]?.duration_label || `${sortedByDuration[0]?.duration_days} days`;
-    const maxDuration = sortedByDuration[sortedByDuration.length - 1]?.duration_label || `${sortedByDuration[sortedByDuration.length - 1]?.duration_days} days`;
-
-    const currencySymbol = typePlans[0]?.currency_code === 'GBP' ? '£' : '£';
-
-    return (
-      <View key={type} style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.planName}>{getTypeDisplayName(type)}</Text>
-          <View style={styles.priceColumn}>
-            <View style={styles.priceContainer}>
-              <Text style={styles.currency}>{currencySymbol}</Text>
-              <Text style={styles.price}>{minPrice.toFixed(2)}</Text>
-              {minPrice !== maxPrice && (
-                <>
-                  <Text style={styles.priceSeparator}> - </Text>
-                  <Text style={styles.price}>{maxPrice.toFixed(2)}</Text>
-                </>
-              )}
-            </View>
-          </View>
-        </View>
-
-        <Text style={styles.description}>{getTypeDescription(type)}</Text>
-
-        <View style={styles.metaContainer}>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={16} color="#505050" />
-            <Text style={styles.metaText}>{minDuration} - {maxDuration}</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={16} color="#505050" />
-            {/* Assuming default is 3km based on migration, or check plan data */}
-            <Text style={styles.metaText}>{t('Up to 10km+')}</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.buyButton}
-          onPress={() => handleTypePress(type, typePlans)}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.buyButtonText}>{t('Select')}</Text>
-          <Ionicons name="chevron-forward" size={18} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const groupedPlans = getGroupedPlans();
-  // Order types specific way if needed, or just keys
-  const orderedTypes = ['rise_to_top', 'top_spot', 'show_casing', 'targeted', 'fast'].filter(t => groupedPlans[t]);
+  const EXTENSIONS = [
+    {
+      key: 'locations',
+      icon: 'location',
+      title: 'Display Locations',
+      description: 'Add more locations to reach buyers in different areas',
+      price: 'From £2.50 / 6 months',
+      route: 'ExtensionLocations',
+    },
+    {
+      key: 'social',
+      icon: 'people',
+      title: 'Social Clubs, Events & Garage Sales',
+      description: 'Unlock gallery listings for community features',
+      price: '£2.00 each / 6 months',
+      route: 'ExtensionSocialClubs',
+    },
+    {
+      key: 'service_listings',
+      icon: 'construct',
+      title: 'Service Listings',
+      description: 'Unlock the ability to list your professional skills and services',
+      price: servicePriceStr,
+      route: 'ExtensionShop',
+      params: { initialExtension: 'service_listings' }
+    },
+    {
+      key: 'boosts',
+      icon: 'rocket',
+      title: 'Visibility Boost',
+      description: 'Rise to top, TopSpot, ShowCasing and more to promote your listings',
+      price: 'From £1.00 / listing',
+      route: 'ExtensionBoosts',
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('Purchase Visibility')}</Text>
+        <Text style={styles.headerTitle}>Extensions</Text>
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-          </View>
-        ) : (
-          <View style={styles.plansContainer}>
-            <Text style={styles.subtitle}>{t('Choose how you want to promote your listing')}</Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.subtitle}>Choose how you want to grow your reach</Text>
 
-            {orderedTypes.map(type => renderTypeCard(type, groupedPlans[type]))}
+        {EXTENSIONS.map((ext) => (
+          <TouchableOpacity
+            key={ext.key}
+            style={styles.card}
+            onPress={() => {
+              if (ext.key === 'service_listings' && extensions.service_listings_active) {
+                navigation.navigate('MyServices');
+              } else {
+                navigation.navigate(ext.route, ext.params);
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.iconWrap}>
+              <Ionicons name={ext.icon} size={24} color={COLORS.primary} />
+            </View>
 
-            {Object.keys(groupedPlans).filter(t => !orderedTypes.includes(t)).map(type =>
-              renderTypeCard(type, groupedPlans[type])
-            )}
+            <View style={styles.cardText}>
+              <Text style={styles.cardTitle}>{ext.title}</Text>
+              <Text style={styles.cardDesc}>{ext.description}</Text>
+              <Text style={styles.cardPrice}>{ext.price}</Text>
+            </View>
 
-            {plans.length === 0 && (
-              <Text style={styles.emptyText}>{t('No plans available')}</Text>
-            )}
-          </View>
-        )}
+            <Ionicons name="chevron-forward" size={20} color="#aaa" />
+          </TouchableOpacity>
+        ))}
+
         <SuggestionsFooter sourceRoute="PurchaseVisibility" />
       </ScrollView>
     </SafeAreaView>
@@ -190,144 +115,73 @@ const PurchaseVisibilityScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e8e8e8',
   },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerRight: {
-    width: 32,
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plansContainer: {
-    padding: 10,
-    gap: 20,
-  },
+  backButton: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#000' },
+  headerRight: { width: 32 },
+
+  scroll: { padding: 20, gap: 14, paddingBottom: 48 },
+
   subtitle: {
-    fontSize: 16,
-    color: '#505050',
-    marginBottom: 10,
-    textAlign: 'center'
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 4,
   },
-  emptyText: {
-    textAlign: 'center',
-    color: '#505050',
-    marginTop: 40,
-  },
+
   card: {
-    backgroundColor: '#fff',
-    // borderRadius: 16,
-    padding: 10,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 8,
-    // elevation: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: '#e8e8e8',
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#fff',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  planName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#000',
-    flex: 1,
-  },
-  priceColumn: {
-    alignItems: 'flex-end',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  currency: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
-    marginTop: 4,
-    marginRight: 2,
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  priceSeparator: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  description: {
-    fontSize: 14,
-    color: '#505050',
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8
-  },
-  metaText: {
-    fontSize: 13,
-    color: '#444',
-    fontWeight: '500'
-  },
-  buyButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
-    flexDirection: 'row',
+
+  iconWrap: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#EEF2FF',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8
+    flexShrink: 0,
   },
-  buyButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  }
+
+  cardText: { flex: 1 },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 3,
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: '#888',
+    lineHeight: 18,
+    marginBottom: 5,
+  },
+  cardPrice: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
 });
 
 export default PurchaseVisibilityScreen;

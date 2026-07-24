@@ -20,6 +20,7 @@ import { advertisementService } from '../../services';
 const UserListingsScreen = ({ route, navigation }) => {
     const { t } = useTranslation();
     const { sellerId, sellerName } = route.params;
+    const [listingTypeToggle, setListingTypeToggle] = useState('items'); // 'items', 'services'
     const [ads, setAds] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -64,14 +65,28 @@ const UserListingsScreen = ({ route, navigation }) => {
     };
 
     const handleAdPress = (ad) => {
-        navigation.navigate('ProductDetails', {
-            advertisementId: ad.id,
-            advertisement: ad
-        });
+        if (ad.activity_name?.toLowerCase() === 'services' || ad.activity_id === 4) {
+            navigation.navigate('ServiceDetails', {
+                advertisementId: ad.id
+            });
+        } else {
+            navigation.navigate('ProductDetails', {
+                advertisementId: ad.id,
+                advertisement: ad
+            });
+        }
     };
 
     const handleRefresh = () => {
         fetchUserListings(true);
+    };
+
+    const getFilteredAds = () => {
+        if (listingTypeToggle === 'services') {
+            return ads.filter(ad => ad.activity_name?.toLowerCase() === 'services' || ad.activity_id === 4);
+        } else {
+            return ads.filter(ad => ad.activity_name?.toLowerCase() !== 'services' && ad.activity_id !== 4);
+        }
     };
 
     const renderAdItem = ({ item }) => {
@@ -143,8 +158,34 @@ const UserListingsScreen = ({ route, navigation }) => {
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={28} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{sellerName}'s Listings</Text>
+                <Text style={styles.headerTitle}>{sellerName}'s Items & Services</Text>
                 <View style={styles.headerRight} />
+            </View>
+
+            {/* Toggle between Items and Services */}
+            <View style={styles.toggleOuterContainer}>
+                <View style={styles.toggleInnerContainer}>
+                    <TouchableOpacity
+                        style={[styles.toggleButton, listingTypeToggle === 'items' && styles.toggleButtonActive]}
+                        onPress={() => setListingTypeToggle('items')}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="basket-outline" size={16} color={listingTypeToggle === 'items' ? '#ffffff' : '#555555'} style={{ marginRight: 6 }} />
+                        <Text style={[styles.toggleButtonText, listingTypeToggle === 'items' && styles.toggleButtonTextActive]}>
+                            {t('Items')}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.toggleButton, listingTypeToggle === 'services' && styles.toggleButtonActive]}
+                        onPress={() => setListingTypeToggle('services')}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="construct-outline" size={16} color={listingTypeToggle === 'services' ? '#ffffff' : '#555555'} style={{ marginRight: 6 }} />
+                        <Text style={[styles.toggleButtonText, listingTypeToggle === 'services' && styles.toggleButtonTextActive]}>
+                            {t('Services')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Ads List */}
@@ -155,7 +196,7 @@ const UserListingsScreen = ({ route, navigation }) => {
                 </View>
             ) : (
                 <FlatList
-                    data={ads}
+                    data={getFilteredAds()}
                     renderItem={renderAdItem}
                     keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
                     contentContainerStyle={styles.listContent}
@@ -330,6 +371,39 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
+    },
+    toggleOuterContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#ffffff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    toggleInnerContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 24,
+        padding: 3,
+    },
+    toggleButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8,
+        borderRadius: 21,
+    },
+    toggleButtonActive: {
+        backgroundColor: COLORS.primary,
+    },
+    toggleButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#555555',
+    },
+    toggleButtonTextActive: {
+        color: '#ffffff',
+        fontWeight: '700',
     },
 });
 

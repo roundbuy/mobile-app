@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IMAGES } from '../../assets/images';
 import {
   View,
@@ -19,7 +19,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
 import { advertisementService, favoritesService } from '../../services';
+import stripeService from '../../services/stripeService';
 import api from '../../services/api';
+import PaymentSheet from '../../components/PaymentSheet';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from '../../context/TranslationContext';
 import { getFullImageUrl, getAllImageUrls } from '../../utils/imageUtils';
@@ -98,7 +100,7 @@ const getMembershipConfig = (membership) => {
 const ProductDetailsScreen = ({ route, navigation }) => {
   const { t } = useTranslation();
   const { advertisementId, advertisement, showcaseGroupId, showcaseIndex } = route?.params || {};
-  const { user, hasActiveSubscription } = useAuth();
+  const { user } = useAuth();
 
   // State management
   const [productData, setProductData] = useState(null);
@@ -175,6 +177,10 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   const [currentHomeMarketIndex, setCurrentHomeMarketIndex] = useState(route?.params?.homeMarketIndex || 0);
   const homeMarketTier = route?.params?.homeMarketTier;
 
+  // Payment sheet (shown when no saved card — user adds card before checkout)
+  const [addCardSheet, setAddCardSheet] = useState(false);
+  const pendingNavRef = useRef(null);
+
   // Fetch advertisement details on mount
   useEffect(() => {
     if (advertisementId) {
@@ -215,13 +221,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       setError(err.message || 'Failed to load advertisement details');
 
       // Handle specific errors
-      if (err.require_subscription) {
-        Alert.alert(
-          t('Subscription Required'),
-          t('You need an active subscription to view advertisement details.'),
-          [{ text: t('View Plans'), onPress: () => navigation.navigate('AllMemberships') }]
-        );
-      } else if (err.require_login) {
+      if (err.require_login) {
         Alert.alert(
           t('Login Required'),
           t('Please login to view advertisement details.'),
@@ -358,9 +358,71 @@ const ProductDetailsScreen = ({ route, navigation }) => {
       category: ad.category_name,
       distanceMeters: ad.distance ? `${(ad.distance * 1000).toFixed(0)} m` : 'Distance unknown',
       condition: ad.condition_name,
+      quality: ad.quality ? ({ high: 'High Quality', medium: 'Medium Quality', low: 'Low Quality' }[ad.quality.toLowerCase()] || ad.quality) : null,
       gender: ad.gender_name || '',
       age: ad.age_name || 'Any',
-      size: ad.size_name || '',
+      size: (() => {
+        if (ad.dim_length || ad.dim_width || ad.dim_height) {
+          return `${ad.dim_height || 0}x${ad.dim_width || 0}x${ad.dim_length || 0} ${ad.dim_unit || 'cm'}`;
+        }
+        if (ad.us_size || ad.uk_size || ad.euro_size || ad.intl_size || ad.fr_size || ad.it_size || ad.jp_size) {
+          const primaryMap = {
+            'USA': { key: 'us_size', label: 'US' },
+            'UK': { key: 'uk_size', label: 'UK' },
+            'FR': { key: 'fr_size', label: 'FR' },
+            'IT': { key: 'it_size', label: 'IT' },
+            'JP': { key: 'jp_size', label: 'JP' },
+            'International': { key: 'intl_size', label: 'Intl' }
+          };
+
+          const prefCountry = user?.preferred_country || 'International';
+          const primaryInfo = primaryMap[prefCountry] || primaryMap['International'];
+          
+          let primarySizeText = '';
+          const primaryVal = ad[primaryInfo.key];
+          if (primaryVal) {
+            primarySizeText = `${primaryInfo.label} ${primaryVal}`;
+          } else {
+            const order = ['intl_size', 'us_size', 'uk_size', 'euro_size', 'fr_size', 'it_size', 'jp_size'];
+            const labels = {
+              intl_size: 'Intl',
+              us_size: 'US',
+              uk_size: 'UK',
+              euro_size: 'EU',
+              fr_size: 'FR',
+              it_size: 'IT',
+              jp_size: 'JP'
+            };
+            const firstKey = order.find(k => ad[k]);
+            if (firstKey) {
+              primarySizeText = `${labels[firstKey]} ${ad[firstKey]}`;
+            }
+          }
+
+          const secondaryParts = [];
+          const mapping = [
+            { key: 'us_size', label: 'US' },
+            { key: 'uk_size', label: 'UK' },
+            { key: 'fr_size', label: 'FR' },
+            { key: 'it_size', label: 'IT' },
+            { key: 'jp_size', label: 'JP' },
+            { key: 'intl_size', label: 'Intl' }
+          ];
+
+          mapping.forEach(m => {
+            const isPrimary = (primaryVal && m.key === primaryInfo.key) || (!primaryVal && primarySizeText.startsWith(m.label));
+            if (!isPrimary && ad[m.key]) {
+              secondaryParts.push(`${m.label} ${ad[m.key]}`);
+            }
+          });
+
+          if (secondaryParts.length > 0) {
+            return `${primarySizeText} (${secondaryParts.join(' | ')})`;
+          }
+          return primarySizeText;
+        }
+        return ad.size_name || '';
+      })(),
       colour: ad.color_name || '',
       images: ad.images ? getAllImageUrls(ad.images) : [IMAGES.placeholder],
       seller: {
@@ -405,30 +467,40 @@ const ProductDetailsScreen = ({ route, navigation }) => {
     setIsFavorite(prev => !prev);
   };
 
-  const handleBuy = () => {
+  const navigateToDelivery = (basePrice) => {
+    navigation.navigate('Step3DeliverySelectionScreen', {
+      advertisementId: productData.id,
+      title: productData.title,
+      offerAmount: basePrice,
+      itemImage: productData.images && productData.images.length > 0 ? productData.images[0] : null,
+    });
+  };
+
+  const handleBuy = async () => {
     if (!user) {
       Alert.alert(t('Login Required'), t('Please login to buy items.'));
       return;
     }
 
     try {
-      // Extract numeric base price from formatted price string
       let basePrice = 0;
       if (typeof productData.price === 'string') {
         const match = productData.price.match(/[\d.,]+/);
-        if (match) {
-          basePrice = parseFloat(match[0].replace(/,/g, ''));
-        }
+        if (match) basePrice = parseFloat(match[0].replace(/,/g, ''));
       } else if (typeof productData.price === 'number') {
         basePrice = productData.price;
       }
 
-      navigation.navigate('Step3DeliverySelectionScreen', {
-        advertisementId: productData.id,
-        title: productData.title,
-        offerAmount: basePrice,
-        itemImage: productData.images && productData.images.length > 0 ? productData.images[0] : null
-      });
+      // Check for saved payment method — prompt to add one if missing
+      const cards = await stripeService.getSavedPaymentMethods().catch(() => []);
+      if (cards.length === 0) {
+        // No card saved — show add-card sheet; after card added, navigate to delivery
+        pendingNavRef.current = basePrice;
+        setAddCardSheet(true);
+        return;
+      }
+
+      navigateToDelivery(basePrice);
     } catch (error) {
       console.error('Pre-buy navigation error:', error);
       Alert.alert(t('Error'), t('Failed to initiate purchase.'));
@@ -453,6 +525,10 @@ const ProductDetailsScreen = ({ route, navigation }) => {
   };
 
   const handleInfoPress = (label) => {
+    if (label === 'Quality') {
+      navigation.navigate('QualityInfo');
+      return;
+    }
     if (infoContent[label]) {
       setInfoModal({
         visible: true,
@@ -823,6 +899,7 @@ const ProductDetailsScreen = ({ route, navigation }) => {
               <DetailRow label={t('Distance')} value={productData.distanceMeters} onInfoPress={handleInfoPress} />
               <DetailRow label={t('Price')} value={productData.price} onInfoPress={handleInfoPress} />
               <DetailRow label={t('Condition')} value={productData.condition} onInfoPress={handleInfoPress} />
+              <DetailRow label={t('Quality')} value={productData.quality} onInfoPress={handleInfoPress} />
               <DetailRow label={t('Gender')} value={productData.gender} onInfoPress={handleInfoPress} />
               <DetailRow label={t('Age')} value={productData.age} onInfoPress={handleInfoPress} />
               <DetailRow label={t('Size')} value={productData.size} onInfoPress={handleInfoPress} />
@@ -1018,12 +1095,30 @@ const ProductDetailsScreen = ({ route, navigation }) => {
         title={infoModal.title}
         content={infoModal.content}
       />
+
+      {/* Add-card sheet — shown when user has no saved card and taps Buy */}
+      <PaymentSheet
+        visible={addCardSheet}
+        onClose={() => setAddCardSheet(false)}
+        title="Add a payment card"
+        description="Save a card to proceed to checkout"
+        amount={0.00}
+        currency="GBP"
+        payload={null}
+        onSuccess={() => {
+          setAddCardSheet(false);
+          if (pendingNavRef.current !== null) {
+            navigateToDelivery(pendingNavRef.current);
+            pendingNavRef.current = null;
+          }
+        }}
+      />
     </SafeAreaView >
   );
 };
 
 const DetailRow = ({ label, value, onInfoPress }) => {
-  const hasInfo = ['Distance', 'Condition', 'Colour'].includes(label);
+  const hasInfo = ['Distance', 'Condition', 'Colour', 'Quality'].includes(label);
 
   return (
     <View style={styles.detailRow}>

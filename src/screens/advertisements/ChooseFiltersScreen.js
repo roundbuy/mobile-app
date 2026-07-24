@@ -8,14 +8,37 @@ import LocationSelectionModal from '../../components/LocationSelectionModal';
 import { advertisementService } from '../../services';
 import { useTranslation } from '../../context/TranslationContext';
 
+const QUALITY_OPTIONS = [
+  { id: 'high', name: 'High Quality' },
+  { id: 'medium', name: 'Medium Quality' },
+  { id: 'low', name: 'Low Quality' },
+];
+
+// Which fields to show per listing type
+const LISTING_TYPE_CONFIG = {
+  sell:    { showPrice: true,  showCondition: true,  showQuality: true,  showGender: true,  priceLabel: 'Price *',       priceLocked: false },
+  service: { showPrice: true,  showCondition: false, showQuality: false, showGender: false, priceLabel: 'Service Price *', priceLocked: false },
+  rent:    { showPrice: true,  showCondition: true,  showQuality: false, showGender: false, priceLabel: 'Rental Price *', priceLocked: false },
+  give:    { showPrice: false, showCondition: true,  showQuality: true,  showGender: false, priceLabel: 'Price',          priceLocked: true  },
+};
+
+// Map listing type → activity slug
+const LISTING_TYPE_ACTIVITY = {
+  sell: 'sell', service: 'services', rent: 'rent', give: 'give',
+};
+
 const ChooseFiltersScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const listingType = route.params?.listingType || 'sell';
+  const typeConfig = LISTING_TYPE_CONFIG[listingType] || LISTING_TYPE_CONFIG.sell;
+
   const [filters, setFilters] = useState({
     category_id: route.params?.category_id || null,
     subcategory_id: route.params?.subcategory_id || null,
     activity_id: route.params?.activity_id || null,
-    price: route.params?.price || '',
+    price: typeConfig.priceLocked ? '0' : (route.params?.price || ''),
     condition_id: route.params?.condition_id || null,
+    quality: route.params?.quality || null,
     gender_id: route.params?.gender_id || null,
   });
 
@@ -45,6 +68,12 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
       const response = await advertisementService.getFilters();
       if (response.success) {
         setFilterOptions(response.data);
+        // Auto-set activity_id from listingType
+        const targetSlug = LISTING_TYPE_ACTIVITY[listingType] || 'sell';
+        const matchedActivity = (response.data.activities || []).find(a => a.slug === targetSlug);
+        if (matchedActivity) {
+          setFilters(prev => ({ ...prev, activity_id: matchedActivity.id }));
+        }
       } else {
         setError('Failed to load filter options');
       }
@@ -97,22 +126,22 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
       return false;
     }
 
-    if (!filters.activity_id) {
-      Alert.alert(t('Validation Error'), t('Please select an activity'));
-      return false;
-    }
-
-    if (!filters.price || filters.price === '0') {
+    if (typeConfig.showPrice && !typeConfig.priceLocked && (!filters.price || filters.price === '0')) {
       Alert.alert(t('Validation Error'), t('Please enter a valid price'));
       return false;
     }
 
-    if (!filters.condition_id) {
+    if (typeConfig.showCondition && !filters.condition_id) {
       Alert.alert(t('Validation Error'), t('Please select a condition'));
       return false;
     }
 
-    if (!filters.gender_id) {
+    if (typeConfig.showQuality && !filters.quality) {
+      Alert.alert(t('Validation Error'), t('Please select a quality level'));
+      return false;
+    }
+
+    if (typeConfig.showGender && !filters.gender_id) {
       Alert.alert(t('Validation Error'), t('Please select a gender'));
       return false;
     }
@@ -142,6 +171,9 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
     const conditionName = filters.condition_id
       ? filterOptions.conditions.find(c => c.id === filters.condition_id)?.name
       : null;
+    const qualityName = filters.quality
+      ? QUALITY_OPTIONS.find(q => q.id === filters.quality)?.name
+      : null;
     const genderName = filters.gender_id
       ? filterOptions.genders.find(g => g.id === filters.gender_id)?.name
       : null;
@@ -155,6 +187,7 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
       subcategoryName,
       activityName,
       conditionName,
+      qualityName,
       genderName,
       // Pass through edit params
       isEdit: route.params?.isEdit,
@@ -250,35 +283,51 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
               disabled={!filters.category_id}
             />
 
-            <FilterDropdown
-              label={t('Activity *')}
-              value={filters.activity_id}
-              options={filterOptions.activities}
-              onSelect={(value) => handleFilterChange('activity_id', value)}
-              placeholder={t('Select activity type')}
-            />
+            {typeConfig.showPrice && !typeConfig.priceLocked && (
+              <PriceInput
+                label={t(typeConfig.priceLabel)}
+                price={filters.price}
+                onPriceChange={(value) => handleFilterChange('price', value)}
+              />
+            )}
 
-            <PriceInput
-              label={t('Price *')}
-              price={filters.price}
-              onPriceChange={(value) => handleFilterChange('price', value)}
-            />
+            {typeConfig.priceLocked && (
+              <View style={styles.lockedPriceRow}>
+                <Text style={styles.lockedPriceLabel}>{t('Price')}</Text>
+                <Text style={styles.lockedPriceValue}>Free (£0)</Text>
+              </View>
+            )}
 
-            <FilterDropdown
-              label={t('Condition *')}
-              value={filters.condition_id}
-              options={filterOptions.conditions}
-              onSelect={(value) => handleFilterChange('condition_id', value)}
-              placeholder={t('Select condition')}
-            />
+            {typeConfig.showCondition && (
+              <FilterDropdown
+                label={t('Condition *')}
+                value={filters.condition_id}
+                options={filterOptions.conditions}
+                onSelect={(value) => handleFilterChange('condition_id', value)}
+                placeholder={t('Select condition')}
+              />
+            )}
 
-            <FilterDropdown
-              label={t('Gender *')}
-              value={filters.gender_id}
-              options={filterOptions.genders}
-              onSelect={(value) => handleFilterChange('gender_id', value)}
-              placeholder={t('Select gender')}
-            />
+            {typeConfig.showQuality && (
+              <FilterDropdown
+                label={t('Quality *')}
+                value={filters.quality}
+                options={QUALITY_OPTIONS}
+                onSelect={(value) => handleFilterChange('quality', value)}
+                placeholder={t('Select quality level')}
+                onInfoPress={() => navigation.navigate('QualityInfo')}
+              />
+            )}
+
+            {typeConfig.showGender && (
+              <FilterDropdown
+                label={t('Gender *')}
+                value={filters.gender_id}
+                options={filterOptions.genders}
+                onSelect={(value) => handleFilterChange('gender_id', value)}
+                placeholder={t('Select gender')}
+              />
+            )}
 
             {/* Location Selection */}
             <View style={styles.locationContainer}>
@@ -349,6 +398,26 @@ const ChooseFiltersScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  lockedPriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    marginBottom: 16,
+  },
+  lockedPriceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  lockedPriceValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',

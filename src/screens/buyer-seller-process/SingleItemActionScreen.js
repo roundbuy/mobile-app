@@ -67,7 +67,14 @@ const SingleItemActionScreen = ({ navigation, route }) => {
         { id: 6, title: 'Give Feedback', actionDesc: 'Action rate & give feedback', route: 'GiveFeedbackForm' }
     ];
 
-    const stepsList = activeTab === 'selling' ? sellingSteps : buyingSteps;
+    const allSteps = activeTab === 'selling' ? sellingSteps : buyingSteps;
+
+    // Merge pairs: [1+2], [3+4], [5+6]
+    const mergedSteps = [
+        { id: 1, sub: [allSteps[0], allSteps[1]] },
+        { id: 2, sub: [allSteps[2], allSteps[3]] },
+        { id: 3, sub: [allSteps[4], allSteps[5]] },
+    ];
 
     const handleStepPress = (step) => {
         // Validation: Step 4 (Schedule Pick Up) is only available if 'pickup' was selected
@@ -136,42 +143,48 @@ const SingleItemActionScreen = ({ navigation, route }) => {
                         {/* Role Label */}
                         <Text style={styles.roleLabel}>{displayRole}</Text>
 
-                        {/* Steps List */}
+                        {/* Steps List — merged pairs */}
                         <View style={styles.stepsContainer}>
-                            {stepsList.map((step) => {
-                                // Dynamically resolve if the step is done using the API data
-                                const isDone = actionStatus ? actionStatus[`step${step.id}`] : false;
-                                const statusColor = isDone ? '#45FF4E' : 'red'; // Done in light green, Undone in red
-                                const statusText = isDone ? 'Done' : 'Undone';
-
-                                return (
-                                    <TouchableOpacity
-                                        key={step.id}
-                                        style={styles.stepCard}
-                                        onPress={() => handleStepPress(step)}
-                                        activeOpacity={0.7}
-                                    >
-                                        <View style={styles.stepNumberContainer}>
-                                            <View style={styles.stepBadge}>
-                                                <Text style={styles.stepNumber}>{step.id}.</Text>
-                                                <Text style={styles.stepTextSmall}>Step</Text>
-                                            </View>
+                            {mergedSteps.map((mergedStep) => (
+                                <View key={mergedStep.id} style={styles.stepCard}>
+                                    {/* Step number column — spans full card height */}
+                                    <View style={styles.stepNumberContainer}>
+                                        <View style={styles.stepBadge}>
+                                            <Text style={styles.stepNumber}>{mergedStep.id}.</Text>
+                                            <Text style={styles.stepTextSmall}>Step</Text>
                                         </View>
+                                    </View>
 
-                                        <View style={styles.stepInfoContainer}>
-                                            <Text style={styles.stepTitle}>{step.title}</Text>
-                                            <Text style={styles.stepDesc}>{step.actionDesc}</Text>
-                                            <Text style={styles.stepStatus}>
-                                                Action status: <Text style={{ color: statusColor, fontWeight: 'bold' }}>{statusText}</Text>
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.stepArrow}>
-                                            <Ionicons name="chevron-forward" size={32} color="#000" />
-                                        </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
+                                    {/* Sub-steps column */}
+                                    <View style={styles.subStepsColumn}>
+                                        {mergedStep.sub.map((sub, idx) => {
+                                            const isDone = actionStatus ? actionStatus[`step${sub.id}`] : false;
+                                            return (
+                                                <TouchableOpacity
+                                                    key={sub.id}
+                                                    style={[styles.subStepRow, idx > 0 && styles.subStepDivider]}
+                                                    onPress={() => handleStepPress(sub)}
+                                                    activeOpacity={0.7}
+                                                >
+                                                    <View style={styles.stepInfoContainer}>
+                                                        <Text style={styles.stepTitle}>{sub.title}</Text>
+                                                        <Text style={styles.stepDesc}>{sub.actionDesc}</Text>
+                                                        <Text style={styles.stepStatus}>
+                                                            Action status:{' '}
+                                                            <Text style={{ color: isDone ? '#45FF4E' : 'red', fontWeight: 'bold' }}>
+                                                                {isDone ? 'Done' : 'Undone'}
+                                                            </Text>
+                                                        </Text>
+                                                    </View>
+                                                    <View style={styles.stepArrow}>
+                                                        <Ionicons name="chevron-forward" size={28} color="#000" />
+                                                    </View>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
+                            ))}
                         </View>
                     </>
                 )}
@@ -259,8 +272,19 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         marginBottom: 8,
-        alignItems: 'center',
         overflow: 'hidden',
+    },
+    subStepsColumn: {
+        flex: 1,
+    },
+    subStepRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 2,
+    },
+    subStepDivider: {
+        borderTopWidth: 1,
+        borderTopColor: '#ccc',
     },
     stepNumberContainer: {
         backgroundColor: '#fff',

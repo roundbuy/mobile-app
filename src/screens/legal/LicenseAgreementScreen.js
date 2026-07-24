@@ -53,10 +53,10 @@ const LicenseAgreementScreen = ({ navigation }) => {
         {/* Content */}
         <View style={styles.content}>
           <Text style={[typography.heading, styles.title]}>
-            {t('License, Terms, and Privacy Policy')}
+            {t('Roundbuy Policies')}
           </Text>
 
-          <Text style={[styles.description, typography.body, { textAlign: 'left' }]}>{t('You must agree to license agreement (EULA), Terms & Conditions and Privacy Policy below in order to complete the installation and use RoundBuy app or services. By clicking "I accept", you are agreeing to the terms of these agreements.')}</Text>
+          <Text style={[styles.description, typography.body, { textAlign: 'left' }]}>{t('You must agree to the policies below, to complete and use the Roundbuy app & platform. Agree by tapping “I accept”.')}</Text>
 
           {/* Policy Links */}
           <View style={styles.linksContainer}>
