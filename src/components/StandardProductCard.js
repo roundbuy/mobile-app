@@ -132,7 +132,7 @@ const StandardProductCard = ({ products, onProductPress }) => {
         <View style={styles.container}>
             <View style={styles.sectionHeader}>
                 <View style={styles.sectionAccent} />
-                <Text style={styles.sectionTitle}>Recommended Listings</Text>
+                <Text style={styles.sectionTitle}>Standard Listings</Text>
             </View>
             {isEmpty ? (
                 <View style={styles.emptyState}>

@@ -26,6 +26,7 @@ import BannerAdCard from '../../components/BannerAdCard';
 import SectionHeader from '../../components/SectionHeader';
 import PromotionsGrid from '../../components/PromotionsGrid';
 import StandardProductCard from '../../components/StandardProductCard';
+import RecommendationsCarousel from '../../components/RecommendationsCarousel';
 import Hyperlink from '../../components/common/Hyperlink';
 import SearchInstructionsModal from '../../components/SearchInstructionsModal';
 import QuickOnboardingPrompt from '../../components/QuickOnboardingPrompt';
@@ -1087,6 +1088,22 @@ const SearchScreen = ({ navigation, route }) => {
       return null;
     }
 
+    // Check if this is recommendations carousel
+    if (item.type === 'recommendations') {
+      return (
+        <View style={{ width: Dimensions.get('window').width, marginLeft: -20 }}>
+          <RecommendationsCarousel
+            products={item.products}
+            onProductPress={(product) => {
+              navigation.navigate('ProductDetails', {
+                advertisementId: product.id,
+              });
+            }}
+          />
+        </View>
+      );
+    }
+
     // Check if this is a promotions grid
     if (item.type === 'promotions') {
       return (
@@ -1615,12 +1632,10 @@ const SearchScreen = ({ navigation, route }) => {
               <FlatList
                 data={listingTypeFilter === 'quickfinds' ? quickFinds.map(qf => ({ ...qf, type: 'quickfind_request' })) : advertisements}
                 renderItem={renderListItem}
-                ListHeaderComponent={() => {
-                  if (searchText && searchText.trim() !== '') return null;
-                  return null;
-                }}
+                ListHeaderComponent={() => null}
                 keyExtractor={(item, index) => {
                   if (item.type === 'quickfind_request') return `qf-${item.id}-${index}`;
+                  if (item.type === 'recommendations') return `recommendations-carousel-${index}`;
                   if (item.type === 'promotions') return `promotions-grid-${index}`;
                   if (item.type === 'showcase') return `showcase-${item.showcase_group_id}-${index}`;
                   if (item.type === 'homemarket_group') return `homemarket-group-${index}`;
@@ -3170,6 +3185,36 @@ const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: 20,
     paddingBottom: 100
+  },
+  // ── Recommendations for you (landing-state page header) ──────────────────
+  recommendationsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 14,
+    paddingHorizontal: 4,
+  },
+  recommendationsAccentBar: {
+    width: 4,
+    height: 38,
+    borderRadius: 3,
+    backgroundColor: '#4A6FFF',
+    marginRight: 12,
+  },
+  recommendationsTextBlock: {
+    flex: 1,
+  },
+  recommendationsTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: -0.3,
+  },
+  recommendationsSubtitle: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+    fontWeight: '400',
   },
   gridItem: {
     width: '50%',

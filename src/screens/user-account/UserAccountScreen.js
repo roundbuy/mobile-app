@@ -95,7 +95,6 @@ const UserAccountScreen = ({ navigation }) => {
     ],
     settings: [
       { id: 13, route: 'Inbox', title: 'Inbox', icon: 'chatbubbles-outline' },
-      { id: 19, route: 'ActionCenterScreen', title: 'Action Center', icon: 'flash-outline' },
       { id: 1, route: 'MyAds', title: 'My Items', icon: 'basket-outline' },
       { id: 22, route: 'MyServicesList', title: 'My Services', icon: 'construct-outline' },
       { id: 2, route: 'ManageOffers', title: 'Manage offers', icon: 'pricetag-outline' },
@@ -111,9 +110,12 @@ const UserAccountScreen = ({ navigation }) => {
       { id: 8, route: 'Favourites', title: t('profile.favorites', 'Favourites'), icon: 'heart-outline' },
       { id: 9, route: 'Rewards', title: 'My Rewards', icon: 'gift-outline' },
       { id: 10, route: 'Review', title: t('account.review', 'Review'), icon: 'star-outline' },
+      { id: 20, route: 'SellerPerformance', title: 'My Performance', icon: 'analytics-outline' },
+      { id: 21, route: 'NPSSurvey', title: 'Rate Us', icon: 'poll-outline', params: { role: 'seller' } },
       { id: 11, route: 'Share', title: t('account.share', 'Share'), icon: 'share-social-outline' },
     ],
   };
+
 
   const renderMenuItem = (item) => {
     const handlePress = () => {

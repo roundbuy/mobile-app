@@ -187,6 +187,57 @@ const InterestScreen = ({ navigation }) => {
             return catMatch || subMatch;
           });
 
+          // Group categories into Women, Men, Children, Home, Electronics
+          const getGroupedInterests = () => {
+            const groups = {
+              'Women': [],
+              'Men': [],
+              'Children': [],
+              'Home': [],
+              'Electronics': []
+            };
+
+            visibleCats.forEach(cat => {
+              const catNameLower = (cat.name || '').toLowerCase();
+              
+              if (catNameLower.includes('children') || catNameLower.includes('babies') || cat.id === 27 || cat.id === 26 || cat.id === 28) {
+                groups.Children.push(cat);
+              } else if (catNameLower.includes('home') || catNameLower.includes('furniture') || cat.id === 13 || cat.id === 14) {
+                groups.Home.push(cat);
+              } else if (catNameLower.includes('electronics') || catNameLower.includes('phones') || catNameLower.includes('computers') || catNameLower.includes('cameras') || cat.id === 1 || cat.id === 18 || cat.id === 19 || cat.id === 20 || cat.id === 21 || cat.id === 15) {
+                groups.Electronics.push(cat);
+              } else if (catNameLower.includes('bags') || catNameLower.includes('beauty') || cat.id === 25 || cat.id === 29) {
+                groups.Women.push(cat);
+              } else if (cat.id === 16 || catNameLower.includes('clothing') || catNameLower.includes('fashion')) {
+                const womenSub = { ...cat, subcategories: [] };
+                const menSub = { ...cat, subcategories: [] };
+
+                (cat.subcategories || []).forEach(sub => {
+                  const subNameLower = (sub.name || '').toLowerCase();
+                  if (subNameLower.includes('women') || subNameLower.includes('girl') || subNameLower.includes('ladies') || subNameLower.includes('dresses')) {
+                    womenSub.subcategories.push(sub);
+                  } else if (subNameLower.includes('men') || subNameLower.includes('boy') || subNameLower.includes('gent') || subNameLower.includes('suit')) {
+                    menSub.subcategories.push(sub);
+                  } else {
+                    womenSub.subcategories.push(sub);
+                  }
+                });
+
+                if (womenSub.subcategories.length > 0) groups.Women.push(womenSub);
+                if (menSub.subcategories.length > 0) groups.Men.push(menSub);
+              } else {
+                if (cat.id === 439) {
+                  groups.Women.push(cat);
+                } else {
+                  groups.Home.push(cat);
+                }
+              }
+            });
+
+            return groups;
+          };
+
+          const grouped = getGroupedInterests();
           const totalSelected = selectedCategories.length + selectedSubcategories.length;
 
           return (
@@ -223,62 +274,76 @@ const InterestScreen = ({ navigation }) => {
                 </View>
               )}
 
-              {/* Category + subcategory rows */}
+              {/* Category + subcategory rows grouped */}
               <View style={styles.catList}>
                 {visibleCats.length === 0 && (
                   <Text style={styles.emptyHint}>No categories match "{categorySearch}"</Text>
                 )}
-                {visibleCats.map(cat => {
-                  const catId = cat.id?.toString();
-                  const catSelected = selectedCategories.includes(catId);
-                  const subs = cat.subcategories || [];
-                  const selectedSubCount = subs.filter(s => selectedSubcategories.includes(s.id?.toString())).length;
-
-                  // Which subcategories to show
-                  const visibleSubs = q
-                    ? subs.filter(s => s.name.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
-                    : (catSelected ? subs : []);
+                
+                {Object.keys(grouped).map(groupName => {
+                  const groupCats = grouped[groupName];
+                  if (groupCats.length === 0) return null;
 
                   return (
-                    <View key={catId}>
-                      {/* Category row */}
-                      <TouchableOpacity
-                        style={styles.catRow}
-                        onPress={() => toggleCategory(cat)}
-                        activeOpacity={0.7}
-                      >
-                        <View style={[styles.catCheckbox, catSelected && styles.catCheckboxActive]}>
-                          {catSelected && <Ionicons name="checkmark" size={13} color="#fff" />}
-                        </View>
-                        <Text style={[styles.catRowText, catSelected && styles.catRowTextActive]} numberOfLines={1}>
-                          {cat.name}
-                        </Text>
-                        {catSelected && selectedSubCount > 0 && (
-                          <View style={styles.subCountPill}>
-                            <Text style={styles.subCountPillText}>{selectedSubCount}</Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
+                    <View key={groupName} style={{ marginBottom: 20 }}>
+                      <Text style={{ fontSize: 13, fontWeight: 'bold', color: COLORS.primary, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {groupName}
+                      </Text>
+                      
+                      {groupCats.map(cat => {
+                        const catId = cat.id?.toString();
+                        const catSelected = selectedCategories.includes(catId);
+                        const subs = cat.subcategories || [];
+                        const selectedSubCount = subs.filter(s => selectedSubcategories.includes(s.id?.toString())).length;
 
-                      {/* Subcategory rows */}
-                      {visibleSubs.map(sub => {
-                        const sid = sub.id?.toString();
-                        const subSelected = selectedSubcategories.includes(sid);
+                        // Which subcategories to show
+                        const visibleSubs = q
+                          ? subs.filter(s => s.name.toLowerCase().includes(q) || cat.name.toLowerCase().includes(q))
+                          : (catSelected ? subs : []);
+
                         return (
-                          <TouchableOpacity
-                            key={sid}
-                            style={styles.subRow}
-                            onPress={() => toggleSubcategory(sid)}
-                            activeOpacity={0.7}
-                          >
-                            <View style={styles.subRowIndent} />
-                            <View style={[styles.subCheckbox, subSelected && styles.subCheckboxActive]}>
-                              {subSelected && <Ionicons name="checkmark" size={11} color="#fff" />}
-                            </View>
-                            <Text style={[styles.subRowText, subSelected && styles.subRowTextActive]} numberOfLines={1}>
-                              {sub.name}
-                            </Text>
-                          </TouchableOpacity>
+                          <View key={catId}>
+                            {/* Category row */}
+                            <TouchableOpacity
+                              style={styles.catRow}
+                              onPress={() => toggleCategory(cat)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={[styles.catCheckbox, catSelected && styles.catCheckboxActive]}>
+                                {catSelected && <Ionicons name="checkmark" size={13} color="#fff" />}
+                              </View>
+                              <Text style={[styles.catRowText, catSelected && styles.catRowTextActive]} numberOfLines={1}>
+                                {cat.name}
+                              </Text>
+                              {catSelected && selectedSubCount > 0 && (
+                                <View style={styles.subCountPill}>
+                                  <Text style={styles.subCountPillText}>{selectedSubCount}</Text>
+                                </View>
+                              )}
+                            </TouchableOpacity>
+
+                            {/* Subcategory rows */}
+                            {visibleSubs.map(sub => {
+                              const sid = sub.id?.toString();
+                              const subSelected = selectedSubcategories.includes(sid);
+                              return (
+                                <TouchableOpacity
+                                  key={sid}
+                                  style={styles.subRow}
+                                  onPress={() => toggleSubcategory(sid)}
+                                  activeOpacity={0.7}
+                                >
+                                  <View style={styles.subRowIndent} />
+                                  <View style={[styles.subCheckbox, subSelected && styles.subCheckboxActive]}>
+                                    {subSelected && <Ionicons name="checkmark" size={11} color="#fff" />}
+                                  </View>
+                                  <Text style={[styles.subRowText, subSelected && styles.subRowTextActive]} numberOfLines={1}>
+                                    {sub.name}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
                         );
                       })}
                     </View>

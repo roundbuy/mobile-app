@@ -91,6 +91,7 @@ import ConversationsListScreen from '../screens/messages/ConversationsListScreen
 
 // User Account screens
 import UserAccountScreen from '../screens/user-account/UserAccountScreen';
+import SellerPerformanceScreen from '../screens/user-account/SellerPerformanceScreen';
 import PersonalInformationScreen from '../screens/user-account/personal-information/PersonalInformationScreen';
 import PrivacyAccountScreen from '../screens/user-account/privacy-account/PrivacyAccountScreen';
 import ATTTrackingSettingsScreen from '../screens/user-account/privacy-account/ATTTrackingSettingsScreen';
@@ -143,6 +144,7 @@ import ScheduledPickUpDetailScreen from '../screens/pickups/ScheduledPickUpDetai
 import PickUpPaymentScreen from '../screens/pickups/PickUpPaymentScreen';
 import ReschedulePickUpScreen from '../screens/pickups/ReschedulePickUpScreen';
 import MyAdsScreen from '../screens/user-settings/my-ads/MyAdsScreen';
+import MyItemsScreen from '../screens/user-settings/my-ads/MyItemsScreen';
 import MyServicesListScreen from '../screens/user-settings/my-ads/MyServicesListScreen';
 import MyAdsDetailScreen from '../screens/user-settings/my-ads/MyAdsDetailScreen';
 import EditAdLocationsScreen from '../screens/user-settings/my-ads/EditAdLocationsScreen';
@@ -165,6 +167,7 @@ import MyFeedbacksScreen from '../screens/user-settings/feedbacks/MyFeedbacksScr
 import GiveFeedbackListScreen from '../screens/user-settings/feedbacks/GiveFeedbackListScreen';
 import GiveFeedbackFormScreen from '../screens/user-settings/feedbacks/GiveFeedbackFormScreen';
 import FeedbackStatusScreen from '../screens/user-settings/feedbacks/FeedbackStatusScreen';
+import NPSSurveyScreen from '../screens/feedback/NPSSurveyScreen';
 import FavouritesScreen from '../screens/user-settings/favourites/FavouritesScreen';
 import RewardsScreen from '../screens/user-settings/rewards/RewardsScreen';
 import RewardCategoryDetailScreen from '../screens/user-settings/rewards/RewardCategoryDetailScreen';
@@ -201,7 +204,6 @@ import DisputeConfirmationScreen from '../screens/resolution-center/DisputeConfi
 import DisputeMessagingScreen from '../screens/resolution-center/DisputeMessagingScreen';
 
 // Buyer-Seller Process screens
-import ActionCenterScreen from '../screens/buyer-seller-process/ActionCenterScreen';
 import ActionCenterMessagesScreen from '../screens/buyer-seller-process/ActionCenterMessagesScreen';
 import InboxScreen from '../screens/buyer-seller-process/InboxScreen';
 import Step1EnquiryScreen from '../screens/buyer-seller-process/Step1EnquiryScreen';
@@ -396,14 +398,6 @@ const AppNavigator = React.forwardRef((props, ref) => {
         {/* Onboarding Flow */}
 
         {/* Buyer-Seller Process Routes */}
-        <Stack.Screen
-          name="ActionCenterScreen"
-          component={ActionCenterScreen}
-          options={{
-            animationEnabled: true,
-            headerShown: false,
-          }}
-        />
         <Stack.Screen
           name="ActionCenterMessagesScreen"
           component={ActionCenterMessagesScreen}
@@ -1066,6 +1060,23 @@ const AppNavigator = React.forwardRef((props, ref) => {
           }}
         />
         <Stack.Screen
+          name="SellerPerformance"
+          component={SellerPerformanceScreen}
+          options={{
+            headerShown: false,
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="NPSSurvey"
+          component={NPSSurveyScreen}
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+            animationEnabled: true,
+          }}
+        />
+        <Stack.Screen
           name="PersonalInformation"
           component={PersonalInformationScreen}
           options={{
@@ -1471,7 +1482,7 @@ const AppNavigator = React.forwardRef((props, ref) => {
         />
         <Stack.Screen
           name="MyAds"
-          component={MyAdsScreen}
+          component={MyItemsScreen}
           options={{
             animationEnabled: true,
           }}
