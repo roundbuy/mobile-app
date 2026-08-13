@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { getTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { useAuth } from '../context/AuthContext';
 
 // Import screens
@@ -290,12 +291,43 @@ const NavigationGuard = () => {
   // Ref to prevent redirect storms when user state is updating
   const isRedirectingRef = React.useRef(false);
   const redirectTimerRef = React.useRef(null);
+  // Ref to ensure the ATT check only ever fires once per app session
+  const attCheckedRef = React.useRef(false);
 
   useEffect(() => {
     return () => {
       if (redirectTimerRef.current) clearTimeout(redirectTimerRef.current);
     };
   }, []);
+
+  // Catch users who reach the main app (e.g. by logging into an existing
+  // account) without ever passing through ATTPromptScreen — that screen is
+  // otherwise only wired into the fresh-signup and demo-mode flows, so a
+  // returning login skips the ATT request entirely.
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    if (Platform.OS !== 'ios' || attCheckedRef.current) return;
+
+    const checkAtt = async () => {
+      try {
+        const state = navigation.getState();
+        const currentRouteName = state?.routes?.[state.index]?.name;
+        if (currentRouteName !== 'SearchScreen') return;
+
+        attCheckedRef.current = true;
+        const { status } = await getTrackingPermissionsAsync();
+        if (status === 'undetermined') {
+          navigation.navigate('ATTPrompt', { returnTo: 'SearchScreen' });
+        }
+      } catch (err) {
+        console.error('Error checking ATT status:', err);
+      }
+    };
+
+    checkAtt();
+    const unsubscribe = navigation.addListener('state', checkAtt);
+    return unsubscribe;
+  }, [isAuthenticated, user, navigation]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;

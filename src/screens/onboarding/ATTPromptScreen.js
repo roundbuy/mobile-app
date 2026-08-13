@@ -8,7 +8,7 @@ import { useTranslation } from '../../context/TranslationContext';
 import trackingService from '../../services/TrackingService';
 import * as Location from 'expo-location';
 
-const ATTPromptScreen = ({ navigation }) => {
+const ATTPromptScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const [requesting, setRequesting] = React.useState(false);
 
@@ -30,7 +30,10 @@ const ATTPromptScreen = ({ navigation }) => {
       console.error('Error requesting permissions:', error);
     } finally {
       setRequesting(false);
-      navigation.replace('NotificationPermission');
+      // Returning users (e.g. logged into an existing account) are sent
+      // straight back to the main app instead of into the new-signup
+      // onboarding chain (Notifications -> Cookies -> ...).
+      navigation.replace(route.params?.returnTo || 'NotificationPermission');
     }
   };
 
