@@ -16,6 +16,7 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../../../constants/theme';
 import { advertisementService } from '../../../services';
 import api from '../../../services/api';
 import { getFullImageUrl } from '../../../utils/imageUtils';
+import { IMAGES } from '../../../assets/images';
 import { useTranslation } from '../../../context/TranslationContext';
 import { useAuth } from '../../../context/AuthContext';
 import GlobalHeader from '../../../components/GlobalHeader';
@@ -117,7 +118,7 @@ const MyItemsScreen = ({ navigation }) => {
   };
 
   const renderAdItem = ({ item }) => {
-    let imageSource = require('../../../../assets/chair.png'); // placeholder fallback
+    let imageSource = IMAGES.chair1; // placeholder fallback
     try {
       const images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
       if (images && images.length > 0) {
@@ -159,7 +160,7 @@ const MyItemsScreen = ({ navigation }) => {
 
   const renderBuyingItem = ({ item }) => {
     const imageUrl = getFullImageUrl(item.itemImage);
-    const imageSource = imageUrl ? { uri: imageUrl } : require('../../../../assets/chair.png');
+    const imageSource = imageUrl ? { uri: imageUrl } : IMAGES.chair1;
 
     return (
       <TouchableOpacity
