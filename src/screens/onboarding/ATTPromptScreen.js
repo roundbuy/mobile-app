@@ -8,6 +8,19 @@ import { useTranslation } from '../../context/TranslationContext';
 import trackingService from '../../services/TrackingService';
 import * as Location from 'expo-location';
 
+// Guards against the native permission call never resolving (observed on
+// some simulators, where the ATT dialog fails to attach/render at all) —
+// without this, `requesting` would stay true forever and the Continue
+// button would be permanently stuck disabled with no way to proceed.
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((resolve) => setTimeout(() => {
+      console.warn(`${label} did not resolve within ${ms}ms — proceeding anyway`);
+      resolve(null);
+    }, ms)),
+  ]);
+
 const ATTPromptScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const [requesting, setRequesting] = React.useState(false);
@@ -21,11 +34,13 @@ const ATTPromptScreen = ({ navigation, route }) => {
       // Triggers the native iOS App Tracking Transparency dialog.
       // Whatever the user selects there (Allow / Ask App Not to Track)
       // is stored and applied by TrackingService automatically.
-      await trackingService.requestPermission();
+      await withTimeout(trackingService.requestPermission(), 8000, 'ATT request');
 
       // Request Location Permission on the same screen as agreed in UX spec
-      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
-      console.log('Location permission status:', locationStatus);
+      const locationResult = await withTimeout(
+        Location.requestForegroundPermissionsAsync(), 8000, 'Location request'
+      );
+      console.log('Location permission status:', locationResult?.status);
     } catch (error) {
       console.error('Error requesting permissions:', error);
     } finally {
