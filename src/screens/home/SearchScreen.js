@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Activi
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, Circle, Callout, PROVIDER_GOOGLE } from '../../components/MapView';
 import * as Location from 'expo-location';
+import { getTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import SafeScreenContainer from '../../components/SafeScreenContainer';
 import { COLORS, SLIDER_CONFIG } from '../../constants/theme';
 import { ACTIVITY_COLORS } from '../../constants/demoCities';
@@ -338,7 +339,21 @@ const SearchScreen = ({ navigation, route }) => {
     console.log('🔑 PROVIDER_GOOGLE value:', PROVIDER_GOOGLE);
     console.log('📦 MapView available:', MapView !== null);
     console.log('📍 Initial region:', region);
-    getLocationAsync();
+
+    // If ATT hasn't been asked yet, NavigationGuard is about to redirect to
+    // ATTPromptScreen (which requests location itself right after ATT).
+    // Skip auto-requesting location here so that dialog doesn't show before
+    // the user has even seen the ATT screen.
+    (async () => {
+      if (Platform.OS === 'ios') {
+        try {
+          const { status } = await getTrackingPermissionsAsync();
+          if (status === 'undetermined') return;
+        } catch (_) { /* fall through and request normally */ }
+      }
+      getLocationAsync();
+    })();
+
     fetchUserLocations();
     fetchFilterOptions();
     fetchHomeEvents();
@@ -2097,7 +2112,12 @@ const SearchScreen = ({ navigation, route }) => {
                     }
                   });
 
-                  const getActivityIcon = (activityId) => {
+                  const isServiceAd = (item) => {
+                    return item?.listing_type === 'service' || item?.category_id === 6 || item?.activity_id === 4;
+                  };
+
+                  const getActivityIcon = (activityId, item) => {
+                    if (isServiceAd(item)) return 'construct';
                     switch (Number(activityId)) {
                       case 1: return 'cart';
                       case 2: return 'pricetags';
@@ -2105,20 +2125,21 @@ const SearchScreen = ({ navigation, route }) => {
                       case 4: return 'construct';
                       case 5: return 'gift';
                       case 6: return 'people';
-                      default: return 'map';
+                      default: return 'pricetags';
                     }
                   };
 
-                  const getActivityColor = (activityId, hasBadge) => {
-                    if (hasBadge) return '#FF0000';
+                  const getActivityColor = (activityId, hasBadge, item) => {
+                    if (hasBadge) return '#E11D48'; // Vibrant Ruby Red for featured
+                    if (isServiceAd(item)) return '#059669'; // Crisp Emerald Green for Services
                     switch (Number(activityId)) {
                       case 1: return '#001C64';
-                      case 2: return '#69A7EF';
-                      case 3: return '#B2B2B2';
-                      case 4: return '#0f9d58';
-                      case 5: return '#f4b400';
-                      case 6: return '#3FAF46';
-                      default: return '#0f9d58';
+                      case 2: return '#2563EB';
+                      case 3: return '#64748B';
+                      case 4: return '#059669';
+                      case 5: return '#F59E0B';
+                      case 6: return '#10B981';
+                      default: return '#2563EB';
                     }
                   };
 
@@ -2176,14 +2197,14 @@ const SearchScreen = ({ navigation, route }) => {
                         <View style={styles.markerContainer}>
                           <View style={[
                             styles.markerCircle,
-                            { backgroundColor: getActivityColor(ad.activity_id, hasVisibilityBadge) },
+                            { backgroundColor: getActivityColor(ad.activity_id, hasVisibilityBadge, ad) },
                             isSelected && styles.selectedMarker
                           ]}>
-                            <Ionicons name={getActivityIcon(ad.activity_id)} size={16} color="#ffffff" />
+                            <Ionicons name={getActivityIcon(ad.activity_id, ad)} size={16} color="#ffffff" />
                           </View>
                           <View style={[
                             styles.markerArrow,
-                            { borderTopColor: getActivityColor(ad.activity_id, hasVisibilityBadge) }
+                            { borderTopColor: getActivityColor(ad.activity_id, hasVisibilityBadge, ad) }
                           ]} />
                         </View>
 
