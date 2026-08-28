@@ -309,6 +309,14 @@ const NavigationGuard = () => {
     if (Platform.OS !== 'ios' || attCheckedRef.current) return;
 
     const checkAtt = async () => {
+      // One-shot: bail out immediately if a previous call already acted,
+      // even if that check is still in flight. Without this, every
+      // subsequent 'state' event re-runs the check, and if the system
+      // status ever comes back 'undetermined' again (e.g. a simulator
+      // that doesn't persist the ATT decision) it re-navigates to
+      // ATTPrompt every single time SearchScreen is reached — trapping
+      // the user in a redirect loop they can't back out of.
+      if (attCheckedRef.current) return;
       try {
         const state = navigation.getState();
         const currentRouteName = state?.routes?.[state.index]?.name;
