@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,13 +22,15 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
         const fetchMessages = async () => {
             setLoading(true);
             try {
-                const response = await api.get(`/buyer-seller/action-center?type=${activeTab}`);
-                if (response.data?.success) {
-                    if (activeTab === 'buying') {
-                        setBuyerMessages(response.data.data);
-                    } else {
-                        setSellerMessages(response.data.data);
-                    }
+                const [sellRes, buyRes] = await Promise.all([
+                    api.get('/buyer-seller/action-center?type=selling').catch(() => ({ data: { success: false } })),
+                    api.get('/buyer-seller/action-center?type=buying').catch(() => ({ data: { success: false } })),
+                ]);
+                if (sellRes.data?.success) {
+                    setSellerMessages(sellRes.data.data || []);
+                }
+                if (buyRes.data?.success) {
+                    setBuyerMessages(buyRes.data.data || []);
                 }
             } catch (error) {
                 console.error('Failed to fetch action center messages', error);
@@ -37,7 +40,10 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
         };
 
         fetchMessages();
-    }, [activeTab]);
+    }, []);
+
+    const hasUnreadSelling = sellerMessages.some(m => m.unread || m.unreadCount > 0 || m.status === 'unread' || m.hasUnread);
+    const hasUnreadBuying = buyerMessages.some(m => m.unread || m.unreadCount > 0 || m.status === 'unread' || m.hasUnread);
 
     const currentFilters = activeTab === 'buying' ? buyingFilters : sellingFilters;
     const allMessagesList = activeTab === 'buying' ? buyerMessages : sellerMessages;
@@ -50,7 +56,15 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
     const handleBack = () => navigation.goBack();
 
     const handleCardPress = (item) => {
-        navigation.navigate('SingleItemActionScreen', { actionItem: item, activeTab });
+        navigation.navigate('ActionCenterScreen', {
+            conversationId: item.conversationId,
+            advertisementId: item.advertisementId,
+            itemTitle: item.itemTitle,
+            itemPrice: item.itemPrice,
+            itemImage: item.itemImage,
+            otherUserName: item.username,
+            type: activeTab
+        });
     };
 
     const renderFilterChips = () => (
@@ -95,7 +109,7 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
                     }}
                 >
                     <View style={styles.tabContentRow}>
-                        {activeTab === 'selling' && <View style={styles.activeTabDot} />}
+                        {hasUnreadSelling && <View style={styles.activeTabDot} />}
                         <Text style={[styles.tabText, activeTab === 'selling' && styles.activeTabText]}>
                             {t('Selling')} ({sellerMessages.length})
                         </Text>
@@ -109,7 +123,7 @@ const ActionCenterMessagesScreen = ({ navigation }) => {
                     }}
                 >
                     <View style={styles.tabContentRow}>
-                        {activeTab === 'buying' && <View style={styles.activeTabDot} />}
+                        {hasUnreadBuying && <View style={styles.activeTabDot} />}
                         <Text style={[styles.tabText, activeTab === 'buying' && styles.activeTabText]}>
                             {t('Buying')} ({buyerMessages.length})
                         </Text>

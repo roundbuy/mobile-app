@@ -241,6 +241,7 @@ const SearchScreen = ({ navigation, route }) => {
   const [combinedFiltersModalVisible, setCombinedFiltersModalVisible] = useState(false);
   const [disclaimerModalVisible, setDisclaimerModalVisible] = useState(false);
   const [searchInstructionsModalVisible, setSearchInstructionsModalVisible] = useState(false);
+  const [markerCalloutIndices, setMarkerCalloutIndices] = useState({});
 
   // User locations state
   const [userLocations, setUserLocations] = useState([]);
@@ -1422,6 +1423,13 @@ const SearchScreen = ({ navigation, route }) => {
           >
             {t('Instructions')}
           </Hyperlink>
+          <TouchableOpacity
+            style={styles.rewardsLinkButton}
+            onPress={() => navigation.navigate('Rewards')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.rewardsLinkText}>🎁 {t('Rewards') || 'Rewards'}</Text>
+          </TouchableOpacity>
           <SortDropdown
             selectedSort={{ sort: filters.sort, order: filters.order }}
             onSortChange={(sortOptions) => {
@@ -2060,15 +2068,13 @@ const SearchScreen = ({ navigation, route }) => {
                     // Skip banners, section_header, horizontal_line, etc.
                   });
 
-                  // Group ads by location to handle overlaps
+                  // Group ads by exact location for clustered markers
                   const adsByLocation = {};
                   flattenedAds.forEach(ad => {
-                    // Method to add ad to a specific location key
                     const addToLocation = (lat, lng, locationId = null) => {
                       if (lat && lng) {
                         const key = `${parseFloat(lat).toFixed(4)},${parseFloat(lng).toFixed(4)}`;
                         if (!adsByLocation[key]) adsByLocation[key] = [];
-                        // Avoid duplicates if same ad is added multiple times for same location (though unlikely with this logic)
                         const isDuplicate = adsByLocation[key].some(existingAd => existingAd.id === ad.id && existingAd.locationId === locationId);
                         if (!isDuplicate) {
                           adsByLocation[key].push({ ...ad, latitude: lat, longitude: lng, locationId });
@@ -2076,40 +2082,25 @@ const SearchScreen = ({ navigation, route }) => {
                       }
                     };
 
-                    // If we have multiple locations and we want to show all (e.g. unlimited or just general multi-location support)
-                    // We can check if we should show all. The user asked "if unlimited then show all", 
-                    // but it might be better to ALWAYS show all locations for a product if they exist, 
-                    // as that gives better visibility. 
-                    // Let's implement showing all locations if available.
                     if (ad.locations && Array.isArray(ad.locations) && ad.locations.length > 0) {
                       ad.locations.forEach(loc => {
                         addToLocation(loc.latitude, loc.longitude, loc.id);
                       });
                     } else {
-                      // Fallback to top-level lat/long
                       addToLocation(ad.latitude, ad.longitude);
                     }
                   });
 
-                  // Flatten back to array with offsets
+                  // Build clustered marker list
                   const processedMarkers = [];
-                  Object.values(adsByLocation).forEach(group => {
-                    if (group.length === 1) {
-                      processedMarkers.push(group[0]);
-                    } else {
-                      // Apply circular offset for overlapping markers
-                      group.forEach((ad, index) => {
-                        const angle = (index / group.length) * 2 * Math.PI;
-                        const radius = 0.0002; // Small radius for offset (approx 20m)
-
-                        processedMarkers.push({
-                          ...ad,
-                          latitude: parseFloat(ad.latitude) + (radius * Math.cos(angle)),
-                          longitude: parseFloat(ad.longitude) + (radius * Math.sin(angle)),
-                          isOffset: true // Flag to indicate modified position
-                        });
-                      });
-                    }
+                  Object.entries(adsByLocation).forEach(([key, group], idx) => {
+                    const primary = group[0];
+                    processedMarkers.push({
+                      ...primary,
+                      clusterKey: `cluster-${key}-${idx}`,
+                      clusterCount: group.length,
+                      locationItems: group
+                    });
                   });
 
                   const isServiceAd = (item) => {
@@ -2144,42 +2135,34 @@ const SearchScreen = ({ navigation, route }) => {
                   };
 
                   return processedMarkers.map((ad, index) => {
-                    // Only show ads with location data
                     if (!ad.latitude || !ad.longitude) return null;
 
-                    // Get activity color and label from ACTIVITY_COLORS
-                    const activityData = ACTIVITY_COLORS[ad.activity_id] || ACTIVITY_COLORS[1];
-                    const markerLabel = activityData.label;
+                    const clusterCount = ad.clusterCount || 1;
+                    const items = ad.locationItems || [ad];
+                    const markerKey = ad.clusterKey || `${ad.id}-${index}`;
+                    const activeIndex = markerCalloutIndices[markerKey] || 0;
+                    const currentAd = items[activeIndex] || items[0];
 
-                    // Check if advertisement has any visibility badges
-                    const hasVisibilityBadge = ad.badges && ad.badges.some(badge => badge.type === 'visibility');
-
-                    // If has visibility badge, show red color, otherwise use activity color
-                    const markerColor = hasVisibilityBadge ? '#FF0000' : activityData.color;
-                    const isSelected = selectedMarker === ad.id;
+                    const hasVisibilityBadge = currentAd.badges && currentAd.badges.some(badge => badge.type === 'visibility');
+                    const isSelected = selectedMarker === currentAd.id;
 
                     return (
                       <Marker
-                        key={ad.locationId ? `${ad.id}-${ad.locationId}` : `${ad.id}-${index}`}
+                        key={markerKey}
                         coordinate={{
                           latitude: parseFloat(ad.latitude),
                           longitude: parseFloat(ad.longitude),
                         }}
                         onPress={() => {
-                          // Tap marker: callout will show automatically
-                          setSelectedMarker(ad.id);
+                          setSelectedMarker(currentAd.id);
 
-                          // Animate map to position marker at 20% from bottom
                           if (mapRef.current) {
                             const markerCoordinate = {
                               latitude: parseFloat(ad.latitude),
                               longitude: parseFloat(ad.longitude),
                             };
-
-                            // Calculate offset to position marker at 20% from bottom (80% from top)
-                            // This is done by adjusting the latitude
                             const latitudeDelta = region.latitudeDelta || 0.0922;
-                            const offsetLatitude = markerCoordinate.latitude + (latitudeDelta * 0.3); // Shift up by 30% of delta
+                            const offsetLatitude = markerCoordinate.latitude + (latitudeDelta * 0.3);
 
                             mapRef.current.animateToRegion({
                               latitude: offsetLatitude,
@@ -2190,36 +2173,70 @@ const SearchScreen = ({ navigation, route }) => {
                           }
                         }}
                         onCalloutPress={() => {
-                          // Tap callout: navigate to product
-                          handleProductPress(ad);
+                          handleProductPress(currentAd);
                         }}
                       >
                         <View style={styles.markerContainer}>
+                          {clusterCount > 1 && (
+                            <View style={styles.markerBadgeAbove}>
+                              <Text style={styles.markerBadgeText}>{clusterCount}</Text>
+                            </View>
+                          )}
                           <View style={[
                             styles.markerCircle,
-                            { backgroundColor: getActivityColor(ad.activity_id, hasVisibilityBadge, ad) },
+                            { backgroundColor: getActivityColor(currentAd.activity_id, hasVisibilityBadge, currentAd) },
                             isSelected && styles.selectedMarker
                           ]}>
-                            <Ionicons name={getActivityIcon(ad.activity_id, ad)} size={16} color="#ffffff" />
+                            <Ionicons name={getActivityIcon(currentAd.activity_id, currentAd)} size={16} color="#ffffff" />
                           </View>
                           <View style={[
                             styles.markerArrow,
-                            { borderTopColor: getActivityColor(ad.activity_id, hasVisibilityBadge, ad) }
+                            { borderTopColor: getActivityColor(currentAd.activity_id, hasVisibilityBadge, currentAd) }
                           ]} />
                         </View>
 
-
-                        {/* Callout - Always present, shows when marker is tapped */}
-                        <Callout tooltip onPress={() => handleProductPress(ad)}>
+                        {/* Callout with multi-item carousel support */}
+                        <Callout tooltip onPress={() => handleProductPress(currentAd)}>
                           <TouchableOpacity
                             style={styles.calloutContainer}
-                            onPress={() => handleProductPress(ad)}
+                            onPress={() => handleProductPress(currentAd)}
                             activeOpacity={0.8}
                           >
+                            {items.length > 1 && (
+                              <View style={styles.calloutCarouselHeader}>
+                                <TouchableOpacity
+                                  style={styles.calloutNavBtn}
+                                  onPress={(e) => {
+                                    e?.stopPropagation?.();
+                                    setMarkerCalloutIndices(prev => ({
+                                      ...prev,
+                                      [markerKey]: (activeIndex - 1 + items.length) % items.length
+                                    }));
+                                  }}
+                                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                >
+                                  <Ionicons name="chevron-back" size={16} color="#001C64" />
+                                </TouchableOpacity>
+                                <Text style={styles.calloutCarouselBadge}>{activeIndex + 1} of {items.length}</Text>
+                                <TouchableOpacity
+                                  style={styles.calloutNavBtn}
+                                  onPress={(e) => {
+                                    e?.stopPropagation?.();
+                                    setMarkerCalloutIndices(prev => ({
+                                      ...prev,
+                                      [markerKey]: (activeIndex + 1) % items.length
+                                    }));
+                                  }}
+                                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                >
+                                  <Ionicons name="chevron-forward" size={16} color="#001C64" />
+                                </TouchableOpacity>
+                              </View>
+                            )}
                             <View style={styles.calloutImageContainer}>
-                              {ad.images && ad.images.length > 0 ? (
+                              {currentAd.images && currentAd.images.length > 0 ? (
                                 <Image
-                                  source={{ uri: getFullImageUrl(ad.images[0]) }}
+                                  source={{ uri: getFullImageUrl(currentAd.images[0]) }}
                                   style={styles.calloutImage}
                                 />
                               ) : (
@@ -2230,9 +2247,9 @@ const SearchScreen = ({ navigation, route }) => {
                             </View>
                             <View style={styles.calloutInfo}>
                               <Text style={styles.calloutTitle} numberOfLines={2}>
-                                {ad.title}
+                                {currentAd.title}
                               </Text>
-                              <Text style={styles.calloutPrice}>£{ad.price}</Text>
+                              <Text style={styles.calloutPrice}>£{currentAd.price}</Text>
                               <Text style={styles.calloutTap}>{t('Tap to view details')}</Text>
                             </View>
                           </TouchableOpacity>
@@ -4072,6 +4089,63 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -2,
+  },
+  markerBadgeAbove: {
+    backgroundColor: '#001C64',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
+    elevation: 4,
+    minWidth: 18,
+  },
+  markerBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    lineHeight: 12,
+  },
+  calloutCarouselHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 6,
+    marginBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  calloutNavBtn: {
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: '#EEF2FF',
+  },
+  calloutCarouselBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#001C64',
+  },
+  rewardsLinkButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    marginHorizontal: 4,
+  },
+  rewardsLinkText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#92400E',
   },
 });
 

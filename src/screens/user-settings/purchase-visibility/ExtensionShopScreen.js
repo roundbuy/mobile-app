@@ -114,15 +114,15 @@ const ExtensionShopScreen = ({ route, navigation }) => {
   const servicePrice = isBusiness ? 5.00 : 2.00;
 
   const EXTENSION_ROWS = [
-    { key: 'locations',    icon: 'location-outline',  name: 'Display Locations',    price: 'from £2.50' },
-    { key: 'social',       icon: 'people-outline',     name: 'Social Clubs & Events', price: '£2.00/mo' },
-    { key: 'service_listings', icon: 'construct-outline', name: 'Service Listings',     price: `£${servicePrice.toFixed(2)}` },
-    { key: 'rise_to_top',  icon: 'rocket-outline',     name: 'Rise to Top',          price: 'from £1.00', isNew: true },
-    { key: 'topspot',      icon: 'trophy-outline',     name: 'TopSpot',              price: 'from £1.75' },
-    { key: 'showcasing',   icon: 'images-outline',     name: 'ShowCasing',           price: 'from £7.00' },
-    { key: 'garage',       icon: 'home-outline',       name: 'GarageSales',          price: 'from £7.00' },
-    { key: 'quickfind',    icon: 'flash-outline',      name: 'QuickFind',            price: '£3.00' },
-    { key: 'membership',   icon: 'star-outline',       name: 'Membership',           price: 'Coming Soon', isComingSoon: true },
+    { key: 'locations',        icon: 'location-outline',  name: 'Display Locations',      description: 'Show your listings in multiple target locations to expand buyer reach', price: 'from £2.50' },
+    { key: 'social',           icon: 'people-outline',    name: 'Social Clubs & Events',  description: 'Promote your clubs, local events, meetups, and community gatherings', price: '£2.00/mo' },
+    { key: 'service_listings', icon: 'construct-outline', name: 'Service Listings',       description: 'Publish professional services and skilled trade offerings', price: `£${servicePrice.toFixed(2)}` },
+    { key: 'rise_to_top',      icon: 'rocket-outline',    name: 'Rise to Top',            description: 'Instantly bump your listing to the top of recent search results', price: 'from £1.00', isNew: true },
+    { key: 'topspot',          icon: 'trophy-outline',    name: 'TopSpot',                description: 'Pin your item to the prominent TopSpot showcase on search and map', price: 'from £1.75' },
+    { key: 'showcasing',       icon: 'images-outline',    name: 'ShowCasing',             description: 'Feature your items with highlighted photo carousels and badges', price: 'from £7.00' },
+    { key: 'garage',           icon: 'home-outline',      name: 'GarageSales',            description: 'Host a multi-item garage sale event visible to nearby shoppers', price: 'from £7.00' },
+    { key: 'quickfind',        icon: 'flash-outline',     name: 'QuickFind',              description: 'Alert buyers actively searching for matching wanted items', price: '£3.00' },
+    { key: 'membership',       icon: 'star-outline',      name: 'Membership',             description: 'Unlock tier benefits, discounts, priority support, and badge perks', price: 'Coming Soon', isComingSoon: true },
   ];
 
   const [loading, setLoading] = useState(true);
@@ -813,13 +813,20 @@ const ExtensionShopScreen = ({ route, navigation }) => {
             <View style={styles.frameIconWrap}>
               <Ionicons name={row.icon} size={22} color={COLORS.primary} />
             </View>
-            <Text style={styles.frameName}>{row.name}</Text>
-            {row.isNew && (
-              <View style={styles.newBadge}><Text style={styles.newBadgeText}>NEW</Text></View>
-            )}
-            {row.isComingSoon && (
-              <View style={styles.soonBadge}><Text style={styles.soonBadgeText}>SOON</Text></View>
-            )}
+            <View style={styles.frameInfo}>
+              <View style={styles.frameTitleRow}>
+                <Text style={styles.frameName}>{row.name}</Text>
+                {row.isNew && (
+                  <View style={styles.newBadge}><Text style={styles.newBadgeText}>NEW</Text></View>
+                )}
+                {row.isComingSoon && (
+                  <View style={styles.soonBadge}><Text style={styles.soonBadgeText}>SOON</Text></View>
+                )}
+              </View>
+              {Boolean(row.description) && (
+                <Text style={styles.frameDescription}>{row.description}</Text>
+              )}
+            </View>
             <View style={styles.frameRight}>
               <Text style={styles.framePrice}>{row.price}</Text>
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
@@ -947,7 +954,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  frameName: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1a1a1a' },
+  frameInfo: { flex: 1, gap: 3 },
+  frameTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  frameName: { fontSize: 15, fontWeight: '700', color: '#1a1a1a' },
+  frameDescription: { fontSize: 12, color: '#6b7280', lineHeight: 16 },
   frameRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   framePrice: { fontSize: 13, fontWeight: '600', color: COLORS.primary },
 
