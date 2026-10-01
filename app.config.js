@@ -44,8 +44,8 @@ export default {
                 foregroundImage: "./assets/logo-crop.png",
                 backgroundColor: "#1E6FD6"
             },
-            package: "com.buyaround.roundbuy",
-            versionCode: 1,
+            package: "com.roundbuy.roundbuy_app",
+            versionCode: 11,
             permissions: [
                 "ACCESS_FINE_LOCATION",
                 "ACCESS_COARSE_LOCATION",
